@@ -44,6 +44,7 @@
 
 # Kernel Module Compile Results
 *.mod*
+
 *.cmd
 .tmp_versions/
 modules.order
@@ -53,3 +54,13 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# misc
+.DS_Store
+venv/
+.hypothesis/
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
