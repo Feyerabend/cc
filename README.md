@@ -3,8 +3,6 @@
 
 > *.. it isn't just another programming book--it's a journey. Learn programming the modern way: not by memorising syntax, but by building, experimenting, and exploring how computers really work. From your first lines of Python, C, and JavaScript, you'll dive into virtual machines, compilers, debugging, optimisation, and even hands-on hardware projects with the Raspberry Pi Pico. Along the way, Large Language Models (LLMs) become your interactive mentors---offering instant feedback, code suggestions, and explanations---while you push deeper into real-world programming challenges.*
 
-> *This book is for programmers ready to go beyond the basics: to understand how code becomes computation, how abstractions shape software, and how AI is transforming the craft of programming itself. Steep? Yes. Rewarding? Absolutely. Build. Break. Learn. Repeat.*
-
 
 For decades, computer science has been a world of order and predictability, where machines obey instructions with perfect precision. But as artificial intelligence grows, that mechanical certainty begins to shift. This book traces that movement---from the crisp logic of algorithms and virtual machines to the fluid reasoning of adaptive systems---and treats programming as a craft of thought: a dialogue between human intention and computational possibility.
 
@@ -12,7 +10,7 @@ Through project-based exploration, you'll experiment, build, and engage with mod
 
 Set Lonnert has been exploring, teaching, and writing about computers since the 1970s, publishing widely on programming, early internet technologies, and web development, and embracing new platforms as they emerge. This book reflects his lifelong dedication to understanding---and sharing---the evolving world of computation.
 
-
+---
 This repository is primarily to be used as a companion to the book
 *From Code to Computation: A Modern Guide to Programming and Theory*
 
