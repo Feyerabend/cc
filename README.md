@@ -8,7 +8,7 @@ For decades, computer science has been a world of order and predictability, wher
 
 Through project-based exploration, you'll experiment, build, and engage with modern tools, including Large Language Models, while sharpening your analytical and critical reasoning skills. With some programming experience and a foundation in computer science, you'll expand both your practical skills and your understanding of the principles shaping modern computing.
 
-Set Lonnert has been exploring, teaching, and writing about computers since the 1970s, publishing widely on programming, early internet technologies, and web development, and embracing new platforms as they emerge. This book reflects his lifelong dedication to understanding---and sharing---the evolving world of computation.
+Set Lonnert has been exploring, teaching, and writing about computers since the the year 1980, publishing widely on programming, early internet technologies, and web development, and embracing new platforms as they emerge. This book reflects his lifelong dedication to understanding---and sharing---the evolving world of computation.
 
 ---
 This repository is primarily to be used as a companion to the book
