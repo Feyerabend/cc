@@ -1,14 +1,15 @@
 
 # From Code to Computation: A Modern Guide to Programming and Theory
 
-> *.. it isn't just another programming book--it's a journey. Learn programming the modern way: not by memorising syntax, but by building, experimenting, and exploring how computers really work. From your first lines of Python, C, and JavaScript, you'll dive into virtual machines, compilers, debugging, optimisation, and even hands-on hardware projects with the Raspberry Pi Pico. Along the way, Large Language Models (LLMs) become your interactive mentors---offering instant feedback, code suggestions, and explanations---while you push deeper into real-world programming challenges.*
+This material--this GitHub repository and the printed book--is offered as a contribution to the broader conversation about how emerging educational tools, including large language models, may influence teaching and learning. The printed book is not meant to be a finished textbook. Instead, its textbook-like structure serves as an *example* of how digital tools can be woven directly into educational content.
 
+The approach follows ideas associated with John Dewey, who argued that education should grow from active inquiry and concrete problem-solving rather than passive absorption of facts. His emphasis on experience and reflection suggests that tools enabling experimentation (here: from simulations to interactive code) can strengthen project-based and enquiry-driven learning. In such a setting, large language models may act as scaffolding, helping students explore questions, test ideas, and vary their projects while leaving the essential intellectual work in their hands.
 
 For decades, computer science has been a world of order and predictability, where machines obey instructions with perfect precision. But as artificial intelligence grows, that mechanical certainty begins to shift. This book traces that movement---from the crisp logic of algorithms and virtual machines to the fluid reasoning of adaptive systems---and treats programming as a craft of thought: a dialogue between human intention and computational possibility.
 
 Through project-based exploration, you'll experiment, build, and engage with modern tools, including Large Language Models, while sharpening your analytical and critical reasoning skills. With some programming experience and a foundation in computer science, you'll expand both your practical skills and your understanding of the principles shaping modern computing.
 
-Set Lonnert has been exploring, teaching, and writing about computers since the the year 1980, publishing widely on programming, early internet technologies, and web development, and embracing new platforms as they emerge. This book reflects his lifelong dedication to understanding---and sharing---the evolving world of computation.
+*Set Lonnert has been exploring, teaching, and writing about computers since the the year 1980, publishing widely on programming, early internet technologies, and web development, and embracing new platforms as they emerge. This book reflects his lifelong dedication to understanding---and sharing---the evolving world of computation.*
 
 ---
 This repository is primarily to be used as a companion to the book
