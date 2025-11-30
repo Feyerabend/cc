@@ -4,4 +4,4 @@
 This folder accompanies the book and this text temporarily serves as a placeholder for upcoming files.
 
 Meanwhile you can find files at:
-https://github.com/Feyerabend/bb/tree/main/workbook/teach
+https://github.com/Feyerabend/bb/tree/main/teach
