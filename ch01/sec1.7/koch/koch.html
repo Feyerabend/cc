@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koch snowflake with dynamic recursion depth</title>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #controls {
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div id="controls">
+  <label for="depth">Recursion depth: </label>
+  <input type="number" id="depth" min="0" max="6" value="2">
+  <button onclick="drawSnowflake()">Draw snowflake</button>
+</div>
+
+<canvas id="canvas" width="600" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// draw single Koch curve segment
+function drawKoch(x1, y1, x2, y2, depth) {
+  if (depth === 0) {
+    // base case: draw line from (x1, y1) to (x2, y2)
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  } else {
+
+    // recursive case: calculate new points
+    const dx = (x2 - x1) / 3;
+    const dy = (y2 - y1) / 3;
+
+    // points that split line segment into thirds
+    const xA = x1 + dx;
+    const yA = y1 + dy;
+    const xB = x1 + 2 * dx;
+    const yB = y1 + 2 * dy;
+
+    // peak of the triangle
+    const xPeak = (xA + xB) / 2 - (Math.sqrt(3) / 6) * (yB - yA);
+    const yPeak = (yA + yB) / 2 + (Math.sqrt(3) / 6) * (xB - xA);
+
+    // recursive draw four segments
+    drawKoch(x1, y1, xA, yA, depth - 1);
+    drawKoch(xA, yA, xPeak, yPeak, depth - 1);
+    drawKoch(xPeak, yPeak, xB, yB, depth - 1);
+    drawKoch(xB, yB, x2, y2, depth - 1);
+  }
+}
+
+// draw full Koch snowflake
+function drawSnowflake() {
+  const depth = parseInt(document.getElementById('depth').value);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // initial equilateral triangle for snowflake
+  const size = 300;
+  const height = size * Math.sqrt(3) / 2;
+  const xCenter = canvas.width / 2;
+  const yCenter = canvas.height / 2 - height / 3;
+
+  // three vertices of triangle
+  const p1 = { x: xCenter, y: yCenter - height / 2 };
+  const p2 = { x: xCenter - size / 2, y: yCenter + height / 2 };
+  const p3 = { x: xCenter + size / 2, y: yCenter + height / 2 };
+
+  // draw three sides of triangle
+  drawKoch(p1.x, p1.y, p2.x, p2.y, depth);
+  drawKoch(p2.x, p2.y, p3.x, p3.y, depth);
+  drawKoch(p3.x, p3.y, p1.x, p1.y, depth);
+}
+
+drawSnowflake();
+</script>
+
+</body>
+</html>
