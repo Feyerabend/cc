@@ -41,7 +41,7 @@ jobs:
 
     # right place and files?
     - name: List files
-      run: ls -R ch03/ch03/sec3.5.1/ci
+      run: ls -R ch03/sec3.5.1/ci
 
     # unit tests using Python's unittest: workbook/ch03/ci
     - name: Run tests
