@@ -33,7 +33,7 @@ jobs:
 
     # PYTHONPATH (include script's parent directory, if needed)
     - name: Set PYTHONPATH
-      run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/ch03/ch03/sec3.5.1/ci" >> $GITHUB_ENV
+      run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/ch03/sec3.5.1/ci" >> $GITHUB_ENV
 
     # check where we are? /home/runner/work/bb/bb
     - name: Print working directory
