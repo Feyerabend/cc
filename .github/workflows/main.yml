@@ -35,7 +35,7 @@ jobs:
     - name: Set PYTHONPATH
       run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/ch03/sec3.5.1/ci" >> $GITHUB_ENV
 
-    # check where we are? /home/runner/work/bb/bb
+    # check where we are? /home/runner/work/cc/cc
     - name: Print working directory
       run: pwd
 
@@ -43,7 +43,7 @@ jobs:
     - name: List files
       run: ls -R ch03/sec3.5.1/ci
 
-    # unit tests using Python's unittest: workbook/ch03/ci
+    # unit tests using Python's unittest: ch03/ci
     - name: Run tests
       run: |
         python -m unittest discover -s ch03/sec3.5.1/ci -p 'test_*.py'
