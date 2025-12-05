@@ -19,9 +19,9 @@ this tool.*
 First an example of how CI work on GitHub with a Pyhton script.
 A badge react to how the automatic runs work, if it breaks it changes colour.
 
-[![Python CI](https://github.com/Feyerabend/bb/actions/workflows/main.yml/badge.svg)](https://github.com/Feyerabend/bb/actions/workflows/main.yml)
+[![Python CI](https://github.com/Feyerabend/cc/actions/workflows/main.yml/badge.svg)](https://github.com/Feyerabend/cc/actions/workflows/main.yml)
 
-The file 'main.yml' lives in 'bb/.github/workflows/main.yml'.
+The file 'main.yml' lives in 'cc/.github/workflows/main.yml'.
 
 ```yml
 name: Python CI
@@ -53,24 +53,24 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f workbook/ch03/ci/requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f ch03/sec3.5.1/ci/requirements.txt ]; then pip install -r requirements.txt; fi
 
     # PYTHONPATH (include script's parent directory, if needed)
     - name: Set PYTHONPATH
       run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
 
-    # check where we are? /home/runner/work/bb/bb
+    # check where we are? /home/runner/work/cc/cc
     - name: Print working directory
       run: pwd
 
     # right place?
     - name: List files
-      run: ls -R workbook/ch03/ci
+      run: ls -R ch03/sec3.5.1/ci
 
-    # unit tests using Python's unittest: workbook/ch03/ci
+    # unit tests using Python's unittest: ch03/sec3.5.1/ci
     - name: Run tests
       run: |
-        python -m unittest discover -s workbook/ch03/ci -p 'test_*.py'
+        python -m unittest discover -s ch03/sec3.5.1/ci -p 'test_*.py'
 ```
 
 
@@ -150,7 +150,7 @@ action simplifies setting up Python environments in CI pipelines.
 - name: Install dependencies
   run: |
     python -m pip install --upgrade pip
-    if [ -f workbook/ch03/ci/requirements.txt ]; then pip install -r requirements.txt; fi
+    if [ -f ch03/sec3.5.1/ci/requirements.txt ]; then pip install -r requirements.txt; fi
 ```
 
 Upgrades pip to the latest version.
@@ -174,7 +174,7 @@ correctly.
 ```yml
 - name: Run tests
   run: |
-    python -m unittest discover -s workbook/ch03/ci -p 'test_*.py'
+    python -m unittest discover -s ch03/sec3.5.1/ci -p 'test_*.py'
 ```
 
 Executes all unit tests found in the directory workbook/ch03/ci whose
@@ -202,7 +202,7 @@ coverage report.
 - name: Generate coverage report
   run: |
     pip install coverage
-    coverage run -m unittest discover -s workbook/ch03/ci -p 'test_*.py'
+    coverage run -m unittest discover -s ch03/sec3.5.1/ci -p 'test_*.py'
     coverage report
 ```
 
