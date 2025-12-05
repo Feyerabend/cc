@@ -252,7 +252,7 @@ make DEBUG=0
 
 ### GitHub Actions
 
-[![Build in Subdirectory](https://github.com/Feyerabend/bb/actions/workflows/build.yml/badge.svg)](https://github.com/Feyerabend/bb/actions/workflows/build.yml)
+[![Build in Subdirectory](https://github.com/Feyerabend/cc/actions/workflows/build.yml/badge.svg)](https://github.com/Feyerabend/cc/actions/workflows/build.yml)
 
 Using make with GitHub Actions allows you to automate the build and testing process of your
 code directly within your CI/CD pipeline. GitHub Actions provides an environment to define
@@ -324,17 +324,17 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y gcc make
 
     - name: List directory contents
-      run: ls -l workbook/ch03/make
+      run: ls -l ch03/sec3.5.1/make
 
     - name: Navigate to subdirectory and build
-      working-directory: workbook/ch03/make
+      working-directory: ch03/sec3.5.1/make
       run: make build
 
     - name: Run tests
-      working-directory: workbook/ch03/make
+      working-directory: ch03/sec3.5.1/make
       run: make test | grep "Hello, make!"
 
     - name: Clean up
-      working-directory: workbook/ch03/make
+      working-directory: ch03/sec3.5.1/make
       run: make clean
 ```
