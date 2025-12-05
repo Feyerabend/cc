@@ -46,4 +46,4 @@ jobs:
     # unit tests using Python's unittest: workbook/ch03/ci
     - name: Run tests
       run: |
-        python -m unittest discover -s ch03/ch03/sec3.5.1/ci -p 'test_*.py'
+        python -m unittest discover -s ch03/sec3.5.1/ci -p 'test_*.py'
