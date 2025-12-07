@@ -1,0 +1,43 @@
+loading ..
+running ..
+3628800
+
+=== Diagnostic Summary ===
+Operation Counts:
+CALL: 10
+EQ: 10
+JPZ: 10
+LD: 37
+LDARG: 10
+LOAD: 10
+MUL: 9
+PRINT: 1
+RET: 10
+SET: 21
+ST: 19
+STARG: 10
+STORE: 10
+SUB: 9
+
+Execution Times:
+CALL: 0.000008 seconds
+EQ: 0.000010 seconds
+JPZ: 0.000015 seconds
+LD: 0.000066 seconds
+LDARG: 0.000019 seconds
+LOAD: 0.000019 seconds
+MUL: 0.000020 seconds
+PRINT: 0.000003 seconds
+RET: 0.000028 seconds
+SET: 0.000066 seconds
+ST: 0.000062 seconds
+STARG: 0.000035 seconds
+STORE: 0.000034 seconds
+SUB: 0.000032 seconds
+
+Error Counts:
+Division By Zero: 0
+Invalid Operation: 0
+==========================
+
+done.
