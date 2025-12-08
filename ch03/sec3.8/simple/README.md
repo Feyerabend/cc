@@ -16,10 +16,6 @@ problems that off-the-shelf tools cannot fully address. Embracing this
 mindset turns tool creation into a natural extension of problem-solving,
 reflecting both creativity and technical expertise.
 
-I can testify to this as I have a background in education as a cabinetmaker.
-As a cabinetmaker, you sometimes have the opportunity to craft your own tools.
-The same principle can many times apply to developers.
-
 To make things more transparent, we turn our attention to tools for our previous
 virtual machines. This serves a dual purpose: not only can you enhance these
 tools to deepen your understanding, but the process of improvement itself helps
