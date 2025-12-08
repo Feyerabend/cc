@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPM P3 Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>PPM P3 Viewer</h1>
+    <p>Select a PPM P3 file to view:</p>
+    <input type="file" id="fileInput" accept=".ppm">
+    <canvas id="canvas"></canvas>
+
+    <script>
+        function parsePPM(content) {
+            console.log("Parsing PPM content...");
+            const lines = content.split(/\r?\n/);
+            let pointer = 0;
+
+            // Read header
+            const header = lines[pointer++].trim();
+            if (header !== 'P3') {
+                throw new Error("Invalid PPM file: Missing 'P3' header.");
+            }
+            console.log("Header: P3");
+
+            // Skip comments
+            while (lines[pointer]?.startsWith('#')) {
+                console.log(`Comment: ${lines[pointer].trim()}`);
+                pointer++;
+            }
+
+            // Read dimensions
+            const [width, height] = lines[pointer++].trim().split(' ').map(Number);
+            console.log(`Dimensions: ${width} x ${height}`);
+
+            // Read max color value
+            const maxColor = parseInt(lines[pointer++].trim(), 10);
+            console.log(`Max color value: ${maxColor}`);
+
+            // Read pixel data
+            const pixelData = [];
+            while (pointer < lines.length) {
+                const line = lines[pointer++].trim();
+                if (line.startsWith('#') || line === '') {
+                    console.log(`Skipped line: '${line}'`);
+                    continue; // Ignore comments and blank lines
+                }
+                pixelData.push(...line.split(/\s+/).map(Number));
+            }
+
+            const expectedPixelCount = width * height * 3;
+            console.log(`Total pixel data count: ${pixelData.length}`);
+            console.log(`Expected pixel data count: ${expectedPixelCount}`);
+
+            if (pixelData.length !== expectedPixelCount) {
+                throw new Error(`Pixel data length mismatch. Expected ${expectedPixelCount}, got ${pixelData.length}.`);
+            }
+
+            return { width, height, maxColor, pixelData };
+        }
+        // Function to render PPM data on canvas
+        function renderPPM({ width, height, pixelData }) {
+            const canvas = document.getElementById('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+
+            // Create an ImageData object
+            const imageData = ctx.createImageData(width, height);
+            let dataIndex = 0;
+
+            for (let i = 0; i < pixelData.length; i += 3) {
+                // Assign RGB values
+                imageData.data[dataIndex] = pixelData[i];     // Red
+                imageData.data[dataIndex + 1] = pixelData[i + 1]; // Green
+                imageData.data[dataIndex + 2] = pixelData[i + 2]; // Blue
+                imageData.data[dataIndex + 3] = 255;          // Alpha
+                dataIndex += 4;
+            }
+
+            // Draw the image on the canvas
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // Event listener for file input
+        document.getElementById('fileInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    try {
+                        const ppmData = parsePPM(reader.result);
+                        renderPPM(ppmData);
+                    } catch (err) {
+                        alert("Error: " + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+    </script>
+</body>
+</html>
