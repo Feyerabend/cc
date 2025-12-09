@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Mutation Test Output Analyzer</title>
+<style>
+  body { font-family: monospace; margin: 1rem; }
+  textarea { width: 100%; height: 250px; font-family: monospace; }
+  pre { background: #f0f0f0; padding: 1rem; }
+  button { margin-top: 1rem; padding: 0.5rem 1rem; }
+  #chartContainer { width: 100%; max-width: 600px; margin-top: 2rem; }
+</style>
+</head>
+<body>
+
+<h2>Paste your mutation test output below:</h2>
+<textarea id="input"></textarea>
+<button onclick="analyze()">Analyze</button>
+
+<h2>Analysis Summary</h2>
+<textarea id="result"></textarea>
+
+<h2>Mutation Results Chart</h2>
+<div id="chartContainer">
+  <canvas id="mutationChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+function analyze() {
+  const text = document.getElementById('input').value;
+
+  // Regex to extract seed output
+  const seedMatch = text.match(/Seed run -> rc=(\d+) out=\[([^\]]*)\]/);
+  if (!seedMatch) {
+    document.getElementById('result').textContent = 'ERROR: No seed run output found.';
+    return;
+  }
+
+  const seedRc = Number(seedMatch[1]);
+  const seedOut = seedMatch[2];
+
+  // Regex to extract all mutation lines
+  const mutationRegex = /Mutation (\d+) detected rc=(\d+) out=\[([^\]]*)\]/g;
+  let match;
+
+  let total = 0;
+  let successCount = 0;
+  let failureCount = 0;
+  let changedOutputCount = 0;
+  const failedMutations = [];
+  const rcCounts = {};
+
+  while ((match = mutationRegex.exec(text)) !== null) {
+    total++;
+    const idx = Number(match[1]);
+    const rc = Number(match[2]);
+    const out = match[3];
+
+    // Count return codes
+    rcCounts[rc] = (rcCounts[rc] || 0) + 1;
+
+    if (rc === 0) {
+      successCount++;
+    } else {
+      failureCount++;
+      failedMutations.push(idx);
+    }
+
+    if (out !== seedOut) {
+      changedOutputCount++;
+    }
+  }
+
+  // Text summary
+  let summary = `Total mutations: ${total}
+Successful (rc=0): ${successCount}
+Failed (rc!=0): ${failureCount}
+Mutations with changed output: ${changedOutputCount}
+Failed mutation indices: ${failedMutations.join(', ') || 'None'}
+`;
+
+  document.getElementById('result').textContent = summary;
+
+  // Destroy existing chart if it exists
+  if (window.mutationChart && typeof window.mutationChart.destroy === 'function') {
+    window.mutationChart.destroy();
+  }
+
+  // Create bar chart
+  const ctx = document.getElementById('mutationChart').getContext('2d');
+  window.mutationChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Successful (rc=0)', 'Failed (rc!=0)', 'Changed Output'],
+      datasets: [{
+   label: 'Mutation Results',
+   data: [successCount, failureCount, changedOutputCount],
+   backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
+   borderColor: ['#2C8BC9', '#D94F70', '#E0B84D'],
+   borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+   y: {
+     beginAtZero: true,
+     title: {
+       display: true,
+       text: 'Count'
+     }
+   },
+   x: {
+     title: {
+       display: true,
+       text: 'Mutation Categories'
+     }
+   }
+      },
+      plugins: {
+   legend: {
+     display: false
+   },
+   title: {
+     display: true,
+     text: 'Mutation Test Results Distribution'
+   }
+      }
+    }
+  });
+}
+</script>
+
+</body>
+</html>
