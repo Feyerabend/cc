@@ -1,5 +1,5 @@
 > [!NOTE]  
-> Upcomming book will be published on [bod.com](https://bod.com)
+> Upcomming book will be published 2026-01-01 on [bod.com](https://bod.com)
 
 
 # From Code to Computation: A Modern Guide to Programming and Theory
