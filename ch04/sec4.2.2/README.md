@@ -56,3 +56,5 @@ principles of computing.
 #### Running a Macintosh 128K on an original Raspberry Pi Pico ..
 
 ![Mac on Pico](./../assets/image/practice/picomac.png)
+
+See further: [https://jcm-1.com/product/picomicromac/](https://jcm-1.com/product/picomicromac/).
