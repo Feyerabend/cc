@@ -2,7 +2,7 @@
 ## Building and Experimenting
 
 > [!NOTE]
-> __Progression of microcontroller hardware and recommendations have changed during the writing of this book and creating this repository.__
+> __The progression of microcontroller hardware and related recommendations have evolved during the writing of this book and the creation of this repository.__
 > For greater performance, we have choosen the use of the Raspberry Pi Pico 2 (RP2350: dual-core Cortex-M33 or dual Hazard3 RISC-V cores, 150 MHz, 520 KB SRAM, 4 MB flash), or the version 2W for wireless. If you are using alternative hardware (e.g. Pico 2 or boards with the RP2350/RP2350A), minor code adjustments may be required.
 > The original Raspberry Pi Pico may work with many examples still, but as of today not recommended.
 > For display work and miuch of the code elsewhere, we primarily use the Pimoroni Display Pack 2.0, though the older Display Pack often works with small modifications. Note that displays commonly demand significant power, substantial memory, and high update speed--especially for applications like games or animations. If you wish to pursue developments such as games, larger LCD screens, or more demanding applications, these will be considerably easier on more capable hardware, rather than struggling with heavy optimisation on less powerful boards.
@@ -53,6 +53,6 @@ principles of computing.
     on the RP2040 platform.
 
 
-#### Running a Macintosh 128k on a original Raspberry Pi Pico ..
+#### Running a Macintosh 128K on an original Raspberry Pi Pico ..
 
 ![Mac on Pico](./../assets/image/practice/picomac.png)
