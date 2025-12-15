@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CPU Emulator</title>
+    <style>
+        table { border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 5px; }
+        #memoryDump { font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Gate-Level CPU Emulator</h1>
+    <textarea id="jsonInput" rows="10" cols="80" placeholder="Paste JSON here..."></textarea>
+    <button onclick="loadJSON()">Load JSON</button>
+    <br><br>
+    <button onclick="prevCycle()" disabled id="prevBtn">Previous Cycle</button>
+    <span id="cycleDisplay">Cycle: 0</span>
+    <button onclick="nextCycle()" id="nextBtn">Next Cycle</button>
+    <h3>Current Instruction: <span id="instrDisplay">None</span></h3>
+    <table id="stateTable">
+        <tr><th>Register/Flag</th><th>Value</th><th>Binary</th></tr>
+    </table>
+    <h3>Memory Dump</h3>
+    <div id="memoryDump"></div>
+    <script>
+        let data = [];
+        let currentCycle = 0;
+
+        function loadJSON() {
+            const input = document.getElementById('jsonInput').value;
+            data = JSON.parse(input);
+            currentCycle = 0;
+            updateDisplay();
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = (data.length <= 1);
+        }
+
+        function updateDisplay() {
+            if (data.length === 0) return;
+            const cycleData = data[currentCycle];
+            document.getElementById('cycleDisplay').innerText = `Cycle: ${cycleData.cycle}`;
+            document.getElementById('instrDisplay').innerText = cycleData.instruction;
+            let table = document.getElementById('stateTable');
+            table.innerHTML = '<tr><th>Register/Flag</th><th>Value</th><th>Binary</th></tr>';
+            table.innerHTML += `<tr><td>PC</td><td>${cycleData.pc}</td><td>${cycleData.pc_binary}</td></tr>`;
+            table.innerHTML += `<tr><td>ACC</td><td>${cycleData.acc}</td><td>${cycleData.acc_binary}</td></tr>`;
+            table.innerHTML += `<tr><td>Zero Flag</td><td>${cycleData.zero}</td><td>-</td></tr>`;
+            table.innerHTML += `<tr><td>Overflow Flag</td><td>${cycleData.ovf}</td><td>-</td></tr>`;
+            table.innerHTML += `<tr><td>IR</td><td>${cycleData.ir}</td><td>${cycleData.ir_binary}</td></tr>`;
+            table.innerHTML += `<tr><td>MAR</td><td>${cycleData.mar}</td><td>${cycleData.mar_binary}</td></tr>`;
+            const control = cycleData.control;
+            table.innerHTML += `<tr><td>ALU OP0</td><td>${control.alu_op0}</td><td>-</td></tr>`;
+            table.innerHTML += `<tr><td>ALU OP1</td><td>${control.alu_op1}</td><td>-</td></tr>`;
+            table.innerHTML += `<tr><td>Reg Load</td><td>${control.reg_load}</td><td>-</td></tr>`;
+            table.innerHTML += `<tr><td>Mem Read</td><td>${control.mem_read}</td><td>-</td></tr>`;
+            table.innerHTML += `<tr><td>Mem Write</td><td>${control.mem_write}</td><td>-</td></tr>`;
+            table.innerHTML += `<tr><td>Halt</td><td>${control.halt}</td><td>-</td></tr>`;
+            table.innerHTML += `<tr><td>ALU Src</td><td>${control.alu_src}</td><td>-</td></tr>`;
+            document.getElementById('memoryDump').innerText = cycleData.memory.join(', ');
+            document.getElementById('prevBtn').disabled = (currentCycle === 0);
+            document.getElementById('nextBtn').disabled = (currentCycle === data.length - 1);
+        }
+
+        function prevCycle() {
+            if (currentCycle > 0) {
+                currentCycle--;
+                updateDisplay();
+            }
+        }
+
+        function nextCycle() {
+            if (currentCycle < data.length - 1) {
+                currentCycle++;
+                updateDisplay();
+            }
+        }
+    </script>
+</body>
+</html>
