@@ -371,11 +371,3 @@ gc.collect()
 print(f"Free RAM: {gc.mem_free()} bytes")
 ```
 
-
-### Resources
-
-- *MicroPython Docs*: [docs.micropython.org](https://docs.micropython.org)
-- *Pimoroni Libraries*: [github.com/pimoroni](https://github.com/pimoroni)
-- *Game Dev Math*: gamemath.com
-- *Fixed-Point Guide*: [embedded.com fixed-point guide](https://www.embedded.com/how-to-use-fixed-point-arithmetic/)
-
