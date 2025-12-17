@@ -1,11 +1,17 @@
 
 ## Game Programming Projects
 
-In the [parts](./parts/) folder you might find some ideas that are being tested. Provide
-your own tests, and further prototype your ideas for simple games. These kinds of
-simple coding, snippets, can often show concepts, but also problems with such concepts
-before taking on serious coding. It is not the same as programming, but close enoough
-to overlap.
+In the [parts](./parts/) folder you will find experimental fragments and ideas under--hopefully
+your--active exploration. These are not finished components, but small prototypes
+intended to test specific concepts in isolation.
+
+You are encouraged to add your own tests and extend these fragments into simple game-like experiments.
+Working at this scale often reveals both the strengths and the weaknesses of an idea long before it
+is embedded in a larger codebase.
+
+This kind of exploratory coding is not full-scale programming in the traditional sense, but it is close
+enough to overlap. It serves as a practical bridge between abstract ideas and more serious,
+structured development.
 
 In this folder you will also find a kind of [grid game](./grid_game.py).
 
