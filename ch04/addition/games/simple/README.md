@@ -1,7 +1,14 @@
 
 ## Game Programming Projects
 
-### Key Enhancements:
+In the [parts](./parts/) folder you might find some ideas that are being tested. Provide
+your own tests, and further prototype your ideas for simple games. These kinds of
+simple coding, snippets, can often show concepts, but also problems with such concepts
+before taking on serious coding. It is not the same as programming, but close enoough
+to overlap.
+
+In this folder you will also find a kind of [grid game](./grid_game.py).
+
 1. *Procedural Map Generation* - Creates rooms and corridors instead of random walls
 2. *Better AI* - Line-of-sight detection, memory of last seen position
 3. *Game Systems* - Score, health, collectibles, HUD
@@ -9,7 +16,7 @@
 5. *Color Palette* - Organized color management
 6. *Collision Response* - Proper damage and pushback mechanics
 
-
+From this build ..
 
 ### Project 1: *Memory-Constrained Snake*
 *Focus*: Memory management, circular buffers
