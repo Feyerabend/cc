@@ -307,3 +307,5 @@ When extending this driver:
 - Add new error codes to `disp_error_t` enum and `err_str[]` array
 - Test both DMA-enabled and DMA-disabled modes
 
+
+![Display Driver Demo](./../../../assets/image/errors/display.png)
