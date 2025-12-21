@@ -1,656 +1,593 @@
 #include "display.h"
 #include "hardware/spi.h"
-#include "hardware/sync.h"
 #include "hardware/gpio.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
+#include "hardware/sync.h"
 #include "pico/time.h"
-#include "hardware/timer.h"
-
 #include <string.h>
+#include <stdio.h>  // For debug prints
+#include <stdlib.h>
 
-// Display Pack pin defs
-#define DISPLAY_CS_PIN 17
-#define DISPLAY_CLK_PIN 18
-#define DISPLAY_MOSI_PIN 19
-#define DISPLAY_DC_PIN 16
-#define DISPLAY_RESET_PIN 21
-#define DISPLAY_BL_PIN 20
 
-// Button pins
-#define BUTTON_A_PIN 12
-#define BUTTON_B_PIN 13
-#define BUTTON_X_PIN 14
-#define BUTTON_Y_PIN 15
+// Pins (Pimoroni Display Pack 2.0)
+#define PIN_CS    17
+#define PIN_CLK   18
+#define PIN_MOSI  19
+#define PIN_DC    16
+#define PIN_RST   21
+#define PIN_BL    20
 
-// DMA configuration
-static int dma_channel = -1;
-static bool dma_initialized = false;
-static volatile bool dma_busy = false;
-static bool display_initialized = false;
 
-// Internal state with proper bounds checking
-static button_callback_t button_callbacks[BUTTON_COUNT] = {NULL};
-static volatile bool button_state[BUTTON_COUNT] = {false};
-static volatile bool button_last_state[BUTTON_COUNT] = {false};
-static volatile uint32_t last_button_check = 0;
-static bool buttons_initialized = false;
+#define BTN_A 12
+#define BTN_B 13
+#define BTN_X 14
+#define BTN_Y 15
 
-// DMA buffer for repeated pixel data (for solid fills)
-static uint8_t dma_fill_buffer[512]; // Buffer for repeated color data
-static uint8_t dma_single_pixel[2];  // Single pixel buffer for DMA
+static const uint8_t button_pins[BUTTON_COUNT] = { BTN_A, BTN_B, BTN_X, BTN_Y };
 
-// Button pin mapping
-static const uint8_t button_pins[BUTTON_COUNT] = {
-    BUTTON_A_PIN, BUTTON_B_PIN, BUTTON_X_PIN, BUTTON_Y_PIN
+// State
+static struct {
+    bool initialized;
+    bool dma_enabled;
+    int dma_channel;
+    volatile bool dma_busy;
+    disp_error_context_t last_error;
+    disp_config_t config;
+    uint16_t *framebuffer;  // Optional framebuffer for smooth rendering
+} g = {0};
+
+static button_callback_t button_cb[BUTTON_COUNT] = {0};
+static volatile bool btn_state[BUTTON_COUNT] = {0};           // Debounced state
+static volatile bool btn_raw_state[BUTTON_COUNT] = {0};       // Current raw reading
+static volatile uint32_t btn_debounce_time[BUTTON_COUNT] = {0}; // Last state change time
+static volatile bool btn_pressed[BUTTON_COUNT] = {0};         // Edge flag
+static volatile bool btn_released[BUTTON_COUNT] = {0};        // Edge flag
+static bool buttons_ready = false;
+
+#define DEBOUNCE_MS 50  // 50ms debounce time
+
+
+// Full 5×8 font (ASCII 32-127)
+static const uint8_t FONT_5X8[][5] = {
+    {0x00,0x00,0x00,0x00,0x00},{0x00,0x00,0x5F,0x00,0x00},{0x00,0x07,0x00,0x07,0x00},{0x14,0x7F,0x14,0x7F,0x14},
+    {0x24,0x2A,0x7F,0x2A,0x12},{0x23,0x13,0x08,0x64,0x62},{0x36,0x49,0x55,0x22,0x50},{0x00,0x05,0x03,0x00,0x00},
+    {0x00,0x1C,0x22,0x41,0x00},{0x00,0x41,0x22,0x1C,0x00},{0x08,0x2A,0x1C,0x2A,0x08},{0x08,0x08,0x3E,0x08,0x08},
+    {0x00,0x50,0x30,0x00,0x00},{0x08,0x08,0x08,0x08,0x08},{0x00,0x60,0x60,0x00,0x00},{0x20,0x10,0x08,0x04,0x02},
+    {0x3E,0x51,0x49,0x45,0x3E},{0x00,0x42,0x7F,0x40,0x00},{0x42,0x61,0x51,0x49,0x46},{0x21,0x41,0x45,0x4B,0x31},
+    {0x18,0x14,0x12,0x7F,0x10},{0x27,0x45,0x45,0x45,0x39},{0x3C,0x4A,0x49,0x49,0x30},{0x01,0x71,0x09,0x05,0x03},
+    {0x36,0x49,0x49,0x49,0x36},{0x06,0x49,0x49,0x29,0x1E},{0x00,0x36,0x36,0x00,0x00},{0x00,0x56,0x36,0x00,0x00},
+    {0x00,0x08,0x14,0x22,0x41},{0x14,0x14,0x14,0x14,0x14},{0x41,0x22,0x14,0x08,0x00},{0x02,0x01,0x51,0x09,0x06},
+    {0x32,0x49,0x79,0x41,0x3E},{0x7E,0x11,0x11,0x11,0x7E},{0x7F,0x49,0x49,0x49,0x36},{0x3E,0x41,0x41,0x41,0x22},
+    {0x7F,0x41,0x41,0x22,0x1C},{0x7F,0x49,0x49,0x49,0x41},{0x7F,0x09,0x09,0x01,0x01},{0x3E,0x41,0x41,0x51,0x32},
+    {0x7F,0x08,0x08,0x08,0x7F},{0x00,0x41,0x7F,0x41,0x00},{0x20,0x40,0x41,0x3F,0x01},{0x7F,0x08,0x14,0x22,0x41},
+    {0x7F,0x40,0x40,0x40,0x40},{0x7F,0x02,0x04,0x02,0x7F},{0x7F,0x04,0x08,0x10,0x7F},{0x3E,0x41,0x41,0x41,0x3E},
+    {0x7F,0x09,0x09,0x09,0x06},{0x3E,0x41,0x51,0x21,0x5E},{0x7F,0x09,0x19,0x29,0x46},{0x46,0x49,0x49,0x49,0x31},
+    {0x01,0x01,0x7F,0x01,0x01},{0x3F,0x40,0x40,0x40,0x3F},{0x1F,0x20,0x40,0x20,0x1F},{0x7F,0x20,0x18,0x20,0x7F},
+    {0x63,0x14,0x08,0x14,0x63},{0x03,0x04,0x78,0x04,0x03},{0x61,0x51,0x49,0x45,0x43},{0x00,0x00,0x7F,0x41,0x41},
+    {0x02,0x04,0x08,0x10,0x20},{0x41,0x41,0x7F,0x00,0x00},{0x04,0x02,0x01,0x02,0x04},{0x40,0x40,0x40,0x40,0x40},
+    {0x00,0x01,0x02,0x04,0x00},{0x20,0x54,0x54,0x54,0x78},{0x7F,0x48,0x44,0x44,0x38},{0x38,0x44,0x44,0x44,0x20},
+    {0x38,0x44,0x44,0x48,0x7F},{0x38,0x54,0x54,0x54,0x18},{0x08,0x7E,0x09,0x01,0x02},{0x08,0x14,0x54,0x54,0x3C},
+    {0x7F,0x08,0x04,0x04,0x78},{0x00,0x44,0x7D,0x40,0x00},{0x20,0x40,0x44,0x3D,0x00},{0x00,0x7F,0x10,0x28,0x44},
+    {0x00,0x41,0x7F,0x40,0x00},{0x7C,0x04,0x18,0x04,0x78},{0x7C,0x08,0x04,0x04,0x78},{0x38,0x44,0x44,0x44,0x38},
+    {0x7C,0x14,0x14,0x14,0x08},{0x08,0x14,0x14,0x18,0x7C},{0x7C,0x08,0x04,0x04,0x08},{0x48,0x54,0x54,0x54,0x20},
+    {0x04,0x3F,0x44,0x40,0x20},{0x3C,0x40,0x40,0x20,0x7C},{0x1C,0x20,0x40,0x20,0x1C},{0x3C,0x40,0x30,0x40,0x3C},
+    {0x44,0x28,0x10,0x28,0x44},{0x0C,0x50,0x50,0x50,0x3C},{0x44,0x64,0x54,0x4C,0x44},{0x00,0x08,0x36,0x41,0x00},
+    {0x00,0x00,0x7F,0x00,0x00},{0x00,0x41,0x36,0x08,0x00},{0x08,0x08,0x2A,0x1C,0x08},{0x08,0x1C,0x2A,0x08,0x08}
 };
 
-// Fixed 5x8 font (same as before but with bounds checking)
-static const uint8_t font5x8[][5] = {
-    {0x00, 0x00, 0x00, 0x00, 0x00}, // Space
-    {0x00, 0x00, 0x5F, 0x00, 0x00}, // !
-    {0x00, 0x07, 0x00, 0x07, 0x00}, // "
-    {0x14, 0x7F, 0x14, 0x7F, 0x14}, // #
-    {0x12, 0x2A, 0x7F, 0x2A, 0x24}, // $
-    {0x62, 0x64, 0x08, 0x13, 0x23}, // %
-    {0x50, 0x22, 0x55, 0x49, 0x36}, // &
-    {0x00, 0x00, 0x07, 0x00, 0x00}, // '
-    {0x00, 0x41, 0x22, 0x1C, 0x00}, // (
-    {0x00, 0x1C, 0x22, 0x41, 0x00}, // )
-    {0x14, 0x08, 0x3E, 0x08, 0x14}, // *
-    {0x08, 0x08, 0x3E, 0x08, 0x08}, // +
-    {0x00, 0x30, 0x50, 0x00, 0x00}, // ,
-    {0x08, 0x08, 0x08, 0x08, 0x08}, // -
-    {0x00, 0x60, 0x60, 0x00, 0x00}, // .
-    {0x02, 0x04, 0x08, 0x10, 0x20}, // /
-    {0x3E, 0x45, 0x49, 0x51, 0x3E}, // 0
-    {0x00, 0x40, 0x7F, 0x42, 0x00}, // 1
-    {0x46, 0x49, 0x51, 0x61, 0x42}, // 2
-    {0x31, 0x4B, 0x45, 0x41, 0x21}, // 3
-    {0x10, 0x7F, 0x12, 0x14, 0x18}, // 4
-    {0x39, 0x49, 0x49, 0x49, 0x2F}, // 5
-    {0x30, 0x49, 0x49, 0x4A, 0x3C}, // 6
-    {0x07, 0x0D, 0x09, 0x71, 0x01}, // 7
-    {0x36, 0x49, 0x49, 0x49, 0x36}, // 8
-    {0x1E, 0x29, 0x49, 0x49, 0x0E}, // 9
-    {0x00, 0x36, 0x36, 0x00, 0x00}, // :
-    {0x00, 0x36, 0x76, 0x00, 0x00}, // ;
-    {0x00, 0x41, 0x22, 0x14, 0x08}, // <
-    {0x14, 0x14, 0x14, 0x14, 0x14}, // =
-    {0x08, 0x14, 0x22, 0x41, 0x00}, // >
-    {0x06, 0x09, 0x51, 0x01, 0x06}, // ?
-    {0x3E, 0x41, 0x79, 0x49, 0x32}, // @
-    {0x7E, 0x11, 0x11, 0x11, 0x7E}, // A
-    {0x36, 0x49, 0x49, 0x49, 0x7F}, // B
-    {0x22, 0x41, 0x41, 0x41, 0x3E}, // C
-    {0x1C, 0x22, 0x41, 0x41, 0x7F}, // D
-    {0x41, 0x49, 0x49, 0x49, 0x7F}, // E
-    {0x01, 0x09, 0x09, 0x09, 0x7F}, // F
-    {0x7A, 0x49, 0x49, 0x41, 0x3E}, // G
-    {0x7F, 0x08, 0x08, 0x08, 0x7F}, // H
-    {0x00, 0x41, 0x7F, 0x41, 0x00}, // I
-    {0x01, 0x3F, 0x41, 0x40, 0x20}, // J
-    {0x41, 0x22, 0x14, 0x08, 0x7F}, // K
-    {0x40, 0x40, 0x40, 0x40, 0x7F}, // L
-    {0x7F, 0x02, 0x0C, 0x02, 0x7F}, // M
-    {0x7F, 0x10, 0x0C, 0x02, 0x7F}, // N
-    {0x3E, 0x41, 0x41, 0x41, 0x3E}, // O
-    {0x06, 0x09, 0x09, 0x09, 0x7F}, // P
-    {0x5E, 0x21, 0x51, 0x41, 0x3E}, // Q
-    {0x46, 0x29, 0x19, 0x09, 0x7F}, // R
-    {0x31, 0x49, 0x49, 0x49, 0x46}, // S
-    {0x01, 0x01, 0x7F, 0x01, 0x01}, // T
-    {0x3F, 0x40, 0x40, 0x40, 0x3F}, // U
-    {0x1F, 0x20, 0x40, 0x20, 0x1F}, // V
-    {0x3F, 0x40, 0x38, 0x40, 0x3F}, // W
-    {0x63, 0x14, 0x08, 0x14, 0x63}, // X
-    {0x07, 0x08, 0x70, 0x08, 0x07}, // Y
-    {0x43, 0x45, 0x49, 0x51, 0x61}, // Z
+static const char* err_str[] = {
+    "OK","Already init","Not init","SPI fail","GPIO fail","Reset fail","Config fail",
+    "NULL ptr","Bad coords","Bad dims","DMA unavailable","DMA config","DMA timeout",
+    "Cmd failed","Data failed","Unknown"
 };
 
-// Error message strings
-static const char* error_strings[] = {
-    "OK",
-    "Init failed",
-    "DMA operation failed",
-    "Invalid parameter",
-    "Display not initialised"
-};
-
-// Get current time in milliseconds
-static inline uint32_t get_time_ms(void) {
-    return to_ms_since_boot(get_absolute_time());
+void disp_set_error_context(disp_error_t code, const char *f, int l, const char *m) {
+    g.last_error.code = code; g.last_error.function = f;
+    g.last_error.line = l; g.last_error.message = m;
 }
 
-// DMA interrupt handler with safety checks
-void __isr dma_handler() {
-    // Check if this is our channel and clear the interrupt
-    if (dma_channel >= 0 && (dma_hw->ints0 & (1u << dma_channel))) {
-        dma_hw->ints0 = 1u << dma_channel;
-        dma_busy = false;
+const char* disp_error_string(disp_error_t e) {
+    if (e >= sizeof(err_str)/sizeof(err_str[0])) return "???";
+    return err_str[e];
+}
+
+disp_error_context_t disp_get_last_error(void) { return g.last_error; }
+void disp_clear_error(void) { g.last_error.code = DISP_OK; }
+
+static void __isr dma_irq(void) {
+    if (g.dma_channel >= 0 && (dma_hw->ints0 & (1u << g.dma_channel))) {
+        dma_hw->ints0 = 1u << g.dma_channel;
+        g.dma_busy = false;
     }
 }
 
-// Initialize DMA with error checking
-static display_error_t dma_init(void) {
-    if (dma_initialized) return DISPLAY_OK;
-    
-    // Get a free DMA channel
-    dma_channel = dma_claim_unused_channel(false);
-    if (dma_channel < 0) return DISPLAY_ERROR_DMA_FAILED;
-    
-    // Set up the DMA interrupt
-    dma_channel_set_irq0_enabled(dma_channel, true);
-    irq_set_exclusive_handler(DMA_IRQ_0, dma_handler);
+static disp_error_t dma_init(void) {
+    if (g.dma_enabled) return DISP_OK;
+    g.dma_channel = dma_claim_unused_channel(false);
+    if (g.dma_channel < 0) {
+        printf("DEBUG: No DMA channel available\n");
+        return DISP_ERROR(DISP_ERR_DMA_NOT_AVAILABLE, "no channel");
+    }
+    dma_channel_set_irq0_enabled(g.dma_channel, true);
+    irq_set_exclusive_handler(DMA_IRQ_0, dma_irq);
     irq_set_enabled(DMA_IRQ_0, true);
-    
-    dma_initialized = true;
-    return DISPLAY_OK;
+    g.dma_enabled = true;
+    printf("DEBUG: DMA channel %d initialized\n", g.dma_channel);
+    return DISP_OK;
 }
 
-static bool dma_wait_for_finish_timeout(uint32_t timeout_ms) {
-    uint32_t start = get_time_ms();
-    while (dma_busy) {
-        if (get_time_ms() - start > timeout_ms) {
-            return false; // Timeout
+static void dma_deinit(void) {
+    if (g.dma_enabled) {
+        if (g.dma_channel >= 0) {
+            dma_channel_set_irq0_enabled(g.dma_channel, false);
+            dma_channel_unclaim(g.dma_channel);
+        }
+        irq_set_enabled(DMA_IRQ_0, false);
+        g.dma_enabled = false; g.dma_channel = -1;
+    }
+}
+
+static disp_error_t wait_dma(uint32_t ms) {
+    uint32_t start = to_ms_since_boot(get_absolute_time());
+    while (g.dma_busy) {
+        if (to_ms_since_boot(get_absolute_time()) - start > ms) {
+            dma_channel_abort(g.dma_channel);
+            g.dma_busy = false;
+            return DISP_ERROR(DISP_ERR_DMA_TIMEOUT, "timeout");
         }
         tight_loop_contents();
     }
-    return true;
+    return DISP_OK;
 }
 
-// Safe DMA wait
-static void dma_wait_for_finish(void) {
-    if (!dma_wait_for_finish_timeout(1000)) { // 1 second timeout
-        // Force stop the DMA channel if timeout occurs
-        if (dma_channel >= 0) {
-            dma_channel_abort(dma_channel);
-            dma_hw->ints0 = 1u << dma_channel; // Clear pending interrupt to prevent ghost IRQs
-        }
-        dma_busy = false;
-    }
-}
-
-// DMA-based SPI write for buffer data with error checking
-static display_error_t dma_spi_write_buffer(uint8_t* data, size_t len) {
-    if (!data || len == 0) return DISPLAY_ERROR_INVALID_PARAM;
-    
-    if (!dma_initialized && dma_init() != DISPLAY_OK) {
-        // Fallback to regular SPI if DMA init fails
-        spi_write_blocking(spi0, data, len);
-        return DISPLAY_OK;
-    }
-    
-    dma_wait_for_finish();
-    dma_busy = true;
-    
-    // Configure DMA channel
-    dma_channel_config c = dma_channel_get_default_config(dma_channel);
-    channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-    channel_config_set_dreq(&c, spi_get_dreq(spi0, true));
-    channel_config_set_read_increment(&c, true);
-    channel_config_set_write_increment(&c, false);
-    
-    // Set up the transfer
-    dma_channel_configure(
-        dma_channel,
-        &c,
-        &spi_get_hw(spi0)->dr,
-        data,
-        len,
-        false
-    );
-    
-    // Start the transfer
-    dma_channel_start(dma_channel);
-    return DISPLAY_OK;
-}
-
-// Display low-level functions with error checking
-static display_error_t display_write_command(uint8_t cmd) {
-    if (!display_initialized) return DISPLAY_ERROR_NOT_INITIALIZED;
-    
-    dma_wait_for_finish();
-    gpio_put(DISPLAY_DC_PIN, 0);
-    gpio_put(DISPLAY_CS_PIN, 0);
+static disp_error_t write_cmd(uint8_t cmd) {
+    wait_dma(1000);
+    gpio_put(PIN_DC, 0); 
+    gpio_put(PIN_CS, 0);
     spi_write_blocking(spi0, &cmd, 1);
-    gpio_put(DISPLAY_CS_PIN, 1);
-    return DISPLAY_OK;
+    gpio_put(PIN_CS, 1);
+    return DISP_OK;
 }
 
-static display_error_t display_write_data(uint8_t data) {
-    if (!display_initialized) return DISPLAY_ERROR_NOT_INITIALIZED;
+static disp_error_t write_data(const uint8_t *data, size_t len) {
+    if (!data || len == 0) return DISP_ERROR(DISP_ERR_NULL_POINTER, "bad data");
+    wait_dma(1000);
+    gpio_put(PIN_DC, 1); 
+    gpio_put(PIN_CS, 0);
     
-    dma_wait_for_finish();
-    gpio_put(DISPLAY_DC_PIN, 1);
-    gpio_put(DISPLAY_CS_PIN, 0);
-    spi_write_blocking(spi0, &data, 1);
-    gpio_put(DISPLAY_CS_PIN, 1);
-    return DISPLAY_OK;
-}
-
-static display_error_t display_write_data_buf(uint8_t *data, size_t len) {
-    if (!display_initialized) return DISPLAY_ERROR_NOT_INITIALIZED;
-    if (!data || len == 0) return DISPLAY_ERROR_INVALID_PARAM;
-    
-    dma_wait_for_finish();
-    gpio_put(DISPLAY_DC_PIN, 1);
-    gpio_put(DISPLAY_CS_PIN, 0);
-    
-    display_error_t result = DISPLAY_OK;
-    if (len > 64) { // Use DMA for larger transfers
-        result = dma_spi_write_buffer(data, len);
-        dma_wait_for_finish();
+    if (g.dma_enabled && len > 64) {
+        g.dma_busy = true;
+        dma_channel_config c = dma_channel_get_default_config(g.dma_channel);
+        channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+        channel_config_set_dreq(&c, spi_get_dreq(spi0, true));
+        channel_config_set_read_increment(&c, true);
+        channel_config_set_write_increment(&c, false);
+        dma_channel_configure(g.dma_channel, &c, &spi_get_hw(spi0)->dr, data, len, true);
+        wait_dma(1000);
     } else {
         spi_write_blocking(spi0, data, len);
     }
-    
-    gpio_put(DISPLAY_CS_PIN, 1);
-    return result;
+    gpio_put(PIN_CS, 1);
+    return DISP_OK;
 }
 
-static display_error_t display_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-    display_error_t result;
-    
-    if ((result = display_write_command(0x2A)) != DISPLAY_OK) return result; // CASET
-    if ((result = display_write_data(x0 >> 8)) != DISPLAY_OK) return result;
-    if ((result = display_write_data(x0 & 0xFF)) != DISPLAY_OK) return result;
-    if ((result = display_write_data(x1 >> 8)) != DISPLAY_OK) return result;
-    if ((result = display_write_data(x1 & 0xFF)) != DISPLAY_OK) return result;
-
-    if ((result = display_write_command(0x2B)) != DISPLAY_OK) return result; // RASET
-    if ((result = display_write_data(y0 >> 8)) != DISPLAY_OK) return result;
-    if ((result = display_write_data(y0 & 0xFF)) != DISPLAY_OK) return result;
-    if ((result = display_write_data(y1 >> 8)) != DISPLAY_OK) return result;
-    if ((result = display_write_data(y1 & 0xFF)) != DISPLAY_OK) return result;
-    
-    if ((result = display_write_command(0x2C)) != DISPLAY_OK) return result; // RAMWR
-    
-    return DISPLAY_OK;
+static disp_error_t set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+    uint8_t buf[4];
+    write_cmd(0x2A); // CASET
+    buf[0] = x0 >> 8; buf[1] = x0 & 0xFF; buf[2] = x1 >> 8; buf[3] = x1 & 0xFF;
+    write_data(buf, 4);
+    write_cmd(0x2B); // RASET
+    buf[0] = y0 >> 8; buf[1] = y0 & 0xFF; buf[2] = y1 >> 8; buf[3] = y1 & 0xFF;
+    write_data(buf, 4);
+    return write_cmd(0x2C); // RAMWR
 }
 
-// Public display functions with robust error handling
-display_error_t display_pack_init(void) {
-    if (display_initialized) return DISPLAY_OK;
+static disp_error_t lcd_init_sequence(void) {
+    disp_error_t e;
+    printf("DEBUG: Starting LCD init sequence\n");
     
-    // Init SPI (reduced speed for stability)
-    if (spi_init(spi0, 31250000) == 0) return DISPLAY_ERROR_INIT_FAILED;
-    gpio_set_function(DISPLAY_CLK_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(DISPLAY_MOSI_PIN, GPIO_FUNC_SPI);
+    if ((e = write_cmd(0x01)) != DISP_OK) return e; 
+    sleep_ms(150); 
+    printf("DEBUG: Software reset done\n");
     
-    // Init control pins
-    gpio_init(DISPLAY_CS_PIN);
-    gpio_init(DISPLAY_DC_PIN);
-    gpio_init(DISPLAY_RESET_PIN);
-    gpio_init(DISPLAY_BL_PIN);
+    if ((e = write_cmd(0x11)) != DISP_OK) return e; 
+    sleep_ms(255);  // Increased delay - some displays need this
+    printf("DEBUG: Sleep out done\n");
     
-    gpio_set_dir(DISPLAY_CS_PIN, GPIO_OUT);
-    gpio_set_dir(DISPLAY_DC_PIN, GPIO_OUT);
-    gpio_set_dir(DISPLAY_RESET_PIN, GPIO_OUT);
-    gpio_set_dir(DISPLAY_BL_PIN, GPIO_OUT);
+    // Pixel format - 16-bit RGB565
+    if ((e = write_cmd(0x3A)) != DISP_OK) return e;
+    if ((e = write_data((uint8_t[]){0x55}, 1)) != DISP_OK) return e;
+    printf("DEBUG: Pixel format set\n");
     
-    // Start with everything in known state
-    gpio_put(DISPLAY_CS_PIN, 1);
-    gpio_put(DISPLAY_DC_PIN, 1);
-    gpio_put(DISPLAY_BL_PIN, 0);
+    // Memory access control - try different rotation values
+    if ((e = write_cmd(0x36)) != DISP_OK) return e;
+    if ((e = write_data((uint8_t[]){0x70}, 1)) != DISP_OK) return e;  // Try 0x70 instead of 0x60
+    printf("DEBUG: MADCTL set\n");
     
-    // Hardware reset
-    gpio_put(DISPLAY_RESET_PIN, 1);
-    sleep_ms(10);
-    gpio_put(DISPLAY_RESET_PIN, 0);
-    sleep_ms(10);
-    gpio_put(DISPLAY_RESET_PIN, 1);
-    sleep_ms(120);
+    if ((e = write_cmd(0x21)) != DISP_OK) return e; 
+    printf("DEBUG: Inversion on\n");
     
-    display_initialized = true; // Set before using display commands
+    if ((e = write_cmd(0x13)) != DISP_OK) return e; 
+    printf("DEBUG: Normal display mode\n");
     
-    // Init DMA
-    if (dma_init() != DISPLAY_OK) {
-        // Continue without DMA - not critical
+    if ((e = write_cmd(0x29)) != DISP_OK) return e; 
+    sleep_ms(100);
+    printf("DEBUG: Display on\n");
+    
+    return DISP_OK;
+}
+
+disp_config_t disp_get_default_config(void) {
+    return (disp_config_t){
+        .spi_baudrate = 62500000,  // Max speed for smooth updates
+        .use_dma = true,           // Enable DMA for performance
+        .dma_timeout_ms = 1000,
+        .enable_backlight = true
+    };
+}
+
+disp_error_t disp_init(const disp_config_t *cfg) {
+    if (g.initialized) return DISP_ERROR(DISP_ERR_ALREADY_INIT, "already init");
+    g.config = cfg ? *cfg : disp_get_default_config();
+
+    printf("DEBUG: Init SPI at %lu Hz\n", (unsigned long)g.config.spi_baudrate);
+    spi_init(spi0, g.config.spi_baudrate);
+    
+    // Set SPI format - Mode 0 (CPOL=0, CPHA=0)
+    spi_set_format(spi0, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+    
+    gpio_set_function(PIN_CLK, GPIO_FUNC_SPI);
+    gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);
+
+    gpio_init(PIN_CS); gpio_set_dir(PIN_CS, GPIO_OUT); gpio_put(PIN_CS, 1);
+    gpio_init(PIN_DC); gpio_set_dir(PIN_DC, GPIO_OUT);
+    gpio_init(PIN_RST); gpio_set_dir(PIN_RST, GPIO_OUT); gpio_put(PIN_RST, 1);
+    gpio_init(PIN_BL); gpio_set_dir(PIN_BL, GPIO_OUT); gpio_put(PIN_BL, 0);  // Start off
+
+    printf("DEBUG: Hardware reset\n");
+    gpio_put(PIN_RST, 0); 
+    sleep_ms(20);  // Increased delay
+    gpio_put(PIN_RST, 1); 
+    sleep_ms(150);  // Increased delay
+
+    disp_error_t e = lcd_init_sequence();
+    if (e != DISP_OK) {
+        printf("DEBUG: LCD init sequence failed: %s\n", disp_error_string(e));
+        return e;
+    }
+
+    if (g.config.use_dma) {
+        if (dma_init() != DISP_OK) {
+            printf("DEBUG: DMA init failed, continuing without DMA\n");
+            g.config.use_dma = false;
+        }
     }
     
-    // ST7789V2 init sequence
-    display_error_t result;
-    if ((result = display_write_command(0x01)) != DISPLAY_OK) goto init_error; // SWRESET
-    sleep_ms(150);
-    
-    if ((result = display_write_command(0x11)) != DISPLAY_OK) goto init_error; // SLPOUT
-    sleep_ms(120);
-    
-    if ((result = display_write_command(0x3A)) != DISPLAY_OK) goto init_error; // COLMOD
-    if ((result = display_write_data(0x55)) != DISPLAY_OK) goto init_error;    // 16-bit RGB565
-    
-    if ((result = display_write_command(0x36)) != DISPLAY_OK) goto init_error; // MADCTL
-    if ((result = display_write_data(0x70)) != DISPLAY_OK) goto init_error;    // Row/Column exchange, RGB order
-    
-    // Set display area to full 320x240
-    if ((result = display_write_command(0x2A)) != DISPLAY_OK) goto init_error; // CASET
-    if ((result = display_write_data(0x00)) != DISPLAY_OK) goto init_error;
-    if ((result = display_write_data(0x00)) != DISPLAY_OK) goto init_error;
-    if ((result = display_write_data(0x01)) != DISPLAY_OK) goto init_error;
-    if ((result = display_write_data(0x3F)) != DISPLAY_OK) goto init_error;
+    if (g.config.enable_backlight) {
+        printf("DEBUG: Enabling backlight\n");
+        gpio_put(PIN_BL, 1);
+    }
 
-    if ((result = display_write_command(0x2B)) != DISPLAY_OK) goto init_error; // RASET
-    if ((result = display_write_data(0x00)) != DISPLAY_OK) goto init_error;
-    if ((result = display_write_data(0x00)) != DISPLAY_OK) goto init_error;
-    if ((result = display_write_data(0x00)) != DISPLAY_OK) goto init_error;
-    if ((result = display_write_data(0xEF)) != DISPLAY_OK) goto init_error;
-    
-    // Additional settings (continue even if some fail)
-    display_write_command(0xB2); // PORCTRL
-    display_write_data(0x0C);
-    display_write_data(0x0C);
-    display_write_data(0x00);
-    display_write_data(0x33);
-    display_write_data(0x33);
-    
-    display_write_command(0xB7); // GCTRL
-    display_write_data(0x35);
-    
-    display_write_command(0xBB); // VCOMS
-    display_write_data(0x19);
-    
-    display_write_command(0xC0); // LCMCTRL
-    display_write_data(0x2C);
-    
-    display_write_command(0xC2); // VDVVRHEN
-    display_write_data(0x01);
-    
-    display_write_command(0xC3); // VRHS
-    display_write_data(0x12);
-    
-    display_write_command(0xC4); // VDVS
-    display_write_data(0x20);
-    
-    display_write_command(0xC6); // FRCTRL2
-    display_write_data(0x0F);
-    
-    display_write_command(0xD0); // PWCTRL1
-    display_write_data(0xA4);
-    display_write_data(0xA1);
-    
-    // Gamma correction (continue even if fails)
-    display_write_command(0xE0);
-    display_write_data(0xD0); display_write_data(0x04); display_write_data(0x0D);
-    display_write_data(0x11); display_write_data(0x13); display_write_data(0x2B);
-    display_write_data(0x3F); display_write_data(0x54); display_write_data(0x4C);
-    display_write_data(0x18); display_write_data(0x0D); display_write_data(0x0B);
-    display_write_data(0x1F); display_write_data(0x23);
-    
-    display_write_command(0xE1);
-    display_write_data(0xD0); display_write_data(0x04); display_write_data(0x0C);
-    display_write_data(0x11); display_write_data(0x13); display_write_data(0x2C);
-    display_write_data(0x3F); display_write_data(0x44); display_write_data(0x51);
-    display_write_data(0x2F); display_write_data(0x1F); display_write_data(0x1F);
-    display_write_data(0x20); display_write_data(0x23);
-    
-    display_write_command(0x21); // INVON
-    display_write_command(0x13); // NORON
-    sleep_ms(10);
-    display_write_command(0x29); // DISPON
-    sleep_ms(100);
-    
-    // Turn on backlight
-    gpio_put(DISPLAY_BL_PIN, 1);
-    
-    return DISPLAY_OK;
-
-init_error:
-    display_initialized = false;
-    return result;
+    g.initialized = true;
+    printf("DEBUG: Display init successfully\n");
+    return DISP_OK;
 }
 
-display_error_t display_clear(uint16_t color) {
-    return display_fill_rect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, color);
+disp_error_t disp_deinit(void) {
+    if (!g.initialized) return DISP_ERROR(DISP_ERR_NOT_INIT, "not init");
+    gpio_put(PIN_BL, 0);
+    disp_framebuffer_free();  // Clean up framebuffer if allocated
+    dma_deinit();
+    spi_deinit(spi0);
+    g.initialized = false;
+    return DISP_OK;
 }
 
-display_error_t display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color) {
-    if (!display_initialized) return DISPLAY_ERROR_NOT_INITIALIZED;
-    if (x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) return DISPLAY_ERROR_INVALID_PARAM;
+bool disp_is_initialized(void) { return g.initialized; }
+
+disp_error_t disp_clear(uint16_t color) {
+    printf("DEBUG: Clearing screen to color 0x%04X\n", color);
+    return disp_fill_rect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, color);
+}
+
+disp_error_t disp_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
+    if (!g.initialized) return DISP_ERROR(DISP_ERR_NOT_INIT, "not init");
+    if (x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) return DISP_ERROR(DISP_ERR_INVALID_COORDS, "bad pos");
+    if (x + w > DISPLAY_WIDTH)  w = DISPLAY_WIDTH  - x;
+    if (y + h > DISPLAY_HEIGHT) h = DISPLAY_HEIGHT - y;
+    if (w == 0 || h == 0) return DISP_OK;
+
+    set_window(x, y, x + w - 1, y + h - 1);
+    uint8_t buf[2] = {color >> 8, color & 0xFF};
+    uint32_t pixels = (uint32_t)w * h;
+
+    gpio_put(PIN_DC, 1); 
+    gpio_put(PIN_CS, 0);
     
-    // Clamp dimensions to display bounds
-    if (x + width > DISPLAY_WIDTH) width = DISPLAY_WIDTH - x;
-    if (y + height > DISPLAY_HEIGHT) height = DISPLAY_HEIGHT - y;
-    if (width == 0 || height == 0) return DISPLAY_OK;
-    
-    uint32_t pixel_count = width * height;
-    
-    display_error_t result = display_set_window(x, y, x + width - 1, y + height - 1);
-    if (result != DISPLAY_OK) return result;
-    
-    // Prepare color data
-    uint8_t color_bytes[2] = {color >> 8, color & 0xFF};
-    dma_single_pixel[0] = color_bytes[0];
-    dma_single_pixel[1] = color_bytes[1];
-    
-    gpio_put(DISPLAY_DC_PIN, 1);
-    gpio_put(DISPLAY_CS_PIN, 0);
-    
-    if (pixel_count > 32 && dma_initialized) {
-        // Use DMA for large fills
-        size_t buffer_pixels = sizeof(dma_fill_buffer) / 2;
-        for (size_t i = 0; i < buffer_pixels; i++) {
-            dma_fill_buffer[i * 2] = color_bytes[0];
-            dma_fill_buffer[i * 2 + 1] = color_bytes[1];
+    if (g.dma_enabled && pixels > 32) {
+        // Build a 512-byte block (256 pixels) for efficient DMA
+        static uint8_t block[512];
+        for (int i = 0; i < 256; i++) {
+            block[i*2] = buf[0];
+            block[i*2+1] = buf[1];
         }
         
-        // Send full buffer chunks
-        uint32_t full_chunks = pixel_count / buffer_pixels;
-        for (uint32_t i = 0; i < full_chunks; i++) {
-            result = dma_spi_write_buffer(dma_fill_buffer, sizeof(dma_fill_buffer));
-            if (result != DISPLAY_OK) break;
-            dma_wait_for_finish();
+        // Send 256-pixel chunks via DMA
+        while (pixels >= 256) {
+            g.dma_busy = true;
+            dma_channel_config c = dma_channel_get_default_config(g.dma_channel);
+            channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+            channel_config_set_dreq(&c, spi_get_dreq(spi0, true));
+            channel_config_set_read_increment(&c, true);
+            channel_config_set_write_increment(&c, false);
+            dma_channel_configure(g.dma_channel, &c, &spi_get_hw(spi0)->dr, block, 512, true);
+            wait_dma(1000);
+            pixels -= 256;
         }
         
-        // Send remaining pixels
-        if (result == DISPLAY_OK) {
-            uint32_t remaining = pixel_count % buffer_pixels;
-            if (remaining > 0) {
-                result = dma_spi_write_buffer(dma_fill_buffer, remaining * 2);
-                dma_wait_for_finish();
-            }
+        // Handle remainder with blocking write
+        if (pixels > 0) {
+            spi_write_blocking(spi0, block, pixels * 2);
         }
     } else {
-        // Use blocking SPI for small fills
-        for (uint32_t i = 0; i < pixel_count; i++) {
-            spi_write_blocking(spi0, color_bytes, 2);
+        // Small fills - use blocking
+        for (uint32_t i = 0; i < pixels; i++) {
+            spi_write_blocking(spi0, buf, 2);
         }
     }
     
-    gpio_put(DISPLAY_CS_PIN, 1);
-    return result;
+    gpio_put(PIN_CS, 1);
+    return DISP_OK;
 }
 
-display_error_t display_draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
-    if (x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) return DISPLAY_ERROR_INVALID_PARAM;
-    return display_fill_rect(x, y, 1, 1, color);
+disp_error_t disp_draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
+    return disp_fill_rect(x, y, 1, 1, color);
 }
 
-display_error_t display_blit_full(const uint16_t *pixels) {
-    if (!display_initialized) return DISPLAY_ERROR_NOT_INITIALIZED;
-    if (!pixels) return DISPLAY_ERROR_INVALID_PARAM;
-
-    display_error_t result = display_set_window(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
-    if (result != DISPLAY_OK) return result;
-
-    dma_wait_for_finish();
-    gpio_put(DISPLAY_DC_PIN, 1);
-    gpio_put(DISPLAY_CS_PIN, 0);
-
-    result = dma_spi_write_buffer((uint8_t *)pixels, DISPLAY_WIDTH * DISPLAY_HEIGHT * 2);
-    dma_wait_for_finish();
-
-    gpio_put(DISPLAY_CS_PIN, 1);
-    return result;
+disp_error_t disp_blit(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *pixels) {
+    if (!g.initialized) return DISP_ERROR(DISP_ERR_NOT_INIT, "not init");
+    if (!pixels) return DISP_ERROR(DISP_ERR_NULL_POINTER, "null");
+    if (x + w > DISPLAY_WIDTH || y + h > DISPLAY_HEIGHT) return DISP_ERROR(DISP_ERR_INVALID_COORDS, "bad size");
+    set_window(x, y, x + w - 1, y + h - 1);
+    return write_data((const uint8_t*)pixels, w * h * 2);
 }
 
-display_error_t display_draw_char(uint16_t x, uint16_t y, char c, uint16_t color, uint16_t bg_color) {
-    if (!display_initialized) return DISPLAY_ERROR_NOT_INITIALIZED;
-    if (x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) return DISPLAY_ERROR_INVALID_PARAM;
-    
-    if (c < 32 || c > 90) c = 32; // Space for unsupported chars
-    
-    const uint8_t *char_data = font5x8[c - 32];
-    
-    // Draw character bitmap with bounds checking
-    for (int col = 0; col < 5 && (x + col) < DISPLAY_WIDTH; col++) {
-        uint8_t line = char_data[4 - col]; // Reverse column order
-        for (int row = 0; row < 8 && (y + row) < DISPLAY_HEIGHT; row++) {
-            uint16_t pixel_color = (line & (1 << row)) ? color : bg_color;
-            display_error_t result = display_draw_pixel(x + col, y + row, pixel_color);
-            if (result != DISPLAY_OK) return result;
+disp_error_t disp_draw_char(uint16_t x, uint16_t y, char c, uint16_t fg, uint16_t bg) {
+    if (c < 32 || c > 127) c = ' ';
+    const uint8_t *glyph = FONT_5X8[c - 32];
+    for (int col = 0; col < 5 && x + col < DISPLAY_WIDTH; col++) {
+        uint8_t line = glyph[col];
+        for (int row = 0; row < 8 && y + row < DISPLAY_HEIGHT; row++) {
+            uint16_t colr = (line & (1 << row)) ? fg : bg;
+            disp_draw_pixel(x + col, y + row, colr);
         }
     }
-    return DISPLAY_OK;
+    return DISP_OK;
 }
 
-display_error_t display_draw_string(uint16_t x, uint16_t y, const char* str, uint16_t color, uint16_t bg_color) {
-    if (!display_initialized) return DISPLAY_ERROR_NOT_INITIALIZED;
-    if (!str) return DISPLAY_ERROR_INVALID_PARAM;
-    if (x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) return DISPLAY_ERROR_INVALID_PARAM;
-    
-    int offset_x = 0;
-    while (*str && (x + offset_x) < DISPLAY_WIDTH) {
-        display_error_t result = display_draw_char(x + offset_x, y, *str, color, bg_color);
-        if (result != DISPLAY_OK) return result;
-        offset_x += 6; // 5 pixel font + 1 pixel spacing
-        str++;
+disp_error_t disp_draw_text(uint16_t x, uint16_t y, const char *txt, uint16_t fg, uint16_t bg) {
+    while (*txt && x < DISPLAY_WIDTH) {
+        disp_draw_char(x, y, *txt++, fg, bg);
+        x += 6;
     }
-    return DISPLAY_OK;
+    return DISP_OK;
 }
 
-display_error_t display_set_backlight(bool on) {
-    if (!display_initialized) return DISPLAY_ERROR_NOT_INITIALIZED;
-    gpio_put(DISPLAY_BL_PIN, on ? 1 : 0);
-    return DISPLAY_OK;
+disp_error_t disp_set_backlight(bool on) {
+    gpio_put(PIN_BL, on);
+    return DISP_OK;
 }
 
-// Button functions with robust error handling
-display_error_t buttons_init(void) {
-    if (buttons_initialized) return DISPLAY_OK;
+disp_error_t disp_wait_complete(uint32_t ms) { return wait_dma(ms); }
+
+
+// Allocate a full-screen framebuffer for double-buffered rendering
+// Here Pico 2 or Pico 2W should be enough
+disp_error_t disp_framebuffer_alloc(void) {
+    if (g.framebuffer) return DISP_OK;  // Already allocated
     
+    size_t size = DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(uint16_t);
+    g.framebuffer = (uint16_t*)malloc(size);
+    
+    if (!g.framebuffer) {
+        printf("DEBUG: Failed to allocate framebuffer (%zu bytes)\n", size);
+        return DISP_ERROR(DISP_ERR_NULL_POINTER, "framebuffer alloc failed");
+    }
+    
+    printf("DEBUG: Framebuffer allocated (%zu bytes)\n", size);
+    memset(g.framebuffer, 0, size);
+    return DISP_OK;
+}
+
+void disp_framebuffer_free(void) {
+    if (g.framebuffer) {
+        free(g.framebuffer);
+        g.framebuffer = NULL;
+        printf("DEBUG: Framebuffer freed\n");
+    }
+}
+
+uint16_t* disp_get_framebuffer(void) {
+    return g.framebuffer;
+}
+
+disp_error_t disp_framebuffer_clear(uint16_t color) {
+    if (!g.framebuffer) return DISP_ERROR(DISP_ERR_NULL_POINTER, "no framebuffer");
+    
+    uint32_t pixels = DISPLAY_WIDTH * DISPLAY_HEIGHT;
+    for (uint32_t i = 0; i < pixels; i++) {
+        g.framebuffer[i] = color;
+    }
+    return DISP_OK;
+}
+
+void disp_framebuffer_set_pixel(uint16_t x, uint16_t y, uint16_t color) {
+    if (!g.framebuffer || x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) return;
+    g.framebuffer[y * DISPLAY_WIDTH + x] = color;
+}
+
+disp_error_t disp_framebuffer_flush(void) {
+    if (!g.initialized) return DISP_ERROR(DISP_ERR_NOT_INIT, "not init");
+    if (!g.framebuffer) return DISP_ERROR(DISP_ERR_NULL_POINTER, "no framebuffer");
+    
+    // Send entire framebuffer to display in one operation
+    set_window(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
+    
+    // Convert to big-endian bytes for display
+    size_t total_bytes = DISPLAY_WIDTH * DISPLAY_HEIGHT * 2;
+    
+    gpio_put(PIN_DC, 1);
+    gpio_put(PIN_CS, 0);
+    
+    if (g.dma_enabled) {
+        // Use DMA for maximum speed
+        g.dma_busy = true;
+        dma_channel_config c = dma_channel_get_default_config(g.dma_channel);
+        channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+        channel_config_set_dreq(&c, spi_get_dreq(spi0, true));
+        channel_config_set_read_increment(&c, true);
+        channel_config_set_write_increment(&c, false);
+        dma_channel_configure(g.dma_channel, &c, &spi_get_hw(spi0)->dr, 
+                            (uint8_t*)g.framebuffer, total_bytes, true);
+        wait_dma(1000);
+    } else {
+        spi_write_blocking(spi0, (uint8_t*)g.framebuffer, total_bytes);
+    }
+    
+    gpio_put(PIN_CS, 1);
+    return DISP_OK;
+}
+
+// Framebuffer drawing functions
+void disp_framebuffer_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
+    if (!g.framebuffer) return;
+    
+    // Clip to screen bounds
+    if (x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) return;
+    if (x + w > DISPLAY_WIDTH) w = DISPLAY_WIDTH - x;
+    if (y + h > DISPLAY_HEIGHT) h = DISPLAY_HEIGHT - y;
+    
+    for (uint16_t dy = 0; dy < h; dy++) {
+        for (uint16_t dx = 0; dx < w; dx++) {
+            g.framebuffer[(y + dy) * DISPLAY_WIDTH + (x + dx)] = color;
+        }
+    }
+}
+
+void disp_framebuffer_draw_char(uint16_t x, uint16_t y, char c, uint16_t fg, uint16_t bg) {
+    if (!g.framebuffer) return;
+    if (c < 32 || c > 127) c = ' ';
+    
+    const uint8_t *glyph = FONT_5X8[c - 32];
+    for (int col = 0; col < 5 && x + col < DISPLAY_WIDTH; col++) {
+        uint8_t line = glyph[col];
+        for (int row = 0; row < 8 && y + row < DISPLAY_HEIGHT; row++) {
+            uint16_t color = (line & (1 << row)) ? fg : bg;
+            g.framebuffer[(y + row) * DISPLAY_WIDTH + (x + col)] = color;
+        }
+    }
+}
+
+void disp_framebuffer_draw_text(uint16_t x, uint16_t y, const char *txt, uint16_t fg, uint16_t bg) {
+    if (!g.framebuffer || !txt) return;
+    
+    while (*txt && x < DISPLAY_WIDTH) {
+        disp_framebuffer_draw_char(x, y, *txt++, fg, bg);
+        x += 6;
+    }
+}
+
+// Buttons
+disp_error_t buttons_init(void) {
+    if (buttons_ready) return DISP_OK;
+
     for (int i = 0; i < BUTTON_COUNT; i++) {
         gpio_init(button_pins[i]);
         gpio_set_dir(button_pins[i], GPIO_IN);
         gpio_pull_up(button_pins[i]);
-        button_state[i] = true; // Pulled up initially
-        button_last_state[i] = true;
-        button_callbacks[i] = NULL;
+        
+        // Read initial state (active low, so invert)
+        bool raw = !gpio_get(button_pins[i]);
+        
+        btn_state[i] = raw;
+        btn_raw_state[i] = raw;
+        btn_pressed[i] = false;
+        btn_released[i] = false;
+        btn_debounce_time[i] = to_ms_since_boot(get_absolute_time());
     }
     
-    buttons_initialized = true;
-    return DISPLAY_OK;
+    buttons_ready = true;
+    printf("DEBUG: Buttons initialized\n");
+    return DISP_OK;
 }
 
 void buttons_update(void) {
-    if (!buttons_initialized) return;
-    
-    uint32_t now = get_time_ms();
-    
-    // Debounce - only check buttons every 50ms
-    if (now - last_button_check < 50) return;
-    last_button_check = now;
-    
+    if (!buttons_ready) return;
+
+    uint32_t now = to_ms_since_boot(get_absolute_time());
+
     for (int i = 0; i < BUTTON_COUNT; i++) {
-        button_last_state[i] = button_state[i];
-        button_state[i] = gpio_get(button_pins[i]);
+        // Read current raw state (active low - pressed = 0, so invert)
+        bool current_raw = !gpio_get(button_pins[i]);
         
-        // Call callback if button was just pressed and callback exists
-        if (button_last_state[i] && !button_state[i] && button_callbacks[i]) {
-            // Extra safety: check callback is still valid before calling
-            if (button_callbacks[i] != NULL) {
-                button_callbacks[i]((button_t)i);
+        // Clear edge flags at start of each update
+        btn_pressed[i] = false;
+        btn_released[i] = false;
+        
+        // Check if raw state changed
+        if (current_raw != btn_raw_state[i]) {
+            // State changed - start debounce timer
+            btn_raw_state[i] = current_raw;
+            btn_debounce_time[i] = now;
+        }
+        
+        // Check if enough time has passed for debounce
+        if (now - btn_debounce_time[i] >= DEBOUNCE_MS) {
+            // Debounce time expired, check if debounced state should change
+            if (btn_raw_state[i] != btn_state[i]) {
+                // State confirmed changed after debounce period
+                bool old_state = btn_state[i];
+                btn_state[i] = btn_raw_state[i];
+                
+                // Detect edges
+                if (btn_state[i] && !old_state) {
+                    // Rising edge - button pressed
+                    btn_pressed[i] = true;
+                    
+                    // Fire callback on press
+                    if (button_cb[i]) {
+                        printf("DEBUG: Button %d pressed (callback)\n", i);
+                        button_cb[i]((button_t)i);
+                    }
+                }
+                else if (!btn_state[i] && old_state) {
+                    // Falling edge - button released
+                    btn_released[i] = true;
+                    printf("DEBUG: Button %d released\n", i);
+                }
             }
         }
     }
 }
 
-bool button_pressed(button_t button) {
-    if (!buttons_initialized || button >= BUTTON_COUNT) return false;
-    return !button_state[button]; // Inverted because of pull-up
+bool button_pressed(button_t b) {
+    // Returns true if button is currently held down
+    return (b < BUTTON_COUNT) ? btn_state[b] : false;
 }
 
-bool button_just_pressed(button_t button) {
-    if (!buttons_initialized || button >= BUTTON_COUNT) return false;
-    return button_last_state[button] && !button_state[button];
+bool button_just_pressed(button_t b) {
+    // Returns true for ONE update cycle after press
+    return (b < BUTTON_COUNT) ? btn_pressed[b] : false;
 }
 
-bool button_just_released(button_t button) {
-    if (!buttons_initialized || button >= BUTTON_COUNT) return false;
-    return !button_last_state[button] && button_state[button];
+bool button_just_released(button_t b) {
+    // Returns true for ONE update cycle after release
+    return (b < BUTTON_COUNT) ? btn_released[b] : false;
 }
 
-display_error_t button_set_callback(button_t button, button_callback_t callback) {
-    if (!buttons_initialized) return DISPLAY_ERROR_NOT_INITIALIZED;
-    if (button >= BUTTON_COUNT) return DISPLAY_ERROR_INVALID_PARAM;
-    
-    // Disable interrupts briefly to ensure atomic update
-    uint32_t interrupts = save_and_disable_interrupts();
-    button_callbacks[button] = callback;
-    restore_interrupts(interrupts);
-    
-    return DISPLAY_OK;
+disp_error_t button_set_callback(button_t b, button_callback_t cb) {
+    if (b >= BUTTON_COUNT) return DISP_ERROR(DISP_ERR_INVALID_DIMENSIONS, "invalid button");
+    button_cb[b] = cb;
+    return DISP_OK;
 }
-
-// Utility functions
-bool display_is_initialized(void) {
-    return display_initialized;
-}
-
-bool display_dma_busy(void) {
-    return dma_busy;
-}
-
-void display_wait_for_dma(void) {
-    dma_wait_for_finish();
-}
-
-const char* display_error_string(display_error_t error) {
-    if (error < 0 || error >= (sizeof(error_strings) / sizeof(error_strings[0]))) {
-        return "Unknown error";
-    }
-    return error_strings[error];
-}
-
-// Function to deinit DMA safely
-static void display_dma_deinit(void) {
-    if (dma_initialized) {
-        // Wait for any pending operations
-        dma_wait_for_finish();
-        
-        // Disable interrupt and unclaim channel
-        if (dma_channel >= 0) {
-            dma_channel_set_irq0_enabled(dma_channel, false);
-            dma_channel_unclaim(dma_channel);
-        }
-        
-        irq_set_enabled(DMA_IRQ_0, false);
-        dma_initialized = false;
-        dma_channel = -1;
-    }
-}
-
-// Cleanup function to be called at program end
-void display_cleanup(void) {
-    // Wait for any pending DMA operations
-    display_wait_for_dma();
-    
-    // Clean up DMA
-    display_dma_deinit();
-    
-    // Clean up SPI
-    if (display_initialized) {
-        spi_deinit(spi0);
-        gpio_put(DISPLAY_BL_PIN, 0); // Turn off backlight
-    }
-    
-    // Reset init flags
-    display_initialized = false;
-    buttons_initialized = false;
-    
-    // Clear button callbacks
-    for (int i = 0; i < BUTTON_COUNT; i++) {
-        button_callbacks[i] = NULL;
-    }
-}
-
