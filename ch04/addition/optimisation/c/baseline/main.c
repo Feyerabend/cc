@@ -175,7 +175,7 @@ void init_bunkers(void) {
     }
 }
 
-// Initialize game
+// Init game
 void init_game(void) {
     memset(&game, 0, sizeof(game_state_t));
     
@@ -296,7 +296,7 @@ void update_projectiles(void) {
     
     // Update bombs (move down)
     for (int i = 0; i < MAX_BOMBS; i++) {
-        if (game.bombs[i].active) {
+        if (game.bombs[i].active) { 
             game.bombs[i].y += BOMB_SPEED;
             
             // Remove if off screen
@@ -431,15 +431,15 @@ void check_collisions(void) {
 
 // Handle input
 void handle_input(void) {
-    // Move left
-    if (button_pressed(BUTTON_A)) {
+    // Move left 
+    if (button_pressed(BUTTON_B)) {
         if (game.player.x > 0) {
             game.player.x -= PLAYER_SPEED;
         }
-    }
+    } 
     
     // Move right
-    if (button_pressed(BUTTON_B)) {
+    if (button_pressed(BUTTON_Y)) {
         if (game.player.x < DISPLAY_WIDTH - game.player.width) {
             game.player.x += PLAYER_SPEED;
         }
@@ -570,13 +570,13 @@ void render_game(void) {
 
 // Main
 int main() {
-    stdio_init_all();
+    stdio_init_all(); 
     
     printf("Space Invaders - Baseline Version\n\n");
     printf("This is the clean reference implementation.\n");
     printf("Controls:\n");
-    printf("  A - Move left\n");
-    printf("  B - Move right\n");
+    printf("  B - Move left\n");
+    printf("  Y - Move right\n");
     printf("  X - Fire / Restart\n");
     printf("\n");
     

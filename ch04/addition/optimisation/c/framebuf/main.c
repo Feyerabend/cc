@@ -5,7 +5,7 @@
  * - Drawing directly to display (slow, causes tearing)
  * - Using a framebuffer (fast, smooth)
  * 
- * Press Y to toggle between modes and see the difference!
+ * Press A to toggle between modes and see the difference!
  */
 
 #include <stdio.h>

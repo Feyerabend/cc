@@ -13,7 +13,7 @@
  * - Game reset
  * 
  * Performance features:
- * - Press Y to toggle: Simple vs Spatial Grid collision
+ * - Press A to toggle: Simple vs Spatial Grid collision
  * - On-screen FPS, collision checks, frame time
  * - Compare algorithms in real-time
  */
@@ -572,10 +572,10 @@ void handle_input(void) {
     buttons_update();
     
     // Movement
-    if (button_pressed(BUTTON_A) && player.x > 0) {
+    if (button_pressed(BUTTON_B) && player.x > 0) {
         player.x -= PLAYER_SPEED;
     }
-    if (button_pressed(BUTTON_B) && player.x < DISPLAY_WIDTH - player.width) {
+    if (button_pressed(BUTTON_Y) && player.x < DISPLAY_WIDTH - player.width) {
         player.x += PLAYER_SPEED;
     }
     
@@ -590,7 +590,7 @@ void handle_input(void) {
     }
     
     // Toggle collision mode
-    if (button_just_pressed(BUTTON_Y)) {
+    if (button_just_pressed(BUTTON_A)) {
         collision_mode = (collision_mode == COLLISION_SIMPLE) ? 
                          COLLISION_SPATIAL_GRID : COLLISION_SIMPLE;
         printf("\n=== Switched to %s ===\n",
@@ -740,9 +740,9 @@ int main() {
     
     printf("COMPLETE Space Invaders - Algorithm Comparison\n");
     printf("Controls:\n");
-    printf("  A/B - Move left/right\n");
+    printf("  B/Y - Move left/right\n");
     printf("  X - Fire / Restart\n");
-    printf("  Y - Toggle collision mode (Simple vs Spatial Grid)\n");
+    printf("  A - Toggle collision mode (Simple vs Spatial Grid)\n");
     printf("\nWatch the performance stats on screen!\n\n");
     
     // Init hardware
@@ -762,7 +762,7 @@ int main() {
         return 1;
     }
     
-    printf("Hardware initialized successfully!\n\n");
+    printf("Hardware init successfully!\n\n");
     
     // Init game
     init_game();

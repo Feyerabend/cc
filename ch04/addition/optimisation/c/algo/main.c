@@ -10,7 +10,7 @@
  * Your mission is to make a project go further
  * from this starting point.
  * 
- * Press Y to toggle: Simple vs Spatial Grid
+ * Press A to toggle: Simple vs Spatial Grid
  * 
  * The profiler here is PART OF THE GAME,
  * not a separate tool.
@@ -221,7 +221,7 @@ void render_performance_hud(void) {
     
     // Instructions
     disp_framebuffer_draw_text(5, DISPLAY_HEIGHT - 15, 
-                               "Y: Toggle Mode", COLOR_CYAN, COLOR_BLACK);
+                               "A: Toggle Mode", COLOR_CYAN, COLOR_BLACK);
 }
 
 // Update FPS counter
@@ -323,10 +323,10 @@ void render_game(void) {
 void handle_input(void) {
     buttons_update();
     
-    if (button_pressed(BUTTON_A) && player.x > 0) {
+    if (button_pressed(BUTTON_B) && player.x > 0) {
         player.x -= 3;
     }
-    if (button_pressed(BUTTON_B) && player.x < DISPLAY_WIDTH - player.width) {
+    if (button_pressed(BUTTON_Y) && player.x < DISPLAY_WIDTH - player.width) {
         player.x += 3;
     }
     if (button_just_pressed(BUTTON_X)) {
@@ -341,11 +341,11 @@ void handle_input(void) {
     }
     
     // Toggle collision mode
-    if (button_just_pressed(BUTTON_Y)) {
+    if (button_just_pressed(BUTTON_A)) {
         collision_mode = (collision_mode == COLLISION_SIMPLE) ? 
                          COLLISION_SPATIAL_GRID : COLLISION_SIMPLE;
         
-        printf("\n=== Switched to %s mode ===\n",
+        printf("\n-- Switched to %s mode --n",
                (collision_mode == COLLISION_SIMPLE) ? "SIMPLE" : "SPATIAL GRID");
     }
 }
@@ -354,7 +354,7 @@ int main() {
     stdio_init_all();
     
     printf("Space Invaders - Algorithm Comparison\n");
-    printf("Press Y to toggle: Simple vs Spatial Grid\n");
+    printf("Press A to toggle: Simple vs Spatial Grid\n");
     printf("Watch FPS and collision check count!\n\n");
     
     disp_config_t config = disp_get_default_config();
