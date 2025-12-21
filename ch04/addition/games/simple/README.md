@@ -403,3 +403,6 @@ import gc
 gc.collect()
 print(f"Free RAM: {gc.mem_free()} bytes")
 ```
+
+![Grid Game](./../../../assets/image/game/grid.png)
+

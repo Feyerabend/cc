@@ -1,16 +1,32 @@
-import picodisplay as display
-import utime
-import urandom
+from picographics import PicoGraphics, DISPLAY_PICO_DISPLAY_2
+import time
+import random
 
-buf = bytearray(display.get_width() * display.get_height() * 2)
-display.init(buf)
+# Init Display Pack 2.0
+display = PicoGraphics(display=DISPLAY_PICO_DISPLAY_2)
 
-WIDTH, HEIGHT = display.get_width(), display.get_height()
+WIDTH = display.get_bounds()[0]  # 320
+HEIGHT = display.get_bounds()[1]  # 240
+
 TILE = 16
-VIEW_W, VIEW_H = WIDTH // TILE, HEIGHT // TILE
+VIEW_W, VIEW_H = WIDTH // TILE, HEIGHT // TILE  # 20x15 tiles visible
 
 WORLD_W, WORLD_H = 40, 30
 
+# Button mappings for Display Pack 2.0
+BUTTON_A = 12
+BUTTON_B = 13
+BUTTON_X = 14
+BUTTON_Y = 15
+
+# Set up buttons
+from machine import Pin
+btn_a = Pin(BUTTON_A, Pin.IN, Pin.PULL_UP)
+btn_b = Pin(BUTTON_B, Pin.IN, Pin.PULL_UP)
+btn_x = Pin(BUTTON_X, Pin.IN, Pin.PULL_UP)
+btn_y = Pin(BUTTON_Y, Pin.IN, Pin.PULL_UP)
+
+# Create color pens (RGB565 format for Display Pack 2.0)
 class Colors:
     WALL = display.create_pen(60, 60, 80)
     FLOOR = display.create_pen(10, 10, 15)
@@ -19,6 +35,10 @@ class Colors:
     BOT_STALK = display.create_pen(255, 0, 0)
     COIN = display.create_pen(255, 215, 0)
     HEALTH = display.create_pen(0, 255, 0)
+    BLACK = display.create_pen(0, 0, 0)
+    WHITE = display.create_pen(255, 255, 255)
+    RED = display.create_pen(255, 0, 0)
+    DARK_RED = display.create_pen(100, 0, 0)
 
 def generate_world():
     world = [[1 for _ in range(WORLD_W)] for _ in range(WORLD_H)]
@@ -26,10 +46,10 @@ def generate_world():
     # Create random rooms
     rooms = []
     for _ in range(8):
-        w = urandom.getrandbits(3) + 4  # 4-11 tiles wide
-        h = urandom.getrandbits(3) + 4
-        x = urandom.getrandbits(5) % (WORLD_W - w - 2) + 1
-        y = urandom.getrandbits(5) % (WORLD_H - h - 2) + 1
+        w = random.randint(4, 11)  # 4-11 tiles wide
+        h = random.randint(4, 11)
+        x = random.randint(1, WORLD_W - w - 2)
+        y = random.randint(1, WORLD_H - h - 2)
         
         # Carve room
         for ry in range(y, y + h):
@@ -54,57 +74,7 @@ def generate_world():
     
     return world, rooms
 
-world, spawn_points = generate_world()
-
-
-game_state = {
-    "score": 0,
-    "health": 100,
-    "time": 0,
-    "game_over": False
-}
-
-def find_empty_tile():
-    for _ in range(100):  # Try 100 times
-        x = urandom.getrandbits(5) % WORLD_W
-        y = urandom.getrandbits(5) % WORLD_H
-        if not is_wall(x, y):
-            return x, y
-    return 5, 5  # Fallback
-
-player = {
-    "x": spawn_points[0][0] if spawn_points else 5,
-    "y": spawn_points[0][1] if spawn_points else 5,
-    "dx": 0,
-    "dy": 0,
-    "color": Colors.PLAYER
-}
-
-bots = []
-for i in range(6):
-    bx, by = find_empty_tile()
-    bots.append({
-        "x": bx,
-        "y": by,
-        "state": "patrol",
-        "timer": urandom.getrandbits(4),
-        "last_seen_x": 0,
-        "last_seen_y": 0,
-        "color": Colors.BOT_PATROL
-    })
-
-# Collectibles
-coins = []
-for _ in range(15):
-    cx, cy = find_empty_tile()
-    coins.append({"x": cx, "y": cy, "collected": False})
-
-health_packs = []
-for _ in range(5):
-    hx, hy = find_empty_tile()
-    health_packs.append({"x": hx, "y": hy, "collected": False})
-
-#  HELPER FUNCTIONS 
+# HELPER FUNCTIONS (define before use!)
 def is_wall(x, y):
     if x < 0 or y < 0 or x >= WORLD_W or y >= WORLD_H:
         return True
@@ -137,6 +107,58 @@ def move_entity(ent, dx, dy):
         return True
     return False
 
+def find_empty_tile():
+    for _ in range(100):  # Try 100 times
+        x = random.randint(0, WORLD_W - 1)
+        y = random.randint(0, WORLD_H - 1)
+        if not is_wall(x, y):
+            return x, y
+    return 5, 5  # Fallback
+
+# Generate world
+world, spawn_points = generate_world()
+
+# Game state
+game_state = {
+    "score": 0,
+    "health": 100,
+    "time": 0,
+    "game_over": False
+}
+
+# Initialize player
+player = {
+    "x": spawn_points[0][0] if spawn_points else 5,
+    "y": spawn_points[0][1] if spawn_points else 5,
+    "dx": 0,
+    "dy": 0,
+    "color": Colors.PLAYER
+}
+
+# Initialize bots
+bots = []
+for i in range(6):
+    bx, by = find_empty_tile()
+    bots.append({
+        "x": bx,
+        "y": by,
+        "state": "patrol",
+        "timer": random.randint(0, 15),
+        "last_seen_x": 0,
+        "last_seen_y": 0,
+        "color": Colors.BOT_PATROL
+    })
+
+# Init collectibles
+coins = []
+for _ in range(15):
+    cx, cy = find_empty_tile()
+    coins.append({"x": cx, "y": cy, "collected": False})
+
+health_packs = []
+for _ in range(5):
+    hx, hy = find_empty_tile()
+    health_packs.append({"x": hx, "y": hy, "collected": False})
 
 def update_bots():
     for b in bots:
@@ -155,13 +177,13 @@ def update_bots():
             # Return to patrol
             b["state"] = "patrol"
             b["color"] = Colors.BOT_PATROL
-            b["timer"] = 15 + urandom.getrandbits(4)
+            b["timer"] = 15 + random.randint(0, 15)
         
         # Movement based on state
         if b["state"] == "patrol":
-            if urandom.getrandbits(2) == 0:  # Move 1/4 of the time
+            if random.randint(0, 3) == 0:  # Move 1/4 of the time
                 dirs = [(1,0), (-1,0), (0,1), (0,-1)]
-                dx, dy = dirs[urandom.getrandbits(2)]
+                dx, dy = dirs[random.randint(0, 3)]
                 move_entity(b, dx, dy)
         
         elif b["state"] == "stalk":
@@ -172,7 +194,7 @@ def update_bots():
             dy = 1 if target_y > b["y"] else -1 if target_y < b["y"] else 0
             
             # Try both axes, prefer one randomly
-            if urandom.getrandbits(1):
+            if random.randint(0, 1):
                 if not move_entity(b, dx, 0):
                     move_entity(b, 0, dy)
             else:
@@ -185,20 +207,20 @@ def update_bots():
             # Push player back
             move_entity(player, -player["dx"], -player["dy"])
 
-
 def update_player():
     player["dx"], player["dy"] = 0, 0
     
-    if display.is_pressed(display.BUTTON_A):
+    # Buttons are active LOW (0 = pressed)
+    if btn_a.value() == 0:  # A = Left
         player["dx"] = -1
         move_entity(player, -1, 0)
-    if display.is_pressed(display.BUTTON_B):
+    if btn_b.value() == 0:  # B = Right
         player["dx"] = 1
         move_entity(player, 1, 0)
-    if display.is_pressed(display.BUTTON_X):
+    if btn_x.value() == 0:  # X = Up
         player["dy"] = -1
         move_entity(player, 0, -1)
-    if display.is_pressed(display.BUTTON_Y):
+    if btn_y.value() == 0:  # Y = Down
         player["dy"] = 1
         move_entity(player, 0, 1)
     
@@ -212,7 +234,6 @@ def update_player():
         if not hp["collected"] and hp["x"] == player["x"] and hp["y"] == player["y"]:
             hp["collected"] = True
             game_state["health"] = min(100, game_state["health"] + 30)
-
 
 def draw_world(vx, vy):
     for ty in range(VIEW_H + 1):
@@ -249,20 +270,26 @@ def draw_collectibles(vx, vy):
 
 def draw_hud():
     # Score
-    display.set_pen(255, 255, 255)
-    display.text(f"Score:{game_state['score']}", 2, 2, scale=1)
+    display.set_pen(Colors.WHITE)
+    display.text("Score:" + str(game_state['score']), 2, 2, scale=1)
     
     # Health bar
-    bar_w = 50
-    bar_h = 6
-    display.set_pen(100, 0, 0)
-    display.rectangle(WIDTH - bar_w - 2, 2, bar_w, bar_h)
-    display.set_pen(0, 255, 0)
+    bar_w = 60
+    bar_h = 8
+    bar_x = WIDTH - bar_w - 2
+    bar_y = 2
+    
+    display.set_pen(Colors.DARK_RED)
+    display.rectangle(bar_x, bar_y, bar_w, bar_h)
+    
+    display.set_pen(Colors.HEALTH)
     health_w = int(bar_w * game_state["health"] / 100)
-    display.rectangle(WIDTH - bar_w - 2, 2, health_w, bar_h)
+    display.rectangle(bar_x, bar_y, health_w, bar_h)
 
-
+# Main game loop
 frame = 0
+print("Starting game loop...")
+
 while game_state["health"] > 0:
     update_player()
     
@@ -276,7 +303,7 @@ while game_state["health"] > 0:
     vy = max(0, min(WORLD_H - VIEW_H, vy))
     
     # Render
-    display.set_pen(0, 0, 0)
+    display.set_pen(Colors.BLACK)
     display.clear()
     
     draw_world(vx, vy)
@@ -290,12 +317,15 @@ while game_state["health"] > 0:
     display.update()
     game_state["time"] += 1
     frame += 1
-    utime.sleep(0.1)
+    time.sleep(0.1)
 
 # Game Over
-display.set_pen(0, 0, 0)
+display.set_pen(Colors.BLACK)
 display.clear()
-display.set_pen(255, 0, 0)
-display.text("GAME OVER", WIDTH//2 - 40, HEIGHT//2 - 10, scale=2)
-display.text(f"Score: {game_state['score']}", WIDTH//2 - 30, HEIGHT//2 + 10, scale=1)
+display.set_pen(Colors.RED)
+display.text("GAME OVER", WIDTH//2 - 45, HEIGHT//2 - 10, scale=2)
+display.set_pen(Colors.WHITE)
+display.text("Score: " + str(game_state['score']), WIDTH//2 - 35, HEIGHT//2 + 15, scale=1)
 display.update()
+
+print("Game Over! Final score:", game_state['score'])
