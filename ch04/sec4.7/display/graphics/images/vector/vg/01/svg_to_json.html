@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SVG to Simplified Path Exporter (for DisplayPack)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin: 20px; }
+    label { display:block; margin-top:8px }
+    textarea { width:100%; height:160px; font-family: monospace; }
+    pre { background:#f6f6f6; padding:8px; overflow:auto }
+    .controls { display:flex; gap:8px; align-items:center; margin-top:8px }
+    input[type=number] { width:100px }
+    .hidden-svg { position:fixed; left:-9999px; top:-9999px; width:1px; height:1px; overflow:hidden }
+  </style>
+</head>
+<body>
+  <h1>SVG to Simplified Path Exporter</h1>
+
+  <p>Drop an SVG file or paste SVG source into the text area. This preserves
+     path commands when possible, converts arc commands to cubic Béziers,
+     and improves curve handling.</p>
+
+  <label>SVG file: <input id="file" type="file" accept="image/svg+xml" /></label>
+  <label>Or paste SVG source:</label>
+  <textarea id="svgSource" placeholder="Paste SVG source here"></textarea>
+
+  <div class="controls">
+    <label>Target width <input id="targetW" type="number" value="320" /></label>
+    <label>Target height <input id="targetH" type="number" value="240" /></label>
+    <label>Sampling resolution (px, used for non-path shapes) <input id="samplePx" type="number" value="2" /></label>
+    <button id="convert">Convert</button>
+    <a id="download" disabled>Download JSON</a>
+  </div>
+
+  <h2>Output preview</h2>
+  <pre id="out"></pre>
+
+  <div class="hidden-svg" id="hiddenContainer"></div>
+
+  <script>
+  // ---------- Utilities ----------
+  function cssColorToHex(css) {
+    if (!css) return null;
+    css = css.trim();
+    if (css === 'none') return null;
+    const rgba = css.match(/rgba?\(([^)]+)\)/);
+    if (rgba) {
+      const parts = rgba[1].split(',').map(s=>parseFloat(s));
+      const r = Math.round(parts[0]), g = Math.round(parts[1]), b = Math.round(parts[2]);
+      return '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+    }
+    if (css[0] === '#') return css;
+    return css; // named colours or paint servers (may not be supported)
+  }
+
+  function applyMatrixToPoint(matrix, p) {
+    return {
+      x: matrix.a * p.x + matrix.c * p.y + matrix.e,
+      y: matrix.b * p.x + matrix.d * p.y + matrix.f
+    };
+  }
+
+  // Round helper
+  function round(n) { return Math.round(n); }
+
+  // ---------- Arc -> Cubic conversion (from elliptical arc spec) ----------
+  // This implementation converts a single SVG arc command to one or more cubic bezier segments.
+  // Based on algorithms commonly used in SVG libraries.
+  function arcToCubicCurves(x1, y1, rx, ry, angle, largeArcFlag, sweepFlag, x2, y2) {
+    const PI = Math.PI;
+    const sin = Math.sin, cos = Math.cos;
+    const rad = (angle % 360) * PI / 180.0;
+
+    // handle degenerate cases
+    if (rx === 0 || ry === 0) {
+      return [{x1:x1,y1:y1,x2:x2,y2:y2, x:x2,y:y2, cx1:x1,cy1:y1, cx2:x2,cy2:y2,}] ;
+    }
+
+    // Step 1: compute (x1', y1')
+    const dx2 = (x1 - x2) / 2.0;
+    const dy2 = (y1 - y2) / 2.0;
+    const x1p = cos(rad) * dx2 + sin(rad) * dy2;
+    const y1p = -sin(rad) * dx2 + cos(rad) * dy2;
+
+    // Ensure radii are large enough
+    let rxSq = rx * rx;
+    let rySq = ry * ry;
+    let x1pSq = x1p * x1p;
+    let y1pSq = y1p * y1p;
+
+    // Correct out-of-range radii
+    let lambda = x1pSq / rxSq + y1pSq / rySq;
+    if (lambda > 1) {
+      const factor = Math.sqrt(lambda);
+      rx *= factor; ry *= factor;
+      rxSq = rx*rx; rySq = ry*ry;
+    }
+
+    // Step 2: compute (cx', cy')
+    let sign = (largeArcFlag === sweepFlag) ? -1 : 1;
+    let sq = ((rxSq * rySq) - (rxSq * y1pSq) - (rySq * x1pSq)) / ((rxSq * y1pSq) + (rySq * x1pSq));
+    sq = (sq < 0) ? 0 : sq;
+    const coef = sign * Math.sqrt(sq);
+    const cxp = coef * ((rx * y1p) / ry);
+    const cyp = coef * (-(ry * x1p) / rx);
+
+    // Step 3: compute (cx, cy) from (cx', cy')
+    const cx = cos(rad) * cxp - sin(rad) * cyp + (x1 + x2) / 2.0;
+    const cy = sin(rad) * cxp + cos(rad) * cyp + (y1 + y2) / 2.0;
+
+    // Step 4: compute start and extent angles
+    function angleBetween(u, v) {
+      const dot = u.x * v.x + u.y * v.y;
+      const len = Math.sqrt((u.x*u.x + u.y*u.y) * (v.x*v.x + v.y*v.y));
+      let ang = Math.acos(Math.max(-1, Math.min(1, dot / len)));
+      if ((u.x * v.y - u.y * v.x) < 0) ang = -ang;
+      return ang;
+    }
+
+    const v1 = { x: (x1p - cxp) / rx, y: (y1p - cyp) / ry };
+    const v2 = { x: (-x1p - cxp) / rx, y: (-y1p - cyp) / ry };
+    let startAng = angleBetween({x:1,y:0}, v1);
+    let deltaAng = angleBetween(v1, v2);
+    if (!sweepFlag && deltaAng > 0) deltaAng -= 2 * PI;
+    else if (sweepFlag && deltaAng < 0) deltaAng += 2 * PI;
+
+    // Approximate the arc using cubic bezier segments
+    const segments = Math.ceil(Math.abs(deltaAng / (PI / 2)));
+    const delta = deltaAng / segments;
+    const t = (8/3) * Math.sin(delta/4) * Math.sin(delta/4) / Math.sin(delta/2);
+
+    const curves = [];
+    for (let i = 0; i < segments; i++) {
+      const th1 = startAng + i * delta;
+      const th2 = th1 + delta;
+      const cosTh1 = Math.cos(th1), sinTh1 = Math.sin(th1);
+      const cosTh2 = Math.cos(th2), sinTh2 = Math.sin(th2);
+
+      // endpoints
+      const x1s = cos(rad) * (rx * cosTh1) - sin(rad) * (ry * sinTh1) + cx;
+      const y1s = sin(rad) * (rx * cosTh1) + cos(rad) * (ry * sinTh1) + cy;
+      const x2s = cos(rad) * (rx * cosTh2) - sin(rad) * (ry * sinTh2) + cx;
+      const y2s = sin(rad) * (rx * cosTh2) + cos(rad) * (ry * sinTh2) + cy;
+
+      // control points
+      const dx1 = -t * (cos(rad) * rx * sinTh1 + sin(rad) * ry * cosTh1);
+      const dy1 = -t * (sin(rad) * rx * sinTh1 - cos(rad) * ry * cosTh1);
+      const dx2 = t * (cos(rad) * rx * sinTh2 + sin(rad) * ry * cosTh2);
+      const dy2 = t * (sin(rad) * rx * sinTh2 - cos(rad) * ry * cosTh2);
+
+      const cx1 = x1s + dx1;
+      const cy1 = y1s + dy1;
+      const cx2 = x2s + dx2;
+      const cy2 = y2s + dy2;
+
+      curves.push({x1:x1s,y1:y1s, cx1:cx1, cy1:cy1, cx2:cx2, cy2:cy2, x:x2s, y:y2s});
+    }
+    return curves;
+  }
+
+  // ---------- Path data processing ----------
+  // Convert path data commands to absolute form and expand arcs into C commands.
+  // Use SVGPathElement.getPathData() when available for robust parsing; otherwise fallback to sampling.
+  function processPathElement(pathElem, samplePx) {
+    // If browser supports getPathData(), use it to read commands
+    if (typeof pathElem.getPathData === 'function') {
+      const cmds = pathElem.getPathData({normalize: true}); // normalized absolute commands
+      const outCmds = [];
+      let curX = 0, curY = 0;
+      for (const c of cmds) {
+        const type = c.type; // single letter
+        if (type === 'M') {
+          curX = c.values[0]; curY = c.values[1];
+          outCmds.push({cmd:'M', vals:[curX, curY]});
+        } else if (type === 'L' || type === 'H' || type === 'V') {
+          // normalized should give L
+          curX = c.values[0]; curY = c.values[1];
+          outCmds.push({cmd:'L', vals:[curX, curY]});
+        } else if (type === 'C') {
+          curX = c.values[4]; curY = c.values[5];
+          outCmds.push({cmd:'C', vals:c.values.slice(0,6)});
+        } else if (type === 'Q') {
+          // convert Q to cubic
+          const x1 = curX, y1 = curY;
+          const cx1 = c.values[0], cy1 = c.values[1];
+          const x = c.values[2], y = c.values[3];
+          // conversion
+          const c1x = x1 + 2/3*(cx1 - x1);
+          const c1y = y1 + 2/3*(cy1 - y1);
+          const c2x = x + 2/3*(cx1 - x);
+          const c2y = y + 2/3*(cy1 - y);
+          outCmds.push({cmd:'C', vals:[c1x,c1y,c2x,c2y,x,y]});
+          curX = x; curY = y;
+        } else if (type === 'A') {
+          // values: rx, ry, angle, largeArcFlag, sweepFlag, x, y
+          const rx = c.values[0], ry = c.values[1], angle = c.values[2];
+          const laf = c.values[3], sf = c.values[4];
+          const x = c.values[5], y = c.values[6];
+          const curves = arcToCubicCurves(curX, curY, rx, ry, angle, laf, sf, x, y);
+          for (const cv of curves) {
+            outCmds.push({cmd:'C', vals:[cv.cx1, cv.cy1, cv.cx2, cv.cy2, cv.x, cv.y]});
+          }
+          curX = x; curY = y;
+        } else if (type === 'Z') {
+          outCmds.push({cmd:'Z', vals:[]});
+        } else {
+          // other commands (S, T) should be normalized by getPathData
+          console.warn('Unhandled path command', type, c);
+        }
+      }
+      return outCmds;
+    }
+
+    // Fallback: sample path's length
+    try {
+      const L = pathElem.getTotalLength();
+      const n = Math.max(2, Math.ceil(L / samplePx));
+      const pts = [];
+      for (let i=0;i<=n;i++){
+        const p = pathElem.getPointAtLength((i/n)*L);
+        pts.push({cmd: i===0? 'M':'L', vals: [p.x, p.y]});
+      }
+      return pts;
+    } catch(e) {
+      console.warn('Path processing failed, empty result', e);
+      return [];
+    }
+  }
+
+  // Serialize commands to an absolute path string, applying a matrix and mapping to target
+  function commandsToPathString(cmds, matrix, mapToTarget) {
+    const parts = [];
+    for (const c of cmds) {
+      if (c.cmd === 'M') {
+        const p = applyMatrixToPoint(matrix, {x:c.vals[0], y:c.vals[1]});
+        const mp = mapToTarget(p);
+        parts.push('M ' + round(mp.x) + ' ' + round(mp.y));
+      } else if (c.cmd === 'L') {
+        const p = applyMatrixToPoint(matrix, {x:c.vals[0], y:c.vals[1]});
+        const mp = mapToTarget(p);
+        parts.push('L ' + round(mp.x) + ' ' + round(mp.y));
+      } else if (c.cmd === 'C') {
+        const p1 = applyMatrixToPoint(matrix, {x:c.vals[0], y:c.vals[1]});
+        const p2 = applyMatrixToPoint(matrix, {x:c.vals[2], y:c.vals[3]});
+        const p3 = applyMatrixToPoint(matrix, {x:c.vals[4], y:c.vals[5]});
+        const mp1 = mapToTarget(p1), mp2 = mapToTarget(p2), mp3 = mapToTarget(p3);
+        parts.push('C ' + round(mp1.x)+' '+round(mp1.y)+' '+round(mp2.x)+' '+round(mp2.y)+' '+round(mp3.x)+' '+round(mp3.y));
+      } else if (c.cmd === 'Z') {
+        parts.push('Z');
+      } else {
+        // ignore
+      }
+    }
+    return parts.join(' ');
+  }
+
+  // ---------- Sampling helpers for non-path shapes ----------
+  async function elementToPoints(elem, samplePx) {
+    const tag = elem.tagName.toLowerCase();
+    // compute CTM relative to the root svg
+    const ctm = elem.getCTM() || elem.ownerSVGElement && elem.ownerSVGElement.getCTM() || new DOMMatrix();
+
+    const transformPoint = (pt) => applyMatrixToPoint(ctm, pt);
+
+    if (tag === 'rect'){
+      const x = parseFloat(elem.getAttribute('x')||0);
+      const y = parseFloat(elem.getAttribute('y')||0);
+      const w = parseFloat(elem.getAttribute('width')||0);
+      const h = parseFloat(elem.getAttribute('height')||0);
+      const pts = [
+        transformPoint({x:x,y:y}),
+        transformPoint({x:x+w,y:y}),
+        transformPoint({x:x+w,y:y+h}),
+        transformPoint({x:x,y:y+h}),
+      ];
+      pts.push(pts[0]);
+      return pts.map(p=>({cmd:'M', vals:[p.x, p.y]})).map((p,i,arr)=> ({cmd: i===0? 'M' : 'L', vals: p.vals}));
+    }
+
+    if (tag === 'circle' || tag === 'ellipse'){
+      const cx = parseFloat(elem.getAttribute('cx')||0);
+      const cy = parseFloat(elem.getAttribute('cy')||0);
+      const rx = tag==='circle' ? parseFloat(elem.getAttribute('r')||0) : parseFloat(elem.getAttribute('rx')||0);
+      const ry = tag==='circle' ? parseFloat(elem.getAttribute('r')||0) : parseFloat(elem.getAttribute('ry')||0);
+      const circumference = 2*Math.PI*Math.max(rx,ry);
+      const n = Math.max(8, Math.ceil(circumference / samplePx));
+      const cmds = [];
+      for (let i=0;i<=n;i++){
+        const a = (i/n)*2*Math.PI;
+        const px = cx + rx*Math.cos(a);
+        const py = cy + ry*Math.sin(a);
+        const p = transformPoint({x:px,y:py});
+        cmds.push({cmd: i===0? 'M':'L', vals:[p.x,p.y]});
+      }
+      return cmds;
+    }
+
+    if (tag === 'line'){
+      const x1 = parseFloat(elem.getAttribute('x1')||0);
+      const y1 = parseFloat(elem.getAttribute('y1')||0);
+      const x2 = parseFloat(elem.getAttribute('x2')||0);
+      const y2 = parseFloat(elem.getAttribute('y2')||0);
+      const dist = Math.hypot(x2-x1, y2-y1);
+      const n = Math.max(1, Math.ceil(dist/samplePx));
+      const cmds = [];
+      for (let i=0;i<=n;i++){
+        const t = i/n;
+        const px = x1 + (x2-x1)*t;
+        const py = y1 + (y2-y1)*t;
+        const p = transformPoint({x:px,y:py});
+        cmds.push({cmd: i===0? 'M':'L', vals:[p.x,p.y]});
+      }
+      return cmds;
+    }
+
+    if (tag === 'polyline' || tag === 'polygon'){
+      const raw = (elem.getAttribute('points')||'').trim();
+      const parts = raw.split(/[ ,]+/).map(s=>s.trim()).filter(s=>s.length);
+      const cmds = [];
+      for (let i=0;i+1<parts.length;i+=2){
+        const px = parseFloat(parts[i]);
+        const py = parseFloat(parts[i+1]);
+        const p = transformPoint({x:px,y:py});
+        cmds.push({cmd: i===0? 'M':'L', vals:[p.x,p.y]});
+      }
+      if (tag==='polygon' && cmds.length) cmds.push({cmd:'Z', vals:[]});
+      return cmds;
+    }
+
+    // fallback: empty
+    return [];
+  }
+
+  // ---------- Main conversion ----------
+  async function convertSvg(rootSvg, targetW, targetH, samplePx) {
+    const hidden = document.getElementById('hiddenContainer');
+    hidden.innerHTML = '';
+    const imported = document.importNode(rootSvg, true);
+    const wrapper = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    wrapper.setAttribute('xmlns','http://www.w3.org/2000/svg');
+    wrapper.appendChild(imported);
+    hidden.appendChild(wrapper);
+
+    // compute source viewBox or fallback to width/height or bbox
+    let srcX=0, srcY=0, srcW=0, srcH=0;
+    const vb = imported.viewBox && imported.viewBox.baseVal;
+    if (vb && vb.width>0) {
+      srcX = vb.x; srcY = vb.y; srcW = vb.width; srcH = vb.height;
+    } else {
+      srcW = parseFloat(imported.getAttribute('width')||wrapper.getAttribute('width')||0);
+      srcH = parseFloat(imported.getAttribute('height')||wrapper.getAttribute('height')||0);
+      if (!srcW || !srcH) {
+        try {
+          const bbox = imported.getBBox();
+          srcX = bbox.x; srcY = bbox.y; srcW = bbox.width; srcH = bbox.height;
+        } catch(e) {
+          srcW = srcW || 300; srcH = srcH || 150;
+        }
+      }
+    }
+    if (!srcW || !srcH) { srcW = 300; srcH = 150; }
+
+    const scale = Math.min(targetW/srcW, targetH/srcH);
+    const dx = -srcX*scale + ((targetW - srcW*scale)/2);
+    const dy = -srcY*scale + ((targetH - srcH*scale)/2);
+
+    function mapToTarget(p) { return { x: p.x*scale + dx, y: p.y*scale + dy }; }
+
+    const out = [];
+
+    const candidates = imported.querySelectorAll('path,rect,circle,ellipse,line,polyline,polygon');
+    for (const el of candidates) {
+      const style = getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden') continue;
+      const fill = cssColorToHex(style.fill || el.getAttribute('fill'));
+      const stroke = cssColorToHex(style.stroke || el.getAttribute('stroke'));
+      const strokeWidth = parseFloat(style.strokeWidth || el.getAttribute('stroke-width') || 0);
+
+      let cmds = [];
+      if (el.tagName.toLowerCase() === 'path') {
+        // preserve path commands and convert arcs/curves where needed
+        cmds = processPathElement(el, samplePx);
+        // compute element CTM relative to svg wrapper
+        const matrix = el.getCTM() || imported.getCTM() || new DOMMatrix();
+        const pathStr = commandsToPathString(cmds, matrix, mapToTarget);
+        if (!pathStr) continue;
+        out.push({ tag: 'path', path: pathStr, fill: fill, stroke: stroke, strokeWidth: Math.round(strokeWidth*scale) });
+      } else {
+        // sample non-path elements into commands
+        cmds = await elementToPoints(el, samplePx);
+        if (!cmds || cmds.length===0) continue;
+        // use element CTM
+        const matrix = el.getCTM() || imported.getCTM() || new DOMMatrix();
+        const pathStr = commandsToPathString(cmds, matrix, mapToTarget);
+        out.push({ tag: el.tagName.toLowerCase(), path: pathStr, fill: fill, stroke: stroke, strokeWidth: Math.round(strokeWidth*scale) });
+      }
+    }
+
+    return out;
+  }
+
+  // ---------- UI wiring ----------
+  document.getElementById('file').addEventListener('change', (ev)=>{
+    const f = ev.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ()=>{ document.getElementById('svgSource').value = r.result; };
+    r.readAsText(f);
+  });
+
+  document.getElementById('convert').addEventListener('click', async ()=>{
+    const src = document.getElementById('svgSource').value.trim();
+    if (!src) { alert('Please paste or load an SVG file.'); return; }
+    let parser = new DOMParser();
+    const doc = parser.parseFromString(src, 'image/svg+xml');
+    const svg = doc.querySelector('svg');
+    if (!svg) { alert('No <svg> root found.'); return; }
+
+    const tw = parseInt(document.getElementById('targetW').value,10) || 320;
+    const th = parseInt(document.getElementById('targetH').value,10) || 240;
+    const samplePx = parseFloat(document.getElementById('samplePx').value) || 2;
+
+    const result = await convertSvg(svg, tw, th, samplePx);
+    const json = JSON.stringify({ meta:{targetWidth:tw,targetHeight:th}, shapes: result }, null, 2);
+    document.getElementById('out').textContent = json;
+
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const dl = document.getElementById('download');
+    dl.href = url;
+    dl.download = 'svg-simplified.json';
+    dl.removeAttribute('disabled');
+    dl.textContent = 'Download JSON';
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VW JSON Viewer</title>
+<style>
+body { font-family: sans-serif; margin: 20px; max-width: 1000px; }
+textarea { width: 100%; height: 200px; font-family: monospace; }
+canvas { border: 1px solid black; display: block; margin-top: 20px; }
+button { margin-top: 10px; margin-right: 10px; }
+#info { margin-top: 15px; }
+.info-row { display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<h1>VW JSON Viewer</h1>
+
+<input type="file" id="fileInput" accept=".json,.txt">
+<br>
+<textarea id="jsonInput" placeholder="Paste compressed JSON here..."></textarea>
+<br>
+<button onclick="loadAndRender()">Render</button>
+<button onclick="loadExample()">Load Example</button>
+
+<div id="info" style="display:none;">
+    <div class="info-row"><span>Dimensions:</span><span id="dimensions"></span></div>
+    <div class="info-row"><span>Total Shapes:</span><span id="shapeCount"></span></div>
+    <div class="info-row"><span>Color Palette:</span><span id="colorCount"></span></div>
+    <div class="info-row"><span>Data Size:</span><span id="dataSize"></span></div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        document.getElementById('jsonInput').value = evt.target.result;
+    };
+    reader.readAsText(file);
+});
+
+function decompressVWJson(compressed) {
+    const decompressed = {
+        meta: { targetWidth: compressed.w, targetHeight: compressed.h },
+        shapes: []
+    };
+    const palette = compressed.c || [];
+    for (const shape of compressed.s) {
+        const d = { tag: shape.t };
+        if (shape.p && shape.p.length > 0) {
+            const coords = shape.p;
+            let pathStr = '';
+            for (let i = 0; i < coords.length; i += 2) {
+                const cmd = i === 0 ? 'M' : 'L';
+                pathStr += `${cmd} ${coords[i]} ${coords[i+1]} `;
+            }
+            d.path = pathStr.trim();
+        }
+        if (shape.f !== undefined) d.fill = palette[shape.f];
+        if (shape.st !== undefined) d.stroke = palette[shape.st];
+        if (shape.sw !== undefined) d.strokeWidth = shape.sw;
+        decompressed.shapes.push(d);
+    }
+    return decompressed;
+}
+
+function renderToCanvas(data) {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = data.meta.targetWidth;
+    canvas.height = data.meta.targetHeight;
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (const shape of data.shapes) {
+        if (!shape.path) continue;
+        const commands = shape.path.split(/(?=[ML])/);
+        ctx.beginPath();
+        for (const cmd of commands) {
+            const parts = cmd.trim().split(/\s+/);
+            const type = parts[0];
+            if (type === 'M') ctx.moveTo(parseFloat(parts[1]), parseFloat(parts[2]));
+            else if (type === 'L') ctx.lineTo(parseFloat(parts[1]), parseFloat(parts[2]));
+        }
+        if (shape.fill && shape.fill !== 'null') {
+            ctx.fillStyle = shape.fill;
+            ctx.fill();
+        }
+        if (shape.stroke && shape.stroke !== 'null') {
+            ctx.strokeStyle = shape.stroke;
+            ctx.lineWidth = shape.strokeWidth || 1;
+            ctx.stroke();
+        }
+    }
+}
+
+function loadAndRender() {
+    try {
+        const input = document.getElementById('jsonInput').value.trim();
+        if (!input) { alert('No JSON found.'); return; }
+        const compressed = JSON.parse(input);
+        const decompressed = decompressVWJson(compressed);
+        renderToCanvas(decompressed);
+        document.getElementById('info').style.display = 'block';
+        document.getElementById('dimensions').textContent = compressed.w + ' × ' + compressed.h;
+        document.getElementById('shapeCount').textContent = compressed.s.length;
+        document.getElementById('colorCount').textContent = (compressed.c || []).length;
+        document.getElementById('dataSize').textContent = (input.length / 1024).toFixed(2) + ' KB';
+    } catch (e) {
+        alert('Error parsing JSON: ' + e.message);
+    }
+}
+
+function loadExample() {
+    const example = {
+        "v": 1, "w": 320, "h": 240,
+        "c": ["#000000", "#ffffff", "#333333", "#e6e6e6"],
+        "s": [
+            {"t": "path", "p": [100,50,150,50,150,100,100,100,100,50], "f":0, "st":1, "sw":2},
+            {"t": "path", "p": [200,80,250,120,150,120,200,80], "f":2, "st":3, "sw":1}
+        ]
+    };
+    document.getElementById('jsonInput').value = JSON.stringify(example);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SVG Simplified JSON Preview (ultimately DisplayPack)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin: 18px; }
+    .row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    label { font-size:14px; }
+    #canvasWrap { border:1px solid #ccc; width:fit-content; height:fit-content; }
+    canvas { image-rendering: pixelated; background: #ffffff; }
+    textarea { width:100%; height:120px; font-family: monospace; }
+    pre { background:#f6f6f6; padding:8px; overflow:auto; max-height:220px }
+    .controls { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px }
+    button { padding:6px 10px }
+  </style>
+</head>
+<body>
+  <h1>SVG Simplified JSON Preview</h1>
+
+  <p>This preview tool loads the JSON files produced by the converter and renders them to an HTML
+     canvas using the rules:</p>
+  <ul>
+    <li>Fill rule: draw fill first, then stroke on top.</li>
+    <li>Stroke model: always draw a single-pixel stroke regardless of strokeWidth.</li>
+    <li>Input uses the <code>path</code> string from each shape.</li>
+  </ul>
+
+  <div class="controls">
+    <label>JSON file: <input id="file" type="file" accept="application/json" /></label>
+    <button id="btnPaste">Paste JSON</button>
+    <label>Zoom: <select id="zoom"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
+    <label><input id="grid" type="checkbox"> Show grid</label>
+    <label><input id="debug" type="checkbox"> Show debug overlays (control points)</label>
+  </div>
+
+  <div class="row">
+    <div id="canvasWrap"><canvas id="cv" width="320" height="240"></canvas></div>
+    <div style="width:520px;">
+      <h3>Loaded JSON</h3>
+      <pre id="jsonOut">No file loaded.</pre>
+    </div>
+  </div>
+
+  <h3>Paste JSON</h3>
+  <textarea id="pasteArea" placeholder="Paste exported JSON here and press Render"></textarea>
+  <div class="row"><button id="render">Render</button><button id="clear">Clear</button></div>
+
+  <script>
+  // Utility: safe parse
+  function safeParse(s) { try { return JSON.parse(s); } catch(e) { return null; } }
+
+  const fileEl = document.getElementById('file');
+  const pasteArea = document.getElementById('pasteArea');
+  const jsonOut = document.getElementById('jsonOut');
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const zoomSel = document.getElementById('zoom');
+  const gridCheck = document.getElementById('grid');
+  const debugCheck = document.getElementById('debug');
+
+  function setCanvasSize(w,h,zoom) {
+    cv.width = w * zoom;
+    cv.height = h * zoom;
+    cv.style.width = (w * zoom) + 'px';
+    cv.style.height = (h * zoom) + 'px';
+    // keep pixelated look for integer zooms
+    ctx.setTransform(zoom,0,0,zoom,0,0);
+  }
+
+  // draw grid
+  function drawGrid(w,h) {
+    const s = 8; // grid cell in source pixels
+    ctx.save();
+    ctx.lineWidth = 0.25;
+    ctx.strokeStyle = '#ddd';
+    for (let x=0;x<=w;x+=s) { ctx.beginPath(); ctx.moveTo(x+0.5,0); ctx.lineTo(x+0.5,h); ctx.stroke(); }
+    for (let y=0;y<=h;y+=s) { ctx.beginPath(); ctx.moveTo(0,y+0.5); ctx.lineTo(w,y+0.5); ctx.stroke(); }
+    ctx.restore();
+  }
+
+  function clearCanvas(w,h) {
+    ctx.save();
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.restore();
+    // after clearing, restore transform for logical drawing
+    const zoom = parseInt(zoomSel.value,10);
+    const meta = currentMeta || {targetWidth:cv.width/zoom, targetHeight:cv.height/zoom};
+    ctx.setTransform(zoom,0,0,zoom,0,0);
+  }
+
+  // convert CSS-like hex or named strings to canvas-friendly values; accept null
+  function colourOrNull(c) { return c ? c : null; }
+
+  // Global store for current metadata
+  let currentMeta = null;
+
+  // Render function
+  function renderFromJson(obj) {
+    if (!obj || !obj.meta || !obj.shapes) { alert('Invalid JSON'); return; }
+    currentMeta = obj.meta;
+    const tw = obj.meta.targetWidth || 320;
+    const th = obj.meta.targetHeight || 240;
+    const zoom = parseInt(zoomSel.value,10) || 1;
+    setCanvasSize(tw, th, zoom);
+
+    // logical drawing uses transform set by setCanvasSize
+    ctx.save();
+    ctx.setTransform(zoom,0,0,zoom,0,0);
+
+    // clear background
+    ctx.clearRect(0,0,tw,th);
+
+    if (gridCheck.checked) drawGrid(tw,th);
+
+    // Draw shapes in order
+    for (const s of obj.shapes) {
+      const pathStr = s.path || '';
+      if (!pathStr) continue;
+      const fill = colourOrNull(s.fill);
+      const stroke = colourOrNull(s.stroke);
+
+      // Use Path2D to consume the SVG-like path string
+      let p;
+      try {
+        p = new Path2D(pathStr);
+      } catch(e) {
+        // if Path2D fails, skip and show warning
+        console.warn('Path2D parse failed for', pathStr, e);
+        continue;
+      }
+
+      // Fill first (rule a)
+      if (fill) {
+        try { ctx.fillStyle = fill; ctx.fill(p); } catch(e) { console.warn('Fill failed', e); }
+      }
+
+      // Stroke model: always single pixel irrespective of strokeWidth (rule c)
+      if (stroke) {
+        ctx.lineWidth = 1; // single-pixel stroke in target logical pixels
+        ctx.lineJoin = 'miter'; // basic joins
+        ctx.lineCap = 'butt';
+        ctx.strokeStyle = stroke;
+        try { ctx.stroke(p); } catch(e) { console.warn('Stroke failed', e); }
+      }
+
+      if (debugCheck.checked) {
+        // draw bounding box and sample points
+        try {
+          const bbox = computePathBoundingBox(p);
+          if (bbox) {
+            ctx.save(); ctx.setLineDash([2,2]); ctx.strokeStyle = '#ff00ff'; ctx.lineWidth = 0.5; ctx.strokeRect(bbox.x, bbox.y, bbox.w, bbox.h); ctx.restore();
+          }
+        } catch(e) { /* ignore */ }
+      }
+    }
+
+    ctx.restore();
+
+    // show json text
+    jsonOut.textContent = JSON.stringify(obj, null, 2);
+  }
+
+  // Basic bbox computation using Path2D is not available; approximate by drawing to an offscreen canvas and reading bounds
+  function computePathBoundingBox(path2d) {
+    // Render path to an offscreen canvas at 1× then scan for non-empty pixels
+    const meta = currentMeta || {targetWidth:cv.width, targetHeight:cv.height};
+    const w = meta.targetWidth || cv.width;
+    const h = meta.targetHeight || cv.height;
+    const oc = document.createElement('canvas');
+    oc.width = w; oc.height = h;
+    const ocCtx = oc.getContext('2d');
+    ocCtx.fillStyle = '#000'; ocCtx.fillRect(0,0,w,h);
+    ocCtx.fillStyle = '#fff'; ocCtx.fill(path2d);
+    const img = ocCtx.getImageData(0,0,w,h).data;
+    let minX = w, minY = h, maxX = 0, maxY = 0, found = false;
+    for (let y=0;y<h;y++){
+      for (let x=0;x<w;x++){
+        const i = (y*w + x)*4;
+        if (img[i] !== 0 || img[i+1] !== 0 || img[i+2] !== 0 || img[i+3] !== 255) { // any non-black pixel
+          found = true;
+          if (x < minX) minX = x;
+          if (y < minY) minY = y;
+          if (x > maxX) maxX = x;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (!found) return null;
+    return { x: minX, y: minY, w: (maxX - minX + 1), h: (maxY - minY + 1) };
+  }
+
+  // File input handler
+  fileEl.addEventListener('change', (ev)=>{
+    const f = ev.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ()=>{
+      const obj = safeParse(r.result);
+      if (!obj) { alert('Failed to parse JSON'); return; }
+      renderFromJson(obj);
+    };
+    r.readAsText(f);
+  });
+
+  document.getElementById('btnPaste').addEventListener('click', ()=>{ pasteArea.focus(); });
+
+  document.getElementById('render').addEventListener('click', ()=>{
+    const txt = pasteArea.value.trim();
+    const obj = safeParse(txt);
+    if (!obj) return alert('Invalid JSON');
+    renderFromJson(obj);
+  });
+
+  document.getElementById('clear').addEventListener('click', ()=>{ pasteArea.value=''; jsonOut.textContent='No file loaded.'; ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,cv.width,cv.height); });
+
+  // redraw when zoom or grid/debug toggles change
+  zoomSel.addEventListener('change', ()=>{ if (currentMeta) renderFromJson({meta: currentMeta, shapes: JSON.parse(jsonOut.textContent).shapes}); });
+  gridCheck.addEventListener('change', ()=>{ if (currentMeta) renderFromJson({meta: currentMeta, shapes: JSON.parse(jsonOut.textContent).shapes}); });
+  debugCheck.addEventListener('change', ()=>{ if (currentMeta) renderFromJson({meta: currentMeta, shapes: JSON.parse(jsonOut.textContent).shapes}); });
+
+  // initialise with canvas default size
+  setCanvasSize(320,240,1);
+  </script>
+</body>
+</html>

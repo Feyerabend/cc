@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VGA Signal Simulator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container { max-width: 1600px; margin: 0 auto; }
+    .header { margin-bottom: 30px; }
+    .header h1 { font-size: 2em; margin-bottom: 10px; }
+    .header p { color: #9ca3af; }
+    .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    .canvas-section { background: #1f2937; border-radius: 10px; padding: 20px; border: 1px solid #374151; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .section-header h2 { font-size: 1.3em; }
+    .button-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;
+      font-weight: 600; transition: all 0.2s;
+    }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-success { background: #16a34a; color: white; }
+    .btn-success:hover { background: #15803d; }
+    .btn-secondary { background: #6b7280; color: white; }
+    .btn-secondary:hover { background: #4b5563; }
+    .canvas-container { display: flex; gap: 20px; flex-wrap: wrap; }
+    .canvas-wrapper { 
+      background: #000; 
+      border-radius: 6px; 
+      padding: 10px; 
+      border: 2px solid #4b5563; 
+      position: relative;
+    }
+    .canvas-label {
+      position: absolute;
+      top: -10px;
+      left: 10px;
+      background: #1f2937;
+      padding: 2px 8px;
+      font-size: 0.8em;
+      border-radius: 4px;
+      border: 1px solid #4b5563;
+    }
+    canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+    #timingCanvas { background: #1a1a1a; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
+    .stat-card { background: #374151; border-radius: 6px; padding: 15px; }
+    .stat-label { color: #9ca3af; font-size: 0.9em; margin-bottom: 5px; }
+    .stat-value { font-size: 1.5em; font-family: 'Courier New', monospace; }
+    .stat-value.active { color: #22c55e; }
+    .controls-section { display: flex; flex-direction: column; gap: 20px; }
+    .control-panel { background: #1f2937; border-radius: 10px; padding: 20px; border: 1px solid #374151; }
+    .control-panel h3 { font-size: 1.1em; margin-bottom: 15px; }
+    select { width: 100%; padding: 10px; background: #374151; border: 1px solid #4b5563; border-radius: 6px; color: white; font-size: 1em; }
+    .slider-control { margin-bottom: 20px; }
+    .slider-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9em; }
+    .slider-value { color: #60a5fa; font-family: 'Courier New', monospace; }
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #374151;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+      border: none;
+    }
+    .checkbox-control { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+    .checkbox-control input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    .checkbox-control label { cursor: pointer; }
+    .info-box { background: rgba(37, 99, 235, 0.1); border: 1px solid #2563eb; border-radius: 10px; padding: 15px; }
+    .info-box h3 { font-size: 0.9em; color: #93c5fd; margin-bottom: 10px; }
+    .info-box p { font-size: 0.8em; color: #d1d5db; line-height: 1.5; margin-bottom: 8px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85em; }
+    .legend-color { width: 20px; height: 20px; border-radius: 3px; border: 1px solid #4b5563; }
+    @media (max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>VGA Signal Simulator</h1>
+      <p>VGA timing visualisation with blanking intervals, sync pulses, and scan patterns</p>
+    </div>
+    <div class="main-grid">
+      <div class="canvas-section">
+        <div class="section-header">
+          <h2>Display Output</h2>
+          <div class="button-group">
+            <button class="btn-primary" id="toggleBtn">&gt; Start</button>
+            <button class="btn-secondary" id="stepBtn">&gt;&gt; Step Frame</button>
+            <button class="btn-success" id="downloadBtn">Save</button>
+          </div>
+        </div>
+        <div class="canvas-container">
+          <div class="canvas-wrapper">
+            <div class="canvas-label">Video Output</div>
+            <canvas id="vgaCanvas" width="640" height="480"></canvas>
+          </div>
+          <div class="canvas-wrapper">
+            <div class="canvas-label">Timing Diagram</div>
+            <canvas id="timingCanvas" width="640" height="200"></canvas>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Pixel Clock</div>
+            <div class="stat-value" id="pixelClock">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">H Position</div>
+            <div class="stat-value" id="hPos">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">V Position</div>
+            <div class="stat-value" id="vPos">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Frame</div>
+            <div class="stat-value" id="frame">0</div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: #ef4444;"></div>
+            <span>H-Sync</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #f97316;"></div>
+            <span>H-Back Porch</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #22c55e;"></div>
+            <span>Active Video</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #f59e0b;"></div>
+            <span>H-Front Porch</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #8b5cf6;"></div>
+            <span>V-Sync</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #333;"></div>
+            <span>Blanking</span>
+          </div>
+        </div>
+      </div>
+      <div class="controls-section">
+        <div class="control-panel">
+          <h3>Scan Speed</h3>
+          <div class="slider-control">
+            <div class="slider-label">
+              <span>Pixels per frame:</span>
+              <span class="slider-value" id="speedValue">100</span>
+            </div>
+            <input type="range" id="speedSlider" min="1" max="5000" value="100">
+          </div>
+          <div class="checkbox-control">
+            <input type="checkbox" id="showBeam" checked>
+            <label for="showBeam">Show electron beam position</label>
+          </div>
+          <div class="checkbox-control">
+            <input type="checkbox" id="showBlanking" checked>
+            <label for="showBlanking">Visualize blanking intervals</label>
+          </div>
+        </div>
+        <div class="control-panel">
+          <h3>Test Pattern</h3>
+          <select id="patternSelect">
+            <option value="test">Color Bars</option>
+            <option value="rgb">RGB Stripes</option>
+            <option value="gradient">Gradient</option>
+            <option value="checkerboard">Checkerboard</option>
+            <option value="grid">Grid Pattern</option>
+            <option value="animated">Animated Waves</option>
+          </select>
+        </div>
+        <div class="control-panel">
+          <h3>Resolution</h3>
+          <select id="resolutionSelect">
+            <option value="640x480">640x480 (VGA)</option>
+            <option value="800x600">800x600 (SVGA)</option>
+            <option value="320x240">320x240 (QVGA)</option>
+          </select>
+        </div>
+        <div class="info-box">
+          <h3>How VGA Works</h3>
+          <p><strong>Horizontal Scan:</strong> The electron beam scans from left to right, drawing one line of pixels.</p>
+          <p><strong>Blanking Intervals:</strong> During sync and porch periods, the beam is turned off (blank) while repositioning.</p>
+          <p><strong>Sync Pulses:</strong> H-Sync moves beam to next line, V-Sync returns to top of screen.</p>
+          <p><strong>Pixel Clock:</strong> Each pixel is output at the pixel clock frequency (25.175 MHz for 640x480@60Hz).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function() {
+  var canvas = document.getElementById('vgaCanvas');
+  var ctx = canvas.getContext('2d');
+  var timingCanvas = document.getElementById('timingCanvas');
+  var timingCtx = timingCanvas.getContext('2d');
+  
+  var isRunning = false;
+  var pattern = 'test';
+  var resWidth = 640;
+  var resHeight = 480;
+  var animationId = null;
+  
+  // VGA timing parameters
+  var hBackPorch = 48;
+  var hFrontPorch = 16;
+  var hSync = 96;
+  var vBackPorch = 33;
+  var vFrontPorch = 10;
+  var vSync = 2;
+  
+  // Current beam position (in total scan coordinates)
+  var hPos = 0;
+  var vPos = 0;
+  var frameCount = 0;
+  var pixelClockCount = 0;
+  
+  // Speed control
+  var pixelsPerFrame = 100;
+  var showBeam = true;
+  var showBlanking = true;
+  
+  // Pre-rendered frame buffer
+  var frameBuffer = null;
+
+  function getTotalH() {
+    return hSync + hBackPorch + resWidth + hFrontPorch;
+  }
+
+  function getTotalV() {
+    return vSync + vBackPorch + resHeight + vFrontPorch;
+  }
+
+  function isInHSync() {
+    return hPos < hSync;
+  }
+
+  function isInHBackPorch() {
+    return hPos >= hSync && hPos < hSync + hBackPorch;
+  }
+
+  function isInActiveVideo() {
+    var hStart = hSync + hBackPorch;
+    var hEnd = hStart + resWidth;
+    var vStart = vSync + vBackPorch;
+    var vEnd = vStart + resHeight;
+    return hPos >= hStart && hPos < hEnd && vPos >= vStart && vPos < vEnd;
+  }
+
+  function isInHFrontPorch() {
+    var hStart = hSync + hBackPorch + resWidth;
+    return hPos >= hStart && hPos < getTotalH();
+  }
+
+  function isInVSync() {
+    return vPos < vSync;
+  }
+
+  function isInVBackPorch() {
+    return vPos >= vSync && vPos < vSync + vBackPorch;
+  }
+
+  function isInVFrontPorch() {
+    var vStart = vSync + vBackPorch + resHeight;
+    return vPos >= vStart && vPos < getTotalV();
+  }
+
+  function getPatternColor(x, y, frame) {
+    if (pattern === 'test') {
+      var barWidth = resWidth / 8;
+      var bar = Math.floor(x / barWidth);
+      var colors = [
+        [255, 255, 255], [255, 255, 0], [0, 255, 255], [0, 255, 0],
+        [255, 0, 255], [255, 0, 0], [0, 0, 255], [0, 0, 0]
+      ];
+      return colors[bar] || [0, 0, 0];
+    }
+    if (pattern === 'gradient') {
+      return [
+        Math.floor((x / resWidth) * 255),
+        Math.floor((y / resHeight) * 255),
+        128
+      ];
+    }
+    if (pattern === 'checkerboard') {
+      var size = 32;
+      var checker = (Math.floor(x / size) + Math.floor(y / size)) % 2;
+      return checker ? [255, 255, 255] : [0, 0, 0];
+    }
+    if (pattern === 'grid') {
+      var gridSize = 40;
+      if (x % gridSize === 0 || y % gridSize === 0) {
+        return [100, 100, 100];
+      }
+      return [0, 0, 0];
+    }
+    if (pattern === 'animated') {
+      var centerX = resWidth / 2;
+      var centerY = resHeight / 2;
+      var dx = x - centerX;
+      var dy = y - centerY;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      var angle = Math.atan2(dy, dx);
+      var wave = Math.sin(dist * 0.05 - frame * 0.1) * 127 + 128;
+      return [
+        Math.floor(Math.sin(angle + frame * 0.05) * 127 + 128),
+        Math.floor(wave),
+        Math.floor(Math.cos(angle + frame * 0.05) * 127 + 128)
+      ];
+    }
+    if (pattern === 'rgb') {
+      var third = resHeight / 3;
+      var twoThird = resHeight * 2 / 3;
+      if (y < third) return [255, 0, 0];
+      if (y < twoThird) return [0, 255, 0];
+      return [0, 0, 255];
+    }
+    return [0, 0, 0];
+  }
+
+  function renderFrameBuffer() {
+    frameBuffer = ctx.createImageData(resWidth, resHeight);
+    var data = frameBuffer.data;
+    
+    for (var y = 0; y < resHeight; y++) {
+      for (var x = 0; x < resWidth; x++) {
+        var color = getPatternColor(x, y, frameCount);
+        var idx = (y * resWidth + x) * 4;
+        data[idx] = color[0];
+        data[idx + 1] = color[1];
+        data[idx + 2] = color[2];
+        data[idx + 3] = 255;
+      }
+    }
+  }
+
+  function drawDisplay() {
+    // Draw the frame buffer
+    if (frameBuffer) {
+      ctx.putImageData(frameBuffer, 0, 0);
+    }
+
+    // Show blanking overlay
+    if (showBlanking) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      
+      // If in vertical blanking, cover entire screen
+      if (isInVSync() || isInVBackPorch() || isInVFrontPorch()) {
+        ctx.fillRect(0, 0, resWidth, resHeight);
+      } else {
+        // Show horizontal blanking on current line
+        var currentLine = vPos - vSync - vBackPorch;
+        if (currentLine >= 0 && currentLine < resHeight) {
+          if (isInHSync() || isInHBackPorch() || isInHFrontPorch()) {
+            ctx.fillRect(0, currentLine, resWidth, 1);
+          }
+        }
+      }
+    }
+
+    // Draw beam position
+    if (showBeam && isInActiveVideo()) {
+      var beamX = hPos - hSync - hBackPorch;
+      var beamY = vPos - vSync - vBackPorch;
+      
+      ctx.strokeStyle = '#00ffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(beamX, beamY, 5, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Draw scan line
+      ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, beamY);
+      ctx.lineTo(resWidth, beamY);
+      ctx.stroke();
+    }
+  }
+
+  function drawTimingDiagram() {
+    var w = timingCanvas.width;
+    var h = timingCanvas.height;
+    
+    timingCtx.fillStyle = '#1a1a1a';
+    timingCtx.fillRect(0, 0, w, h);
+    
+    var totalH = getTotalH();
+    var totalV = getTotalV();
+    var scale = w / totalH;
+    
+    // Draw horizontal timing
+    var y = 40;
+    var barHeight = 30;
+    
+    // H-Sync
+    timingCtx.fillStyle = '#ef4444';
+    timingCtx.fillRect(0, y, hSync * scale, barHeight);
+    
+    // H-Back Porch
+    timingCtx.fillStyle = '#f97316';
+    timingCtx.fillRect(hSync * scale, y, hBackPorch * scale, barHeight);
+    
+    // Active Video
+    timingCtx.fillStyle = '#22c55e';
+    timingCtx.fillRect((hSync + hBackPorch) * scale, y, resWidth * scale, barHeight);
+    
+    // H-Front Porch
+    timingCtx.fillStyle = '#f59e0b';
+    timingCtx.fillRect((hSync + hBackPorch + resWidth) * scale, y, hFrontPorch * scale, barHeight);
+    
+    // Labels
+    timingCtx.fillStyle = '#fff';
+    timingCtx.font = '11px Arial';
+    timingCtx.fillText('Horizontal Timing', 10, y - 10);
+    
+    // Draw vertical timing
+    y = 110;
+    var vScale = w / totalV;
+    
+    // V-Sync
+    timingCtx.fillStyle = '#8b5cf6';
+    timingCtx.fillRect(0, y, vSync * vScale, barHeight);
+    
+    // V-Back Porch
+    timingCtx.fillStyle = '#f97316';
+    timingCtx.fillRect(vSync * vScale, y, vBackPorch * vScale, barHeight);
+    
+    // Active Lines
+    timingCtx.fillStyle = '#22c55e';
+    timingCtx.fillRect((vSync + vBackPorch) * vScale, y, resHeight * vScale, barHeight);
+    
+    // V-Front Porch
+    timingCtx.fillStyle = '#f59e0b';
+    timingCtx.fillRect((vSync + vBackPorch + resHeight) * vScale, y, vFrontPorch * vScale, barHeight);
+    
+    timingCtx.fillStyle = '#fff';
+    timingCtx.fillText('Vertical Timing', 10, y - 10);
+    
+    // Draw current position indicators
+    timingCtx.strokeStyle = '#00ffff';
+    timingCtx.lineWidth = 2;
+    timingCtx.beginPath();
+    timingCtx.moveTo(hPos * scale, 35);
+    timingCtx.lineTo(hPos * scale, 75);
+    timingCtx.stroke();
+    
+    timingCtx.beginPath();
+    timingCtx.moveTo(vPos * vScale, 105);
+    timingCtx.lineTo(vPos * vScale, 145);
+    timingCtx.stroke();
+    
+    // Draw pixel clock indicator
+    timingCtx.fillStyle = '#60a5fa';
+    timingCtx.font = '12px monospace';
+    timingCtx.fillText('Pixel: ' + pixelClockCount, 10, 180);
+  }
+
+  function animate() {
+    if (!isRunning) return;
+    
+    var pixelsToAdvance = pixelsPerFrame;
+    var totalH = getTotalH();
+    var totalV = getTotalV();
+    
+    for (var i = 0; i < pixelsToAdvance; i++) {
+      pixelClockCount++;
+      hPos++;
+      
+      if (hPos >= totalH) {
+        hPos = 0;
+        vPos++;
+        
+        if (vPos >= totalV) {
+          vPos = 0;
+          frameCount++;
+          renderFrameBuffer();
+        }
+      }
+    }
+    
+    drawDisplay();
+    drawTimingDiagram();
+    updateStats();
+    
+    animationId = requestAnimationFrame(animate);
+  }
+
+  function stepFrame() {
+    var totalH = getTotalH();
+    var totalV = getTotalV();
+    
+    // Advance one full frame
+    vPos = 0;
+    hPos = 0;
+    frameCount++;
+    renderFrameBuffer();
+    
+    drawDisplay();
+    drawTimingDiagram();
+    updateStats();
+  }
+
+  function updateStats() {
+    document.getElementById('pixelClock').textContent = pixelClockCount;
+    
+    var displayH = hPos;
+    var displayV = vPos;
+    
+    document.getElementById('hPos').textContent = displayH + '/' + getTotalH();
+    document.getElementById('vPos').textContent = displayV + '/' + getTotalV();
+    document.getElementById('frame').textContent = frameCount;
+  }
+
+  function clearCanvas() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, resWidth, resHeight);
+  }
+
+  function reset() {
+    hPos = 0;
+    vPos = 0;
+    frameCount = 0;
+    pixelClockCount = 0;
+    renderFrameBuffer();
+    drawDisplay();
+    drawTimingDiagram();
+    updateStats();
+  }
+
+  // Event handlers
+  document.getElementById('toggleBtn').onclick = function() {
+    isRunning = !isRunning;
+    if (isRunning) {
+      this.innerHTML = '⏸ Pause';
+      animate();
+    } else {
+      this.innerHTML = '▶ Start';
+      if (animationId) cancelAnimationFrame(animationId);
+    }
+  };
+
+  document.getElementById('stepBtn').onclick = function() {
+    if (!isRunning) {
+      stepFrame();
+    }
+  };
+
+  document.getElementById('downloadBtn').onclick = function() {
+    var url = canvas.toDataURL('image/png');
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'vga-frame-' + frameCount + '.png';
+    a.click();
+  };
+
+  document.getElementById('patternSelect').onchange = function(e) {
+    pattern = e.target.value;
+    renderFrameBuffer();
+    reset();
+  };
+
+  document.getElementById('resolutionSelect').onchange = function(e) {
+    var parts = e.target.value.split('x');
+    resWidth = parseInt(parts[0], 10);
+    resHeight = parseInt(parts[1], 10);
+    canvas.width = resWidth;
+    canvas.height = resHeight;
+    reset();
+  };
+
+  document.getElementById('speedSlider').oninput = function(e) {
+    pixelsPerFrame = parseInt(e.target.value, 10);
+    document.getElementById('speedValue').textContent = pixelsPerFrame;
+  };
+
+  document.getElementById('showBeam').onchange = function(e) {
+    showBeam = e.target.checked;
+    drawDisplay();
+  };
+
+  document.getElementById('showBlanking').onchange = function(e) {
+    showBlanking = e.target.checked;
+    drawDisplay();
+  };
+
+  // Initialize
+  renderFrameBuffer();
+  drawDisplay();
+  drawTimingDiagram();
+  updateStats();
+})();
+</script>
+</body>
+</html>
