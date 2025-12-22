@@ -1,0 +1,11 @@
+;; Borrowing and lifetimes
+(defstruct Point (x i32) (y i32))
+
+(defn get-x ((p (& Point))) i32
+  (. p x))
+
+(defn main ()
+  (let ((p (Point 10 20)))
+    (let ((x-val (get-x (borrow p))))
+      (print x-val))
+    (print (. p y))))

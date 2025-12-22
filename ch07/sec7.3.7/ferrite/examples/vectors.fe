@@ -1,0 +1,13 @@
+(defstruct Nil ())
+(defstruct Cons (head i32) (tail (& List)))
+
+(defn length ((list (& List))) i32
+  (match list
+    ((Nil) 0)
+    ((Cons _ tail) (+ 1 (length tail)))))
+
+(defn main ()
+  (let ((empty (Nil))
+        (lst (Cons 1 (borrow (Cons 2 (borrow (Cons 3 (borrow (Nil)))))))))
+    (print (length (borrow empty)))  ;; 0
+    (print (length (borrow lst)))))  ;; 3

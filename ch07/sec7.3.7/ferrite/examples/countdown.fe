@@ -1,0 +1,8 @@
+(defn countdown ((n i32)) i32
+  (print n)
+  (if (== n 0)
+      0
+      (countdown (- n 1))))
+
+(defn main ()
+  (countdown 10))

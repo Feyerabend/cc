@@ -1,0 +1,19 @@
+(defn is-prime-helper ((n i32) (d i32)) i32
+  (if (> d (/ n 2))
+      1
+      (if (== (% n d) 0)
+          0
+          (is-prime-helper n (+ d 1)))))
+
+(defn is-prime ((n i32)) i32
+  (if (<= n 1)
+      0
+      (is-prime-helper n 2)))
+
+(defn main ()
+  (print (is-prime 2))   ;; 1
+  (print (is-prime 17))  ;; 1
+  (print (is-prime 18))  ;; 0
+  (print (is-prime 97))  ;; 1
+  (print (is-prime 100)) ;; 0
+)

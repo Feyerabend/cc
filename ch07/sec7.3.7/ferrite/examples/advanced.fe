@@ -1,0 +1,16 @@
+;; Advanced example: distance calculation
+(defstruct Point (x i32) (y i32))
+
+(defn square ((n i32)) i32
+  (* n n))
+
+(defn distance ((p (& Point))) i32
+  (let ((x (. p x))
+        (y (. p y)))
+    (+ (square x) (square y))))
+
+(defn main ()
+  (let ((p1 (Point 3 4))
+        (p2 (Point 5 12)))
+    (print (distance (borrow p1)))
+    (print (distance (borrow p2)))))

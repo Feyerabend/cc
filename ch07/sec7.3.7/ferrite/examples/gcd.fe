@@ -1,0 +1,9 @@
+;; Greatest Common Divisor
+(defn gcd ((a i32) (b i32)) i32
+  (if (== b 0)
+      a
+      (gcd b (% a b))))
+
+(defn main ()
+  (print (gcd 48 18))   ;; 6
+  (print (gcd 1071 462))) ;; 21

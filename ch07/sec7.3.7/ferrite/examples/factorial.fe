@@ -1,0 +1,10 @@
+;; Factorial using recursion
+(defn factorial ((n i32)) i32
+  (if (== n 0)
+      1
+      (* n (factorial (- n 1)))))
+
+(defn main ()
+  (print (factorial 5))   ;; 120
+  (print (factorial 10))) ;; 3628800
+  

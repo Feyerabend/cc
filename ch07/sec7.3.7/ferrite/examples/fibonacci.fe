@@ -1,0 +1,10 @@
+;; Fibonacci (naive recursion – slow but illustrative)
+(defn fib ((n i32)) i32
+  (if (<= n 1)
+      n
+      (+ (fib (- n 1))
+         (fib (- n 2)))))
+
+(defn main ()
+  (print (fib 10))  ;; 55
+  (print (fib 12))) ;; 144
