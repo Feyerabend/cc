@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 """
-Ferrite Compiler - Zero warnings on all examples (final)
+Ferrite Compiler
 """
 
 import sys
@@ -12,9 +12,8 @@ from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple, Any
 from enum import Enum
 
-# ============================================================================
-# PARSER (robust)
-# ============================================================================
+
+# PARSER
 
 class ParseError(Exception):
     pass
@@ -81,9 +80,9 @@ def parse_program(source: str) -> List[Any]:
         forms.append(form)
     return forms
 
-# ============================================================================
+
+
 # COMPILER
-# ============================================================================
 
 def sanitize_name(name: str) -> str:
     return name.replace('-', '_')
@@ -315,7 +314,6 @@ class Compiler:
             return temp, Type("i32")
         
         if op == "match":
-            # Key fix: if matching on a variable, use it directly
             if isinstance(expr[1], str):
                 val_code = sanitize_name(expr[1])
                 var = self.scope.lookup(val_code)
@@ -485,9 +483,8 @@ class Compiler:
         
         return self.codegen.get_code()
 
-# ============================================================================
+
 # CLI
-# ============================================================================
 
 def compile_file(input_path: str, output_path: Optional[str] = None):
     if not output_path:
