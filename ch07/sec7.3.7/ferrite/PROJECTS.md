@@ -156,7 +156,7 @@ prototype entirely different ways to achieve similar safety goals
    as a runtime alternative to static ownership, or affine types (use-once variables) instead of borrow/own.
 2. Prototype one: Fork the compiler and replace Ownership with affine
    tracking--mark variables as "consumed" after use, error on reuse.
-3. Use the browse_page or web_search tools (if needed) to find resources
+3. Use a LLM, check for books, or browse the net to find resources
    on "affine types in compilers" or "alternatives to Rust ownership."
 4. Compare: Write the same Ferrite program in both versions, measure generated
    C size/runtime, and note pros/cons (e.g., affine might simplify code but limit expressiveness).
