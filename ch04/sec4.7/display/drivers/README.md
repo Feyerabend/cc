@@ -15,8 +15,8 @@ the intricate details of each piece of hardware.
 
 The concept of drivers emerged in the early days of computing. In the 1950s and 1960s,
 with mainframes like the IBM 7090, hardware interaction was often hardcoded into programs,
-leading to inefficiency and portability issues. As operating systems evolved—think UNIX
-in the 1970s—drivers became modular components within the kernel to standardise hardware
+leading to inefficiency and portability issues. As operating systems evolved--think UNIX
+in the 1970s--drivers became modular components within the kernel to standardise hardware
 access. Microsoft's MS-DOS in the 1980s popularised user-installable drivers for peripherals
 like printers. The 1990s saw plug-and-play standards in Windows, automating driver
 installation. In the 2000s, with Linux's open-source model, drivers became community-driven,
@@ -74,7 +74,7 @@ library, provide easy functions like `display.text("Hello", x, y)` to draw on th
 - *Edge Cases*: Handle unique scenarios, like overclocking the Pico's PIO for faster SPI,
   or integrating with other peripherals without library conflicts.
 
-However, it's not always ideal—high-level APIs save time for rapid prototyping,
+However, it's not always ideal--high-level APIs save time for rapid prototyping,
 reduce errors, and handle common pitfalls like initialisation sequences.
 
 
@@ -90,7 +90,7 @@ reduce errors, and handle common pitfalls like initialisation sequences.
 - *Constraints*: In memory-tight environments (Pico has 264KB SRAM), low-level
   code can be leaner than bloated libraries.
 
-Avoid it if deadlines are tight or you're new to embedded programming—start with
+Avoid it if deadlines are tight or you're new to embedded programming--start with
 APIs and peel back layers gradually.
 
 
@@ -228,6 +228,6 @@ Raspberry Pi's GitHub). Assume you've set up the SDK and CMake for building.
    - Alternatives: In MicroPython, you can still go low-level with
      `machine.SPI` instead of `Pimoroni` modules.
 
-Writing low-level drivers is rewarding but error-prone—start small, test incrementally,
+Writing low-level drivers is rewarding but error-prone--start small, test incrementally,
 and refer to existing open-source implementations for inspiration.
 

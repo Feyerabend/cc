@@ -105,4 +105,4 @@ Binary | Hex | Colour
 
 This is a minimal but fully functional VGA implementation.
 
-![Resistor](./../../../../../assets/image/game/270ohm.png)
+![Resistor](./../../../../../assets/image/display/270ohm.png)

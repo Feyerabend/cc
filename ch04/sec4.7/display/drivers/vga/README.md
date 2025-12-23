@@ -100,7 +100,7 @@ irq 1 [3]               ; Signal RGB active, then wrap
 wrap
 ```
 - *Timing Explanation:* Active: 480 lines. Front porch: 10 lines high.
-  Sync: 2 lines low. Back porch: 33 lines high. Synchronized to HSYNC via IRQ 0.
+  Sync: 2 lines low. Back porch: 33 lines high. Synchronised to HSYNC via IRQ 0.
 
 *RGB PIO Program (Outputs pixel data, clocked at 125MHz):*
 ```

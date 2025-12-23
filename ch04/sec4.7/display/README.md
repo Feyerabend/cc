@@ -78,7 +78,7 @@ or embedded applications.
 | *Input/Output* | Four tactile buttons (A/B/X/Y, mapped to GPIO 12-15 by default). One RGB LED for status or effects. |
 | *Compatibility* | Works with Raspberry Pi Pico/Pico W (needs male headers on the Pico). Supports MicroPython (via Pimoroni’s UF2 build with `picodisplay` library), CircuitPython (ST7789 driver), or C/C++. Stackable with other Pico add-ons. |
 | *Dimensions & Build* | ~35mm x 25mm x 9mm (L x W x H). No soldering if Pico has headers. Compact but slightly delicate buttons. |
-| *Power* | Runs off Pico’s 3.3V, low power for battery setups. |
+| *Power* | Runs off Pico's 3.3V, low power for battery setups. |
 
 
 #### Comparison to Pico Display Pack 2.0
@@ -94,7 +94,7 @@ or embedded applications.
 
 1. *Setup*: Attach to a Pico with headers. No soldering needed if prepped.
 
-2. *Software*: Flash Pimoroni’s MicroPython UF2 (from their GitHub). Basic example:
+2. *Software*: Flash Pimoroni's MicroPython UF2 (from their GitHub). Basic example:
    ```python
    from picodisplay import PicoDisplay
    import time
@@ -106,7 +106,7 @@ or embedded applications.
    display.update()
    time.sleep(1)
    ```
-   Check Pimoroni’s tutorials for more (GitHub or their site).
+   Check Pimoroni's tutorials for more (GitHub or their site).
 
 3. *Use Cases*: Great for simple games, small dashboards, or IoT displays.
 
