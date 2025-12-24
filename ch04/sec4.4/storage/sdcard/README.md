@@ -1,5 +1,5 @@
 
-![SD Card install](./../../../../../assets/image/storage/install-sdcard.png)
+![SD Card install](./../../../assets/image/storage/install-sdcard.png)
 
 The most common and simple way is to use the classic `sdcard.py` driver (a small MicroPython library here included).
 
