@@ -147,9 +147,9 @@ class RenderF(FunctorF): ...    # Draw frame
 
 #### 3. *Get Monads for Free*
 The Free monad construction gives you:
-- + Composition (`bind`)
-- + Sequencing (`a.bind(lambda _: b)`)
-- + All monad operations
+- Composition (`bind`)
+- Sequencing (`a.bind(lambda _: b)`)
+- All monad operations
 
 #### 4. *Write Multiple Interpreters*
 - Production: Real execution
