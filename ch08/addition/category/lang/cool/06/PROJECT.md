@@ -187,7 +187,7 @@ Source → Free Monad → Choose Interpreter → Result
 
 1. *What if* you could test your entire application without touching I/O?
 2. *What if* the same program could run fast in production, slow in debug, and mock in tests?
-3. *What if* optimization was just another interpreter?
+3. *What if* optimisation was just another interpreter?
 4. *What if* you could inspect programs before running them?
 
 *Free monads make all of this trivial.*
@@ -217,9 +217,9 @@ Source → Free Monad → Choose Interpreter → Result
 
 #### Week 5+: "Go Wild"
 - Add type checking as an interpreter
-- Add optimization as an interpreter
+- Add optimisation as an interpreter
 - Add code generation as an interpreter
-- Add visualization as an interpreter
+- Add visualisation as an interpreter
 
 
 ### So ..
@@ -241,9 +241,7 @@ You've seen:
 - Composable by construction
 - Correct by category theory
 
-*Build something.* 
-
-Not a toy. Not an exercise. *Build a real language for a real problem.*
+*Build something.* Not a toy. Not an exercise. *Build a real language for a real problem.*
 
 Use what you've learned:
 1. Free monads for flexibility
@@ -253,7 +251,7 @@ Use what you've learned:
 
 And when you're done, you'll have something that:
 - Can be tested without side effects
-- Can be optimized without changing code
+- Can be optimised without changing code
 - Can be debugged by swapping interpreters
 - Can be extended without breaking existing code
 
