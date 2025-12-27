@@ -25,7 +25,11 @@ several logical sections:
 
 *3. Filesystem Area*
 - The remaining flash is used for file storage
-- MicroPython creates a simple filesystem here called "littlefs"
+- Here you can use MicroPython to create a simple filesystem here called "littlefs"
+
+*LittleFS is not a built-in part of the Pico’s flash structure.
+But it is a library/filesystem you choose to integrate to use
+the flash as a proper filesystem rather than raw storage.*
 
 
 ### How UF2 Flashing Works
@@ -48,7 +52,7 @@ but it's not like a traditional PC filesystem:
 
 #### The LittleFS Filesystem
 
-MicroPython uses *littlefs*, a filesystem designed specifically for microcontrollers:
+MicroPython can use *littlefs*, a filesystem designed specifically for microcontrollers:
 
 - *Power-loss resilient*: Designed to handle sudden power loss gracefully
 - *Wear leveling*: Spreads writes across flash to extend lifetime
@@ -73,7 +77,7 @@ with open('data.txt', 'w') as f:
 
 #### Memory Layout
 
-When MicroPython boots on a Pico:
+Thus when MicroPython boots on a Pico:
 
 ```
 Flash Memory (2MB typical):
@@ -105,12 +109,12 @@ There are important limitations:
 
 ### Comparing to "No Filesystem" Approaches
 
-Some bare-metal applications skip the filesystem entirely and:
+Some bare-metal applications may skip the filesystem entirely and:
 - Store data at fixed flash addresses
 - Manually manage erase/write operations
 - Use the flash like a large EEPROM
 
-MicroPython's filesystem approach is much more convenient for most use cases,
+MicroPython's filesystem approach in this example is much more convenient for most use cases,
 as it handles all the complexity of flash management while providing familiar file operations.
 
 
@@ -444,6 +448,6 @@ def dump_flash_block(block_num):
 dump_flash_block(500)  # Dump block 500
 ```
 
-This gives you full control over flash storage, but remember:
+This gives you *full control over flash storage*, but remember:
 *One wrong write and you could corrupt your filesystem or firmware*.
 
