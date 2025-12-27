@@ -555,7 +555,7 @@ mathematics and practical programming technique. By providing a unified
 language for composition, structure, and transformation, it bridges theoretical
 foundations with software engineering practice.
 
-The concepts explored here—functors, monads, natural transformations—aren't
+The concepts explored here--functors, monads, natural transformations--aren't
 merely academic curiosities. They're working tools that enable:
 
 - *Safer programs* through type-driven design
@@ -577,4 +577,5 @@ and clearer communication of intent.
 Whether you're designing type systems, building compilers, writing functional
 programs, or reasoning about software architecture, category theory offers both
 tools and insights that repay careful study.
+
 

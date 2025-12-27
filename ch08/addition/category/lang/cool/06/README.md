@@ -96,3 +96,5 @@ These show free monads' flexibility: one program, many meanings.
 - Explore free arrows/applicatives.
 - Visualise program trees.
 - Combine with generics/monoids for richer DSLs.
+
+Try getting into a [project](./PROJECT.md) now!
