@@ -2,7 +2,7 @@
 ## Practice: Your Own Homebrew Computer
 
 
-### 1.
+### 1. Electronics
 
 If you are curious about exploring electronics more directly, you might want to start by
 reading a little about the basics--for example, see [electronics](./electro/) for some
@@ -27,7 +27,7 @@ you are not only writing code but also wiring components together, powering circ
 and dealing with the physical reality of signals and sensors.
 
 
-### 2.
+### 2. Read-Made
 
 But if you want to keep your hands clean then? Consider a middle path: [ready-made](./readymade/).
 Building your own computer from scratch can be an immensely rewarding and highly educational
