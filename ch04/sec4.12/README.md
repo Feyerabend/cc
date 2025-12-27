@@ -27,7 +27,7 @@ you are not only writing code but also wiring components together, powering circ
 and dealing with the physical reality of signals and sensors.
 
 
-### 2. Read-Made
+### 2. Ready-Made
 
 But if you want to keep your hands clean then? Consider a middle path: [ready-made](./readymade/).
 Building your own computer from scratch can be an immensely rewarding and highly educational
