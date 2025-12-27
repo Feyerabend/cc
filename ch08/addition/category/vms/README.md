@@ -1,314 +1,163 @@
 
-### Functors: mapping without changing structure
-
-A functor captures the idea of applying a function inside a structure
-without modifying the structure itself.
-
-In Haskell-like pseudocode:
-
-```haskell
-class Functor f where
-    fmap :: (A -> B) -> f A -> f B
-```
-
-The key idea is that fmap applies a function to the contents, not to the container.
-
-For lists:
-
-```haskell
-map (+1) [1,2,3] == [2,3,4]
-```
-
-The list remains a list, with the same length and ordering. Only the elements change.
-
-For optional values (Maybe):
-
-```haskell
-fmap (+1) (Just 3) == Just 4
-fmap (+1) Nothing  == Nothing
-```
-
-No conditionals are needed. The functor handles absence uniformly.
-
-What makes this powerful is that the same code shape works for many data types.
-The functor laws guarantee predictable behaviour: mapping the identity function
-does nothing, and mapping composed functions is the same as composing maps.
-
-
-
-#### Endofunctors in programming
-
-In most programming languages, functors map types to types within the same universe:
-
-```haskell
-List   :: Type -> Type
-Maybe  :: Type -> Type
-IO     :: Type -> Type
-```
-
-This "type-to-type" mapping is exactly what an endofunctor is. The mapping preserves
-how functions compose, which allows generic code to work uniformly across containers and effects.
-
-
-
-### Monads: sequencing computations with context
-
-A monad extends a functor with a way to sequence computations that carry context.
-
-In simplified form:
-
-```haskell
-class Monad m where
-    return :: A -> m A
-    (>>=)  :: m A -> (A -> m B) -> m B
-```
-
-The bind operator (>>=) takes the result of one computation and feeds it into the next,
-while preserving the surrounding context.
-
-
-
-#### Example: Maybe monad (failure handling)
-
-```haskell
-safeDiv x y =
-    if y == 0 then Nothing else Just (x / y)
-
-Just 10 >>= \x -> safeDiv x 2   == Just 5
-Just 10 >>= \x -> safeDiv x 0   == Nothing
-Nothing >>= \x -> safeDiv x 2   == Nothing
-```
-
-Failure propagates automatically. There is no need to check for errors at every step.
-
-The monad laws ensure that this propagation behaves consistently, no matter how computations are grouped.
-
-
-
-#### Example: State monad (implicit state threading)
-
-A stateful computation can be modelled as a function:
-
-```haskell
-State s a = s -> (a, s)
-```
-
-Reading and writing state:
-
-```haskell
-get :: State s s
-put :: s -> State s ()
-````
-
-Sequencing:
-
-```haskell
-put 5 >>= \_ -> get
-```
-
-This reads as: update the state to 5, ignore the trivial result, then read the state.
-The explicit state-passing is hidden, but still fully controlled and predictable.
-
-
-
-#### Example: IO monad (controlled side effects)
-
-```haskell
-getLine >>= \line ->
-putStrLn line
-```
-
-Although input and output are inherently impure, the monad enforces an explicit order
-of operations. Effects cannot be duplicated, reordered, or discarded accidentally.
-
-
-
-#### Example: Parser monad (composable syntax)
-
-A parser can be viewed as:
-
-```haskell
-Parser a = String -> Maybe (a, String)
-```
-
-Simple parsers are combined into larger ones:
-
-```haskell
-parseNumber >>= \n ->
-parsePlus   >>
-parseNumber >>= \m ->
-return (n + m)
-```
-
-Each parser consumes input and passes the remainder along. Failure short-circuits automatically.
-
-
-
-
-These abstractions are not about clever notation. They provide:
-- a uniform way to structure programs,
-- predictable composition guaranteed by laws,
-- reusable patterns independent of concrete data.
-
-Category theory supplies the rules that make these abstractions reliable.
-Programming supplies the instances that make them useful.
-
-
-
-### The core idea
-
-A virtual machine is, at heart, a state transition system.
-
-At each step, the machine:
-- has some internal state,
-- executes an instruction,
-- produces a new state (and possibly a value),
-- then continues.
-
-A monad captures exactly this pattern.
-
-Formally, a monadic computation can be read as:
-
-```
-current_state -> (result, next_state)
-```
-
-That is already a small-step operational semantics.
-
-
-
-#### A minimal virtual machine
-
-Consider a very small stack-based VM.
-
-```
-State = (stack, program_counter)
-```
-
-An instruction transforms the state:
-
+## Categorical Stack VM: A Toy Implementation for Exploring Category Theory
+
+This project implements a very simple stack-based virtual machine (VM) in Python,
+where core concepts from category theory are mapped to programming constructs.
+The goal is *not* to create a practical VM for production use (it's deliberately
+decorative and inefficient), but to provide a concrete, runnable example that
+helps demystify *some* category theory through code. By seeing abstract ideas like
+objects, morphisms, products, and coproducts "in action" on a stack, you can
+experiment with how they compose and transform data.
+
+If you're new to category theory, think of it as a mathematical framework for
+describing structures and transformations in a general way. Here, we treat the
+VM's stack as a "category" where:
+- *Objects* are types (e.g., `Int`, `Bool`, or composite types like products).
+- *Morphisms* (arrows between objects) are instructions that reliably transform
+  the stack from one type configuration to another.
+- *Composition* is simply running instructions in sequence, which must preserve
+  type safety.
+
+The code in `cat_vm.py` builds this out with a type system, typed values,
+instructions, and a VM executor. It includes examples for arithmetic, stack
+manipulation, pairs (products), either-types (sums), and basic control flow.
+Running the code will execute demo programs and tests to illustrate these.
+
+*Is this helpful or a hindrance?* It can be a great departure point if you're
+a programmer looking to ground category theory in something tangible--run the
+code, tweak instructions, and see how types flow. However, it might hinder if
+you're expecting a rigorous mathematical treatment; the mapping is inspirational
+rather than precise (e.g., the stack isn't a full category, and some type
+transformations are simplified). Use it as a playground, not a textbook.
+For deeper understanding, pair it with resources like *Category Theory for Programmers*
+by Bartosz Milewski, or look at some other code such as [COOL](./../lang/cool/).
+
+It even might feel like "crammed," as the nature of traditional stack-based
+virtual machines is quite the opposite that of category theory. However,
+if you come from a more "imperative" stance, it might help with some concepts.
+
+Read on some more [concepts](./DETAILS.md) in CT.
+
+
+### Core Concepts Mapped to Code
+
+In category theory, *objects* are the "things" we work with--no internal
+structure assumed, just their relationships via morphisms.
+
+In the VM:
+- Types (subclasses of `Type`) represent objects:
+  `IntType`, `BoolType`, `StrType`, `UnitType`.
+- Composite types:
+  - `ProductType(left: Type, right: Type)`: Like a tuple `(A × B)`,
+    holding two values together.
+  - `SumType(left: Type, right: Type)`: Like an either/or type `(A + B)`,
+    holding one value tagged as left or right.
+- `StackType(types: list[Type])`: The entire stack's type, e.g., `[Int, Bool]`,
+  treating the stack as a structured object.
+
+Values are wrapped in `TypedValue(typ: Type, value: Any)` to enforce type awareness.
+This prevents mismatches at runtime, mirroring how categories ensure morphisms
+connect compatible objects.
+
+
+#### Instructions as Morphisms
+Morphisms are functions between objects: if `f: A → B`, applying
+`f` to something of type `A` yields `B`.
+
+In the VM:
+- Each `Instruction` subclass is a morphism that transforms the stack:
+  - `execute(stack: list[TypedValue]) → list[TypedValue]`:
+    Applies the transformation to values.
+  - `type_transform(stack_type: StackType) → StackType`:
+    Describes the type-level change (like a type signature).
+- Examples:
+  - `Push(value: TypedValue)`: Morphism from stack `S` to `(T : S)`, where `T`
+    is the pushed type. Adds a value without altering the rest.
+  - `Add()`: Morphism from `(Int : Int : S)` to `(Int : S)`. Combines two ints via addition.
+  - Stack ops like `Dup()`, `Swap()`, `Rot()`: Structural morphisms that rearrange
+    without changing types fundamentally (like isomorphisms in categories).
+
+This setup ensures instructions are composable: sequencing them
+builds larger morphisms, as long as types align.
+
+
+#### Categorical Products (Pairs/Tuples)
+Products model "both A and B" with projections to extract each part.
+
+In the VM:
+- `Pair()`: Takes `(A : B : S)` and produces `((B × A) : S)`. Note the order (left is bottom,
+  right is top--stack convention).
+- `Fst()`: From `((A × B) : S)` to `(A : S)`—extracts the first (left) component.
+- `Snd()`: Extracts the second (right).
+
+Example from the code:
 ```python
-def step(state):
-    stack, pc = state
-    instr = program[pc]
-
-    if instr == "PUSH 3":
-        return ([3] + stack, pc + 1)
-
-    if instr == "ADD":
-        a, b, *rest = stack
-        return ([a + b] + rest, pc + 1)
+program = [
+    Push(TypedValue(IntType(), 42)),
+    Push(TypedValue(IntType(), 17)),
+    Pair(),  # Stack: [(42 × 17)]
+    Dup(),
+    Fst(),   # Stack: [42, (42 × 17)]
+    Swap(),
+    Snd()    # Stack: [42, 17]
+]
 ```
-
-This is a pure function:
-
-```
-State -> State
-```
-
-No magic, no effects — just explicit state passing.
+This demonstrates universal property sketches: you can build and dismantle pairs predictably.
 
 
+#### Categorical Coproducts (Sums/Eithers)
+Coproducts model "either A or B" with injections to embed values and
+case analysis to handle branches.
 
-#### Encoding this as a monad
+In the VM:
+- `InL(right_type: Type)`: From `(A : S)` to `((A + right_type) : S)`--tags as "left".
+- `InR(left_type: Type)`: Tags as "right".
+- `Case(left_prog: list[Instruction], right_prog: list[Instruction])`: From `((A + B) : S)`
+  branches to either program, feeding the untagged value.
 
-Now rewrite this idea in monadic form.
-
-We define a computation type:
-
-```
-Computation = State -> (Value, State)
-```
-
-In Python-like pseudocode:
-
-```python
-def bind(m, f):
-    def new_comp(state):
-        value, state2 = m(state)
-        return f(value)(state2)
-    return new_comp
-```
-
-This bind is exactly the monadic (`>>=`).
-
-The machine’s state is now implicitly threaded through computations.
+Example from the code (simplified):
+- Inject 42 as left in `(Int + Bool)`, then case: double if left, drop and push 0 if right.
+This handles alternatives without explicit conditionals in the main flow--failure or variants propagate.
 
 
+#### Control Flow and Quotations
+- `Quote(program: list[Instruction])`: Pushes a program as data (like a function value).
+- `Call()`: Executes a quoted program.
+- This hints at higher-order morphisms, but it's basic--no full closures.
 
-#### Instructions as monadic actions
+The `Case` instruction uses branching programs, showing how morphisms can compose
+conditionally while staying type-safe.
 
-Each VM instruction becomes a computation.
 
-```python
-def push(n):
-    def comp(state):
-        stack, pc = state
-        return None, ([n] + stack, pc + 1)
-    return comp
+#### The VM as a State Transformer
+Tying back to the original README's monadic perspective: the entire VM is a state
+machine where state = stack + (implicit) program counter.
 
-def add():
-    def comp(state):
-        stack, pc = state
-        a, b, *rest = stack
-        return None, ([a + b] + rest, pc + 1)
-    return comp
-```
+Each instruction is like a monadic action:
+- `State → (Value, State)` (though here, values are on the stack, no separate output).
+- Sequencing via `run(program)` is like monadic bind: thread the stack through each step.
 
-Sequencing instructions:
-
-```
-program =
-    push(3) >>= \
-    push(4) >>= \
-    add()
-```
-
-This is not metaphorical.
-This is a virtual machine, written in monadic form.
+In category theory terms, this is an endofunctor on the category of states, but the
+code keeps it simple. You could refactor the VM into a full `State` monad for purity.
 
 
 
-#### Operational semantics view
+### Getting Started
+- Run `python cat_vm.py` to see examples: arithmetic, stack ops, products, sums, comparisons, and factorial.
+- Experiment: Add new types/instructions (e.g., a `ListType` with functor-like `Map`).
+- Trace mode (`vm.trace = True`) shows stack transformations step-by-step.
 
-In operational semantics, we often write transitions like:
+Limitations and Departure Points:
+- *Type system is static-ish but runtime-checked*: No full inference; `type_transform` is for illustration.
+- *Not a real category*: No formal proofs of laws (e.g., associativity, identities).
+  Instructions compose, but edge cases (empty stacks) error out.
+- *Still some departure ideas*:
+  - Extend to functors: Add a `Map` instruction for `ProductType` or `SumType`
+    to apply morphisms inside without unpacking.
+  - Monadic refactor: Rewrite `execute` as a `State[list[TypedValue], None]` monad.
+  - Explore Kleisli categories: Treat instructions as arrows in a category where
+    composition handles effects (like errors in sums).
 
-```
-⟨ADD, (a :: b :: s, pc)⟩ → ⟨(), (a+b :: s, pc+1)⟩
-```
-
-The monadic version encodes the same transition as a function:
-
-```
-State -> ((), State)
-```
-
-Bind corresponds to sequencing of transitions.
-
-So:
-- VM step rules = monadic actions
-- Instruction sequencing = bind
-- Machine state = monad state
-- Program execution = monadic composition
-
-
-
-### Why this is powerful
-
-Once written this way:
-- the VM is pure and compositional
-- instruction effects are explicit
-- reasoning becomes algebraic
-- optimisation becomes lawful rewriting
-
-For example, instruction fusion corresponds to monad law–preserving rewrites.
-
-Associativity of bind:
-
-```
-(m >>= f) >>= g == m >>= (\x -> f x >>= g)
-```
-
-means instruction grouping does not affect behaviour--exactly what you want from a machine.
-
+This VM shows category theory isn't just abstract--it's a lens for designing composable systems.
+Start here, but then: dive into proper category theory for the math!
 
