@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Ferrite Compiler - Now with actual Rust-style ownership and borrow checking!
+Ferrite Compiler
 """
 
 import sys
