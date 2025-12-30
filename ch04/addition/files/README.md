@@ -2,7 +2,7 @@
 ## Projects using a File Server and Client
 
 Build on the client-server solution to be more versatile. Improve on debugging
-and make more roboust solutions.
+and make more robust solutions.
 
 ### Wireless Sensor Networks
 
@@ -99,7 +99,7 @@ events logged to SD with timestamps.
 
 *Wireless Digital Picture Frames*
 Server stores images on SD card. Multiple client Picos with displays request and
-display images. You could build a synchronized slideshow system or let each client
+display images. You could build a synchronised slideshow system or let each client
 display different content.
 
 *Status Dashboard Network*

@@ -24,7 +24,7 @@ in the broader ecosystem of electronics.
 #### Z80
 To get a sense of how this works, consider the iconic Z80, a microprocessor that emerged in
 the 1970s from Zilog, a company founded by ex-Intel engineers. The "Z" proudly declares its
-maker, Zilog, while the "80" nods to its predecessor, the Intel 8080, signaling compatibility
+maker, Zilog, while the "80" nods to its predecessor, the Intel 8080, signalling compatibility
 and a step forward in performance. This naming choice was partly technical and partly marketing
 genius-by echoing the 8080, Zilog positioned the Z80 as a natural upgrade, a chip that could
 slot into existing systems while offering enhanced capabilities. The Z80’s simple, memorable
@@ -51,7 +51,7 @@ temperature sensor from Bosch Sensortec, is a great example. The "BMP" stands fo
 indicating its function, while "280" distinguishes it as a specific model in Bosch’s sensor family,
 likely tied to its generation or precision. Similarly, the BME680, another Bosch sensor, extends
 the naming convention to include environmental measurements like humidity and gas, with "680"
-marking its place in the product line. These names are purpose-driven, with letters signaling the
+marking its place in the product line. These names are purpose-driven, with letters signalling the
 manufacturer and sensor type, and numbers differentiating models based on features or revisions.
 
 #### Patterns
@@ -93,7 +93,7 @@ purpose and capabilities.
 #### Datasheets
 For those diving into electronics, datasheets are the Rosetta Stone for decoding semiconductor names. These
 technical documents spell out what the letters and numbers mean, from the chip’s family and function to its
-electrical characteristics and package type. By familiarizing yourself with a manufacturer’s naming
+electrical characteristics and package type. By familiarising yourself with a manufacturer’s naming
 conventions-whether it’s STM, Bosch, or Raspberry Pi-you start to see the method behind the madness.
 The names aren’t just arbitrary; they’re a compact history of the chip, its maker, and its place in the
 ever-evolving world of technology.

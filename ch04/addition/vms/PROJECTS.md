@@ -39,8 +39,8 @@ These projects focus on the elegant, step-by-step nature of the state machine de
   that push the return address onto a separate call stack and then pop it back off.
   This would make the VM Turing-complete and allow for modular programming.
 
-* *Build a Graphical State Visualizer:* Create a simple tool that displays the VM's
-  state as it steps through a program. This would be a great way to visualize the
+* *Build a Graphical State Visualiser:* Create a simple tool that displays the VM's
+  state as it steps through a program. This would be a great way to visualise the
   microcode-like execution. You could show the current state of the main VM and the
   instruction state machine, highlight the program counter, and show the stack contents.
 
