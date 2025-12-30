@@ -92,7 +92,10 @@ This code sets up the DHT22 sensor and defines a function to read the temperatur
 
 3. Implementing Complex Event Processing (CEP)
 
-Now, let's implement a basic CEP system that detects a rising temperature trend. We'll process the event stream of temperature readings and trigger an action when the temperature exceeds 30°C for five consecutive readings (in this example, a basic time window).
+Now, let's implement a basic CEP system that detects a rising temperature trend.
+We'll process the event stream of temperature readings and trigger an action when
+the temperature exceeds 30°C for five consecutive readings (in this example,
+a basic time window).
 
 Here's a breakdown of how this could work:
 - Event Stream: Continuous temperature readings.
@@ -146,10 +149,13 @@ def main():
 How This Works:
 
 1. Event Stream: The main() function continuously reads the temperature sensor every second.
+
 2. Pattern Detection: The process_temperature_event() function checks the last 5 temperature
    readings stored in the temperature_window. If all readings exceed 30°C, it triggers an action.
+
 3. Action: The trigger_action() function is called when the pattern is detected. You could
    extend this to control a relay, activate a cooling fan, or send a message.
+
 4. Scaling and Advanced CEP Concepts
 
 For a real-world CEP system, more advanced techniques can be used to handle multiple event streams,
