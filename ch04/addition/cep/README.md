@@ -4,10 +4,10 @@
 Complex Event Processing (CEP) is a field of computer science focused
 on identifying meaningful patterns in real-time event streams. It's
 typically used in scenarios where multiple data points (events) are
-processed and analyzed to detect complex patterns that are beyond
+processed and analysed to detect complex patterns that are beyond
 simple event matching.
 
-In simpler terms, CEP allows systems to continuously monitor and analyze
+In simpler terms, CEP allows systems to continuously monitor and analyse
 events as they occur, and when specific patterns of events are detected,
 the system can trigger actions or generate outputs. It's commonly used
 in financial systems, traffic management, monitoring systems, and IoT
@@ -66,7 +66,8 @@ You'll need the dht library to interface with the DHT sensor on the Raspberry Pi
 
 2. Basic Python Code to Read from the Temperature Sensor
 
-Let's start by reading data from the temperature sensor. We'll use the MicroPython environment for the Raspberry Pi Pico.
+Let's start by reading data from the temperature sensor.
+We'll use the MicroPython environment for the Raspberry Pi Pico.
 
 ```python
 import time
@@ -154,7 +155,7 @@ How This Works:
 For a real-world CEP system, more advanced techniques can be used to handle multiple event streams,
 correlate events from different sources, and apply more complex patterns. These may include:
 - Temporal Patterns: Detecting patterns that span across specific time windows.
-- Event Prioritization: Processing events based on priority or urgency.
+- Event Prioritisation: Processing events based on priority or urgency.
 - Complex Patterns: Using logical conditions, such as "Event A occurs within 5 minutes of Event B."
 
 To scale this to handle more complex patterns, you could use a proper event processing framework
@@ -190,6 +191,6 @@ was more interested in Complex Event Processing and what it could offer.
 He even gave me a book about it:
 
 It introduces core concepts such as events, causal relationships, event patterns, hierarchies,
-time windows, and event correlation in a way that closely matches the opening sections of your document.
-If you continue developing your work on these concepts, I highly recommend reading this book.
+time windows.. If you continue developing your work on these concepts, I highly recommend
+reading this book.
 
