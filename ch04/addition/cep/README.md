@@ -182,3 +182,14 @@ can scale the system by incorporating more sophisticated event correlation techn
 even simple CEP can provide valuable functionality in IoT and real-time monitoring scenarios.
 
 
+### Reference
+
+As a journalist I was once invited to a company in the Netherlands to learn about their
+RFID implementation in both hardware and software. However, the technician I spoke with
+was more interested in Complex Event Processing and what it could offer.
+He even gave me a book about it:
+
+It introduces core concepts such as events, causal relationships, event patterns, hierarchies,
+time windows, and event correlation in a way that closely matches the opening sections of your document.
+If you continue developing your work on these concepts, I highly recommend reading this book.
+
