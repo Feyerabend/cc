@@ -1,0 +1,10 @@
+;; This should fail: using a moved value
+(defstruct Point (x i32) (y i32))
+
+(defn consume ((p Point)) i32
+  (. p x))
+
+(defn main ()
+  (let ((p1 (Point 3 4)))
+    (consume p1)    ;; p1 is moved into consume
+    (print (. p1 x))))  ;; ERROR: use of moved value 'p1'

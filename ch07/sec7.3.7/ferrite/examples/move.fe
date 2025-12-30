@@ -1,0 +1,11 @@
+(defstruct Point (x i32) (y i32))
+
+(defn main ()
+  (let ((p1 (Point 5 10)))
+    (let ((p2 p1))  ;; p1 is moved to p2
+      ;; Now use p2 (the new owner), not p1
+      (print (. p2 x))
+      (print (. p2 y))
+      ;; We can borrow from p2
+      (let ((r (borrow p2)))
+        (print (. r x))))))

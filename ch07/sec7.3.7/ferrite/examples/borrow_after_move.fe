@@ -1,0 +1,16 @@
+;; correct use of borrowing
+(defstruct Point (x i32) (y i32))
+
+(defn get-x ((p (& Point))) i32
+  (. p x))
+
+(defn main ()
+  (let ((p1 (Point 5 10)))
+    ;; Borrow p1 multiple times - this is OK!
+    (let ((r1 (borrow p1))
+          (r2 (borrow p1)))
+      (print (get-x r1))
+      (print (get-x r2)))
+    ;; p1 is still valid here because we only borrowed it
+    (print (. p1 x))
+    (print (. p1 y))))
