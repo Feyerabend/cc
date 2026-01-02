@@ -1,5 +1,6 @@
 > [!NOTE]  
-> Upcomming book will be published 2026-01-01 on [bod.com](https://bod.com)
+> This book has now been published and is available at:
+> [https://bokshop.bod.se/from-code-to-computation-set-lonnert-9789181142464](https://bokshop.bod.se/from-code-to-computation-set-lonnert-9789181142464)
 
 
 # From Code to Computation: A Modern Guide to Programming and Theory
