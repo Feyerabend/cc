@@ -211,4 +211,4 @@ It is NOT about:
 This makes it a simplified educational tool for understanding core blockchain
 concepts without the whole complexity of cryptocurrency systems.
 
-[Wired](./../../assets/image/xor/wired.png)
+![Wired](./../../assets/image/xor/wired.png)
