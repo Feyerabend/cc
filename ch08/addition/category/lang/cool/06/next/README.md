@@ -11,7 +11,7 @@ The core idea is simple but non-negotiable:
 Everything in this repository follows from that premise.
 
 If you want to proceed as a project, you might have to defer your instincts on
-buolding a compiler too soon. This will become clearer in the below.
+building the details of a compiler too soon. This will become clearer in the below.
 
 
 ### 1. Motif and Design Intent
