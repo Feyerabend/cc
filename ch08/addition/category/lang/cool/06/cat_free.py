@@ -1035,6 +1035,10 @@ def demo():
     print(f"  Logs: {len(mock_http.telem.logs)}")
     print("  + Tested entire workflow without real HTTP!")
     
+if __name__ == "__main__":
+    demo()
+
+'''
     # Summary
     print("\n" + "=" * 70)
     print("CATEGORICAL PROPERTIES DEMONSTRATED:")
@@ -1085,7 +1089,7 @@ def demo():
     print("COMPARISON TABLE:")
     print("=" * 70)
     print("| Approach       | Pros                  | Cons                |")
-    print("|----------------|------------------------|---------------------|")
+    print("|----------------|-----------------------|---------------------|")
     print("| Direct Effects | Simple, fast          | Hard to test/mock   |")
     print("| Monad Stack    | Composable effects    | Fixed at compile    |")
     print("| Free Monad     | Ultimate flexibility  | Some overhead       |")
@@ -1111,6 +1115,4 @@ def demo():
     print("  Result = Pure, flexible, testable code!")
     print("=" * 70)
 
-
-if __name__ == "__main__":
-    demo()
+'''
