@@ -21,7 +21,7 @@ import ubinascii
 
 # Config
 
-DEVICE_ID = "PICO_A"   # change to PICO_B on the other board
+DEVICE_ID = "PICO_A"
 IS_SENDER = (DEVICE_ID == "PICO_A")
 
 SECRET_KEY = b"shared_secret"
