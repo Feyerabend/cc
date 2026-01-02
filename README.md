@@ -1,7 +1,7 @@
 > [!NOTE]  
-> This book has now been published and is available at:
+> This book has now been published and is available for citizens in Sweden at:
 > [https://bokshop.bod.se/from-code-to-computation-set-lonnert-9789181142464](https://bokshop.bod.se/from-code-to-computation-set-lonnert-9789181142464)
-
+> .. more bookshops will be available at a later date.
 
 # From Code to Computation: A Modern Guide to Programming and Theory
 
