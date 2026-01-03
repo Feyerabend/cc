@@ -193,10 +193,11 @@ even simple CEP can provide valuable functionality in IoT and real-time monitori
 
 As a journalist I was once invited to a company in the Netherlands to learn about their
 RFID implementation in both hardware and software. However, the technician I spoke with
-was more interested in Complex Event Processing and what it could offer.
+was more interested in *Complex Event Processing* and what it could offer.
 He even gave me a book about it:
 
-*The Power of Events* by David Luckham
+Luckham, D. C. (2002). *The Power of Events: An Introduction to Complex Event Processing
+in Distributed Enterprise Systems*. United Kingdom: Addison-Wesley.
 
 It introduces core concepts such as events, causal relationships, event patterns, hierarchies,
 time windows.. If you continue developing your work on these concepts, I highly recommend
