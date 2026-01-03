@@ -7,7 +7,7 @@
 > at libraries [libris.kb.se](https://libris.kb.se/bib/1mr8w16vzb8q8t6b),
 > ..,
 > at American stores [amazon.com](https://www.amazon.com/dp/9181142463/ref=sr_1_7?crid=2P133GNCBPTNG&dib=eyJ2IjoiMSJ9.vUQGA3e9ScSz7oNkZKdHXwKYNWT6owHKf-BXmZrsxVOUHy6duyERGSw6GH_wdiCfLIIYHdYzmNh50NXWAawcASsnzGw0wWZqi9uwczhrETUYqJohxylp7AixOrI9wYVPCXUDfMRjWSfXpq604mO6aSrj2TUvUBPgb4XIAYPSdTKJJ58sES5e62QI1qHgsLOD62NmuXKVNqDCwunI4KDsUBHbFmfzAGI6673E6EwJLQg.w3sWFfo-yCrHnCc2RBZ5aCmpHpLMFdjetVcPjW123Ho&dib_tag=se&keywords=from+code+to+computation&qid=1767430194&sprefix=%2Caps%2C176&sr=8-7),
-> in [UK](https://www.amazon.co.uk/Code-Computation-Modern-Programming-Theory/dp/9181142463/ref=sr_1_3_so_ABIS_BOOK?crid=1K0PW2VU6V9C2&dib=eyJ2IjoiMSJ9.JBkkxqAUnPKN-sX_zh__R_NYw_AczipUCNwo1wgPJffGjHj071QN20LucGBJIEps.DNADaMH-XYYpMwpwFL2heiEsYW9edjeSK1cq0PEILUA&dib_tag=se&keywords=from+code+to+computation&qid=1767438652&sprefix=%2Caps%2C151&sr=8-3),
+> in [amazon.co.uk](https://www.amazon.co.uk/Code-Computation-Modern-Programming-Theory/dp/9181142463/ref=sr_1_3_so_ABIS_BOOK?crid=1K0PW2VU6V9C2&dib=eyJ2IjoiMSJ9.JBkkxqAUnPKN-sX_zh__R_NYw_AczipUCNwo1wgPJffGjHj071QN20LucGBJIEps.DNADaMH-XYYpMwpwFL2heiEsYW9edjeSK1cq0PEILUA&dib_tag=se&keywords=from+code+to+computation&qid=1767438652&sprefix=%2Caps%2C151&sr=8-3) UK,
 > .. more bookshops will be available at a later date.
 
 # From Code to Computation: A Modern Guide to Programming and Theory
