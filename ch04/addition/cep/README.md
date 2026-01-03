@@ -196,7 +196,10 @@ RFID implementation in both hardware and software. However, the technician I spo
 was more interested in Complex Event Processing and what it could offer.
 He even gave me a book about it:
 
+*The Power of Events* by David Luckham
+
 It introduces core concepts such as events, causal relationships, event patterns, hierarchies,
 time windows.. If you continue developing your work on these concepts, I highly recommend
 reading this book.
 
+![Events](./../../assets/image/power/events.png)
