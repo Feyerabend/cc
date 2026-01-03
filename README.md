@@ -3,8 +3,10 @@
 > [bod.se](https://bokshop.bod.se/from-code-to-computation-set-lonnert-9789181142464), 
 > [amazon.se](https://www.amazon.se/Code-Computation-Modern-Programming-Theory/dp/9181142463/ref=sr_1_31?crid=1IDSWWY9FA82Y&dib=eyJ2IjoiMSJ9.VKuOOiJfWM1qqK0LUMuePyhhSlSUTiivDMm0qGRs2GZmHtW4FbdcE-K11mWal7rr6-R8MeNcQiV_bIo299LmsOpo2piyajjx8b7FmEMW3LWfSQ1hwAiAZ3Ey6K2PQrhMoglzwPnv-WEyVXXEqfLpPK_ZOnhsjXzvKH3oe1bVZ5lbyL3iBnIWWk4QxZcDWGOfX1uCeT1CdysBEtsgFTH0g6rZdIFoDiYaQyQaY1xvJAiqvDDJu_l864XB9S1L8eePIvbNNiGAlLo9Rmtk9DxLBOufOm5PduyzmbQa-b8_Ats.iX95T8Vbo6qSePvSOib_DXxg405oV81d-UeIxKr214c&dib_tag=se&keywords=from+code+to+computing&qid=1767346964&sprefix=%2Caps%2C193&sr=8-31),
 > [adlibris.se](https://www.adlibris.com/sv/bok/from-code-to-computation-a-modern-guide-to-programming-and-theory-9789181142464),
-> [varnamobok.se](https://www.varnamobok.se/facklitteratur/vetenskap-teknik/datorer-och-it/from-code-to-computation-a-modern-guide-to-programming-and-theory), ..,
-> American [amazon.com](https://www.amazon.com/dp/9181142463/ref=sr_1_7?crid=2P133GNCBPTNG&dib=eyJ2IjoiMSJ9.vUQGA3e9ScSz7oNkZKdHXwKYNWT6owHKf-BXmZrsxVOUHy6duyERGSw6GH_wdiCfLIIYHdYzmNh50NXWAawcASsnzGw0wWZqi9uwczhrETUYqJohxylp7AixOrI9wYVPCXUDfMRjWSfXpq604mO6aSrj2TUvUBPgb4XIAYPSdTKJJ58sES5e62QI1qHgsLOD62NmuXKVNqDCwunI4KDsUBHbFmfzAGI6673E6EwJLQg.w3sWFfo-yCrHnCc2RBZ5aCmpHpLMFdjetVcPjW123Ho&dib_tag=se&keywords=from+code+to+computation&qid=1767430194&sprefix=%2Caps%2C176&sr=8-7),
+> [varnamobok.se](https://www.varnamobok.se/facklitteratur/vetenskap-teknik/datorer-och-it/from-code-to-computation-a-modern-guide-to-programming-and-theory),
+> at libraries [libris.kb.se](https://libris.kb.se/bib/1mr8w16vzb8q8t6b),
+> ..,
+> at American stores [amazon.com](https://www.amazon.com/dp/9181142463/ref=sr_1_7?crid=2P133GNCBPTNG&dib=eyJ2IjoiMSJ9.vUQGA3e9ScSz7oNkZKdHXwKYNWT6owHKf-BXmZrsxVOUHy6duyERGSw6GH_wdiCfLIIYHdYzmNh50NXWAawcASsnzGw0wWZqi9uwczhrETUYqJohxylp7AixOrI9wYVPCXUDfMRjWSfXpq604mO6aSrj2TUvUBPgb4XIAYPSdTKJJ58sES5e62QI1qHgsLOD62NmuXKVNqDCwunI4KDsUBHbFmfzAGI6673E6EwJLQg.w3sWFfo-yCrHnCc2RBZ5aCmpHpLMFdjetVcPjW123Ho&dib_tag=se&keywords=from+code+to+computation&qid=1767430194&sprefix=%2Caps%2C176&sr=8-7),
 > .. more bookshops will be available at a later date.
 
 # From Code to Computation: A Modern Guide to Programming and Theory
