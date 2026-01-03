@@ -219,4 +219,4 @@ Operating systems reward patience, curiosity, and a willingness to think about c
 machines as well as abstract ones. That combination is rare, but for those who pursue it, the subject
 remains endlessly fascinating.
 
-![OS Concepts](./../../assets/image/projects/osconcepts.png)![Unix](./../../assets/image/projects/unix.png)
+![OS Concepts](./../../assets/image/projects/osconcepts.png) ![Unix](./../../assets/image/projects/unix.png)
