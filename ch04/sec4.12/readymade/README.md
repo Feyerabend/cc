@@ -2,9 +2,9 @@
 ## Ready-Made Projects ..
 
 There are many projects that showcase the incredible versatility of the Raspberry Pi Pico, 
-a tiny yet powerful microcontroller that’s perfect for students diving into electronics,
+a tiny yet powerful microcontroller that's perfect for students diving into electronics,
 coding, and creative problem-solving. With its low cost, flexible GPIO pins, and support
-for languages like MicroPython and C++, the Pico is a playground for innovation. Whether you’re
+for languages like MicroPython and C++, the Pico is a playground for innovation. Whether you're
 dreaming of building retro games, portable computers, or stunning visual displays, projects
 like PicoVision, PicoCalc, PicoDemo, and PicoDV demonstrate just how far this little board
 can take you.
@@ -20,13 +20,13 @@ microcontroller smaller than a credit card. PicoVision, crafted by Pimoroni, is 
 that turns your Raspberry Pi Pico into a mini graphics powerhouse. It uses two RP2040
 chips--one acting as a "CPU" for logic and another as a "GPU" for rendering visuals--delivering
 HDMI video output and crystal-clear audio through a stereo jack. With resolutions up to
-720p (if you’re feeling adventurous with overclocking), you can create homebrew games,
+720p (if you're feeling adventurous with overclocking), you can create homebrew games,
 animated screensavers, or even run classics like *Doom*. Program it with beginner-friendly
 MicroPython or dive into C++ for max performance, using libraries like PicoGraphics for
 shapes or PicoSynth for chiptune music. For a student, PicoVision is your ticket to
 blending coding with creativity--think of designing a pixel-art music visualiser or a mini
 game console for your friends. Start small, like displaying your name in colorful text,
-and soon you’ll be crafting projects that wow everyone.
+and soon you'll be crafting projects that wow everyone.
 
 PicoVision is a compact digital video output board developed by Pimoroni, designed
 for creative audio-visual projects using Raspberry Pi Pico hardware. It features
@@ -60,15 +60,15 @@ Key features include:
 
 #### PicoCalc
 
-Ever wanted a gadget that’s part calculator, part computer, and all awesome? PicoCalc,
+Ever wanted a gadget that's part calculator, part computer, and all awesome? PicoCalc,
 from ClockworkPi, is a handheld kit powered by the Raspberry Pi Pico, combining a vibrant
-4-inch IPS screen, a QWERTY keyboard, and speakers into a portable package. It’s like a
+4-inch IPS screen, a QWERTY keyboard, and speakers into a portable package. It's like a
 modern take on 1980s pocket computers, but with the power to run BASIC, MicroPython,
 C++, or even a UNIX-like OS. You can code on the go, play retro games, or turn it into
 an MP3 player. With open-source designs, you can 3D-print your own case or add sensors
 for IoT projects. For students, PicoCalc is a dream tool for learning programming
 hands-on--imagine coding a math solver during a bus ride or building a text-based adventure
-game in BASIC. It’s a perfect blend of retro charm and modern versatility, encouraging
+game in BASIC. It's a perfect blend of retro charm and modern versatility, encouraging
 you to experiment, hack, and make it your own.
 
 PicoCalc is a portable handheld computing kit from ClockworkPi, essentially a Raspberry
@@ -104,13 +104,13 @@ advanced features, as ClockworkPi's software support can be limited.
 
 PicoDemo, often tied to the Pimoroni Pico VGA Demo Base, is all about showing off what the
 Raspberry Pi Pico can do with minimal fuss. This board lets you experiment with analog VGA
-video (up to 640x480) and digital audio, using the Pico’s Programmable I/O (PIO) to create
-signals without overloading the CPU. It’s like a sandbox for learning how microcontrollers
+video (up to 640x480) and digital audio, using the Pico's Programmable I/O (PIO) to create
+signals without overloading the CPU. It's like a sandbox for learning how microcontrollers
 talk to displays and speakers. You can run pre-built demos from the Raspberry Pi Pico SDK,
 like drawing colorful patterns or playing sound effects, or code your own projects. For a
 student, PicoDemo is an inspiring entry point--think of it as your first step toward building
 a retro computer display or a custom dashboard for a robot. Start by tweaking example code
-to display your own graphics, and you’ll quickly see how hardware and software come together
+to display your own graphics, and you'll quickly see how hardware and software come together
 to make magic happen.
 
 "PicoDemo" isn't a standalone product but likely refers to demonstration projects, code examples,
@@ -142,11 +142,11 @@ ReileyB/picoDemo. Use it to prototype displays, sound, or I/O without needing fu
 Ready to take things up a notch? PicoDV, built around the PicoDVI library and the Pimoroni Pico DV
 Demo Base, lets you generate digital video (DVI/HDMI) straight from a Pico. By overclocking the
 RP2040, you can push out visuals to modern TVs or monitors, creating everything from simple animations
-to emulated retro operating systems. It’s a bit experimental, but that’s what makes it exciting--you’re
-hacking the Pico to do things it wasn’t originally designed for! With a microSD card for assets and
+to emulated retro operating systems. It's a bit experimental, but that's what makes it exciting--you're
+hacking the Pico to do things it wasn't originally designed for! With a microSD card for assets and
 support for CircuitPython or C++, you can prototype a digital signage system or even a tiny video
 player. For students, PicoDV is a challenge to think big: imagine coding a mini movie player or a
-dynamic art display for a school project. It’s a chance to dive into advanced microcontroller tricks
+dynamic art display for a school project. It's a chance to dive into advanced microcontroller tricks
 and show off your skills.
 
 PicoDV (short for Pico Digital Video) refers to hardware and software for generating digital video
@@ -182,9 +182,9 @@ extra config for wireless integration.
 | *Best For* | Retro games, art/visualization | On-the-go coding, education | Beginner PIO/video experiments | Advanced digital display hacking |
 
 Each of these projects--PicoVision, PicoCalc, PicoDemo, and PicoDV--shows how a $4 Raspberry Pi
-Pico can become a tool for creativity. They’re affordable, accessible, and packed with potential,
-making them perfect for students eager to explore coding, electronics, and design. Whether you’re
-into gaming, portable gadgets, or cutting-edge video hacks, there’s a project here to ignite your
+Pico can become a tool for creativity. They're affordable, accessible, and packed with potential,
+making them perfect for students eager to explore coding, electronics, and design. Whether you're
+into gaming, portable gadgets, or cutting-edge video hacks, there's a project here to ignite your
 passion. Grab a Pico, start with MicroPython tutorials on the Raspberry Pi website, or join
 communities on GitHub and forums to share your ideas.
 

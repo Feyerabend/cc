@@ -12,7 +12,7 @@
 > To distinguish between running C and Python (specifically MicroPython) on the Raspberry Pi Pico and programming on your main computer (whether Windows, macOS, or Linux), the repositories here are marked with either "c" or "micropython" (occationally "pico") to indicate their intended use on the Pico. Some areas, such as *device drivers*, are better handled in C, while topics like *wireless* communication are more easily demonstrated in MicroPython. As a result, not every concept is shown in both languages, and the language labels are applied selectively. The aim is to explore how computers behave as systems, not just how they are wired.
 
 
-The code in these folders is __not__ about electronics in the strict sense--we’re
+The code in these folders is __not__ about electronics in the strict sense--we're
 not building circuits from scratch. Instead, the Raspberry Pi Pico is used as a
 small, *practical model of a complete computer*. It has memory, I/O, communication,
 timing, power, and error handling--all the same pieces larger systems have.
