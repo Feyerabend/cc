@@ -12,7 +12,7 @@
 > in France [amazon.fr](https://www.amazon.fr/Code-Computation-Modern-Programming-Theory/dp/9181142463/ref=sr_1_24?__mk_fr_FR=ÅMÅŽÕÑ&crid=1KP0AUKWWDN9J&dib=eyJ2IjoiMSJ9.nvu2ibjOpHCKZt8PRMHxiQncKIrtIMMjXamuJ0a3zydrZujXeRxHX_YFKtkRXYvzFRGQUoqVkL-qHXveaiKKZrn8gw-IVLhFRe0CeM3z3-gg3rBxyoGetiGuk46Zg8rgkJMVbCWGBhFpfl0DSOWAqpLo6Hp1mpIXWNs_qmANqVtDM_9NSAg1rkpl2_AyG5QySXp_hqAt_OE4RyB60zv-H-zf0UvsIwmb1aACHpJ6uTAWme3jlH6kMw2MtK5cqvgAQIqrTqi1v0WExRW0yi1J9nl42gMsE6toHeWfVYF4wb0.aENMM_ZIOxo3blOa9rlPmwtkA798kfZv670MgvwsSFM&dib_tag=se&keywords=from+code+to+computation&qid=1767439194&sprefix=from+code+to+computation%2Caps%2C261&sr=8-24),
 > in Spain [amazon.es](https://www.amazon.es/Code-Computation-Modern-Programming-Theory/dp/9181142463/ref=sr_1_1?__mk_es_ES=ÅMÅŽÕÑ&crid=2F7K2JCQH2PAB&dib=eyJ2IjoiMSJ9.cRrBk-gDI7Z_WVpFb-j4syyHGFPq9XeaWCaFZFK9vjrGjHj071QN20LucGBJIEps.pbW6sxm1QfflIpEhPEAMKanxQTh38vwEFLn_VFeo-sY&dib_tag=se&keywords=from+code+to+computation&qid=1767439903&sprefix=from+code+to+computation%2Caps%2C279&sr=8-1),
 > .. more bookshops will be available at a later date.
-> If you prefer a PDF copy for free, you can just download the [book](./intro/book.pdf).
+> If you prefer a __PDF copy for free__, you can just download the [book](./intro/book.pdf).
 
 
 # From Code to Computation: A Modern Guide to Programming and Theory
