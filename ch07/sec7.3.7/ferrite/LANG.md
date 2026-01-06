@@ -58,6 +58,12 @@ Ferrite has a simple type system:
 
 Types are declared in function parameters and returns. Inference is limited, so specify types where needed.
 
+Ferrite uses double parentheses like `((path String))` in parameter lists because each parameter
+is represented as a tiny two-element list: one for the name and one for the type.
+This nested structure keeps the syntax clean and consistent in a Lisp-like S-expression world,
+clearly pairing each name with its required type without introducing new punctuation or keywords.
+It mirrors Rust's `fn foo(p: &Point)` visually: `(p (& Point))` reflects "name: type".
+
 
 ### 4. Defining Structures
 
