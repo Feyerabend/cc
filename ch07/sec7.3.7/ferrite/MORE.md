@@ -32,12 +32,12 @@ They are ordered roughly from "easier / quicker" to "very ambitious / long-term"
 3. *Better pattern matching + sum types*
 
  ```lisp
- (defenum Maybe (Nothing) (Just i32))
+(defenum Maybe (Nothing) (Just i32))
 
- (defn unwrap-or ((opt (Maybe i32)) (default i32)) i32
- (match opt
- ((Nothing) default)
- ((Just v) v)))
+(defn unwrap-or ((opt (Maybe i32)) (default i32)) i32
+  (match opt
+    ((Nothing) default)
+    ((Just v)  v)))
  ```
 
  This is one of the most requested features after ownership.
