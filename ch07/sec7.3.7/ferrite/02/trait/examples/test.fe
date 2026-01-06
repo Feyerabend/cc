@@ -1,0 +1,68 @@
+; Example demonstrating Ferrite's trait system
+
+; Define a struct with automatic trait derivation
+(defstruct Point
+  (derive Copy Clone Debug)
+  (x i32)
+  (y i32))
+
+; Define a custom trait
+(deftrait Drawable
+  (draw ((self (& Self))) unit))
+
+; Implement the Drawable trait for Point
+(impl Drawable for Point
+  (defn draw ((self (& Point)))
+    (let ((x-val (. self x))
+          (y-val (. self y)))
+      (print x-val)
+      (print y-val))))
+
+; Define another struct
+(defstruct Rectangle
+  (derive Clone Debug)
+  (width i32)
+  (height i32))
+
+; Implement Drawable for Rectangle
+(impl Drawable for Rectangle
+  (defn draw ((self (& Rectangle)))
+    (let ((w (. self width))
+          (h (. self height)))
+      (print w)
+      (print h))))
+
+; Custom trait with methods
+(deftrait Area
+  (area ((self (& Self))) i32))
+
+; Implement Area for Rectangle
+(impl Area for Rectangle
+  (defn area ((self (& Rectangle))) i32
+    (let ((w (. self width))
+          (h (. self height)))
+      (* w h))))
+
+; Main function demonstrating the trait system
+(defn main ()
+  (let ((p (Point 10 20))
+        (r (Rectangle 5 8)))
+    
+    ; Call derived Debug trait method
+    (. (borrow p) debug)
+    (. (borrow r) debug)
+    
+    ; Call custom Drawable trait methods
+    (. (borrow p) draw)
+    (. (borrow r) draw)
+    
+    ; Call Area trait method
+    (print (. (borrow r) area))
+    
+    ; Demonstrate Copy trait - p can be used after being passed
+    (print (. p x))
+    (print (. p x))  ; Can use p again because Point derives Copy
+    
+    ; Demonstrate Clone trait
+    (let ((p2 (. (borrow p) clone)))
+      (print (. p2 y)))))

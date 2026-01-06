@@ -1,0 +1,4 @@
+; Simple "Hello World" example
+
+(defn main ()
+  (print 2026))

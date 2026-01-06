@@ -1,0 +1,10 @@
+; Fibonacci example
+
+(defn fib ((n i32)) i32
+  (if (<= n 1)
+    n
+    (+ (fib (- n 1)) (fib (- n 2)))))
+
+(defn main ()
+  (let ((result (fib 10)))
+    (print result)))  ; Should print 55
