@@ -176,11 +176,11 @@ methods provide powerful tools to tackle real-world optimisation challenges.
 The core idea across all these fields is optimisation, but different domains frame it as
 maximisation or minimisation:
 
-| Field               | Objective                          | Function Type          |
-|---------------------|------------------------------------|------------------------|
-| Control Systems     | Minimise cost function             | $\`J(x, u)\`$          |
-| Economics           | Maximise utility/profit/welfare    | $\`U(x), \pi(x)\`$     |
-| Research (AI)       | Maximise expected rewards          | $\`V(s)\`$ (Bellman)   |
+| Field               | Objective                          | Function Type                |
+|---------------------|------------------------------------|------------------------------|
+| Control Systems     | Minimise cost function             | $\`J(x, u)\`$                |
+| Economics           | Maximise utility/profit/welfare    | $\`U(x), \pi(x)\`$           |
+| Research (AI)       | Maximise expected rewards          | $\`V(s)\`$ (Bellman)         |
 | Statistics/ML	      | Minimise expected loss             | $\`\mathbb{E}[L(y, f(x))]\`$ |
 
 - Duality: Many problems can be framed in both ways. For example, maximising rewards is equivalent
