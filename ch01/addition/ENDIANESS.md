@@ -141,8 +141,8 @@ If you need to swap endianness, you can manually swap bytes:
 #include <stdio.h>
 
 unsigned int swap_endian(unsigned int num) {
-    return ((num >> 24) & 0xFF) |      // Move byte 3 to byte 0
-           ((num >> 8) & 0xFF00) |     // Move byte 2 to byte 1
+    return ((num >24) & 0xFF) |      // Move byte 3 to byte 0
+           ((num >8) & 0xFF00) |     // Move byte 2 to byte 1
            ((num << 8) & 0xFF0000) |   // Move byte 1 to byte 2
            ((num << 24) & 0xFF000000); // Move byte 0 to byte 3
 }
@@ -167,7 +167,7 @@ Many systems provide built-in functions for swapping endianness:
 
 ```c
 #include <stdio.h>
-#include <arpa/inet.h>  // For htonl and ntohl (network byte order conversion)
+#include <arpa/inet.h // For htonl and ntohl (network byte order conversion)
 
 int main() {
     unsigned int num = 0x12345678;
@@ -224,4 +224,34 @@ On a big-endian machine, it will print:
 ```plaintext
 Memory representation: 12 34 56 78
 ```
+
+
+### Common Architectures
+
+| Architecture / Processor Family | Endianness Capability | Endianness Used in Practice | Notes                                |
+|---------------------------------|-----------------------|-----------------------------|--------------------------------------|
+| x86 (IA-32)                     | Little-endian only    | Little-endian               | No big-endian mode exists            |
+| x86-64 (AMD64 / Intel 64)       | Little-endian only    | Little-endian               | All modern PCs and servers           |
+| ARMv7 (32-bit ARM)              | Bi-endian             | Little-endian               | Big-endian supported but rarely used |
+| ARMv8-A (AArch64)               | Bi-endian             | Little-endian               | Linux, Windows, macOS use LE         |
+| ARM Cortex-M (M0–M7)            | Little-endian only    | Little-endian               | Microcontrollers                     |
+| RISC-V                          | Little-endian (std)   | Little-endian               | BE optional, uncommon                |
+| PowerPC (classic)               | Bi-endian             | Big-endian                  | Older Macs, legacy systems           |
+| PowerPC (modern embedded)       | Bi-endian             | Little-endian               | Linux on PowerPC LE                  |
+| MIPS                            | Bi-endian             | Platform-dependent          | LE more common today                 |
+| SPARC                           | Big-endian            | Big-endian                  | LE exists on some newer variants     |
+| IBM z/Architecture (s390x)      | Big-endian            | Big-endian                  | Mainframes                           |
+| AVR (Atmel / Microchip)         | Little-endian         | Little-endian               | 8-bit microcontrollers               |
+| MSP430                          | Little-endian         | Little-endian               | TI microcontrollers                  |
+
+
+On modern mainstream systems, the effective situation is simple:
+- Almost all desktops, laptops, servers, phones, and microcontrollers today run *little-endian*
+- Big-endian mostly survives in:
+    * networking protocols
+    * file formats
+    * a few specialised architectures (mainframes, legacy systems)
+
+This is why endianness still matters conceptually,
+even though most programmers only ever run on little-endian hardware.
 
