@@ -20,10 +20,12 @@ They are ordered roughly from "easier / quicker" to "very ambitious / long-term"
 ### Starter projects (1-6 months)
 
 1. *Ferrite Prelude / tiny standard library*
+
    Add `Option`, `Result`, basic `String` (or `&str`), `Vec`,
    `HashMap` (very simple hash table), `assert!`, etc.
 
 2. *Ferrite Snake / Tetris / simple roguelike*
+
    Bindings to raylib or very simple terminal + ncurses ->
    very satisfying first "real" program (or use the RPI Pico)
 
@@ -56,6 +58,7 @@ They are ordered roughly from "easier / quicker" to "very ambitious / long-term"
 ### Medium-term projects (6-18 months)
 
 5. *LLVM backend* (most popular realistic next big step) 
+
 Many stop at C backend -> going to LLVM gives you:
  - real optimisations
  - much better debugging experience
@@ -63,6 +66,7 @@ Many stop at C backend -> going to LLVM gives you:
  - path to serious language status
 
 6. *More sophisticated borrow checker*
+
 Current implementation is quite naïve. Adding:
  - non-lexical lifetimes
  - reborrowing
@@ -71,6 +75,7 @@ Current implementation is quite naïve. Adding:
 would make the language feel much more modern/Rust-like
 
 7. *Ferrite -> WebAssembly*
+
 Very attractive target. You could run Ferrite code directly
 in the browser (especially nice for tiny games or demos)
 
@@ -78,14 +83,17 @@ in the browser (especially nice for tiny games or demos)
 ### Long-term projects
 
 8. *Self-hosting Ferrite*
+
 The classic rite of passage. (A programming language's own compiler
 (or interpreter) is written in that same language).
 
 9. *Ferrite as a safe-systems language*
+
 Try to write tiny kernels, drivers, firmware, or unikernels in Ferrite
 (requires no_std mode + very good FFI + strong control over memory layout)
 
 10. *Effects / Capabilities / Algebraic effects experiment*
+
 One interesting current research direction.
 Ferrite is small enough that you can realistically
 try to add something like `try`/`?` + effects
