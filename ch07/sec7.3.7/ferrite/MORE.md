@@ -72,6 +72,7 @@ Current implementation is quite naïve. Adding:
  - reborrowing
  - mutable split borrows
  - partial moves
+
 would make the language feel much more modern/Rust-like
 
 7. *Ferrite -> WebAssembly*
