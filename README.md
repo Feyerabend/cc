@@ -44,10 +44,10 @@ This workbook consists mainly of:
   can be found.
 
 > [!TIP]
+> Download this as an archive and store it on an SD card taped to the inside of the book.  
+That way you have a preserved snapshot of the material, even if the online archive changes in the future while the printed book does not.
 
 ---
 Discussions relating to the primary focus of this book can be found at e.g.
 [https://github.com/Feyerabend/cc/discussions](https://github.com/Feyerabend/cc/discussions)
 
-> Download this as an archive and store it on an SD card taped to the inside of the book.  
-That way you have a preserved snapshot of the material, even if the online archive changes in the future while the printed book does not.
