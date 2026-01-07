@@ -10,10 +10,10 @@ It compiles Ferrite code to C for execution.
 
 Ferrite's design emphasises compile-time safety without garbage collection, using an affine type
 system where values are used at most once unless they implement `Copy`. The language is formally
-specified in `ferrite-spec.pdf`, which defines its syntax, static semantics (typing rules), dynamic
-semantics (evaluation steps), and soundness properties (progress and preservation theorems).
-The `DESIGN.md` document provides a small but broader guidance on programming language design
-principles.
+specified in `[ferrite-spec.pdf](./../../../assets/pdf/ferrite-spec.pdf)`, which defines its
+syntax, static semantics (typing rules), dynamic semantics (evaluation steps), and soundness
+properties (progress and preservation theorems). The `[DESIGN.md](./DESIGN.md)` document
+provides a small but broader guidance on programming language design principles.
 
 Your project will involve adding new features while maintaining Ferrite's safety guarantees.
 This is not just about coding--it's an exercise in principled language design. You'll balance
@@ -26,7 +26,7 @@ extension preserves type soundness.
 The primary goal is to evolve Ferrite into a more capable language while deepening your
 understanding of language design. By the end, you should have:
 - One or more new features implemented in the compiler.
-- Updated formal specifications (extending `ferrite-spec.pdf`).
+- Updated formal specifications (extending `[ferrite-spec.pdf](./../../../assets/pdf/ferrite-spec.pdf)`).
 - Proof sketches or updates to demonstrate that your extensions maintain type soundness.
 - A set of example programs demonstrating the new features.
 - A report discussing your design choices, challenges, and lessons learned.
@@ -75,15 +75,18 @@ or runtime features like garbage collection--these contradict Ferrite's design.
 
 Follow a theory-first, iterative approach to ensure soundness from the start.
 Don't implement first and "fix" bugs later--this often leads to accidental
-redefinitions of the language (as warned in `DESIGN.md`). Instead:
+redefinitions of the language (as warned in `[DESIGN.md](./DESIGN.md)`).
+Instead:
 
 #### Step 1: Theory First (Design and Specify)
 - *How:* Before coding, update the formal specification.
-  - Extend the types, judgements, and rules in `ferrite-spec.pdf`
+  - Extend the types, judgements, and rules in
+    `[ferrite-spec.pdf](./../../../assets/pdf/ferrite-spec.tex)`
     (e.g., add new typing rules for your feature).
   - Sketch proofs for progress and preservation. Use paper or a
     tool like Coq/Lean if you're ambitious, but pen-and-paper derivations are sufficient.
-  - Reference `DESIGN.md` for guidance: Focus on static semantics to prevent dynamic errors.
+  - Reference `[DESIGN.md](./DESIGN.md)` for guidance:
+    Focus on static semantics to prevent dynamic errors.
 - *Why:* This prevents implementation bugs from becoming "features." Soundness theorems
   guarantee "well-typed programs don't go wrong."
 - *What:* Aim for 2-5 new rules per extension. For example, for generics,
@@ -122,7 +125,8 @@ redefinitions of the language (as warned in `DESIGN.md`). Instead:
 ### Tools and Resources
 - *Implementation:* Python (extend `ferrite.py`). Use the code execution
   environment if needed for testing.
-- *Theory:* LaTeX for updating `ferrite-spec.pdf`. Read `DESIGN.md` thoroughly.
+- *Theory:* LaTeX for updating `[ferrite-spec.tex](./../../../assets/pdf/ferrite-spec.tex)`.
+  Read `[DESIGN.md](./DESIGN.md)` thoroughly.
 - *Testing:* Compile to C and run with GCC. Add unit tests in Python.
 - *Collaboration:* If multiple people, use Git for version control.
 
