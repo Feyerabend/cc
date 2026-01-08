@@ -1,7 +1,7 @@
 #include "osd.h"
 #include <string.h>
 #include <stdio.h>
-#include <time.h>
+#include "pico/time.h"
 
 // Internal state
 static struct {
