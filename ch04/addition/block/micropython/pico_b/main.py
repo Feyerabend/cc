@@ -21,7 +21,7 @@ import ubinascii
 
 # Config
 
-DEVICE_ID = "PICO_B"
+DEVICE_ID = "PICO_B"   # change to PICO_B on the other board
 IS_SENDER = (DEVICE_ID == "PICO_A")
 
 SECRET_KEY = b"shared_secret"
@@ -33,15 +33,24 @@ RX_PIN = 5
 BAUDRATE = 115200
 
 
-# UART
+# UART - with explicit initialization
 
 uart = machine.UART(
     UART_ID,
     baudrate=BAUDRATE,
     tx=machine.Pin(TX_PIN),
     rx=machine.Pin(RX_PIN),
-    timeout=100,
+    bits=8,
+    parity=None,
+    stop=1,
+    timeout=1000,
+    rxbuf=1024,
 )
+
+# Clear any stale data
+utime.sleep_ms(100)
+while uart.any():
+    uart.read()
 
 
 # Cryptographic primitives
@@ -107,15 +116,24 @@ class Block:
 
 class Blockchain:
     def __init__(self):
-        self.chain = [self.genesis()]
+        self.chain = []
         self.cache = {}    # sender-side resend cache
-        # Cache genesis for resending
-        self.cache[0] = self.chain[0]
+        self.pending_requests = {}  # track request timestamps
+        self.initialized = False
+        
+        # Only sender creates genesis at start
+        if IS_SENDER:
+            genesis = self.create_genesis()
+            self.chain.append(genesis)
+            self.cache[0] = genesis
+            self.initialized = True
 
-    def genesis(self):
+    def create_genesis(self):
         return Block(0, "0" * 40, f"GENESIS-{DEVICE_ID}")
 
     def tip(self):
+        if not self.chain:
+            return None
         return self.chain[-1]
 
     def height(self):
@@ -125,7 +143,11 @@ class Blockchain:
         if self.height() >= MAX_CHAIN:
             return None
 
-        b = Block(self.height(), self.tip().hash, payload)
+        tip = self.tip()
+        if not tip:
+            return None
+
+        b = Block(self.height(), tip.hash, payload)
         self.chain.append(b)
         self.cache[b.index] = b
         return b
@@ -142,6 +164,15 @@ class Blockchain:
     def try_add_remote(self, b):
         expected = self.height()
 
+        # First block received - accept as genesis if we don't have one
+        if expected == 0 and b.index == 0:
+            if not self.verify_block(b):
+                return False
+            self.chain.append(b)
+            self.initialized = True
+            print(f"ACCEPTED genesis: {b.payload}")
+            return True
+
         if b.index < expected:
             print(f"SKIP: already have block {b.index}")
             return True   # already have it
@@ -151,8 +182,15 @@ class Blockchain:
             self.request_block(expected)
             return False
 
-        if b.prev_hash != self.tip().hash:
-            print(f"REJECT: prev_hash mismatch at {b.index}")
+        tip = self.tip()
+        if not tip:
+            print("ERROR: no tip")
+            return False
+
+        if b.prev_hash != tip.hash:
+            print(f"REJECT: prev_hash mismatch")
+            print(f"  Expected: {tip.hash}")
+            print(f"  Got: {b.prev_hash}")
             self.request_block(expected)
             return False
 
@@ -164,6 +202,15 @@ class Blockchain:
         return True
 
     def request_block(self, index):
+        now = utime.ticks_ms()
+        
+        # Rate limit: only request same block every 500ms
+        if index in self.pending_requests:
+            last_req = self.pending_requests[index]
+            if utime.ticks_diff(now, last_req) < 500:
+                return
+        
+        self.pending_requests[index] = now
         msg = f"REQ|{index}\n"
         uart.write(msg.encode())
         print(f"REQUEST block {index}")
@@ -182,18 +229,34 @@ class Blockchain:
 bc = Blockchain()
 counter = 0
 send_interval = 0
-last_request_time = {}
+rx_check_counter = 0
 
 print("=" * 40)
 print(f"Device: {DEVICE_ID}")
 print(f"Role: {'SENDER' if IS_SENDER else 'RECEIVER'}")
-print(f"Genesis hash: {bc.tip().hash}")
+print(f"UART: ID={UART_ID}, TX=GPIO{TX_PIN}, RX=GPIO{RX_PIN}, BAUD={BAUDRATE}")
+if bc.tip():
+    print(f"Genesis hash: {bc.tip().hash}")
+else:
+    print("Waiting for genesis block...")
 print("=" * 40)
+
+# Sender broadcasts genesis first
+if IS_SENDER:
+    utime.sleep(1)
+    genesis_msg = bc.tip().serialize().encode()
+    uart.write(genesis_msg)
+    print(f"BROADCAST genesis ({len(genesis_msg)} bytes)")
 
 while True:
 
-    # RECEIVE
+    # RECEIVE with detailed logging
+    rx_check_counter += 1
     if uart.any():
+        bytes_avail = uart.any()
+        if rx_check_counter % 20 == 0 or not IS_SENDER:  # Log periodically or always for receiver
+            print(f"[RX] {bytes_avail} bytes available")
+        
         try:
             line = uart.readline()
             if not line:
@@ -204,6 +267,8 @@ while True:
             if not line_str:
                 continue
 
+            print(f"[RX] Received: {line_str[:80]}...")  # First 80 chars
+            
             parts = line_str.split("|")
             kind = parts[0]
 
@@ -223,19 +288,27 @@ while True:
 
         except Exception as e:
             print(f"RX error: {e}")
-            import sys
-            sys.print_exception(e)
+    else:
+        # Periodically report no data for receiver
+        if not IS_SENDER and rx_check_counter % 100 == 0:
+            print("[RX] No data (waiting...)")
 
-    # SEND (sender only)
-    if IS_SENDER:
+    # SEND (sender only, after initialization)
+    if IS_SENDER and bc.initialized:
         send_interval += 1
         if send_interval >= 40 and counter < 10:  # ~2 seconds at 50ms sleep
             send_interval = 0
             payload = f"msg-{counter}-from-{DEVICE_ID}"
             block = bc.add_local(payload)
             if block:
-                uart.write(block.serialize().encode())
-                print(f"SENT block {block.index}: {payload}")
+                msg = block.serialize().encode()
+                uart.write(msg)
+                print(f"SENT block {block.index}: {payload} ({len(msg)} bytes)")
                 counter += 1
+    
+    # If receiver hasn't initialized after 3 seconds, request genesis
+    if not IS_SENDER and not bc.initialized:
+        if utime.ticks_ms() > 3000 and rx_check_counter % 60 == 0:
+            bc.request_block(0)
 
     utime.sleep_ms(50)
