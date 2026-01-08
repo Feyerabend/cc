@@ -96,3 +96,11 @@ You should see `ACK` returned and the message printed in the Pico REPL.
 - Very minimal implementation--easy to extend (add more status fields, commands, etc.)
 
 
+#### Server
+
+![UDP Server](./../../../../../assets/image/wireless/udpthonny.png)
+
+#### Client
+
+![UDP Client](./../../../../../assets/image/wireless/udpclient.png)
+
