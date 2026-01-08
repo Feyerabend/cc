@@ -55,6 +55,12 @@ curl -X POST http://192.168.4.1/api/led
 curl http://192.168.4.1/api/led/on
 ```
 
-![]()
+Running Server through Thonny
 
+![HTTP Server](./../../../../../assets/image/wireless/httpserver.png)
+
+
+Viewing Replies from Server
+
+![HTTP Client](./../../../../../assets/image/wireless/httpclient.png)
 
