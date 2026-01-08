@@ -117,7 +117,7 @@ class Block:
 class Blockchain:
     def __init__(self):
         self.chain = []
-        self.cache = {}    # sender-side resend cache
+        self.cache = {}  # sender-side resend cache
         self.pending_requests = {}  # track request timestamps
         self.initialized = False
         
