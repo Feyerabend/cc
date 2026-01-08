@@ -1,9 +1,11 @@
 
+![OSD](./../../assets/image/display/osd.png)
+
 ## On-Screen Display OSD
 
-As you can see from the code, the menu button are not working as they should/could.
-This should be a relatively easy fix, but you could also prolong ideas on how
-to use this further, as a project.
+As you can see from running the code, the menu button are not working as they
+should/could. This should be a relatively easy fix, but you could also prolong
+ideas on how to use this further, as a project.
 
 
 ### Gaming & Entertainment

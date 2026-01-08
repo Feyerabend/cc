@@ -1,5 +1,6 @@
-#include "osd_menu.h"
+#include "osd.h"
 #include "display.h"
+#include "pico/stdlib.h"
 #include <stdio.h>
 
 // Example: Application state variables
@@ -12,14 +13,14 @@ static int contrast = 100;
 // Example: Action callbacks
 static void action_restart(void) {
     // Display confirmation message
-    display_fill_rect(60, 100, 200, 40, COLOR_RED);
-    display_draw_string(70, 110, "RESTARTING..", COLOR_WHITE, COLOR_RED);
+    disp_fill_rect(60, 100, 200, 40, COLOR_RED);
+    disp_draw_text(70, 110, "RESTARTING..", COLOR_WHITE, COLOR_RED);
     sleep_ms(1000);
 }
 
 static void action_factory_reset(void) {
-    display_fill_rect(60, 100, 200, 40, COLOR_RED);
-    display_draw_string(70, 110, "FACTORY RESET!", COLOR_WHITE, COLOR_RED);
+    disp_fill_rect(60, 100, 200, 40, COLOR_RED);
+    disp_draw_text(70, 110, "FACTORY RESET!", COLOR_WHITE, COLOR_RED);
     sleep_ms(1000);
     
     // Reset all values
@@ -31,10 +32,10 @@ static void action_factory_reset(void) {
 }
 
 static void action_about(void) {
-    display_fill_rect(40, 80, 240, 80, COLOR_BLUE);
-    display_draw_string(50, 90, "PICO OSD DISPLAY 1.0", COLOR_WHITE, COLOR_BLUE);
-    display_draw_string(50, 105, "BUILT: 2025-10-27", COLOR_WHITE, COLOR_BLUE);
-    display_draw_string(50, 120, "PRESS B TO CLOSE", COLOR_YELLOW, COLOR_BLUE);
+    disp_fill_rect(40, 80, 240, 80, COLOR_BLUE);
+    disp_draw_text(50, 90, "PICO OSD DISPLAY 1.0", COLOR_WHITE, COLOR_BLUE);
+    disp_draw_text(50, 105, "BUILT: 2025-01-08", COLOR_WHITE, COLOR_BLUE);
+    disp_draw_text(50, 120, "PRESS B TO CLOSE", COLOR_YELLOW, COLOR_BLUE);
     
     // Wait for button
     while (!button_just_pressed(BUTTON_B)) {
@@ -88,7 +89,7 @@ void setup_menus(void) {
     menu_add_back(settings_menu);
     
     // Build Display submenu
-    menu_add_value(display_menu, "BRIGHtNESS", &brightness, 0, 100, 5, on_brightness_change);
+    menu_add_value(display_menu, "BRIGHTNESS", &brightness, 0, 100, 5, on_brightness_change);
     menu_add_value(display_menu, "CONTRAST", &contrast, 50, 150, 10, on_contrast_change);
     menu_add_back(display_menu);
     
@@ -116,15 +117,15 @@ int main(void) {
     stdio_init_all();
     
     // Initialize display and buttons
-    display_error_t err = display_pack_init();
-    if (err != DISPLAY_OK) {
-        printf("Display init failed: %s\n", display_error_string(err));
+    disp_error_t err = disp_init(NULL);  // Use default config
+    if (err != DISP_OK) {
+        printf("Display init failed: %s\n", disp_error_string(err));
         return 1;
     }
     
     err = buttons_init();
-    if (err != DISPLAY_OK) {
-        printf("Buttons init failed: %s\n", display_error_string(err));
+    if (err != DISP_OK) {
+        printf("Buttons init failed: %s\n", disp_error_string(err));
         return 1;
     }
     
@@ -133,11 +134,11 @@ int main(void) {
     setup_menus();
     
     // Clear screen
-    display_clear(COLOR_BLACK);
+    disp_clear(COLOR_BLACK);
     
     // Show some content
-    display_draw_string(10, 10, "PRESS ANY BUTTON FOR MENU", COLOR_WHITE, COLOR_BLACK);
-    display_draw_string(10, 25, "YOUR APPLICATION ..", COLOR_GREEN, COLOR_BLACK);
+    disp_draw_text(10, 10, "PRESS ANY BUTTON FOR MENU", COLOR_WHITE, COLOR_BLACK);
+    disp_draw_text(10, 25, "YOUR APPLICATION ..", COLOR_GREEN, COLOR_BLACK);
     
     printf("Menu system ready!\n");
     
@@ -162,9 +163,9 @@ int main(void) {
             osd_menu_render();
         } else if (menu_shown) {
             // Menu was closed, redraw app content
-            display_clear(COLOR_BLACK);
-            display_draw_string(10, 10, "PRESS ANY BUTTON FOR MENU", COLOR_WHITE, COLOR_BLACK);
-            display_draw_string(10, 25, "YOUR APPLICATION ..", COLOR_GREEN, COLOR_BLACK);
+            disp_clear(COLOR_BLACK);
+            disp_draw_text(10, 10, "PRESS ANY BUTTON FOR MENU", COLOR_WHITE, COLOR_BLACK);
+            disp_draw_text(10, 25, "YOUR APPLICATION ..", COLOR_GREEN, COLOR_BLACK);
             menu_shown = false;
         }
         
@@ -174,6 +175,6 @@ int main(void) {
         sleep_ms(10);
     }
     
-    display_cleanup();
+    disp_deinit();
     return 0;
 }

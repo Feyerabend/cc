@@ -1,6 +1,7 @@
-#include "osd_menu.h"
+#include "osd.h"
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 
 // Internal state
 static struct {
@@ -40,7 +41,7 @@ static int clamp(int value, int min, int max) {
 
 // Helper: get current time in ms
 static uint32_t get_time_ms(void) {
-    return to_ms_since_boot(get_absolute_time());
+    return 0; //return to_ms_since_boot(get_absolute_time());
 }
 
 // Internal: navigate menu
@@ -252,15 +253,14 @@ void osd_menu_render(void) {
     }
     
     // Draw border
-    display_fill_rect(s->x - 2, s->y - 2, s->width + 4, s->height + 4, s->border_color);
+    disp_fill_rect(s->x - 2, s->y - 2, s->width + 4, s->height + 4, s->border_color);
     
     // Draw background
-    display_fill_rect(s->x, s->y, s->width, s->height, s->bg_color);
+    disp_fill_rect(s->x, s->y, s->width, s->height, s->bg_color);
     
     // Draw title bar
-    display_fill_rect(s->x, s->y, s->width, 16, s->title_bg_color);
-    display_draw_string(s->x + 4, s->y + 4, menu_ctx.current_menu->title, 
-                       s->title_text_color, s->title_bg_color);
+    disp_fill_rect(s->x, s->y, s->width, 16, s->title_bg_color);
+    disp_draw_text(s->x + 4, s->y + 4, menu_ctx.current_menu->title, s->title_text_color, s->title_bg_color);
     
     // Draw menu items
     uint16_t item_y = s->y + 20;
@@ -277,7 +277,7 @@ void osd_menu_render(void) {
         
         // Draw item background if selected
         if (is_selected) {
-            display_fill_rect(s->x + 2, item_y, s->width - 4, item_height, bg);
+            disp_fill_rect(s->x + 2, item_y, s->width - 4, item_height, bg);
         }
         
         // Build item text with value/state indicators
@@ -313,7 +313,7 @@ void osd_menu_render(void) {
         }
         
         // Draw item text
-        display_draw_string(s->x + 6, item_y + 5, item_text, fg, bg);
+        disp_draw_text(s->x + 6, item_y + 5, item_text, fg, bg);
         
         item_y += item_height;
         
@@ -323,7 +323,7 @@ void osd_menu_render(void) {
     
     // Draw help text at bottom
     const char *help = "A:SELECT B:BACK X/Y:ADJUST";
-    display_draw_string(s->x + 4, s->y + s->height - 12, help, 
+    disp_draw_text(s->x + 4, s->y + s->height - 12, help, 
                        s->text_color, s->bg_color);
     
     menu_ctx.needs_redraw = false;
