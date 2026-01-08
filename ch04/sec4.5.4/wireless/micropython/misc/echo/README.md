@@ -5,7 +5,6 @@ boards with Wi-Fi support (for example Raspberry Pi Pico W).
 The device starts its own Wi-Fi Access Point and listens for incoming
 TCP connections, echoing back any data it receives.
 
-![Echo Server](./../../../../../assets/image/wireless/echo.png)
 
 #### Features
 
@@ -37,7 +36,8 @@ TCP connections, echoing back any data it receives.
 
 Example test from a client:
 
-![]()
+![Echo Server](./../../../../../assets/image/wireless/echo.png)
+
 
 ### Notes
 
