@@ -12,8 +12,10 @@ Ferrite's design emphasises compile-time safety without garbage collection, usin
 system where values are used at most once unless they implement `Copy`. The language is formally
 specified in [ferrite-spec.pdf](./../../../assets/pdf/ferrite-spec.pdf), which defines its
 syntax, static semantics (typing rules), dynamic semantics (evaluation steps), and soundness
-properties (progress and preservation theorems). The [DESIGN.md](./DESIGN.md) document
-provides a small but broader guidance on programming language design principles.
+properties (progress and preservation theorems). Also, if you havn't, do have a look at the
+mentioned "affine" property in chapter 5 ([ch05](./../../../../ch05/addition/affine/)) addition.
+The [DESIGN.md](./DESIGN.md) document provides a small but broader guidance on programming
+language design principles.
 
 Your project will involve adding new features while maintaining Ferrite's safety guarantees.
 This is not just about coding--it's an exercise in principled language design. You'll balance
