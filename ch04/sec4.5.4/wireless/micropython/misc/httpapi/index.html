@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pico LED Control</title>
+</head>
+<body>
+  <h1>Pico W LED Control</h1>
+  <button onclick="fetch('/api/led/on')">LED ON</button>
+  <button onclick="fetch('/api/led/off')">LED OFF</button>
+  <button onclick="fetch('/api/led')">Toggle</button>
+  <pre id="status"></pre>
+
+  <script>
+    function update() {
+      fetch('/api/status')
+        .then(r => r.json())
+        .then(data => document.getElementById('status').textContent = JSON.stringify(data, null, 2));
+    }
+    setInterval(update, 2000);
+    update();
+  </script>
+</body>
+</html>
