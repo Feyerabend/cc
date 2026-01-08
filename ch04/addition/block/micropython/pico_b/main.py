@@ -27,9 +27,9 @@ IS_SENDER = (DEVICE_ID == "PICO_A")
 SECRET_KEY = b"shared_secret"
 MAX_CHAIN = 32
 
-UART_ID = 0
-TX_PIN = 0
-RX_PIN = 1
+UART_ID = 1
+TX_PIN = 4
+RX_PIN = 5
 BAUDRATE = 115200
 
 
@@ -40,6 +40,7 @@ uart = machine.UART(
     baudrate=BAUDRATE,
     tx=machine.Pin(TX_PIN),
     rx=machine.Pin(RX_PIN),
+    timeout=100,
 )
 
 
@@ -87,6 +88,9 @@ class Block:
 
     @staticmethod
     def parse(parts):
+        if len(parts) < 6:
+            raise ValueError(f"Invalid block format: expected 6 parts, got {len(parts)}")
+        
         index = int(parts[1])
         prev_hash = parts[2]
         payload = parts[3]
@@ -105,6 +109,8 @@ class Blockchain:
     def __init__(self):
         self.chain = [self.genesis()]
         self.cache = {}    # sender-side resend cache
+        # Cache genesis for resending
+        self.cache[0] = self.chain[0]
 
     def genesis(self):
         return Block(0, "0" * 40, f"GENESIS-{DEVICE_ID}")
@@ -126,8 +132,10 @@ class Blockchain:
 
     def verify_block(self, b):
         if b.compute_hash() != b.hash:
+            print(f"REJECT: hash mismatch")
             return False
         if b.compute_hmac() != b.hmac:
+            print(f"REJECT: HMAC mismatch")
             return False
         return True
 
@@ -135,13 +143,16 @@ class Blockchain:
         expected = self.height()
 
         if b.index < expected:
+            print(f"SKIP: already have block {b.index}")
             return True   # already have it
 
         if b.index > expected:
+            print(f"GAP: got {b.index}, expected {expected}")
             self.request_block(expected)
             return False
 
         if b.prev_hash != self.tip().hash:
+            print(f"REJECT: prev_hash mismatch at {b.index}")
             self.request_block(expected)
             return False
 
@@ -149,27 +160,35 @@ class Blockchain:
             return False
 
         self.chain.append(b)
-        print("ACCEPTED block", b.index, b.payload)
+        print(f"ACCEPTED block {b.index}: {b.payload}")
         return True
 
     def request_block(self, index):
-        uart.write(f"REQ|{index}\n".encode())
-        print("REQUEST block", index)
+        msg = f"REQ|{index}\n"
+        uart.write(msg.encode())
+        print(f"REQUEST block {index}")
 
     def resend_block(self, index):
         b = self.cache.get(index)
         if b:
             uart.write(b.serialize().encode())
-            print("RESENT block", index)
+            print(f"RESENT block {index}")
+        else:
+            print(f"RESEND FAILED: block {index} not in cache")
 
 
 # Application
 
 bc = Blockchain()
 counter = 0
+send_interval = 0
+last_request_time = {}
 
-print("Device:", DEVICE_ID)
-print("Genesis hash:", bc.tip().hash)
+print("=" * 40)
+print(f"Device: {DEVICE_ID}")
+print(f"Role: {'SENDER' if IS_SENDER else 'RECEIVER'}")
+print(f"Genesis hash: {bc.tip().hash}")
+print("=" * 40)
 
 while True:
 
@@ -178,9 +197,14 @@ while True:
         try:
             line = uart.readline()
             if not line:
+                utime.sleep_ms(10)
                 continue
 
-            parts = line.decode().strip().split("|")
+            line_str = line.decode().strip()
+            if not line_str:
+                continue
+
+            parts = line_str.split("|")
             kind = parts[0]
 
             if kind == "BLK":
@@ -188,21 +212,30 @@ while True:
                 bc.try_add_remote(block)
 
             elif kind == "REQ":
+                if len(parts) < 2:
+                    print("MALFORMED REQ")
+                    continue
                 idx = int(parts[1])
                 bc.resend_block(idx)
 
+            else:
+                print(f"UNKNOWN: {kind}")
+
         except Exception as e:
-            print("RX error:", e)
+            print(f"RX error: {e}")
+            import sys
+            sys.print_exception(e)
 
     # SEND (sender only)
-    if IS_SENDER and counter < 10:
-        utime.sleep(2)
-        payload = f"msg-{counter}-from-{DEVICE_ID}"
-        block = bc.add_local(payload)
-        if block:
-            uart.write(block.serialize().encode())
-            print("SENT block", block.index)
-            counter += 1
+    if IS_SENDER:
+        send_interval += 1
+        if send_interval >= 40 and counter < 10:  # ~2 seconds at 50ms sleep
+            send_interval = 0
+            payload = f"msg-{counter}-from-{DEVICE_ID}"
+            block = bc.add_local(payload)
+            if block:
+                uart.write(block.serialize().encode())
+                print(f"SENT block {block.index}: {payload}")
+                counter += 1
 
     utime.sleep_ms(50)
-
