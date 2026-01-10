@@ -1,13 +1,13 @@
 
 ## Tetris
 
-In 1984, a Soviet computer scientist named Alexey Pajitnov created a simple puzzle
-game while working at the Dorodnitsyn Computing Centre of the Soviet Academy of
-Sciences in Moscow. Using an Electronika 60, a Soviet clone of the PDP-11, Pajitnov
-designed a game where geometric shapes made of four squares each--"tetrominoes"--fell
-from the top of the screen and had to be arranged into complete lines. He named the
-game Tetris, combining the Greek prefix "tetra" (meaning four) with his favourite
-sport, tennis.
+In 1984, a Soviet computer scientist named Alexey Pajitnov (Алексей Леонидович Пажитнов)
+created a simple puzzle game while working at the Dorodnitsyn Computing Centre
+of the Soviet Academy of Sciences in Moscow. Using an Electronika 60, a Soviet
+clone of the PDP-11, Pajitnov designed a game where geometric shapes made of
+four squares each--"tetrominoes"--fell from the top of the screen and had to
+be arranged into complete lines. He named the game Tetris, combining the Greek
+prefix "tetra" (τέτρα, meaning four) with his favourite sport, tennis.
 
 The game spread quickly among Soviet colleagues, and programmers in Hungary soon
 ported it to Western platforms like the IBM PC and Commodore 64. By the mid-1980s,
