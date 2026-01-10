@@ -234,3 +234,26 @@ for the topics than as a source of thorough explanations.
 
 ![The Turing Omnibus](./../../assets/image/turing.png)
 
+
+
+### Gödel, Escher, Bach: An Eternal Golden Braid
+
+*Gödel, Escher, Bach: An Eternal Golden Braid* (1979) by Douglas Hofstadter is a
+Pulitzer Prize-winning (1980) piece that intertwines mathematics, art, music, and
+cognitive science to explore themes of self-reference, recursion, formal systems,
+and the emergence of meaning and consciousness from mindless symbols.
+
+In essence, GEB sits at the intersection of all the above: it elevates the rigorous theory,
+code craftsmanship, playful pedagogy, and broad curiosity into a grand meditation on
+computation as the substrate of mind and art. If your journey emphasises starting
+from code/theory toward deeper insight (or vice versa), GEB is the ultimate "strange loop"
+complement--rewarding, recursive, and eternally golden.
+
+I remember a philosophy teacher I had, Sten Lindström, who studied at the Stanford
+Philosophy Department at the same time as Hofstadter. Sten said that Douglas mostly
+kept to himself, often hidden away in a room and rarely seen among the other philosophers.
+No one thought he would eventually write a book, let alone win the Pulitzer Prize.
+They were all proven wrong.
+
+![Gödel, Escher, Bach](./../../assets/image/godel.png)
+
