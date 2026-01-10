@@ -117,3 +117,28 @@ for readers which find those texts dense or intimidating on first encounter.
 
 ![Elements](./../../assets/image/elements.png) ![Automata](./../../assets/image/automata.png)
 
+
+### Craftmanship in a New Way
+
+*Structure and Interpretation of Computer Programs* (often called the
+"Wizard Book" due to its iconic cover) by Harold Abelson, Gerald Jay Sussman,
+and Julie Sussman (first edition 1985, second edition 1996) is widely regarded
+as one of the most influential and profound introductory computer science
+textbooks ever written. It uses Scheme (a Lisp dialect) to explore fundamental
+ideas in programming and computation through a strongly code-first, exploratory
+approach--starting with simple expressions and procedures, then building increasingly
+sophisticated abstractions, all the way to implementing interpreters, compilers,
+and even a full metacircular evaluator.
+
+The book's core philosophy is that programs should be viewed as models of computational
+processes, and that mastering abstraction (procedural, data, and metalinguistic)
+allows programmers to tame complexity and express powerful ideas elegantly. Key
+chapters progress from functional programming basics (higher-order functions, recursion)
+to symbolic differentiation, logic programming (via nondeterminism), and hardware
+simulation (register machines). Exercises are legendary--challenging, insightful,
+and designed to provoke deep thinking rather than rote application.
+
+![SICP](./../../assets/image/sicp.png)
+
+The Little ..
+
