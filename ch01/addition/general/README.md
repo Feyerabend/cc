@@ -191,6 +191,10 @@ This was the first book I read in the series, and was a "eye-opener" on how
 to write Java in unregular ways.
 
 
+![Java](./../../assets/image/java.png)
+
+
+
 #### *The Little MLer* (1998) by Matthias Felleisen and Daniel P. Friedman
 
 This installment shifts to Standard ML (SML), introducing typed functional programming:
@@ -209,7 +213,6 @@ to teach inductive proofs about programs.
 Explores dependent types in Pie (a tiny Scheme-inspired dependently typed language),
 blending programming and mathematical reasoning.
 
-![Java](./../../assets/image/java.png)
 
 
 
