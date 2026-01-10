@@ -1,6 +1,27 @@
 
 ## Some Reflections on Literature for General Perspectives
 
+Although we have only just begun our journey through this vast landscape,
+it is already worthwhile to pause and reflect on existing literature.
+A central guiding principle of this book (or repository) has been *craftsmanship*
+Not only in the practice of programming but, to a significant extent, in
+the appreciation and application of theory as well. Many excellent books
+in the field adopt a predominantly theoretical starting point:
+they lay rigorous mathematical foundations first and only later illustrate
+how those abstractions manifest in actual code. In contrast, we deliberately
+take the opposite approach: starting from concrete, hands-on code and practical
+problem-solving, then gradually ascending toward the underlying theory that
+explains *why* certain patterns, limitations, and elegances emerge.
+
+This "code-first" philosophy is not a rejection of theory but a different path to it.
+By beginning with working programs, intuitive experiments, and real-world constraints,
+we aim to build motivation and intuition organically. Theory, when it arrives,
+feels earned rather than imposed; it illuminates code that the reader already
+understands rather than remaining an abstract prelude to implementation.
+This mirrors the way many practising programmers naturally learn:
+through trial, error, and craftsmanship--before formalising their insights.
+
+
 
 ### Donald E. Knuth
 
@@ -31,26 +52,26 @@ LaTeX, developed later by Leslie Lamport in the early 1980s, is a widely used ma
 that simplifies document preparation on top of Donald Knuth's TeX typesetting system.
 (LaTeX has been used to produce the printed book.)
 
-Across his many contributions, Knuth’s standpoint unifies deep theoretical insight
+Across his many contributions, Knuth's standpoint unifies deep theoretical insight
 with a strong appreciation for clarity, structure, and what might be called *craftsmanship*
 in computing. He views programming not merely as a technical task but as a form of
 human expression in which correctness, readability, maintainability and elegance
 matter as much as performance. He has described the best computer programmes as rising
 "to the level of art" because they combine rigorous analysis with aesthetic qualities
-that make them pleasurable for humans to read and reason about.  ￼
+that make them pleasurable for humans to read and reason about.
 
-Knuth’s concept of literate programming exemplifies this philosophy: a methodology
+Knuth's concept of literate programming exemplifies this philosophy: a methodology
 in which programmes are written primarily for human understanding, with narrative
-exposition interwoven with code so that the author’s intent and logic are clear.
+exposition interwoven with code so that the author's intent and logic are clear.
 This approach emphasises communication and comprehension over purely machine-oriented
-structure.  ￼
+structure.
 
-His work on TeX similarly reflects a craftsman’s concern for precision and quality.
+His work on TeX similarly reflects a craftsman's concern for precision and quality.
 Frustrated by the limitations of existing typesetting tools for mathematical texts,
 he created TeX to produce high-quality typesetting and documented it with the same
 rigour that characterises his algorithmic writing. The development process itself,
 including his bug-reward system for finding errors, demonstrates his emphasis on
-stability, correctness, and long-term reliability over rapid, incremental fixes.  ￼
+stability, correctness, and long-term reliability over rapid, incremental fixes.
 
 While some aspects of his approach (for example, the density and mathematical depth
 of The Art of Computer Programming) are seen as demanding and sometimes impractical
@@ -62,5 +83,37 @@ scientists even as software practice evolves.
 
 ![Art of Programming: Vol. 1](./../../assets/image/art.png)
 
-### 
+
+###  Traditional Approaches
+
+*Elements of the Theory of Computation* (2nd edition, 1997) by Harry R. Lewis and
+Christos H. Papadimitriou is a classic, rigorous textbook on theoretical computer
+science, widely praised in reviews for its clear writing, balanced blend of mathematical
+formalism and intuition, and accessibility compared to denser alternatives like
+Hopcroft and Ullman. Reviewers often highlight its effectiveness in classroom teaching
+and its ability to build deep understanding, though many note the material is dense
+and "dry," requiring careful, slow reading with limited worked examples and no exercise
+solutions--making it ideal with an instructor but challenging for pure self-study.
+
+*Introduction to Automata Theory, Languages, and Computation* (1st edition, 1979)
+by John E. Hopcroft and Jeffrey D. Ullman (later editions co-authored with Rajeev Motwani)
+is a foundational, highly rigorous textbook widely regarded as a classic and authoritative
+reference in theoretical computer science, frequently praised in reviews for its
+comprehensive coverage, precise proofs, and depth, but commonly criticized for its terse
+and formal style, minimal intuitive motivation, sparse examples, abrupt transitions,
+and numerous typographical errors (especially in the first edition)--making it notoriously
+challenging for self-study or beginners, though highly valued by advanced students or
+as a reference when paired with strong instruction. Reviewers often contrast it
+unfavorably with more approachable texts like Lewis and Papadimitriou (for better
+intuition and notation) or Sipser (for clearer explanations), describing it as "dense,"
+"dry," and better suited for those already comfortable with the material.
+
+Both Lewis & Papadimitriou and Hopcroft & Ullman exemplify the theory-first
+tradition this is a contrast against. Reviewers frequently note that these
+classics demand patience and mathematical maturity precisely because they
+begin with formal models. The example here as a contrast is the inversion
+and could serve as a valuable companion or alternative pathway--especially
+for readers which find those texts dense or intimidating on first encounter.
+
+![Elements](./../../assets/image/elements.png) ![Automata](./../../assets/image/automata.png)
 
