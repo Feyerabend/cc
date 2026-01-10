@@ -1,405 +1,194 @@
 
-## Category Theory as an Abstract Machine (VM / Interpreter)
+## CEK Machine: A Lambda Calculus Interpreter
 
-This is not intended as a blueprint for building a VM using category-theoretic
-concepts. Rather, it serves as an illustration of how these concepts operate.
-Since we have consistently advocated the use of VMs as a tool for understanding,
-this example demonstrates their explanatory power.
+The *CEK machine* is an abstract machine for evaluating
+lambda calculus expressions. It's named after its three main components:
+
+- *C* (Control): The term currently being evaluated
+- *E* (Environment): A mapping from variable names to their values
+- *K* (Kontinuation): The stack of pending computations
+
+The CEK machine is a *small-step operational semantics*--it breaks down
+evaluation into individual atomic steps, making the evaluation process
+explicit and observable.
 
 
-### Functors: mapping without changing structure
+### Why Does It Exist?
 
-A functor captures the idea of applying a function inside a structure
-without modifying the structure itself.
+#### Historical Context
 
-In Haskell-like pseudocode:
+The CEK machine was introduced by Matthias Felleisen and Daniel P. Friedman
+in the 1980s as part of their work on semantic engineering and programming
+language theory. It emerged from a lineage of abstract machines designed to model computation:
 
-```haskell
-class Functor f where
-    fmap :: (A -> B) -> f A -> f B
+1. *SECD Machine* (1964): Peter Landin's stack-based machine for lambda calculus
+2. *CEK Machine* (1986): Felleisen & Friedman's refinement using explicit continuations
+3. *CESK Machine*: Extended version adding a Store component for modeling mutable state
+
+#### Purpose and Applications
+
+The CEK machine serves several important purposes:
+
+*1. Pedagogical Tool*
+- Makes evaluation order explicit and observable
+- Helps students understand closures, environments, and continuations
+- Demonstrates tail-call optimization naturally
+
+*2. Semantic Foundation*
+- Provides a rigorous mathematical model for lambda calculus evaluation
+- Forms the basis for proving correctness of compilers and optimizations
+- Helps reason about program equivalence
+
+*3. Implementation Technique*
+- Many interpreters and compilers use CEK-like structures internally
+- The continuation component naturally handles control flow
+- Explicit environments model lexical scoping precisely
+
+*4. Research Platform*
+- Easy to extend with new language features (state, exceptions, delimited continuations)
+- Clear separation of concerns makes modifications straightforward
+- Useful for exploring different evaluation strategies
+
+
+### How Does It Work?
+
+#### Core Components
+
+*Control (C)*: The term being evaluated
+```
+Term = Variable(name)
+     | Lambda(param, body)
+     | Application(function, argument)
 ```
 
-The key idea is that fmap applies a function to the contents, not to the container.
-
-For lists:
-
-```haskell
-map (+1) [1,2,3] == [2,3,4]
+*Environment (E)*: Maps variables to values
+```
+Environment = { variable_name -> Value }
 ```
 
-The list remains a list, with the same length and ordering. Only the elements change.
-
-For optional values (Maybe):
-
-```haskell
-fmap (+1) (Just 3) == Just 4
-fmap (+1) Nothing  == Nothing
+*Kontinuation (K)*: Represents "what to do next"
+```
+Kont = Halt                                    // Done!
+     | Arg(argument_term, saved_env, next_k)   // Need to eval argument
+     | Fun(function_value, next_k)             // Need to apply function
 ```
 
-No conditionals are needed. The functor handles absence uniformly.
+#### Evaluation Steps
 
-What makes this powerful is that the same code shape works for many data types.
-The functor laws guarantee predictable behaviour: mapping the identity function
-does nothing, and mapping composed functions is the same as composing maps.
+The machine transitions between states `⟨Control | Environment | Kontinuation⟩`:
 
-
-
-#### Endofunctors in programming
-
-In most programming languages, functors map types to types within the same universe:
-
-```haskell
-List   :: Type -> Type
-Maybe  :: Type -> Type
-IO     :: Type -> Type
+*1. Variable Lookup*
 ```
-
-This "type-to-type" mapping is exactly what an endofunctor is. The mapping preserves
-how functions compose, which allows generic code to work uniformly across containers and effects.
-
-
-
-### Monads: sequencing computations with context
-
-A monad extends a functor with a way to sequence computations that carry context.
-
-In simplified form:
-
-```haskell
-class Monad m where
-    return :: A -> m A
-    (>>=)  :: m A -> (A -> m B) -> m B
+⟨x | E | K⟩  ->  apply_kont(K, E[x])
 ```
+Look up the variable in the environment and pass its value to the continuation.
 
-The bind operator (>>=) takes the result of one computation and feeds it into the next,
-while preserving the surrounding context.
-
-
-
-#### Example: Maybe monad (failure handling)
-
-```haskell
-safeDiv x y =
-    if y == 0 then Nothing else Just (x / y)
-
-Just 10 >>= \x -> safeDiv x 2   == Just 5
-Just 10 >>= \x -> safeDiv x 0   == Nothing
-Nothing >>= \x -> safeDiv x 2   == Nothing
+*2. Lambda Abstraction*
 ```
-
-Failure propagates automatically. There is no need to check for errors at every step.
-
-The monad laws ensure that this propagation behaves consistently, no matter how computations are grouped.
-
-
-
-#### Example: State monad (implicit state threading)
-
-A stateful computation can be modelled as a function:
-
-```haskell
-State s a = s -> (a, s)
+⟨λx.body | E | K⟩  ->  apply_kont(K, Closure(x, body, E))
 ```
+Create a closure capturing the current environment.
 
-Reading and writing state:
-
-```haskell
-get :: State s s
-put :: s -> State s ()
+*3. Function Application*
 ```
-
-Sequencing:
-
-```haskell
-put 5 >>= \_ -> get
+⟨(f a) | E | K⟩  ->  ⟨f | E | Arg(a, E, K)⟩
 ```
+Evaluate the function first, saving the argument for later.
 
-This reads as: update the state to 5, ignore the trivial result, then read the state.
-The explicit state-passing is hidden, but still fully controlled and predictable.
+*4. Continuation Application*
 
+When we have a value and need to continue:
 
+- *Halt*: Return the value (done!)
+- *Arg(a, E', K')*: Now evaluate the argument: `⟨a | E' | Fun(value, K')⟩`
+- *Fun(closure, K')*: Apply the function by extending its environment: `⟨body | E'[param->value] | K'⟩`
 
-#### Example: IO monad (controlled side effects)
+#### Example Trace
 
-```haskell
-getLine >>= \line ->
-putStrLn line
-```
-
-Although input and output are inherently impure, the monad enforces an explicit order
-of operations. Effects cannot be duplicated, reordered, or discarded accidentally.
-
-
-
-#### Example: Parser monad (composable syntax)
-
-A parser can be viewed as:
-
-```haskell
-Parser a = String -> Maybe (a, String)
-```
-
-Simple parsers are combined into larger ones:
-
-```haskell
-parseNumber >>= \n ->
-parsePlus   >>
-parseNumber >>= \m ->
-return (n + m)
-```
-
-Each parser consumes input and passes the remainder along. Failure short-circuits automatically.
-
-
-
-
-These abstractions are not about clever notation. They provide:
-- a uniform way to structure programs,
-- predictable composition guaranteed by laws,
-- reusable patterns independent of concrete data.
-
-Category theory supplies the rules that make these abstractions reliable.
-Programming supplies the instances that make them useful.
-
-
-
-### The core idea
-
-A virtual machine is, at heart, a state transition system.
-
-At each step, the machine:
-- has some internal state,
-- executes an instruction,
-- produces a new state (and possibly a value),
-- then continues.
-
-A monad captures exactly this pattern.
-
-Formally, a monadic computation can be read as:
+Let's trace `(λx.x) 7`:
 
 ```
-current_state -> (result, next_state)
+⟨(λx.x) 7 | {} | Halt⟩
+-> ⟨λx.x | {} | Arg(7, {}, Halt)⟩
+-> apply_kont(Arg(...), <λx.x>)
+-> ⟨7 | {} | Fun(<λx.x>, Halt)⟩
+-> apply_kont(Fun(...), 7)
+-> ⟨x | {x->7} | Halt⟩
+-> apply_kont(Halt, 7)
+-> 7  ✓
 ```
 
-That is already a small-step operational semantics.
+### Key Features
 
+#### Tail Call Optimization
 
+The CEK machine naturally implements tail-call optimization. When a function call is in tail position, no new continuation frame is added--the current continuation is reused. This means infinite loops like `(λf.f f)(λf.f f)` won't overflow the stack.
 
-#### A minimal virtual machine
+#### Closures and Lexical Scoping
 
-Consider a very small stack-based VM.
+Closures capture their defining environment, ensuring variables are resolved according to lexical scope:
 
-```
-State = (stack, program_counter)
-```
-
-An instruction transforms the state:
-
-```python
-def step(state):
-    stack, pc = state
-    instr = program[pc]
-
-    if instr == "PUSH 3":
-        return ([3] + stack, pc + 1)
-
-    if instr == "ADD":
-        a, b, *rest = stack
-        return ([a + b] + rest, pc + 1)
+```scheme
+((λx. (λy. x)) 42)  ; Returns a closure that remembers x=42
 ```
 
-This is a pure function:
+#### Explicit Control Flow
 
-```
-State -> State
-```
+Unlike evaluators that use the host language's call stack, the CEK machine makes all control flow explicit through the continuation component. This makes it easy to:
+- Add exception handling
+- Implement first-class continuations (call/cc)
+- Support coroutines and generators
 
-No magic, no effects — just explicit state passing.
+### Implementation Details
 
+#### Python Version (`cek.py`)
 
+- Pure functional implementation using immutable dataclasses
+- Step-by-step tracing for educational purposes
+- Church encoding examples (numerals, booleans, pairs)
+- Pretty-printing of Church-encoded values
 
-#### Encoding this as a monad
-
-Now rewrite this idea in monadic form.
-
-We define a computation type:
-
-```
-Computation = State -> (Value, State)
-```
-
-In Python-like pseudocode:
-
-```python
-def bind(m, f):
-    def new_comp(state):
-        value, state2 = m(state)
-        return f(value)(state2)
-    return new_comp
+*Run it:*
+```bash
+python cek.py
 ```
 
-This bind is exactly the monadic (`>>=`).
+#### C Version (`cek.c`)
 
-The machine’s state is now implicitly threaded through computations.
+- Imperative implementation with explicit memory management
+- Custom garbage collector using mark-and-sweep
+- Optimized for performance
+- Test suite with lambda calculus examples
 
-
-
-#### Instructions as monadic actions
-
-Each VM instruction becomes a computation.
-
-```python
-def push(n):
-    def comp(state):
-        stack, pc = state
-        return None, ([n] + stack, pc + 1)
-    return comp
-
-def add():
-    def comp(state):
-        stack, pc = state
-        a, b, *rest = stack
-        return None, ([a + b] + rest, pc + 1)
-    return comp
+*Compile and run:*
+```bash
+gcc -std=c99 -O2 cek.c -o cek
+./cek
 ```
 
-Sequencing instructions:
+### Extensions and Variations
 
-```
-program =
-    push(3) >>= \
-    push(4) >>= \
-    add()
-```
+The basic CEK machine can be extended to support:
 
-This is not metaphorical.
-This is a virtual machine, written in monadic form.
+- *Primitive operations* (arithmetic, comparisons)
+- *Mutable state* (CESK machine with Store component)
+- *Exception handling* (additional continuation constructors)
+- *First-class continuations* (call/cc operator)
+- *Lazy evaluation* (modify continuation handling)
+- *Type checking* (annotate values with types)
 
+### Further Reading
 
+*Foundational Papers:*
+- Felleisen, M., & Friedman, D. P. (1986). "Control operators, the SECD-machine, and the λ-calculus"
+- Felleisen, M. (1987). "The Calculi of Lambda-v-CS Conversion: A Syntactic Theory of Control and State in Imperative Higher-Order Programming Languages"
 
-#### Operational semantics view
+*Modern Treatments:*
+- Dybvig, R. K. (2009). "The Scheme Programming Language" (Chapter on implementation)
+- Friedman, D. P., & Wand, M. (2008). "Essentials of Programming Languages" (EOPL)
 
-In operational semantics, we often write transitions like:
-
-```
-⟨ADD, (a :: b :: s, pc)⟩ → ⟨(), (a+b :: s, pc+1)⟩
-```
-
-The monadic version encodes the same transition as a function:
-
-```
-State -> ((), State)
-```
-
-Bind corresponds to sequencing of transitions.
-
-So:
-- VM step rules = monadic actions
-- Instruction sequencing = bind
-- Machine state = monad state
-- Program execution = monadic composition
-
-
-
-#### Why this is powerful
-
-Once written this way:
-- the VM is pure and compositional
-- instruction effects are explicit
-- reasoning becomes algebraic
-- optimisation becomes lawful rewriting
-
-For example, instruction fusion corresponds to monad law–preserving rewrites.
-
-Associativity of bind:
-
-```
-(m >>= f) >>= g == m >>= (\x -> f x >>= g)
-```
-
-means instruction grouping does not affect behaviour--exactly what you want from a machine.
-
-
-
-### From monads to abstract machines
-
-Many well-known machines fit this pattern:
-- State monad -> store-passing machines
-- Writer monad -> tracing and logging machines
-- Maybe monad -> machines with failure
-- Continuation monad -> control-flow machines
-- IO monad →-> interaction machines
-
-The SECD machine, CEK machine, and many interpreters can be derived by choosing:
-- a state space,
-- a set of monadic actions,
-- a sequencing rule.
-
-Category theory does not replace operational semantics.
-It organises it.
-
-
-
-### Comments on the Categorical Stack VM
-
-The accompanying `cat_vm.py` takes a different perspective from the monadic VM sketched above.
-Instead of modelling the machine itself as a monad (implicitly threading a global state), it
-treats the *stack-based machine as a category* in a more direct, structural way:
-
-- *Objects* are stack configurations (`StackType` – a list of types).
-- *Morphisms* are instructions, each transforming one stack type into another.
-- *Composition* is simply sequencing instructions in a program.
-
-This makes the VM an interpretation of a *strict cartesian closed category* (or at least a
-cartesian category with coproducts) where:
-- Products (`Pair`, `Fst`, `Snd`) model categorical products.
-- Coproducts (`InL`, `InR`, `Case`) model sums (tagged unions).
-- The stack acts as a context or environment.
-
-
-#### What works well
-
-- *Explicit categorical structure*: The implementation demonstrates how classic stack
-  operations (dup, swap, drop) and arithmetic are ordinary morphisms, while products
-  and coproducts are first-class. This makes the connection to category theory tangible.
-
-- *Static type safety*: Every instruction carries both a runtime effect (`execute`) and
-  a type-level effect (`type_transform`). In principle this enables full type checking
-  of programs before execution (though the current code only checks at runtime).
-
-- *Educational clarity*: Seeing `Pair`/`Fst`/`Snd` next to `Add`/`Mul` highlights that
-  all operations are arrows between objects, regardless of whether they are "data" or
-  "control".
-
-
-#### Trade-offs and limitations (as noted in the source)
-
-We explicitly marks the file as "a more decorative implementation of category
-theory concepts".
-
-- *No true monadic layering*: Unlike the earlier monadic VM example, the state (the stack)
-  is passed explicitly and mutated in place. There is no hidden state threading via `>>=`.
-
-- *Control flow is limited*: Branching is only provided via `Case` on sums, and higher-order
-  functions via crude `Quote`/`Call`. No general recursion or loops are provided, making
-  non-trivial algorithms (e.g., proper recursive factorial) awkward.
-
-- *Type inference is minimal*: `type_transform` is implemented per-instruction, but there
-  is no global type checker that verifies an entire program.
-
-- *Performance and practicality*: This is deliberately not optimised for real use.
-  It prioritises conceptual clarity over efficiency.
-
-In short, `cat_vm.py` is a *categorical playground* rather than a production virtual machine.
-It illustrates how a programming language can be viewed as a category with the stack as the
-dominant structure, whereas the monadic view in the earlier sections shows how a VM can be
-expressed *inside* a single monad (State, IO, etc.).
-
-Both perspectives are complementary:
-- The monadic view excels at *hiding plumbing* (state, effects) and enabling algebraic reasoning.
-- The categorical stack view excels at *exposing structure* (products, coproducts, combinators)
-  and making the type system the central organising principle.
-
-Together they show why category theory is so powerful for language and machine design: it offers
-multiple lenses, each revealing different opportunities for abstraction and correctness.
-
+*Related Concepts:*
+- Abstract machines (SECD, Krivine, ZAM)
+- Continuation-passing style (CPS)
+- Operational semantics
+- Lambda calculus evaluation strategies
