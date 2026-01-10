@@ -209,7 +209,7 @@ to teach inductive proofs about programs.
 Explores dependent types in Pie (a tiny Scheme-inspired dependently typed language),
 blending programming and mathematical reasoning.
 
-
+![Java](./../../assets/image/java.png)
 
 
 
