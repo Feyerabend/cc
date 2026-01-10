@@ -3,7 +3,7 @@
 
 Although we have only just begun our journey through this vast landscape,
 it is already worthwhile to pause and reflect on existing literature.
-A central guiding principle of this book (or repository) has been *craftsmanship*
+A central guiding principle of this book (or repository) has been *craftsmanship*.
 Not only in the practice of programming but, to a significant extent, in
 the appreciation and application of theory as well. Many excellent books
 in the field adopt a predominantly theoretical starting point:
@@ -74,7 +74,7 @@ including his bug-reward system for finding errors, demonstrates his emphasis on
 stability, correctness, and long-term reliability over rapid, incremental fixes.
 
 While some aspects of his approach (for example, the density and mathematical depth
-of The Art of Computer Programming) are seen as demanding and sometimes impractical
+of *The Art of Computer Programming*) are seen as demanding and sometimes impractical
 for everyday industrial work, many commentators still regard his work as foundational
 and aesthetically rich. For Knuth, the craft of programming involves precise thought,
 clear communication, and an appreciation of the beauty inherent in well-designed
