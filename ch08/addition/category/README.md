@@ -17,6 +17,10 @@ examples, and integration with the surrounding material.
 
 This supplementary material now provides that treatment.
 
+A fantastic introduction in the form of videos by Bartosz Milewski:
+[https://www.youtube.com/@DrBartosz/videos](https://www.youtube.com/@DrBartosz/videos)
+.. and also do read his book: *Category Theory for Programmers* (2019).
+
 
 ### Why Category Theory Matters
 
