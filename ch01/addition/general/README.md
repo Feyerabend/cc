@@ -140,6 +140,94 @@ and designed to provoke deep thinking rather than rote application.
 
 ![SICP](./../../assets/image/sicp.png)
 
-The Little ..
 
-Turing Omnibus ..
+### The Little ..
+
+The "Little" series, primarily authored by Daniel P. Friedman (often with co-authors
+like Matthias Felleisen, William E. Byrd, and Oleg Kiselyov), is a beloved collection
+of short, whimsical books that teach advanced programming concepts through a unique
+Socratic dialogue format--a back-and-forth of questions and answers. Written in Scheme
+(a Lisp dialect), the books emphasize recursive thinking, abstraction, and alternative
+paradigms in a delightfully engaging, almost childlike way that belies their depth.
+Reviewers consistently describe the style as "mind-bending," "fun," and "transformative,"
+though it demands active participation and concentration. The core trilogy
+(The Little Schemer, The Seasoned Schemer, The Reasoned Schemer)
+forms a progressive journey from basic recursion to advanced functional and logic programming,
+earning "cult" status among functional programmers.
+
+
+#### *The Little Schemer* (4th edition, 1996) by Daniel P. Friedman and Matthias Felleisen
+
+This foundational book (originally The Little LISPer) introduces computing as an extension
+of simple arithmetic and algebra, using Scheme to explore recursion, lists, and higher-order
+functions through primitives like cons, car, cdr, eq?, and null?. It builds gradually to
+profound ideas like the Y combinator, all via the signature question-answer format
+and "Ten Commandments" of recursive design.
+
+
+#### *The Seasoned Schemer* (1995) by Daniel P. Friedman and Matthias Felleisen
+
+The direct sequel dives deeper into "additional dimensions of computing": functions
+as values, mutable state (set!), continuations, and building interpreters. It assumes
+familiarity with the first book and pushes recursive techniques further, exploring
+more sophisticated abstractions while maintaining the whimsical Q&A style.
+
+
+#### *The Reasoned Schemer* (2nd edition, 2018) by Daniel P. Friedman, William E. Byrd, Oleg Kiselyov, and Jason Hemann
+
+This installment shifts to logic programming, embedding miniKanren (a relational/logic language)
+in Scheme to teach goal-oriented programming, unification, and backtracking. It helps
+functional programmers think logically and logic programmers think functionally,
+all in the same playful dialogue format.
+
+
+#### *A Little Java, A Few Patterns* (1998) by Matthias Felleisen and Daniel P. Friedman
+
+This book transplants the "Little" style to a small subset of early Java (pre-generics era),
+teaching object-oriented programming through pattern-based design. It emphasises
+extensibility via patterns like Visitor (heavily featured), Interpreter, Composite,
+Template Method, and Factory--showing how functional recursive ideas adapt to OO.
+This was the first book I read in the series, and was a "eye-opener" on how
+to write Java in unregular ways.
+
+
+#### *The Little MLer* (1998) by Matthias Felleisen and Daniel P. Friedman
+
+This installment shifts to Standard ML (SML), introducing typed functional programming:
+basic types, datatypes, recursion, pattern matching, and modules/functors--all
+via food-themed examples and recursive commandments.
+
+
+#### *The Little Prover* (2015) by Daniel P. Friedman and Carl Eastlund
+
+Uses a minimal Scheme-like language with a built-in proof assistant (J-Bob)
+to teach inductive proofs about programs.
+
+
+#### *The Little Typer* (2018) by Daniel P. Friedman and David Thrane Christiansen
+
+Explores dependent types in Pie (a tiny Scheme-inspired dependently typed language),
+blending programming and mathematical reasoning.
+
+
+
+
+
+### The Turing Omnibus ..
+
+At last we come to an oddity.
+
+*The Turing Omnibus: 61 Excursions in Computer Science* (original 1989 edition) and
+its updated version *The New Turing Omnibus: 66 Excursions in Computer Science*
+by Alexander Keewatin Dewdney is a popular science book offering a whirlwind tour
+of computer science through short, self-contained "excursions" (chapters).
+Each 4-8 page chapter acts like a bus stop on a journey through key CS topics,
+explained accessibly with analogies, diagrams, and minimal math--aiming to spark
+curiosity for enthusiasts, high school students, or non-specialists rather
+than serve as a rigorous textbook.
+
+I found it both inspiring and easy to read, although it works more as a teaser
+for the topics than as a source of thorough explanations.
+
+![The Turing Omnibus](./../../assets/image/turing.png)
+
