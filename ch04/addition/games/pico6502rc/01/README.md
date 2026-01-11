@@ -53,7 +53,7 @@ The output:
 Generated rom_data: 380 bytes as 'rom_data'
 ```
 
-Then compile all the .c/.h files, and transfer to the Pico.
+Then compile all the .c/.h files, and transfer the `.uf2`to the Pico.
 
 ![Pico 6502 RC](./../../../../assets/image/game/pico6502rp.png)
 
