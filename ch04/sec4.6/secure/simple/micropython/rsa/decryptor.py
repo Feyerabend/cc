@@ -6,6 +6,13 @@ import _thread
 import time
 from machine import UART, Pin
 
+def bit_length(x):
+    n = 0
+    while x:
+        x >>= 1
+        n += 1
+    return n
+
 # Modular exponentiation function
 def pow_mod(base, exp, mod):
     result = 1
@@ -69,7 +76,7 @@ def rsa_decrypt_blocks(encrypted_blocks, private_key):
     d = private_key['d']
     
     # Calculate block size
-    max_block_size = max(1, (n.bit_length() - 1) // 8 - 1)
+    max_block_size = max(1, (bit_length(n) - 1) // 8 - 1)
     
     decrypted_data = bytearray()
     
@@ -91,7 +98,7 @@ def rsa_decrypt_blocks(encrypted_blocks, private_key):
         
         # Convert integer back to bytes
         # Calculate actual byte length needed
-        byte_length = (msg_int.bit_length() + 7) // 8
+        byte_length = (bit_length(msg_int) + 7) // 8
         if byte_length == 0:
             byte_length = 1
         
@@ -106,11 +113,11 @@ def main():
     print("=" * 50)
     print("PICO 2 RSA DECRYPTOR - 64-bit Keys")
     print("=" * 50)
-    print(f"RSA Private Key:")
-    print(f"  n = {RSA_PRIVATE_KEY['n']}")
-    print(f"  d = {RSA_PRIVATE_KEY['d']}")
-    print(f"Key size: {RSA_PRIVATE_KEY['n'].bit_length()} bits")
-    print(f"Max block size: ~{(RSA_PRIVATE_KEY['n'].bit_length() - 1) // 8 - 1} bytes")
+#    print(f"RSA Private Key:")
+#    print(f"  n = {RSA_PRIVATE_KEY['n']}")
+#    print(f"  d = {RSA_PRIVATE_KEY['d']}")
+#    print(f"Key size: {RSA_PRIVATE_KEY['n'].bit_length()} bits")
+#    print(f"Max block size: ~{(RSA_PRIVATE_KEY['n'].bit_length() - 1) // 8 - 1} bytes")
     print("\nWiring:")
     print("  GP1 (UART RX) -> Pico1 TX")
     print("  GND -> GND")
@@ -123,7 +130,7 @@ def main():
         time.sleep_ms(100)
     
     # Setup UART
-    uart = UART(0, baudrate=115200, rx=Pin(1))
+    uart = UART(1, baudrate=115200, tx=Pin(4), rx=Pin(5))
     
     print("\n[Core 0] Ready. Listening for encrypted data...")
     print("-" * 50)
