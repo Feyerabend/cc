@@ -1,13 +1,3 @@
-// Updated main.c with flicker fix (framebuffer), proper font integration (adapted from display.c's font5x8, padded to 8x8), bug fixes, and improved robustness.
-// - Added framebuffer to eliminate flicker by rendering off-screen and blitting atomically.
-// - Adapted font5x8 to 8x8 by left-padding 1 pixel and right-padding 2 pixels (total 3 padding for centering-ish).
-// - Increased cycles per frame to better approximate ~1MHz (now ~16k cycles per ~60Hz frame).
-// - Removed fake get_char_bitmap and dummy patterns; now uses real font data copied from display.c.
-// - Added bounds checking in rendering.
-// - Removed unnecessary placeholder ROM override (uses rom.h data).
-// - Fixed timing and stats printing.
-// - Made render_screen more efficient with direct framebuffer access.
-// - Ensured no overlapping border/character draws.
 
 #include <stdio.h>
 #include <string.h>
@@ -64,7 +54,8 @@ static const uint16_t c64_colors[16] = {
     0xC618,  // F: Light grey
 };
 
-// Copied and adapted font from display.c (5x8 font, will pad to 8x8 in rendering)
+// Copied and adapted font from display.c
+// (5x8 font, will pad to 8x8 in rendering)
 static const uint8_t font5x8[][5] = {
     {0x00, 0x00, 0x00, 0x00, 0x00}, // Space
     {0x00, 0x00, 0x5F, 0x00, 0x00}, // !
@@ -258,21 +249,22 @@ void render_screen(void) {
     display_blit_full(framebuffer);
 }
 
+
 int main() {
-    // Initialize stdio
+    // Init stdio
     stdio_init_all();
     sleep_ms(1000);  // Wait for USB serial
     
     printf("\n=== 6502 Emulator - C64 Style ===\n");
     
-    // Initialize display
+    // Init display
     display_error_t err = display_pack_init();
     if (err != DISPLAY_OK) {
         printf("Display init failed: %s\n", display_error_string(err));
         while(1) tight_loop_contents();
     }
     
-    // Initialize buttons
+    // Init buttons
     err = buttons_init();
     if (err != DISPLAY_OK) {
         printf("Button init failed: %s\n", display_error_string(err));
@@ -280,7 +272,7 @@ int main() {
     
     printf("Display initialized: %dx%d\n", DISPLAY_WIDTH, DISPLAY_HEIGHT);
     
-    // Initialize memory
+    // Init memory
     memset(memory, 0, sizeof(memory));
     
     // Load ROM
@@ -291,7 +283,7 @@ int main() {
     memory[VECTOR_RESET] = ROM_START & 0xFF;
     memory[VECTOR_RESET + 1] = ROM_START >> 8;
     
-    // Initialize screen RAM with spaces
+    // Init screen RAM with spaces
     for (int i = 0; i < SCREEN_CHARS; i++) {
         memory[SCREEN_RAM_START + i] = ' ';
         memory[COLOR_RAM_START + i] = 0x0E;  // Light blue

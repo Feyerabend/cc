@@ -55,8 +55,8 @@ def bin2header(input_file, output_file, array_name="rom_data"):
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: python bin2header.py input.bin output.h [array_name]")
-        print("Example: python bin2header.py program.bin rom.h rom_data")
+        print("Usage: python bin2header.py <input.bin> <output.h> [array_name]")
+        print("Example: python bin2header.py demo.bin rom.h rom_data")
         sys.exit(1)
     
     input_file = sys.argv[1]

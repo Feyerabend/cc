@@ -207,7 +207,7 @@ delay_inner:
 
 ; Text data
 title_text:
-    .asc "** PICO 6502 EMULATOR **"
+    .asc "** PICO 6502 RETRO COMPUTER **"
     .byte $00
 
 inst_text:
