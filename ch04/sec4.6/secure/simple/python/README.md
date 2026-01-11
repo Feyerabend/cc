@@ -29,7 +29,10 @@ It is used in HTTPS, SSH, VPNs, and messaging systems because it creates new sec
 every time. Even if an attacker records traffic today and steals a key tomorrow, old
 conversations remain safe. That property is why Diffie–Hellman is preferred for session setup.
 
-Typical real-world flow:
+![Diffie-Hellman](./../../../../assets/image/secure/diffie.png)
+
+
+#### Typical real-world flow:
 
 When you connect to a website:
 
