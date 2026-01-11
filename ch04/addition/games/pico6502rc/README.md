@@ -77,7 +77,6 @@ or even new "peripherals" you invent. The next chapters 5 will explore many of t
 starting with language implementations. In that way you can continue with this project
 into the next chapter.
 
-![EMU6502](./../../../assets/image/game/emu6502.png)
 
 
 #### NOTE: Using fake6502 project for the emulator
