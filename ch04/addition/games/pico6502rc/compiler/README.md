@@ -2,10 +2,12 @@
 ## PL/0 with I/O Extensions
 
 It can be hard to hand-assembly even a small computer as
-ours. This is an idea of how you can go about building
-something like a compiler for the computer. We will get
-to compilers in the next chapter. You can return to this
-later ..
+such as ours. This small PL/0 compiler (a language similar
+to a minimal Pascal, intended only for educational purposes)
+is an idea of how you can go about building something
+like a compiler for the computer. We will get to compilers
+in the next chapter. You can return to this later to
+build something more useful.
 
 
 ### Table of Contents
