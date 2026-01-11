@@ -8,7 +8,7 @@ This is a two-pass assembler for the MOS 6502 processor,
 supporting all standard instructions, addressing modes,
 and common assembler directives.
 
-
+ 
 ### Command Line Usage
 
 ```bash
