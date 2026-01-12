@@ -18,11 +18,11 @@
 ### Rise of File Systems and Databases (1970s-1980s)
 
 - *File Systems (1970s)*:
-  - *FAT (1977)*: Microsoft’s File Allocation Table, developed for floppy disks, organised data into clusters (e.g., 4KB). A table tracked cluster chains, enabling file storage on portable media.
+  - *FAT (1977)*: Microsoft's File Allocation Table, developed for floppy disks, organised data into clusters (e.g., 4KB). A table tracked cluster chains, enabling file storage on portable media.
   - *Unix File Systems (1970s)*: Introduced inodes, hierarchical directories, and metadata (permissions, timestamps). Systems like UFS organised disks into block groups.
   - Files became named entities with metadata, stored in contiguous or linked blocks. This allowed flexible storage for text, binaries, and more.
 - *Relational Databases (1970s-1980s)*:
-  - Edgar Codd’s 1970 paper formalised relational databases, using tables with rows and columns. IBM’s System R (1974) and Oracle (1979) implemented SQL.
+  - Edgar Codd's 1970 paper formalised relational databases, using tables with rows and columns. IBM's System R (1974) and Oracle (1979) implemented SQL.
   - Databases stored data in files but added structure: *tables* held records, *indexes* (B-trees) enabled fast lookups, and *logs* ensured crash recovery.
   - Storage relied on underlying file systems, with data split into fixed-size *pages* (e.g., 4KB), similar to disk blocks.
 
@@ -56,5 +56,38 @@
 
 ### Relevance to Embedded Systems
 
-In devices like the Raspberry Pi Pico, SD cards use FAT32 for compatibility, with 512-byte sectors organised into clusters. The historical shift from tapes to flash enables compact, reliable storage for files and simple databases (e.g., SQLite). Understanding this evolution highlights why modern storage balances performance, durability, and simplicity.
+In devices like the Raspberry Pi Pico, SD cards use FAT32 for compatibility,
+with 512-byte sectors organised into clusters. The historical shift from tapes
+to flash enables compact, reliable storage for files and simple databases
+(e.g., SQLite). Understanding this evolution highlights why modern storage
+balances performance, durability, and simplicity.
+
+
+### Reading Tip
+
+Cunningham, M. (1985). *File Structure and Design*. Reston Publishing Company, Inc.
+
+A book I can recommend, even though it is quite old. Despite its age, it gives a very solid
+conceptual introduction to how file systems are designed and why they look the way they do.
+What makes the book valuable today is that these fundamentals have barely changed.
+It focuses less on specific operating systems and more on the underlying principles:
+how data is organized on secondary storage, how files are structured internally,
+indexing methods, access paths, directory structures, and trade-offs between performance,
+space efficiency, and reliability.
+
+While it does not cover journaling, SSD behavior, or modern distributed storage,
+it provides a strong mental model of file system structure. That makes it a good
+complement to newer, more practical resources that focus on contemporary systems.
+More modern file systems like ext4, NTFS, APFS, and even distributed file systems still
+rely on the same core ideas: block allocation, metadata management, indexing,
+buffering, and consistency. Reading Cunningham's explanations helps you understand
+*why* current implementations make certain design choices instead of just *how* they work.
+
+Good, if you want:
+* A theoretical foundation before diving into implementation details
+* Clear explanations of file organization methods (sequential, indexed, hashed, etc.)
+* Insight into performance considerations such as locality, fragmentation, and access patterns
+* A bridge between database storage concepts and operating system file systems
+
+![Cunningham](./../../assets/image/storage/file.png)
 
