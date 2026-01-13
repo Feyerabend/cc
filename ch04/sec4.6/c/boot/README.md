@@ -132,6 +132,9 @@ A: No, but it is educational. The crypto is toy-level,
 A: To keep the code readable and focus on the overall
    structure. Adding real Ed25519 would add thousands
    of lines of library code.
+   And there can be issues beginning with advanced
+   features, easily brick your Pico:
+   https://github.com/raspberrypi/pico-examples/tree/master/bootloaders/encrypted.
 
 *Q: Can I use this in a product?*  
 A: __No!__ Use established libraries (Mbed TLS, wolfSSL)
