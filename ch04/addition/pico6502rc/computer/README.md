@@ -59,6 +59,8 @@ Then compile all the .c/.h files, and transfer the `.uf2`to the Pico.
 ![Pico 6502 RC](./../../../assets/image/game/pico6502rp.png)
 
 #### First project: construct build scripts! get the tool chain in order ..
+Correct the code: As you can see the text is written a bit odd, which you can adjust,
+and also then make the text change in colours .. 
 
 
 
