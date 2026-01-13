@@ -190,7 +190,8 @@ Original Message: 65
 Encrypted Message: 2790
 ```
 
-To run the decryption program (ensure `ciphertext`, `e`, `n`, and `d` match the encryption output):
+To run the decryption program (ensure `ciphertext`, `e`, `n`,
+and `d` match the encryption output):
 
 ```bash
 ./decrypt

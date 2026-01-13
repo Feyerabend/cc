@@ -12,7 +12,8 @@ encrypt small pieces of data for someone without having shared anything beforeha
 and you can create digital signatures that prove authenticity and integrity.
 This is why RSA appears in certificates, software signing, secure email, and
 authentication protocols.
-It answers the question: “How can anyone talk securely to me, and how can I prove that I am really me?”
+It answers the question:
+"How can anyone talk securely to me, and how can I prove that I am really me?"
 
 In practice RSA is used at the beginning of a secure connection, not for the whole
 communication. A browser uses RSA to verify the identity of a server and to protect
@@ -23,13 +24,14 @@ __Diffie–Hellman__ is used whenever two parties want to create a fresh secret 
 conversation without having met before and without storing anything long-term.
 It is used at the start of a session to produce a shared key that only exists for
 that session. This key is then used with fast symmetric encryption to protect all data.
-Diffie–Hellman answers the question: “How can we create a secret together over a public network?”
+Diffie–Hellman answers the question:
+"How can we create a secret together over a public network?"
 
 It is used in HTTPS, SSH, VPNs, and messaging systems because it creates new secrets
 every time. Even if an attacker records traffic today and steals a key tomorrow, old
 conversations remain safe. That property is why Diffie–Hellman is preferred for session setup.
 
-![Diffie-Hellman](./../../../../assets/image/secure/diffie.png)
+![Diffie-Hellman](./../../../assets/image/secure/diffie.png)
 
 
 #### Typical real-world flow:
