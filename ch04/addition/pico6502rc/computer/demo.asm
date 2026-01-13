@@ -9,7 +9,7 @@ color_idx = $21
 button_prev = $22
 
 start:
-    ; Initialize
+    ; Initialise
     LDA #$00
     STA counter
     STA color_idx
