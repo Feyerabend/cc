@@ -73,7 +73,7 @@ and input--this platform is extraordinarily extensible (and flexible to change):
 
 In short, this tiny board becomes a complete, programmable 1980s-style computer that
 you can evolve in any direction you like--graphics, sound, networking, languages,
-or even new "peripherals" you invent. The next chapters 5 will explore many of these paths,
+or even new "peripherals" you invent. The next chapters 5 will explore one of these paths,
 starting with language implementations. In that way you can continue with this project
 into the next chapter.
 
