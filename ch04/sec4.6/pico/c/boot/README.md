@@ -146,3 +146,6 @@ A: Understanding the *why* and *how* of secure boot before
    diving into complex production implementations. It's like
    learning physics with frictionless planes before dealing
    with real-world engineering.
+
+![Boot](./../../../../assets/image/secure/boot.png)
+
