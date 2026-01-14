@@ -352,14 +352,19 @@ You move forward by systematically eliminating what
 
 
 
-
+---
 
 
 
 
 ### Popper's Falsificationism: The Philosophical Foundation
 
-This entire debugging methodology has many ites to *Karl Popper's philosophy of science*.
+This entire debugging methodology has many ties to *Karl Popper's philosophy of science*.
+
+* Popper, K. (1959). *The logic of scientific discovery*. London: Hutchinson.
+* Popper, K. (1972). Conjectures and refutations: the growth of scientific knowledge. (4. ed., (rev.)). London: Routledge & Kegan Paul.
+* Popper, K. & Schilpp, P.A. (1974). The philosophy of Karl Popper. (1. ed.) La Salle, Ill.: Open court.
+
 
 
 #### The Core Insight
@@ -507,7 +512,7 @@ Example in debugging:
 
 
 
-### 2. Corroboration vs. Confirmation (jfr. avhandlingen!)
+### 2. Corroboration vs. Confirmation[^1]
 
 *Traditional testing*: Uses probability to quantify belief in hypotheses (Bayesian updating, likelihood ratios).
 
@@ -530,6 +535,7 @@ In debugging terms:
 
 *This is radically different from frequentist or Bayesian confirmation.*
 
+[^1]: One book I found enjoyable in this critique is: Johansson, I. (1975). *A critique of Karl Popper's methodology*. Stockholm: Esselte studium (Akad.-förl.)
 
 
 ### 3. Bold Conjectures and Severe Tests
