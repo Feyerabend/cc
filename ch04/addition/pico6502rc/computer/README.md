@@ -3,7 +3,7 @@
 
 
 Start assembling the demo program (in assembly):
-
+ 
 ```bash
 python asm.py demo.asm demo.bin -v
 ```
