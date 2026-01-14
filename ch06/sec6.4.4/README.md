@@ -491,7 +491,6 @@ That's why good debuggers think like scientists--because debugging *is* science.
 
 
 
------ MOVE TO PHIL/METH?
 
 
 ### 1. The Asymmetry of Falsification vs. Verification
