@@ -731,7 +731,7 @@ In debugging:
 
 
 ### Philosophical Core
-
+ 
 Popper's methodology isn't just "test your hypotheses"--it's a *complete epistemological stance*:
 
 1. *We can't prove, only disprove* (logical asymmetry)
