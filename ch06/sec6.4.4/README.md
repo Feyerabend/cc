@@ -535,7 +535,8 @@ In debugging terms:
 
 *This is radically different from frequentist or Bayesian confirmation.*
 
-[^1]: One book I found enjoyable in this critique is: Johansson, I. (1975). *A critique of Karl Popper's methodology*. Stockholm: Esselte studium (Akad.-förl.)
+[^1]: One book I found enjoyable in this critique is: Johansson, I. (1975). *A critique of Karl Popper's methodology*. Stockholm: Esselte studium (Akad.-förl.). Currently (2026) apparently he is willing to
+send you a PDF: http://ingvarjohansson.se/.
 
 
 ### 3. Bold Conjectures and Severe Tests
