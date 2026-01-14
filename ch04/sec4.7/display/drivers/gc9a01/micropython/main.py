@@ -370,3 +370,17 @@ def demo():
 
 if __name__ == "__main__":
     demo()
+
+
+''' TIME TO TEST!
+      Pico                 GC9A01
+    ---------            ----------
+    GPIO2  (4) --------> SCK.   check (SPI CLK)
+    GPIO3  (5) --------> MOSI.  check (SPI MOSI)
+    GPIO4  (6) --------> DC.    check
+    GPIO5  (7) --------> CS.    check
+    GND    (8) --------> GND    check
+    GPIO6  (9) --------> RST.   check
+    GPIO7 (10) --------> BL.    TO VCC??
+    3V3   (36) --------> VCC    check
+''' 
