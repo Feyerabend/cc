@@ -237,7 +237,7 @@ account.withdraw(75)   ## Raises ValueError
 
 
 
-#### But Wait—A New Bug Appears
+#### But Wait--A New Bug Appears
 
 After deploying the fix, you observe:
 
@@ -382,8 +382,8 @@ Key principles:
    - This asymmetry is fundamental to the scientific method
 
 3. *Good theories are highly falsifiable*  
-   - "Something is broken somewhere" cannot be tested → bad hypothesis
-   - "Line 47 divides without checking for zero" can be tested → good hypothesis
+   - "Something is broken somewhere" cannot be tested -> bad hypothesis
+   - "Line 47 divides without checking for zero" can be tested -> good hypothesis
 
 4. *Science progresses by bold conjectures and attempted refutations*  
    - Propose specific explanations (conjectures)
@@ -435,7 +435,7 @@ Popper teaches us that:
    The more harshly we test, the more we respect the limits of our knowledge
 
 3. *Failure is information*  
-   A failing test doesn't mean we failed—it means we successfully eliminated a false belief
+   A failing test doesn't mean we failed--it means we successfully eliminated a false belief
 
 4. *Surviving criticism makes theories stronger*  
    Code that survives edge cases, stress tests, and adversarial inputs is more trustworthy
@@ -502,11 +502,11 @@ That's why good debuggers think like scientists--because debugging *is* science.
 
 *Traditional hypothesis testing*: Seeks to establish confidence in a hypothesis through accumulated confirming evidence (p-values, confidence intervals).
 
-*Popper's addition*: Emphasizes that confirmation is logically weak—no amount of positive instances proves universality. But a single negative instance can definitively refute. This *logical asymmetry* is fundamental, not just methodological.
+*Popper's addition*: Emphasizes that confirmation is logically weak--no amount of positive instances proves universality. But a single negative instance can definitively refute. This *logical asymmetry* is fundamental, not just methodological.
 
 Example in debugging:
 - 1,000 successful test runs don't prove correctness (induction problem)
-- 1 crash proves incorrectness (modus tollens—deductively valid)
+- 1 crash proves incorrectness (modus tollens--deductively valid)
 
 *Why this matters*: It shifts focus from "gathering support" to "surviving criticism." The goal isn't to confirm your hypothesis but to *fail to falsify it despite your best efforts*.
 
@@ -516,7 +516,7 @@ Example in debugging:
 
 *Traditional testing*: Uses probability to quantify belief in hypotheses (Bayesian updating, likelihood ratios).
 
-*Popper's distinction*: Rejects probabilistic confirmation entirely. Instead, theories are *corroborated* by surviving severe tests—but this adds no probability that the theory is true.
+*Popper's distinction*: Rejects probabilistic confirmation entirely. Instead, theories are *corroborated* by surviving severe tests--but this adds no probability that the theory is true.
 
 *Corroboration* is not:
 - A measure of truth
@@ -541,9 +541,9 @@ send you a PDF: http://ingvarjohansson.se/.
 
 ### 3. Bold Conjectures and Severe Tests
 
-*Traditional approach*: Often conservative—test hypotheses close to known results, incrementally extend theories.
+*Traditional approach*: Often conservative--test hypotheses close to known results, incrementally extend theories.
 
-*Popper's emphasis*: Science advances fastest through *bold, risky conjectures* that make precise, surprising predictions. The bolder the claim, the more it "sticks its neck out," the better it is—*if it survives*.
+*Popper's emphasis*: Science advances fastest through *bold, risky conjectures* that make precise, surprising predictions. The bolder the claim, the more it "sticks its neck out," the better it is--*if it survives*.
 
 In debugging:
 - *Weak hypothesis*: "There might be a logic error somewhere in the module."
@@ -554,7 +554,7 @@ The bold hypothesis:
 - Is easier to test (create that exact scenario)
 - Is more informative when it survives (we've ruled out a very specific failure mode)
 
-*Traditional deductive testing doesn't mandate boldness*—Popper does.
+*Traditional deductive testing doesn't mandate boldness*--Popper does.
 
 
 
@@ -565,12 +565,12 @@ The bold hypothesis:
 *Popper's criterion*: A theory is scientific if and only if it is *falsifiable in principle*. Unfalsifiable claims (astrology, Freudian psychoanalysis, "the code just feels wrong") aren't scientific.
 
 In debugging:
-- "The system is unreliable" → unfalsifiable, useless
-- "The system crashes when memory usage exceeds 4GB due to a leak in the connection pool" → falsifiable, useful
+- "The system is unreliable" -> unfalsifiable, useless
+- "The system crashes when memory usage exceeds 4GB due to a leak in the connection pool" -> falsifiable, useful
 
 *This adds a meta-level filter*: Before testing a hypothesis, ask "Can this be proven wrong?" If not, it's not a scientific hypothesis.
 
-Traditional hypothesis testing doesn't inherently reject unfalsifiable claims—Popper does.
+Traditional hypothesis testing doesn't inherently reject unfalsifiable claims--Popper does.
 
 
 
@@ -581,7 +581,7 @@ Traditional hypothesis testing doesn't inherently reject unfalsifiable claims—
 *Popper's insight*: What we observe depends on what we're looking for. Observation is always interpreted through theoretical frameworks.
 
 In debugging:
-- You can't just "look at the data"—you need a theory about what to look for
+- You can't just "look at the data"--you need a theory about what to look for
 - The same log file means nothing to someone without domain knowledge
 - Your hypothesis determines which variables you monitor, which breakpoints you set
 
@@ -594,7 +594,7 @@ print(account.balance)  # What are you looking for?
 - If hypothesis: "balance overflows," you watch for `balance > MAX_INT`
 - Same observation, different theoretical lens
 
-*Traditional testing often assumes observation is theory-neutral*—Popper shows it never is.
+*Traditional testing often assumes observation is theory-neutral*--Popper shows it never is.
 
 
 
@@ -602,7 +602,7 @@ print(account.balance)  # What are you looking for?
 
 *Traditional approach*: Theories are either true or false.
 
-*Popper's refinement*: Even false theories can be closer to truth than others. Science progresses toward greater *verisimilitude*—truth-likeness.
+*Popper's refinement*: Even false theories can be closer to truth than others. Science progresses toward greater *verisimilitude*--truth-likeness.
 
 In debugging:
 
@@ -613,7 +613,7 @@ In debugging:
 
 Even if H4 is wrong (maybe it's `balance > amount` that's needed, not `>=`), it's *closer to the truth* than H1.
 
-*This explains iterative refinement*: Each hypothesis doesn't have to be correct—it just has to be *better* than the last. Debugging is asymptotic approach to truth.
+*This explains iterative refinement*: Each hypothesis doesn't have to be correct--it just has to be *better* than the last. Debugging is asymptotic approach to truth.
 
 
 
@@ -641,7 +641,7 @@ But you're also assuming:
 
 If the test fails, *any of these could be wrong*. Experienced debuggers know to question the test itself, the tooling, even the language.
 
-*Traditional deductive testing often ignores this holistic problem*—Popper makes it central.
+*Traditional deductive testing often ignores this holistic problem*--Popper makes it central.
 
 
 
@@ -649,7 +649,7 @@ If the test fails, *any of these could be wrong*. Experienced debuggers know to 
 
 *Traditional view*: Science accumulates truth through careful reasoning.
 
-*Popper's metaphor*: Science works like biological evolution—through *variation and selection*.
+*Popper's metaphor*: Science works like biological evolution--through *variation and selection*.
 
 - *Variation*: Propose multiple competing hypotheses (mutations)
 - *Selection*: Eliminate those that fail tests (natural selection)
@@ -662,9 +662,9 @@ You simultaneously consider:
 2. Maybe the state management is wrong  
 3. Maybe the concurrency handling is wrong
 
-You run tests to *eliminate* possibilities. What survives isn't "proven"—it just hasn't died yet.
+You run tests to *eliminate* possibilities. What survives isn't "proven"--it just hasn't died yet.
 
-*This is fundamentally different from linear hypothesis testing*—it's competitive, Darwinian, eliminative.
+*This is fundamentally different from linear hypothesis testing*--it's competitive, Darwinian, eliminative.
 
 
 
@@ -686,7 +686,7 @@ You show:
 - The old code failed test X
 - The new code passes test X
 - The new code also passes tests Y, Z
-- Therefore, prefer the new code—not because it's proven, but because it's survived more criticism
+- Therefore, prefer the new code--not because it's proven, but because it's survived more criticism
 
 *This is a meta-level philosophical difference that doesn't reduce to standard hypothesis testing.*
 
@@ -709,7 +709,7 @@ In debugging:
 - Design for debuggability, not just correctness
 - Continuous testing, monitoring, iteration
 
-*Traditional testing often treats "verified" code as done*—Popper insists nothing is ever done.
+*Traditional testing often treats "verified" code as done*--Popper insists nothing is ever done.
 
 
 
@@ -731,8 +731,8 @@ In debugging:
 
 
 ### Philosophical Core
-
-Popper's methodology isn't just "test your hypotheses"—it's a *complete epistemological stance*:
+ 
+Popper's methodology isn't just "test your hypotheses"--it's a *complete epistemological stance*:
 
 1. *We can't prove, only disprove* (logical asymmetry)
 2. *Knowledge grows by error elimination* (not truth accumulation)

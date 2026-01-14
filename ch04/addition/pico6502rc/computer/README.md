@@ -3,7 +3,7 @@
 
 
 Start assembling the demo program (in assembly):
-
+ 
 ```bash
 python asm.py demo.asm demo.bin -v
 ```
@@ -76,7 +76,7 @@ It has three main registers:
 
 And a few important concepts:
 
-* Memory is byte-addressed (0–65535)
+* Memory is byte-addressed (0-65535)
 * Most instructions work on the Accumulator
 * Instructions are simple: load, store, add, subtract, jump, branch
 
