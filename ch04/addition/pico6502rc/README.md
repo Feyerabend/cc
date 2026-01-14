@@ -13,25 +13,25 @@ The 6502 is one of the most influential 8-bit CPUs ever designed. Released by MO
 in 1975 for just $25 (at a time when an Intel 8080 cost $179), it democratised computing and
 especially gaming:
 
-- *Apple I (1976)* and *Apple II series (1977–1993)* – Steve Wozniak chose the 6502 for its
+- *Apple I (1976)* and *Apple II series (1977--1993)* -- Steve Wozniak chose the 6502 for its
   simplicity and low cost; the Apple II became one of the first highly successful mass-produced
   microcomputers.
-- *Commodore PET (1977)*, *VIC-20 (1980)*, and especially the *Commodore 64 (1982)* – the C64
-  sold an estimated 12–17 million units, making it the best-selling single computer model of
+- *Commodore PET (1977)*, *VIC-20 (1980)*, and especially the *Commodore 64 (1982)* -- the C64
+  sold an estimated 12--17 million units, making it the best-selling single computer model of
   all time. Its advanced SID sound chip and colourful graphics (thanks to the VIC-II chip)
   turned it into a legendary gaming and demo-scene machine.
 - *Atari 400/800 (1979)* and the Atari 2600 console (1977, using the 6507 variant).
-- *BBC Micro (1981)* – the educational standard in UK schools.
-- *Nintendo Entertainment System (1983)* – used a Ricoh 2A03/2A07
+- *BBC Micro (1981)* -- the educational standard in UK schools.
+- *Nintendo Entertainment System (1983)* -- used a Ricoh 2A03/2A07
   (6502 core without decimal mode).
 
-The 6502’s elegant instruction set, low pin count, and excellent price/performance ratio
+The 6502's elegant instruction set, low pin count, and excellent price/performance ratio
 made it the heart of the 8-bit revolution.
 
 Here we bring that heart back to life on modern hardware. We run a tiny ROM that initialises
-a C64-style text screen (40×30 characters), draws a border, displays a welcome message,
+a C64-style text screen (40x30 characters), draws a border, displays a welcome message,
 and reads the four buttons via a simulated CIA port. The display is double-buffered in RAM
-to eliminate flicker, and everything is drawn using a classic 5×8 pixel font padded to 8×8
+to eliminate flicker, and everything is drawn using a classic 5x8 pixel font padded to 8x8
 cells--exactly the spirit of 1980s home computers.
 
 
@@ -51,7 +51,7 @@ and input--this platform is extraordinarily extensible (and flexible to change):
 
 3. *Storage and filesystems*
    - Attach an SD card (SPI) and implement a simple disk loader
-    (like the C64’s 1541 emulation).  
+    (like the C64's 1541 emulation).  
    - Load larger programs or games from "virtual floppy images".
 
 4. *Networking (Pico 2W)*
@@ -63,7 +63,7 @@ and input--this platform is extraordinarily extensible (and flexible to change):
    - Implement a BASIC interpreter, Forth, or Lisp directly in the emulated address space.
    - Cross-compile from the host ARM Cortex-M0+ cores to 6502, creating hybrid programs
      that use both processors (e.g., the ARM handles Wi-Fi while the 6502 runs the retro
-     game logic; but don't be too optimistic on speed, in that confíguration).
+     game logic; but don't be too optimistic on speed, in that configuration).
 
 6. *Educational and documentation projects*
    - Every change is visible: add logging of CPU cycles, disassembler overlays,
@@ -92,7 +92,7 @@ Compared to the Z80, the 6502 relies more on a limited set of registers and addr
 modes, which encourages quite a different programming style. While this can feel
 restrictive at first, it often results in clearer and more predictable code. This
 simplicity also makes the 6502 a good platform for learning, experimentation, and
-emulator-based projects such as this one, where understanding the CPU’s behavior at
+emulator-based projects such as this one, where understanding the CPU's behavior at
 an instruction level is essential.
 
 

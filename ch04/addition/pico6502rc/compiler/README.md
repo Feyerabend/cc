@@ -400,9 +400,9 @@ The system uses a C64-inspired memory layout:
 |---------------|-------------|
 | `$0000-$00FF` | Zero Page |
 | `$0100-$01FF` | Stack |
-| `$0400-$07AF` | Screen RAM (40×30 = 1200 chars) |
+| `$0400-$07AF` | Screen RAM (40x30 = 1200 chars) |
 | `$D000-$D01F` | VIC-II Registers |
-| `$D800-$DBAF` | Color RAM (40×30 = 1200 bytes) |
+| `$D800-$DBAF` | Color RAM (40x30 = 1200 bytes) |
 | `$DC00` | Button State |
 
 #### Pre-defined Constants
@@ -454,7 +454,7 @@ END.
 
 #### Writing to Screen
 
-The screen is 40 columns × 30 rows. Calculate position as: `row * 40 + column`
+The screen is 40 columns x 30 rows. Calculate position as: `row * 40 + column`
 
 ```pl0
 VAR x, y, pos;
