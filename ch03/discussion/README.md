@@ -12,3 +12,5 @@ techniques are applied. Testing can come in many forms, be done in many ways. Th
 many more are explored in the chapter.
 
 Ideas on projects can be found in [PLAN.md](./PLAN.md) and [PLAN2.md](PLAN2.md).
+
+You should now also be able to make your own planning, with the help of LLMs.
