@@ -55,3 +55,9 @@ for studying secure data transfer, protocol robustness, and fault tolerance in e
 the display Pico produces immediate visual feedback, the effects of both good design and successful attacks
 become directly observable, turning abstract security concepts into something concrete, interactive,
 and educational.
+
+You should now be able to independently plan what to learn and what to teach, refine and adapt
+your projects, and design clear evaluation rubrics. All of this can be supported and enhanced
+through the use of large language models (LLMs), which can assist with ideation, structuring,
+and iterative improvement.
+
