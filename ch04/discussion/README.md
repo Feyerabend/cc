@@ -44,3 +44,14 @@ This folder should therefore be read as a workshop rather than a library. It is 
 to ask "what happens if ..", and to connect theory with practice. The hardware is simple enough to invite
 experimentation, yet rich enough to reward careful thought.
 
+One of the projects (2FA) also creates a natural platform for experimenting with *teamwork*, security,
+and adversarial design, where different groups can take on complementary and competing roles.
+One team may design and implement a secure communication scheme, inspired by ideas such as two-factor
+authentication, where commands are only accepted when multiple independent conditions are satisfied,
+such as a valid signature combined with a time- or sequence-based token. Another team can act as an
+attacking group, attempting to disrupt communication by injecting malformed commands, replaying messages,
+or exploiting weaknesses in the protocol. This transforms the system into a small, controlled laboratory
+for studying secure data transfer, protocol robustness, and fault tolerance in embedded systems. Because
+the display Pico produces immediate visual feedback, the effects of both good design and successful attacks
+become directly observable, turning abstract security concepts into something concrete, interactive,
+and educational.
