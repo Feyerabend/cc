@@ -26,9 +26,9 @@
   (2nd ed.). Cambridge, UK: Cambridge University Press.
 
 
-#### Legacy
-
 ![Beginners](./../../assets/image/farmer.png)
+
+#### Legacy
 
 The first book that I bought and studied compiler constructions from, was:
 - Farmer, M. (1984). Compiler physiology for beginners. Chartwell-Bratt.
@@ -39,9 +39,10 @@ and useful end-of-chapter exercises, it remains a solid, hands-on resource
 for grasping how compilers could be built.
 
 
-#### Compilers: Principles, Techniques, and Tools
 
 ![Dragon Book 1st](./../../assets/image/compilers.png)
+
+#### Compilers: Principles, Techniques, and Tools
 
 *First Edition (1986)*
 
@@ -82,11 +83,11 @@ In addition to the core material of the first edition, the second edition includ
 
 
 
-#### Modern Compiler Implementation
-
 ![Modern Compilers](./../../assets/image/appel.png)
 
-Andrew W. Appel’s *Modern Compiler Implementation* series is best understood
+#### Modern Compiler Implementation
+
+Andrew W. Appel's *Modern Compiler Implementation* series is best understood
 as a single book expressed in three programming languages (ML, Java, and C),
 all sharing the same structure and compiler design. Its main strength is that
 it guides the reader through the construction of a complete, realistic compiler
