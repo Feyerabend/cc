@@ -26,6 +26,17 @@
   (2nd ed.). Cambridge, UK: Cambridge University Press.
 
 
+#### Legacy
+
+![Beginners](./../../assets/image/farmer.png)
+
+The first book that I bought and studied compiler constructions from, was:
+- Farmer, M. (1984). Compiler physiology for beginners. Chartwell-Bratt.
+
+It is now very dated, as it focuses on building a working Mini-Pascal compiler
+using LEX and YACC. But with straightforward explanations, concrete examples,
+and useful end-of-chapter exercises, it remains a solid, hands-on resource
+for grasping how compilers could be built.
 
 
 #### Compilers: Principles, Techniques, and Tools
@@ -35,9 +46,9 @@
 *First Edition (1986)*
 
 The first edition (1986) of Compilers by Aho, Sethi, and Ullman is one of
-the foundational texts in compiler theory. It is often called the “red
-dragon book”, a nickname derived from the dragon on its cover and to
-distinguish it from other related books in the “dragon book” lineage.  ￼
+the foundational texts in compiler theory. It is often called the "red
+dragon book", a nickname derived from the dragon on its cover and to
+distinguish it from other related books in the "dragon book" lineage.
 
 The first edition presents a structured and rigorous introduction to
 compiler design. It covers:
@@ -48,26 +59,26 @@ compiler design. It covers:
 - Semantic analysis
 - Run-time environments and symbol tables
 - Intermediate code generation
-- Code optimization and generation  ￼
+- Code optimization and generation
 
 The material is theoretical and formal with a focus on fundamental algorithms
-and the classic pipeline model of compilers.  ￼
+and the classic pipeline model of compilers.
 
 ![Dragon Book 2nd](./../../assets/image/compilers2.png)
 
 *Second Edition (2006)*
 
 The second edition adds Monica S. Lam as a co-author and is often referred to
-as the “purple dragon book”. Every chapter was revised since the first edition
-to reflect developments that occurred in the two decades after the first edition.  ￼
+as the "purple dragon book". Every chapter was revised since the first edition
+to reflect developments that occurred in the two decades after the first edition.
 
 In addition to the core material of the first edition, the second edition includes:
 - Updated syntax-directed translation methods
 - Expanded data-flow analysis techniques
 - Chapters on instruction-level parallelism, parallelism and locality optimisation,
-  and interprocedural analysis  ￼
-- Discussions of just-in-time (JIT) compiling, garbage collection, and modern case studies  ￼
-- Broader treatment of optimization and back-end issues than the first edition.  ￼
+  and interprocedural analysis
+- Discussions of just-in-time (JIT) compiling, garbage collection, and modern case studies
+- Broader treatment of optimization and back-end issues than the first edition.
 
 
 
@@ -86,7 +97,7 @@ and encyclopedic reference, Appel is fundamentally practical and implementation-
 You are not just learning algorithms; you are building a real compiler with
 clear phase boundaries and concrete data structures.
 
-In terms of “modernity,” Appel is architecturally closer to how contemporary
+In terms of "modernity," Appel is architecturally closer to how contemporary
 compilers are organized. The central role of an explicit intermediate representation,
 control-flow graphs, modular separation between front end and back end, and
 graph-coloring register allocation mirrors the design of systems like GCC and
