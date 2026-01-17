@@ -68,7 +68,7 @@ core analytic idea: that understanding is structure, and that structure can be f
 explicit, and it even eventually may become mechanically processed.
 
 
-### Other Philosphies
+### Other Philosophies
 
 There is also a practical humility in that. Analytical philosophy is deep, but it is slow.
 It is a century of people trying to sharpen concepts that programmers now instantiate
