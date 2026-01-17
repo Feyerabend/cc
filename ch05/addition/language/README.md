@@ -1,5 +1,5 @@
 
-## Philosphical Questions on Language
+## Philosophical Questions on Language
 
 I have a background in analytic philosophy, and it has strong connections to computing.
 Analytical philosophy treats many philosophical problems as problems about language, or at
