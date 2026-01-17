@@ -63,7 +63,7 @@ The difference is that programming languages enforce their philosophy. Natural l
 tolerates ambiguity and contradiction. Programming languages cannot. They are analytic
 philosophy under maximal discipline.
 
-So compilers are not just technical artifacts. They are the concrete realisation of a
+So compilers are not just technical artefacts. They are the concrete realisation of a
 core analytic idea: that understanding is structure, and that structure can be formal,
 explicit, and it even eventually may become mechanically processed.
 
@@ -127,7 +127,7 @@ Other philosophies give you the flesh. And modern AI is trying, awkwardly, to as
 body from both.
 
 So the value is not in reading a century of analytic texts, but in seeing that computers
-are already philosophical artifacts. They encode answers to:
+are already philosophical artefacts. They encode answers to:
 - what meaning is,
 - what correctness is,
 - what "understanding" is.
@@ -202,13 +202,6 @@ target for intention.
 
 
 
-![Reference](./../../assets/image/reference.png)
-
-
-![Allwood](./../../assets/image/allwood.png)
-
-
-
 
 ### Projects and Ideas to Explore
 
@@ -234,8 +227,8 @@ research, or conceptual experiments.
      (e.g., Russell's set paradox) at compile time? What happens when you introduce
      probabilistic types from LLMs?
 
-#### 2. *LLM-Powered Hermeneutic Analyzer*
-   - *Description*: Create a tool using an LLM API to analyze texts from non-analytic
+#### 2. *LLM-Powered Hermeneutic Analyser*
+   - *Description*: Create a tool using an LLM API to analyse texts from non-analytic
      traditions, such as Heidegger's phenomenology or Derrida's deconstruction.
      Input a philosophical passage, and have the LLM generate "interpretive layers":
      one analytic (breaking it into syntax/semantics), one hermeneutic (exploring
