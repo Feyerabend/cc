@@ -64,7 +64,15 @@ In addition to the core material, the second edition includes:
 - Continued emphasis on metacircular evaluators and variations on interpreters
 
 
-JavaScript ed?
+
+![JS of SICP](./../../assets/image/sicpjs.png)
+
+*JavaScript edition (2022)*
+
+The JavaScript edition of SICP preserves the original book’s depth and conceptual rigor while replacing
+Scheme with a carefully restricted subset of JavaScript. It makes the classic ideas about abstraction,
+interpretation, and computation accessible to modern programmers without diluting the mathematical and
+philosophical core of the work.
 
 
 ![Nystrom](./../../assets/image/interpreters.png)
