@@ -11,10 +11,6 @@
 
 - Queinnec, C. (1996). *Lisp in Small Pieces*. Cambridge, UK: Cambridge University Press.
 
-- Friedman, D. P., Wand, M., & Haynes, C. T. (1992). *Essentials of Programming Languages*. Cambridge, MA: MIT Press.
-- Friedman, D. P., Wand, M., & Haynes, C. T. (2001). *Essentials of Programming Languages* (2nd ed.). Cambridge, MA: MIT Press.
-- Friedman, D. P., & Wand, M. (2008). *Essentials of Programming Languages* (3rd ed.). Cambridge, MA: MIT Press.
-
 
 ![The Anatomy of LISP](./../../assets/image/anatomy.png)
 
@@ -95,38 +91,6 @@ and two compilers, covering topics like evaluation, macros, continuations, refle
 compilation techniques. This book bridges interpretation and compilation, making it a natural
 extension for those coming from SICP or EOPL, with a practical emphasis on how Lisp's
 homoiconicity enables powerful metaprogramming through interpreters.
-
-
-
-
-
-
-
-#### Essentials of Programming Languages
-
-Daniel P. Friedman and Mitchell Wand's *Essentials of Programming Languages* series
-(with Christopher T. Haynes in earlier editions) is best understood as a single book
-evolving over editions, all sharing a similar structure and focus on interpreters.
-Its main strength is that it guides the reader through the construction of interpreters
-for increasingly complex languages, covering concepts like scope, continuations, types,
-and objects. In contrast to SICP, which uses interpreters as a vehicle for broader computer
-science ideas, EOPL is fundamentally about programming language semantics and design,
-using interpreters as the primary tool for exploration.
-
-In terms of approach, EOPL is hands-on and implementation-driven, using Scheme to build
-small interpreters that illustrate key PL concepts. The central role of denotational-style
-semantics through code, modular interpreter design, and progressive language extensions
-mirrors how modern PL research and teaching approach interpretation. Even though the
-books predate some contemporary tools, their structural approach remains highly relevant.
-
-
-
-Together with SICP, these works complement each other. SICP provides breadth and philosophical
-depth on computation, while EOPL offers rigor in PL theory via practical interpreter
-construction. If SICP teaches why interpretation reveals the essence of programming,
-EOPL shows how to use interpreters to model and understand language features systematically.
-For anyone serious about interpreters, reading both gives a much more complete picture
-than either alone.
 
 
 
