@@ -28,12 +28,11 @@ The key idea was that language is rule-governed and analysable into discrete uni
 (phonemes, morphemes), actually prefiguring tokenization in compilers.
 
 
+![Syntactic Structures](./../../assets/image/chomsky.png)
 
 #### Generative Grammar and Chomsky's Revolution (1950s-1970s)
 
-![Syntactic Structures](./../../assets/image/chomsky.png)
-
-Noam Chomsky transformed linguistics with his 1957 book *Syntactic Structures* (a favourite of mine),
+Noam Chomsky transformed linguistics with his 1957 book *Syntactic Structures*[^synt],
 challenging behaviorist views (e.g., B.F. Skinner's idea that language is learned through stimulus-response).
 Chomsky proposed generative grammar: a finite set of rules that can generate infinite sentences. This included:
 - *Syntax*: Hierarchical structures (phrase structure rules, tree diagrams) to explain sentence formation.
@@ -47,6 +46,10 @@ faculty--sparked debates on whether language is biologically hardwired, influenc
 
 This era aligned with analytic philosophy: Chomsky's work operationalised Wittgenstein's "logical form"
 and Russell's logical atomism, turning abstract ideas into testable, rule-based systems.
+
+[^synt]: Chomsky, N. (2002). *Syntactic structures* (2nd ed.). Mouton de Gruyter.
+A favourite of mine for its clarity, even though I do not agree with the rationalist view
+as I'm more inclined to empiricists like Quine.
 
 
 #### Post-Chomskyan Developments and Pragmatics (1970s-Present)
