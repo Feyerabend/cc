@@ -25,6 +25,7 @@
 - Appel, A. W. (2002). *Modern compiler implementation in C*
   (2nd ed.). Cambridge, UK: Cambridge University Press.
 
+---
 
 ![Beginners](./../../assets/image/farmer.png)
 

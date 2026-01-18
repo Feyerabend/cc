@@ -13,6 +13,7 @@
 
 - Queinnec, C. (1996). *Lisp in Small Pieces*. Cambridge, UK: Cambridge University Press.
 
+---
 
 ![The Anatomy of LISP](./../../assets/image/anatomy.png)
 
