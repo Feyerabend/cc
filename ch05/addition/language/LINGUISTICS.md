@@ -89,9 +89,10 @@ Much of this was developed in and central to the AI field of the time.
 This also mirrored analytic philosophy: Machines enforced logical clarity,
 dissolving ambiguities through formal rules.
 
-[^joke]: The famous and somewhat apocryphal anecdote from the early days of machine translation
-that illustrates the challenges of ambiguity in language processing. A biblical quote from
-Matthew 26:41 reads: "The spirit is willing, but the flesh is weak." In the story, this English
+[^joke]: I must include the famous and somewhat apocryphal anecdote from the early days
+of machine translation illustrates the challenges of ambiguity in language processing.
+It was about a biblical quote from Matthew 26:41 that reads:
+"The spirit is willing, but the flesh is weak." In the story, this English
 sentence was fed into an early computer system for translation into Russian, and then translated
 back into English. The result came out garbled as something like "The vodka is good, but the meat
 is rotten"..
