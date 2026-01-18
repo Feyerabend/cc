@@ -77,7 +77,7 @@ philosophy's "language as logic" with computing's "language as processable data.
 
 Inspired by Chomsky, early CL focused on machine translation (MT). The Georgetown-IBM experiment
 (1954) translated Russian to English using dictionaries and rules, but failed on ambiguity--echoing
-philosophical puzzles like Quine's "gavagai" (indeterminacy of translation).
+philosophical puzzles like Quine's "gavagai" (indeterminacy of translation).[^joke]
 
 Key developments was:
 - Parsers: Algorithms like Earley's (1970) for context-free grammars, turning Chomsky's trees into code.
@@ -88,6 +88,13 @@ Key developments was:
 Much of this was developed in and central to the AI field of the time.
 This also mirrored analytic philosophy: Machines enforced logical clarity,
 dissolving ambiguities through formal rules.
+
+[^joke]: The famous and somewhat apocryphal anecdote from the early days of machine translation
+that illustrates the challenges of ambiguity in language processing. A biblical quote from
+Matthew 26:41 reads: "The spirit is willing, but the flesh is weak." In the story, this English
+sentence was fed into an early computer system for translation into Russian, and then translated
+back into English. The result came out garbled as something like "The vodka is good, but the meat
+is rotten"..
 
 
 #### Statistical Shift (1980s-2000s)
@@ -112,8 +119,8 @@ capturing semantic relations statistically. Transformers (2017) enabled LLMs lik
 trained on vast data to predict text.
 
 Key ideas here:
-- Distributional semantics: "You shall know a word by the company it keeps" (J.R. Firth, 1957),
-  implemented in vectors.
+- Distributional semantics: "You shall know a word by the company it keeps"
+  (J.R. Firth, 1957), implemented in vectors.
 - Multimodality: Models like CLIP (2021) integrate vision and language, testing
   the "collapse to language" thesis.
 
