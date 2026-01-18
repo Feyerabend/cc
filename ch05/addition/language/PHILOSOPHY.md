@@ -15,7 +15,7 @@ scopes, and finally executable meaning. This mirrors the analytic philosopher's 
 move from ordinary language to a regimented, formal language where reasoning becomes
 explicit and, in some ways, mechanical.
 
-Norman Chomsky is the natural bridge here. His distinction between:
+Noam Chomsky is the natural bridge here. His distinction between:
 - syntax (formal structure)
 - semantics (meaning)
 - pragmatics (use)
@@ -23,7 +23,7 @@ is almost a direct continuation of the analytic tradition, but operationalised. 
 philosophers discussed abstractly, Chomsky and later computer scientists implemented.
 A grammar is no longer just a philosophical object; it is an executable specification.
 
-![Syntactic Structures](./../../assets/image/chomsky.png)
+Read more on the [linguistic](LINGUISTCS.md) aspects.
 
 The idea of a parser is especially revealing. In philosophy, parsing is conceptual:
 how do we understand a sentence, what structure do we assign to it, what is its logical form?
