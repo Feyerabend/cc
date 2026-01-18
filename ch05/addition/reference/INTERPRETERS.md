@@ -4,6 +4,8 @@
 - Abelson, H., & Sussman, G. J. (1985). *Structure and Interpretation of Computer Programs*. Cambridge, MA: MIT Press.
 - Abelson, H., Sussman, G. J., & Sussman, J. (1996). *Structure and Interpretation of Computer Programs* (2nd ed.). Cambridge, MA: MIT Press.
 
+- Abelson, H., Sussman, G. J., & Sussman, J. (2022). *Structure and interpretation of computer programs: JavaScript edition*. MIT Press.
+
 - Friedman, D. P., & Felleisen, M. (1974). *The Little LISPer*. Chicago, IL: Science Research Associates.
 - Friedman, D. P., & Felleisen, M. (1986). *The Little LISPer* (3rd ed.). New York, NY: Macmillan Publishing Company.
 
