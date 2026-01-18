@@ -7,12 +7,13 @@
 - Friedman, D. P., & Felleisen, M. (1974). *The Little LISPer*. Chicago, IL: Science Research Associates.
 - Friedman, D. P., & Felleisen, M. (1986). *The Little LISPer* (3rd ed.). New York, NY: Macmillan Publishing Company.
 
+- Nystrom, R. (2021). *Crafting interpreters*. Genever Benning.
+
 - Queinnec, C. (1996). *Lisp in Small Pieces*. Cambridge, UK: Cambridge University Press.
 
 - Friedman, D. P., Wand, M., & Haynes, C. T. (1992). *Essentials of Programming Languages*. Cambridge, MA: MIT Press.
 - Friedman, D. P., Wand, M., & Haynes, C. T. (2001). *Essentials of Programming Languages* (2nd ed.). Cambridge, MA: MIT Press.
 - Friedman, D. P., & Wand, M. (2008). *Essentials of Programming Languages* (3rd ed.). Cambridge, MA: MIT Press.
-
 
 
 ![The Anatomy of LISP](./../../assets/image/anatomy.png)
