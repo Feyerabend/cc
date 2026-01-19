@@ -13,7 +13,7 @@ It is interesting because it is small, simple, and plentiful. When you have one 
 device. When you have ten or twenty, you build a system. A distributed computer stops being a
 metaphor and becomes a physical object on your desk. Wires replace abstract networks, clock
 drift replaces simulated timing errors, and failure becomes something you can touch. Nodes can
-be unplugged, power-starved, or flooded with messages, and the system's behavior under stress
+be unplugged, power-starved, or flooded with messages, and the system's behaviour under stress
 is no longer theoretical. It is observable.
 
 In earlier decades, this kind of experimentation was expensive and slow. You needed custom boards,
@@ -29,7 +29,7 @@ handlers, the timing logic, and the diagnostics, so your energy is spent on stru
 than syntax. The code becomes a living document of your architectural thinking.
 
 This returns computer science to a more physical and experimental discipline. Distributed systems
-are no longer something that only exist in data centers or in academic papers. They can exist on
+are no longer something that only exist in data centres or in academic papers. They can exist on
 a tabletop. Fault tolerance is no longer a property of diagrams but of wires, clocks, and power rails.
 Consensus is no longer an algorithm alone, but a phenomenon that emerges from real delays, real
 failures, and real constraints.
