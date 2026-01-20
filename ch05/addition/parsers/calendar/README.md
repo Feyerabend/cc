@@ -7,7 +7,7 @@ applications and platforms, such as Google Calendar, Apple Calendar, and Microso
 
 The format is defined in RFC 5545 (published in September 2009), which obsoleted earlier RFCs
 like 2445. iCalendar uses a plain text format with a structured syntax that is both human-readable
-and machine-parsable.
+and machine-parsable. 
 
 Features
 - Interoperability: Enables different calendar systems to exchange information seamlessly.
