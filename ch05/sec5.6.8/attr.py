@@ -60,12 +60,12 @@ class Parser:
         self.pos += 1
         return tok
 
-    # Program → Stmt*
+    # Program -> Stmt*
     def program(self):
         while self.pos < len(self.tokens):
             self.stmt()
 
-    # Stmt → let ID : i32 = Expr ;
+    # Stmt -> let ID : i32 = Expr ;
     def stmt(self):
         self.eat("LET")
         name = self.eat("ID").value
@@ -85,7 +85,7 @@ class Parser:
 
         print(f"declare {name}: i32 = {expr['value']}")
 
-    # Expr → Term ( + Term )*
+    # Expr -> Term ( + Term )*
     def expr(self):
         left = self.term()
         while self.pos < len(self.tokens) and self.peek().type == "PLUS":
@@ -99,7 +99,7 @@ class Parser:
             }
         return left
 
-    # Term → Factor ( * Factor )*
+    # Term -> Factor ( * Factor )*
     def term(self):
         left = self.factor()
         while self.pos < len(self.tokens) and self.peek().type == "MUL":
@@ -112,7 +112,7 @@ class Parser:
             }
         return left
 
-    # Factor → INT | ID
+    # Factor -> INT | ID
     def factor(self):
         tok = self.peek()
         if tok.type == "INT":
