@@ -100,8 +100,11 @@ Christian Queinnec's *Lisp in Small Pieces* (1996) is a comprehensive exploratio
 and Scheme implementation, focusing heavily on interpreters. It describes eleven interpreters
 and two compilers, covering topics like evaluation, macros, continuations, reflection, and
 compilation techniques. This book bridges interpretation and compilation, making it a natural
-extension for those coming from SICP or EOPL, with a practical emphasis on how Lisp's
-homoiconicity enables powerful metaprogramming through interpreters.
+extension for those coming from SICP or EOPL (Essentials of Programming Languages),[êopl]
+with a practical emphasis on how Lisp's homoiconicity enables powerful metaprogramming through
+interpreters.
 
-
+[^]: Friedman, D.P., Wand, M. & Haynes, C.T. (1992). *Essentials of programming languages*. Cambridge, Mass.: MIT Press.
+A book which I have not yet personally read or even looked at, but is one of the foundational books
+that is recommended for this field.
 
