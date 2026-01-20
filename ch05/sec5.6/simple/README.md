@@ -20,11 +20,11 @@
 - Implements scope hierarchy (local -> global lookup)
 
 #### Sample Programs
-- + Valid program
-- - Redeclaration error
-- - Type mismatch error
-- - Undefined variable error
-- + Scope example
+- `+` Valid program
+- `-` Redeclaration error
+- `-` Type mismatch error
+- `-` Undefined variable error
+- `+` Scope example
 
 The program uses a simple dictionary-based representation where each statement is
 a dict with a "type" field. The analyser processes statements sequentially, building
@@ -48,12 +48,12 @@ the symbol table and checking for semantic errors.
 - If-else branch analysis
 
 #### Sample Programs
-- + Valid function with correct call
-- - Wrong argument types
-- - Missing return on some paths
-- - Unreachable code warning
-- - Break outside loop
-- + All paths return correctly
+- `+` Valid function with correct call
+- `-` Wrong argument types
+- `-` Missing return on some paths
+- `-` Unreachable code warning
+- `-` Break outside loop
+- `+` All paths return correctly
 
 
 The program shows function verification: wrong types, wrong number of args.
