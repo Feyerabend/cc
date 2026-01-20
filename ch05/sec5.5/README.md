@@ -93,3 +93,8 @@ These parsers start with the input tokens and attempt to reconstruct the start s
 
 Additional parser can be found at [parsers](./../addition/parsers/).
 
+Perhaps, as for me, you find it much more interesting to build parsers in practice and
+explore them, rather than just reading about them. This is where your project can begin.
+First, decide what you want to accomplish, and then try to achieve it, with or without
+the help of LLMs. Parsing is a rewarding experience in its own right.
+
