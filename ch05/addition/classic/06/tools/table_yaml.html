@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAML Hierarchy Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #yaml-tree {
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            margin-left: 20px;
+        }
+
+        li {
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .expand::before {
+            content: "→"; /* Right arrow for collapsed */
+            margin-right: 5px;
+        }
+
+        .collapse::before {
+            content: "↓"; /* Down arrow for expanded */
+            margin-right: 5px;
+        }
+
+        .nested {
+            display: none;
+        }
+
+        li.clicked > .nested {
+            display: block;
+        }
+
+        #upload-container {
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: lightgray;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>YAML Hierarchy Viewer</h2>
+
+    <div id="upload-container">
+        <label for="yaml-upload">Upload YAML File</label>
+        <input type="file" id="yaml-upload" accept=".symbol" />
+    </div>
+
+    <div id="yaml-tree"></div>
+    <!-- a bit of dependency .. -->
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml/dist/js-yaml.min.js"></script>
+    <script>
+        document.getElementById('yaml-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    // Parse the YAML data
+                    const yamlData = jsyaml.load(e.target.result);
+
+                    // Clear existing tree and generate new tree
+                    document.getElementById("yaml-tree").innerHTML = '';
+                    document.getElementById("yaml-tree").appendChild(generateTree(yamlData));
+                } catch (err) {
+                    alert("Error parsing YAML file: " + err.message);
+                }
+            };
+
+            reader.readAsText(file);
+        });
+
+        function generateTree(data) {
+            const ul = document.createElement("ul");
+
+            for (let key in data) {
+                const li = document.createElement("li");
+
+                const item = data[key];
+                const span = document.createElement("span");
+
+                // Check if item is an object or array
+                if (item && typeof item === 'object') {
+                    span.textContent = key;
+
+                    const expandSpan = document.createElement("span");
+                    expandSpan.classList.add('expand');
+                    const nestedUl = generateTree(item);
+                    nestedUl.classList.add('nested');
+
+                    li.appendChild(expandSpan);
+                    li.appendChild(span);
+                    li.appendChild(nestedUl);
+
+                    // Add click event to toggle visibility and arrow state
+                    expandSpan.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Prevent bubbling to li
+                        li.classList.toggle('clicked');
+                        // Toggle the arrows between expand and collapse
+                        if (li.classList.contains('clicked')) {
+                            expandSpan.classList.remove('expand');
+                            expandSpan.classList.add('collapse');
+                        } else {
+                            expandSpan.classList.remove('collapse');
+                            expandSpan.classList.add('expand');
+                        }
+                    });
+                } else {
+                    // If item is not an object, display its value
+                    span.textContent = `${key}: ${item}`;
+                    li.appendChild(span);
+                }
+
+                ul.appendChild(li);
+            }
+
+            return ul;
+        }
+    </script>
+
+</body>
+</html>
