@@ -223,14 +223,14 @@ Final Dates: January 1, 2, 4, 6, 7, 8.
 
 #### Final Project
 
-7. Interactive Calendar Visualization:
+7. Interactive Calendar Visualisation:
 	- Objective: Create a visual, interactive calendar using JavaScript, backed by Python-parsed data.
 	- Tasks:
 	    - Parse .ics files in Python and serve the event data as an API (e.g. using Flask or FastAPI).
 	    - Create a front-end calendar interface in JavaScript (e.g. with libraries like FullCalendar.js or plain HTML/CSS/JS).
 	    - Display events with tooltips, date selection, and navigation by month or week.
 	    - Add filters for categories (e.g. "only work meetings").
-	- Learning Outcome: Full-stack development skills, combining data processing, API design, and front-end visualization.
+	- Learning Outcome: Full-stack development skills, combining data processing, API design, and front-end visualisation.
 
 #### Additional Challenge Ideas
 

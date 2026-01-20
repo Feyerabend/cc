@@ -48,7 +48,7 @@ Properties define attributes of components. Common properties include:
 - DESCRIPTION: Provides additional details about the event/task.
 - RRULE: Defines recurrence rules for repeating events/tasks.
 - ATTENDEE: Lists participants for an event.
-- ORGANIZER: Identifies the event's organizer.
+- ORGANIZER: Identifies the event's organiser.
 
 3. Values
 

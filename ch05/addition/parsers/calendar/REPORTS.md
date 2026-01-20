@@ -49,7 +49,7 @@ Arguments for DSLs Over APIs
 
 2. Reduced Dependency on External Libraries:
    Unlike APIs that often rely on external libraries, DSLs can be designed to
-   operate natively within the project. This minimizes dependency bloat, reduces
+   operate natively within the project. This minimises dependency bloat, reduces
    the risk of library conflicts or versioning issues, and ensures that the core
    functionality remains under the developer's control.
 
@@ -126,7 +126,7 @@ be structured, its syntax, features, and functionalities.
    on certain criteria (e.g., only report events that meet specific conditions).
 4. *Formatting and Output Options*: Support various output formats, such as plain
    text, HTML, Markdown, or CSV, to cater to different reporting needs.
-5. *Visualization*: Integrate with libraries for visualizing data, allowing users
+5. *Visualisation*: Integrate with libraries for visualising data, allowing users
    to create charts and graphs directly from queries.
 
 
@@ -208,7 +208,7 @@ report "Event Distribution by Tag" {
 
 1. *Monthly Summary Reports*: Users can generate summary reports
    for events over a month, including counts, durations, and tags.
-2. *Workload Analysis*: Analyze the distribution of events over
+2. *Workload Analysis*: Analyse the distribution of events over
    time to understand where time is being spent.
 3. *Visual Reports*: Create graphical representations of event
    distributions, helping users to quickly grasp the data.
@@ -223,7 +223,7 @@ report "Event Distribution by Tag" {
 - `filter(condition)`: Specify conditions to filter events.
 - `aggregate()`: Define aggregation functions such as `count_events()`, `sum_duration()`, and `average_duration()`.
 - `output(format)`: Specify output format options (e.g. "PlainText", "Markdown", "CSV").
-- `visualize(type)`: Define the type of visualization to generate (e.g. "BarChart", "PieChart").
+- `visualize(type)`: Define the type of visualisation to generate (e.g. "BarChart", "PieChart").
 - `if (condition) {}`: Conditional logic for dynamic reporting.
 - `include(events)`: Include specific events or criteria in the report.
 
@@ -231,6 +231,6 @@ report "Event Distribution by Tag" {
 
 This reporting language aims to provide users with a flexible, expressive,
 and intuitive way to generate meaningful reports from their calendar data.
-By allowing for detailed filtering, aggregation, and visualization options,
+By allowing for detailed filtering, aggregation, and visualisation options,
 users can gain valuable insights into how they manage their time and events.
 
