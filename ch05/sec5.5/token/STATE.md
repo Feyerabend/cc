@@ -106,16 +106,16 @@ numbers, operators, etc., often used in programming languages.
 #### How Does a State Machine Tokeniser Work?
 
 1. Initialisation:
-	- Start in the initial state.
-	- Define transitions between states based on input.
+ - Start in the initial state.
+ - Define transitions between states based on input.
 
 2. Processing:
-	- Read the input character by character.
-	- Transition between states according to the defined rules.
+ - Read the input character by character.
+ - Transition between states according to the defined rules.
 
 3. Token Emission:
-	- When reaching an accepting state, emit the corresponding token.
-	- Return to the initial state to continue processing.
+ - When reaching an accepting state, emit the corresponding token.
+ - Return to the initial state to continue processing.
 
 
 #### Where is a State Machine Tokeniser Used?
@@ -131,14 +131,14 @@ numbers, operators, etc., often used in programming languages.
 A simple tokeniser for mathematical expressions like `x = 3 + y * 2`:
 
 1. States:
-	- START: Initial state.
-	- IDENTIFIER: Reading variable names.
-	- NUMBER: Reading numeric values.
+ - START: Initial state.
+ - IDENTIFIER: Reading variable names.
+ - NUMBER: Reading numeric values.
 
 2. Transitions:
-	- Alphabetic characters --> IDENTIFIER.
-	- Digits --> NUMBER.
-	- Operators or whitespace --> Emit the current token and return to START.
+ - Alphabetic characters --> IDENTIFIER.
+ - Digits --> NUMBER.
+ - Operators or whitespace --> Emit the current token and return to START.
 
 The tokeniser processes the input string and generates a sequence of tokens, such as
 `[("IDENTIFIER", "x"), ("OPERATOR", "="), ("NUMBER", "3"), ...]`.

@@ -1,5 +1,5 @@
 
-## A Classic Approch to Compilers
+## A Classic Approach to Compilers
 
 This is the first part in a series of two. In [ch07](./../../../ch07/)
 [modern](./../../ch07/addition/modern/) we will look at compilers with a
