@@ -40,54 +40,54 @@ the input in data structures that can be processed by the computer (a parse tree
 
 These parsers start from the start symbol of the grammar and attempt to derive the input string by applying production rules.
 1. LL Parsers:
-    - The abbreviation stands for `Left-to-right parsing, Leftmost derivation`.
-	- They process the input from left to right and produce a leftmost derivation of the input string.
-	- LL(k): This means the parser looks ahead k tokens to make decisions.
-	- LL(1): The most common variant where only one token of lookahead is used.
-	- Works well for grammars without ambiguity, left recursion, or significant ambiguity in production choices.
-	- Recursive Descent Parsers (discussed further below) are typically implemented as LL(1) parsers.
+ - The abbreviation stands for `Left-to-right parsing, Leftmost derivation`.
+ - They process the input from left to right and produce a leftmost derivation of the input string.
+ - LL(k): This means the parser looks ahead k tokens to make decisions.
+ - LL(1): The most common variant where only one token of lookahead is used.
+ - Works well for grammars without ambiguity, left recursion, or significant ambiguity in production choices.
+ - Recursive Descent Parsers (discussed further below) are typically implemented as LL(1) parsers.
 
 2. Recursive Descent Parsing:
-	- A simple top-down parsing method where each non-terminal in the grammar is implemented as a recursive function.
-	- Relies on LL(1) grammar for correctness.
-	- It's intuitive and easy to implement but requires that the grammar avoids left recursion and excessive ambiguity.
+ - A simple top-down parsing method where each non-terminal in the grammar is implemented as a recursive function.
+ - Relies on LL(1) grammar for correctness.
+ - It's intuitive and easy to implement but requires that the grammar avoids left recursion and excessive ambiguity.
 
 3. Predictive Parsing:
-	- A non-recursive approach to LL parsing that uses a predictive table to guide parsing decisions.
-	- Efficient for LL(1) grammars and avoids the need for recursive calls.
+ - A non-recursive approach to LL parsing that uses a predictive table to guide parsing decisions.
+ - Efficient for LL(1) grammars and avoids the need for recursive calls.
 
 
 ### Bottom-Up Parsers
 
 These parsers start with the input tokens and attempt to reconstruct the start symbol of the grammar by reversing derivations.
 1. LR Parsers:
-	- The abbreviation stands for `Left-to-right parsing, Rightmost derivation in reverse`.
-	- They process the input from left to right and construct a parse tree for a rightmost derivation in reverse.
-	- Suitable for a broader class of grammars compared to LL parsers.
+ - The abbreviation stands for `Left-to-right parsing, Rightmost derivation in reverse`.
+ - They process the input from left to right and construct a parse tree for a rightmost derivation in reverse.
+ - Suitable for a broader class of grammars compared to LL parsers.
 
 2. LR Variants:
-	- SLR (Simple LR): Simplifies parsing by using a basic lookahead to resolve conflicts but works for a restricted set of grammars.
-	- LALR (Lookahead LR): Combines states with identical cores to create a smaller parsing table, making it more memory-efficient
+ - SLR (Simple LR): Simplifies parsing by using a basic lookahead to resolve conflicts but works for a restricted set of grammars.
+ - LALR (Lookahead LR): Combines states with identical cores to create a smaller parsing table, making it more memory-efficient
       than LR(1) while still supporting most programming language grammars.
-	- LR(1): Uses a single lookahead token, supports a wide range of grammars, but parsing tables can become large.
-	- GLR (Generalised LR): Handles non-deterministic or ambiguous grammars using parallel parsing paths.
+ - LR(1): Uses a single lookahead token, supports a wide range of grammars, but parsing tables can become large.
+ - GLR (Generalised LR): Handles non-deterministic or ambiguous grammars using parallel parsing paths.
 
 3. Operator-Precedence Parsers:
-	- A specific kind of bottom-up parser used for grammars where the structure is defined by operator precedence rules.
-	- Simpler than full LR parsers but limited to certain grammars.
+ - A specific kind of bottom-up parser used for grammars where the structure is defined by operator precedence rules.
+ - Simpler than full LR parsers but limited to certain grammars.
 
 
 ### Selected Parsing Techniques
 
 4. [LL(1)](./LL1) Parsing:
-	- Strengths: Easy to implement, efficient for simple grammars, and guarantees linear parsing time for LL(1) grammars.
-	- Limitations: Cannot handle left-recursive or ambiguous grammars. Requires careful grammar design to fit LL(1) constraints.
-	- Uses a parsing table for predictive parsing, where each cell indicates which production to apply based on the current input token and non-terminal.
+ - Strengths: Easy to implement, efficient for simple grammars, and guarantees linear parsing time for LL(1) grammars.
+ - Limitations: Cannot handle left-recursive or ambiguous grammars. Requires careful grammar design to fit LL(1) constraints.
+ - Uses a parsing table for predictive parsing, where each cell indicates which production to apply based on the current input token and non-terminal.
 
 5. [Recursive Descent](./simple) Parsing:
-	- Implements each grammar rule as a function, where non-terminals are recursive calls.
-	- Parsing decisions are guided by lookahead (one token ahead in LL(1)).
-	- Direct and clear for grammar constructs, making it excellent for prototyping parsers.
+ - Implements each grammar rule as a function, where non-terminals are recursive calls.
+ - Parsing decisions are guided by lookahead (one token ahead in LL(1)).
+ - Direct and clear for grammar constructs, making it excellent for prototyping parsers.
 
 ### Additional
 

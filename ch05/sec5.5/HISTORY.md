@@ -57,8 +57,8 @@ __1950s-1960s: The Dawn of Parsing__
 
 - Early Compilers:
 	The first compilers, such as FORTRAN (1957), included hand-crafted
-    parsers designed for specific languages. Parsing was tightly coupled
-    with code generation, often using ad-hoc methods.
+  parsers designed for specific languages. Parsing was tightly coupled
+  with code generation, often using ad-hoc methods.
 
 
 __1960s: Automating Parsing__
