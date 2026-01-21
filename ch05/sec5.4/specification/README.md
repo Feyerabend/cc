@@ -255,5 +255,17 @@ and implementations.
 
 ### Reference
 
+This book/repository is not intended to be too deep into the formal, abstract aspect of compilation
+theory (and other close subjects), but here are some tips:
+
 ![Denotational](./../../assets/image/denotational.png)
+
+#### Denotational
+Stoy, J.E. (1981). *Denotational semantics: the Scott-Strachey approach to programming language theory*. (1., MIT Press paperback ed.) Cambridge, Mass.: MIT Press.
+
+#### Operational 
+Nielson, H.R. & Nielson, F. (2023). *Semantics with applications: an appetizer*. [Malmö]: MTM.
+
+#### Axiomatic
+Hoare, C. A. R. (1969). *An axiomatic basis for computer programming*. Communications of the ACM, 12(10), 576-580. https://doi.org/10.1145/363235.363259
 
