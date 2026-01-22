@@ -1,9 +1,20 @@
 
 ## Parsers Overview
 
-Parsers represent a broad and foundational area within computer science and related disciplines, having
-evolved significantly over time. In this discussion, we focus on a select aspect of their [history](HISTORY.md),
-highlighting their application and relevance, particularly in the context of computer languages.
+Most programmers are already familiar with parsers, often without explicitly thinking about them,
+because they appear everywhere in computing. Parsers are not only used for programming languages,
+but also for processing data formats such as JSON, XML, and CSV, for interpreting network protocols,
+for analysing structured text, and even indirectly in image, audio, and video processing pipelines
+where raw data must be decoded into meaningful representations. Parsing is therefore a very broad
+and fundamental field in computer science, concerned with transforming unstructured or semi-structured
+input into structured, usable information.
+
+Parsers have evolved significantly over time. In this discussion, we focus on a select aspect of
+their [history](HISTORY.md), highlighting their application and relevance,
+particularly in the context of computer languages.
+
+
+#### Production Rules
 
 Production rules are the formal constructs in a grammar that define the syntactic structure of a language.
 They specify how symbols in the language can be generated or replaced during parsing. Each production rule
@@ -19,6 +30,9 @@ The general form of a production rule is:
 Here, `A` is a non-terminal symbol (representing a syntactic category), and `α` is a sequence of terminals
 (actual symbols of the language) and/or non-terminals (further rules). The left-hand side (`A`) indicates
 what is being defined, and the right-hand side (`α`) specifies how it can be expanded.
+
+
+#### Grammar
 
 For example, in a grammar for simple arithmetic expressions:
 
@@ -88,6 +102,7 @@ These parsers start with the input tokens and attempt to reconstruct the start s
  - Implements each grammar rule as a function, where non-terminals are recursive calls.
  - Parsing decisions are guided by lookahead (one token ahead in LL(1)).
  - Direct and clear for grammar constructs, making it excellent for prototyping parsers.
+
 
 ### Additional
 

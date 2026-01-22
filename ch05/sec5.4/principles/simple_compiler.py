@@ -372,7 +372,7 @@ class Compiler:
         print()
         
         # 5. Optimisation
-        print("5. OPTIMIZATION:")
+        print("5. OPTIMISATION:")
         optimizer = Optimizer()
         optimized_ir = optimizer.optimize(ir)
         for instr in optimized_ir:
