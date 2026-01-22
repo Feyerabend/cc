@@ -197,21 +197,47 @@ Each step has a purpose:
 7. *Linking* - Puts everything together
 
 
-### Real-World Analogy
+### Differences Between A Compiler And An Interpreter
 
-Imagine translating a book from English to Japanese:
+*Interpreter:*
+1. Lexical Analysis (Tokenisation)
+2. Syntax Analysis (Parsing)
+3. Semantic Analysis (Lightweight)
+4. Direct Execution
 
-1. *Tokenisation* - Identify each word and punctuation
-2. *Parsing* - Understand sentence structure
-3. *Semantic Analysis* - Understand the meaning and context
-4. *Intermediate Code* - Create a simplified universal representation
-5. *Optimisation* - Remove redundancy, clarify meaning
-6. *Code Generation* - Translate to Japanese
-7. *Linking* - Add footnotes, references, and publish the book
+*Compiler:*
+1. Lexical Analysis (Tokenisation)
+2. Syntax Analysis (Parsing)
+3. Semantic Analysis
+4. Intermediate Code Generation
+5. Optimisation
+6. Code Generation
+7. Linking & Execution
 
-Each step makes the final translation better and
-catches different types of errors along the way!
+*Some tradeoffs:*
+* Interpreter: Faster startup, slower execution, easier debugging
+* Compiler: Slower startup, faster execution, harder debugging
 
+#### Why Interpreters Are Different
+
+The main differences between interpreters and compilers:
+
+*Interpreters:*
+- Execute code immediately
+- No separate compilation step
+- No intermediate code generation
+- No optimisation phase
+- No code generation phase
+- Easier to debug (can stop and inspect at any point)
+- Slower execution (repeated interpretation overhead)
+- Great for development and scripting
+
+*Compilers:*
+- Translate first, execute later
+- Generate optimized machine code
+- Faster execution (code is pre-optimised)
+- Harder to debug (code is transformed)
+- Better for production applications
 
 
 ### Summary
@@ -221,7 +247,7 @@ Our simple compiler takes `x = 5 + 3 * 2;` and:
 - Organises pieces into a tree (AST)
 - Checks for errors (semantic analysis)
 - Creates simple instructions (intermediate code)
-- Optimizes those instructions (calculates `3 * 2 = 6` and `5 + 6 = 11` ahead of time)
+- Optimises those instructions (calculates `3 * 2 = 6` and `5 + 6 = 11` ahead of time)
 - Generates executable code
 - Runs it to get `x = 11`
 
