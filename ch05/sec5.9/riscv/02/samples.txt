@@ -1,0 +1,237 @@
+# RISC-V Sample Programs
+
+## samples/hello.asm - Simple single-file program
+```asm
+# Simple hello world program
+# Uses syscall to print
+
+.global _start
+
+_start:
+    li a7, 1           # syscall 1: print integer
+    li a0, 42          # print 42
+    ecall
+    
+    li a7, 11          # syscall 11: print char
+    li a0, 10          # newline
+    ecall
+    
+    li a7, 10          # syscall 10: exit
+    ecall
+```
+
+## samples/factorial.asm - Factorial calculation
+```asm
+# Calculate factorial of 5
+
+.global _start
+
+_start:
+    li a0, 5           # n = 5
+    jal ra, factorial  # call factorial
+    
+    # Print result
+    mv a0, a1          # move result to a0
+    li a7, 1           # print integer
+    ecall
+    
+    li a7, 11          # print newline
+    li a0, 10
+    ecall
+    
+    li a7, 10          # exit
+    ecall
+
+factorial:
+    # Input: a0 = n
+    # Output: a1 = n!
+    li a1, 1           # result = 1
+    li t0, 1           # counter = 1
+    
+fact_loop:
+    bgt t0, a0, fact_done
+    mul a1, a1, t0     # result *= counter
+    addi t0, t0, 1     # counter++
+    j fact_loop
+    
+fact_done:
+    ret
+```
+
+## samples/multifile_main.asm - Multi-file example (main)
+```asm
+# Main program that calls external functions
+
+.global _start
+.extern add_numbers
+.extern multiply
+
+_start:
+    li a0, 7
+    li a1, 5
+    jal ra, add_numbers   # result in a0
+    
+    mv t0, a0             # save result
+    
+    # Print sum
+    li a7, 1
+    ecall
+    li a7, 11
+    li a0, 32             # space
+    ecall
+    
+    # Multiply the sum by 2
+    mv a0, t0
+    li a1, 2
+    jal ra, multiply
+    
+    # Print product
+    li a7, 1
+    ecall
+    li a7, 11
+    li a0, 10             # newline
+    ecall
+    
+    li a7, 10
+    ecall
+```
+
+## samples/multifile_math.asm - Multi-file example (math library)
+```asm
+# Math library functions
+
+.global add_numbers
+.global multiply
+
+add_numbers:
+    # Add two numbers
+    # Input: a0, a1
+    # Output: a0 = a0 + a1
+    add a0, a0, a1
+    ret
+
+multiply:
+    # Multiply two numbers
+    # Input: a0, a1
+    # Output: a0 = a0 * a1
+    mul a0, a0, a1
+    ret
+```
+
+## samples/fibonacci.asm - Fibonacci sequence
+```asm
+# Print first 10 Fibonacci numbers
+
+.global _start
+
+_start:
+    li s0, 0           # fib(n-2)
+    li s1, 1           # fib(n-1)
+    li s2, 10          # counter
+    
+    # Print first number
+    li a7, 1
+    mv a0, s0
+    ecall
+    li a7, 11
+    li a0, 32          # space
+    ecall
+    
+    # Print second number
+    li a7, 1
+    mv a0, s1
+    ecall
+    li a7, 11
+    li a0, 32
+    ecall
+    
+    li s3, 2           # count = 2
+    
+fib_loop:
+    bge s3, s2, fib_done
+    
+    add t0, s0, s1     # fib(n) = fib(n-1) + fib(n-2)
+    mv s0, s1          # shift
+    mv s1, t0
+    
+    # Print number
+    li a7, 1
+    mv a0, t0
+    ecall
+    li a7, 11
+    li a0, 32          # space
+    ecall
+    
+    addi s3, s3, 1
+    j fib_loop
+    
+fib_done:
+    li a7, 11
+    li a0, 10          # newline
+    ecall
+    
+    li a7, 10
+    ecall
+```
+
+## samples/sum_array.asm - Array summation
+```asm
+# Sum an array of numbers
+
+.global _start
+
+_start:
+    # Initialize array in memory
+    li t0, 0x1000      # array base address
+    
+    li t1, 10
+    sw t1, 0(t0)       # array[0] = 10
+    
+    li t1, 20
+    sw t1, 4(t0)       # array[1] = 20
+    
+    li t1, 30
+    sw t1, 8(t0)       # array[2] = 30
+    
+    li t1, 40
+    sw t1, 12(t0)      # array[3] = 40
+    
+    li t1, 50
+    sw t1, 16(t0)      # array[4] = 50
+    
+    # Sum the array
+    li a0, 0x1000      # array address
+    li a1, 5           # array length
+    jal ra, sum_array
+    
+    # Print result
+    li a7, 1
+    ecall
+    li a7, 11
+    li a0, 10
+    ecall
+    
+    li a7, 10
+    ecall
+
+sum_array:
+    # Input: a0 = array address, a1 = length
+    # Output: a0 = sum
+    li t0, 0           # sum = 0
+    li t1, 0           # index = 0
+    
+sum_loop:
+    bge t1, a1, sum_done
+    
+    slli t2, t1, 2     # offset = index * 4
+    add t2, a0, t2     # address = base + offset
+    lw t3, 0(t2)       # load element
+    add t0, t0, t3     # sum += element
+    
+    addi t1, t1, 1     # index++
+    j sum_loop
+    
+sum_done:
+    mv a0, t0          # return sum
+    ret
+```
