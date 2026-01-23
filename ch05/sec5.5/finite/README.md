@@ -18,7 +18,7 @@ applications.
 2. *NFA* (Nondeterministic Finite Automaton)
 3. *ε-NFA* (NFA with epsilon transitions)
 
-*Important*: All three types are equivalent in computational power—they all
+*Important*: All three types are equivalent in computational power--they all
 recognise exactly the regular languages.
 
 

@@ -1,7 +1,8 @@
 
 ## Bottom-Up: LR grammar
 
-This *LR(0) parser* processes a grammar and input string while maintaining a stack and an action table to decide shifts and reductions.
+This *LR(0) parser* processes a grammar and input string while
+maintaining a stack and an action table to decide shifts and reductions.
 
 ### Example Grammar
 We will use a simplified grammar:
@@ -16,19 +17,20 @@ Consider the input string: `aabb`.
 
 ### Steps in Parsing
 
-An LR parser uses a *parsing table* consisting of states, actions (shift/reduce), and transitions based on the grammar's rules. The parser maintains:
+An LR parser uses a *parsing table* consisting of states, actions (shift/reduce),
+and transitions based on the grammar's rules. The parser maintains:
 - A *stack* for states and grammar symbols.
 - An *input buffer* for remaining tokens.
 
 The parsing table might look like this for the grammar:
 
-| State | $\( a \)$   | $\( b \)$   | $\(\\$\)$ (end) | $\( S \)$   |
-|-------|-----------|-----------|--------------|-----------|
-| 0     | Shift 2   |           |              | Goto 1    |
-| 1     |           |           | Accept       |           |
-| 2     | Shift 2   | Reduce 3  |              | Goto 3    |
-| 3     |           | Shift 4   | Reduce 2     |           |
-| 4     | Reduce 2  |           |              |           |
+| State | $\( a \)$ | $\( b \)$ | $\(\\$\)$ (end) | $\( S \)$   |
+|-------|-----------|-----------|-----------------|-------------|
+| 0     | Shift 2   |           |                 | Goto 1      |
+| 1     |           |           | Accept          |             |
+| 2     | Shift 2   | Reduce 3  |                 | Goto 3      |
+| 3     |           | Shift 4   | Reduce 2        |             |
+| 4     | Reduce 2  |           |                 |             |
 
 
 While both a parsing table and, what we have already studied, a state machine involve states

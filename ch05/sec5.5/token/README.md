@@ -1,5 +1,5 @@
 
-## Tokeniser, (Tokenizer) or Lexer
+## Tokeniser/Tokenizer or Lexer
 
 A tokeniser or lexer is a essential component of a compiler or interpreter that breaks down the
 raw source code into a stream of tokens. Tokens represent the smallest meaningful units in the code
@@ -68,15 +68,15 @@ This rule ensures that any unrecognised input is flagged as an error during toke
 ### Examples of Syntax Errors a Tokeniser Detects
 
 * Invalid Characters:
-    - Input: j !! n;
+    - Input: `j !! n`;
     - Detection: !! is flagged as invalid since it's not a recognised operator or delimiter.
 
 * Unexpected Token Combinations:
-    - Input: j := n \;
+    - Input: `j := n \`;
     - Detection: \ is flagged as invalid, as it's not part of a valid token.
 
 * Whitespace-Sensitive Errors:
-    - Input: procedure sub;const k =7;
+    - Input: `procedure sub;const k =7`;
     - Detection: Without a space after ;, some tokenisers may not correctly separate tokens, leading to a mismatch.
 
 Why Regular Expressions Work Well
