@@ -113,3 +113,33 @@ explore them, rather than just reading about them. This is where your project ca
 First, decide what you want to accomplish, and then try to achieve it, with or without
 the help of LLMs. Parsing is a rewarding experience in its own right.
 
+
+![Automata](./../assets/image/automata.png)
+
+### Reading Tip
+
+If you would like to explore further (for some projects) into more mathematical,
+formal logical aspects, a classic book on these topics maybe of interest:
+
+* Hopcroft, J. E., Motwani, R., & Ullman, J. D. (2001). *Introduction to automata theory,
+languages, and computation* (2nd ed.). Addison-Wesley.
+
+*Introduction to Automata Theory, Languages, and Computation* is a rigorous exploration
+of what it means for a language to be formally defined and mechanically recognised.
+It develops a hierarchy of abstract machines and grammars, starting with finite automata
+and regular languages, moving through pushdown automata and context-free languages, and
+culminating in Turing machines and general computation. The central theme is equivalence:
+different-looking formalisms are shown to have exactly the same expressive power at each
+level, which gives a deep and precise meaning to the idea of "syntax."
+A language becomes not just a set of strings, but something characterised by the kind of
+machine that can recognise it and the resources that machine needs.
+
+At the same time, the book draws a sharp boundary between *form* and *meaning*. It shows that
+syntax is about recognition and structure, not about interpretation or behaviour, and
+that many properties one would like to check about programs are fundamentally uncomputable.
+In this way it explains both why lexers and parsers are theoretically sound and why semantic
+analysis can never be perfect or complete. The book is therefore *less* about programming
+and more about the *limits of formal description* itself:
+what can be specified by grammars, what can be decided by algorithms,
+and where mathematics forces a separation between well-formedness and meaning.
+
