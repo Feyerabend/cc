@@ -114,8 +114,6 @@ First, decide what you want to accomplish, and then try to achieve it, with or w
 the help of LLMs. Parsing is a rewarding experience in its own right.
 
 
-![Automata](./../assets/image/automata.png)
-
 ### Reading Tip
 
 If you would like to explore further (for some projects) into more mathematical,
@@ -142,4 +140,7 @@ analysis can never be perfect or complete. The book is therefore *less* about pr
 and more about the *limits of formal description* itself:
 what can be specified by grammars, what can be decided by algorithms,
 and where mathematics forces a separation between well-formedness and meaning.
+
+
+![Automata](./../assets/image/automata.png)
 
