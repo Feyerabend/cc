@@ -77,3 +77,9 @@ programs. In that sense ILOC is much closer to execution than to data:
 it already is a form of executable code,
 just for a machine that exists only in the mind of the compiler designer.
 
+
+### Reference 
+
+* Click, C., & Paleczny, M. (1995). A simple graph-based intermediate representation. In *Proceedings of the ACM SIGPLAN Workshop on Intermediate Representations* (pp. 35-49). Association for Computing Machinery. https://doi.org/10.1145/202530.202534
+
+* Cooper, K. D., & Torczon, L. (2011). *Engineering a compiler* (2nd ed.). Morgan Kaufmann.
