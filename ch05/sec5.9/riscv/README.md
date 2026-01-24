@@ -1,5 +1,5 @@
 
-## Dirct Execution vs Loader and Linkers
+## Direct Execution vs Loader and Linkers
 
 In the folder `[01](./01/)` you will find an example that shows how to go directly from assembly
 code to an executable, where the execution is performed by a RISC-V emulator. This demonstrates
