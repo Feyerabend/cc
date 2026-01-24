@@ -40,7 +40,7 @@ in contrast to common ways through the theory first.
 #### 1.1 Memory Layout: Objects Are Just Structs
 
 An "object" is a contiguous block of memory containing:
-- A *vtable pointer* (vptr) as the first field
+- A *vtable pointer* (vptr) as the first field (a bit more on [vtables](./../../addition/vtable/))
 - Instance data (fields/attributes)
 
 ```c
