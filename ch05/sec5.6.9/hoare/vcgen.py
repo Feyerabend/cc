@@ -6,6 +6,10 @@ This implements formal verification annotations using Hoare Logic:
 - Postconditions {Q}: What must be true AFTER a statement  
 - Invariants {I}: What remains true during loop iterations
 This adds LOGICAL ASSERTIONS for program correctness verification.
+
+This does NOT perform actual theorem proving, but sets up the
+necessary annotations and verification conditions (VCs) for later proof.
+Theorem proving can be integrated with tools like Z3 or Coq.
 """
 
 from typing import Dict, Set, List, Any
