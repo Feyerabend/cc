@@ -1,0 +1,8 @@
+# Hello World Program
+let message = "Hello, World!";
+print(message);
+
+let x = 42;
+let y = 8;
+print("The answer is: " + x);
+print(x + y);
