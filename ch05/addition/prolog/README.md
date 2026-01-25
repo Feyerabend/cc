@@ -14,7 +14,7 @@ determines how to derive solutions. This shift in perspective was central
 to its appeal in artificial intelligence research, where reasoning, inference,
 and problem solving could be expressed in a form close to mathematical logic.
 
-Here you might study an example of a Prolog interpreter.
+Here you might study an example of a Prolog *interpreter*.
 
 
 ### Prolog .. in the Early 1980s
