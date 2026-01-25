@@ -148,34 +148,32 @@ class ErrorReporter:
     def print_report(self, show_warnings: bool = True):
         """Print a formatted error report"""
         if not self.errors and not self.warnings:
-            print("✓ No errors found")
+            print("  No errors found")
             return
         
         if self.errors:
-            print("=" * 70)
-            print(f"ERRORS FOUND: {len(self.errors)}")
-            print("=" * 70)
+            print("-" * 50)
+            print(f"ERRORS FOUND: {len(self.errors)}\n")
             for i, error in enumerate(self.errors, 1):
                 print(f"\n{i}. {error}")
             print()
         
         if show_warnings and self.warnings:
-            print("=" * 70)
-            print(f"WARNINGS: {len(self.warnings)}")
-            print("=" * 70)
+            print("-" * 50)
+            print(f"WARNINGS: {len(self.warnings)}\n")
             for i, warning in enumerate(self.warnings, 1):
                 print(f"\n{i}. {warning}")
             print()
         
         # Summary
         if self.errors:
-            print("=" * 70)
+            print("-" * 50)
             print(f"Compilation failed with {len(self.errors)} error(s)", end="")
             if self.warnings:
                 print(f" and {len(self.warnings)} warning(s)")
             else:
                 print()
-            print("=" * 70)
+            print("-" * 50)
     
     def get_summary(self) -> str:
         """Get a brief summary of errors and warnings"""

@@ -56,7 +56,7 @@ class Parser:
         return suggestions.get((expected, got), get_suggestion("unexpected_token"))
     
     def synchronize(self):
-        """Synchronize to the next statement after an error"""
+        """Synchronise to the next statement after an error"""
         self.panic_mode = False
         
         while self.current() is not None:
