@@ -9,7 +9,6 @@ import re
 from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
-
 # Parser Combinators (Simple Implementation)
 class ParseError(Exception):
     """Exception raised when parsing fails"""
@@ -123,7 +122,6 @@ def sep_by(parser, separator):
                 return results, rest
     return p
 
-
 # Term Representations (Data Classes)
 class Term:
     """Base class for all Prolog terms"""
@@ -193,7 +191,6 @@ class ListTerm(Term):
    
     def __hash__(self):
         return hash(('ListTerm', self.elements, self.tail))
-
 
 # Term Parsers (Using Parser Combinators)
 def parse_atom():
@@ -288,6 +285,16 @@ def parse_clause():
 def parse_query():
     """Parse a query: ?- goals."""
     return token(bind(symbol("?-"), lambda _: bind(parse_goals(), lambda gs: bind(symbol("."), lambda _: parse_result(gs)))))
+def has_variables(term: Term) -> bool:
+    """Check if a term contains any variables"""
+    if isinstance(term, Variable):
+        return True
+    elif isinstance(term, Compound):
+        return any(has_variables(arg) for arg in term.args)
+    elif isinstance(term, ListTerm):
+        return any(has_variables(elem) for elem in term.elements) or has_variables(term.tail)
+    return False
+
 def parse_input(line: str, is_interactive=False):
     """Parse user input (query or clause)"""
     line = re.sub(r"%.*", "", line) # Remove comments
@@ -307,19 +314,31 @@ def parse_input(line: str, is_interactive=False):
             raise ParseError("Extra characters after clause")
         return {"type": "clause", "clause": clause}
     elif is_interactive:
-        # In interactive mode without :- or ?-, treat as query
+        # In interactive mode: check if it contains variables
+        # If no variables, it's a fact; if it has variables, it's a query
         line_no_dot = line.rstrip(".")
         goals, rest = parse_goals()(line_no_dot)
         if rest.strip():
             raise ParseError("Extra characters after goals")
-        return {"type": "query", "goals": goals}
+        
+        # Check if any goal has variables
+        has_vars = any(has_variables(goal) for goal in goals)
+        
+        if has_vars:
+            # Has variables -> query
+            return {"type": "query", "goals": goals}
+        else:
+            # No variables -> fact
+            if len(goals) == 1:
+                return {"type": "clause", "clause": (goals[0], [])}
+            else:
+                raise ParseError("Multiple facts must be entered separately")
     else:
         # Non-interactive: parse as clause (fact)
         clause, rest = parse_clause()(line)
         if rest.strip():
             raise ParseError("Extra characters after clause")
         return {"type": "clause", "clause": clause}
-
 
 # Environment and Substitution (Iterative Implementation)
 class Environment:
@@ -426,7 +445,6 @@ def substitute(term: Term, env: Environment) -> Term:
    
     return result_map.get(id(term), term)
 
-# Variable Renaming (Iterative Implementation)
 def rename_variables(term: Term, suffix: str) -> Term:
     """Rename all variables in term by adding suffix (iterative)"""
     stack = [term]
@@ -480,7 +498,6 @@ def rename_variables(term: Term, suffix: str) -> Term:
    
     return result_map.get(id(term), term)
 
-# Unification (Iterative Implementation)
 def occurs_check(var: Variable, term: Term, env: Environment) -> bool:
     """Check if variable occurs in term (prevents infinite structures)"""
     stack = [term]
@@ -508,7 +525,6 @@ def occurs_check(var: Variable, term: Term, env: Environment) -> bool:
    
     return False
 
-# Unification (Iterative Implementation)
 def unify(a: Term, b: Term, env: Environment) -> Optional[Environment]:
     """Unify two terms (iterative algorithm)"""
     stack = [(a, b)]
@@ -822,6 +838,7 @@ def run_tests():
 
 # REPL
 def main():
+    """Main REPL loop"""
     # Run tests first
     if "--test" in sys.argv:
         run_tests()
@@ -833,17 +850,17 @@ def main():
     print("Mini-Prolog Interpreter")
     print("-" * 50)
     print("Commands:")
-    print(" goal.             Query goals")
-    print(" fact :- true.     Add fact") # (or use head.) ~ not working
+    print(" fact.             Add fact (no variables)")
+    print(" query.            Query (has variables)")
     print(" head :- body.     Add rule")
     print(" quit.             Exit")
     print(" show.             Show database")
     print("-" * 50)
-    print("\nTo add facts, use syntax: parent(tom, bob) :- true.")
-    print("To query, just type: parent(tom, X).")
-    print("Try: parent(tom, bob) :- true.")
-    print("     parent(tom, X).")
-    print("     append([1,2], [3,4], X).")
+    print("\nExamples:")
+    print(" parent(tom, bob).        <- Adds fact (no variables)")
+    print(" parent(tom, X).          <- Query (has variable X)")
+    print(" append([1,2], [3,4], X). <- Query")
+    print("-" * 50)
    
     while True:
         try:
@@ -914,3 +931,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
