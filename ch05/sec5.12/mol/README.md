@@ -670,11 +670,11 @@ Object-oriented programming have three simple mechanisms:
 3. *Discipline* for passing `self`
 
 Everything else—classes, inheritance, polymorphism, encapsulation--is
-syntax sugar on top. Once you understand the core, you can:
+mostly light weight constructions that are not part of the core.
+But once you understand the core, you can:
 
 - Understand how ANY OOP language works internally
 - Debug strange behavior (vtable corruption, memory layout issues)
 - Design your own language features
 - Optimise OOP code by understanding costs
-
 
