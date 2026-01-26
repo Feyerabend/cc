@@ -14,9 +14,9 @@ determines how to derive solutions. This shift in perspective was central
 to its appeal in artificial intelligence research, where reasoning, inference,
 and problem solving could be expressed in a form close to mathematical logic.
 
-Here you might study an example of a Prolog *interpreter*.
+[Here](prolog.py) you might study an example of a Prolog *interpreter*.
 
-![AI Prolog](./../../assets/image/aiprolog.png) ![Art](./../../assets/image/art.png) ![Expert](./../../assets/image/expert.png)
+![Art](./../../assets/image/art.png)
 
 
 ### Prolog .. in the Early 1980s
@@ -53,21 +53,22 @@ hardware such as Lisp machines. Efforts such as the development of the
 [WAM](./../am/wam/) (Warren Abstract Machine) by David H. D. Warren and others led
 to much faster Prolog interpreters and compilers, making logic programming more
 competitive with conventional languages. The WAM, first circulated in the early 1980s,
-provided a practical abstract machine tailored to Prolog’s execution model and became
+provided a practical abstract machine tailored to Prolog's execution model and became
 a cornerstone of efficient Prolog implementations worldwide. Eventually, an AI winter
 set in, as it became clear that Prolog was not the answer, and interest in the language waned.
 
 * Clocksin, W. F., & Mellish, C. S. (1981). *Programming in Prolog*. Springer-Verlag.
 
-* Feigenbaum, E. A., McCorduck, P., & Nii, H. P. (1983). *The fifth generation: Artificial intelligence and Japan’s computer challenge to the world*. Reading, MA: Addison-Wesley.
+* Feigenbaum, E. A., McCorduck, P., & Nii, H. P. (1983). *The fifth generation: Artificial intelligence and Japan's computer challenge to the world*. Reading, MA: Addison-Wesley.
 
 * Kowalski, R. (1979). *Logic for problem solving*. New York, NY: North-Holland.
 
-* Tärnlund, S.-Å. (Ed.). (1984). *Proceedings of the Second International Logic Programming Conference: Uppsala University, Uppsala, Sweden, July 2–6, 1984*. Ord & Form.  [oai_citation:0‡ci.nii.ac.jp](https://ci.nii.ac.jp/ncid/BA35940414)
+* Tärnlund, S.-Å. (Ed.). (1984). *Proceedings of the Second International Logic Programming Conference: Uppsala University, Uppsala, Sweden, July 2-6, 1984*. Ord & Form.  [oai_citation:0‡ci.nii.ac.jp](https://ci.nii.ac.jp/ncid/BA35940414)
 
 
 
-![Clocksin](./../../assets/image/clocksin.png) ![Second](./../../assets/image/second.png) ![Logic](./../../assets/image/kowalski.png) ![Fifth](./../../assets/image/fifth.png)
+![Clocksin](./../../assets/image/clocksin.png) ![Second](./../../assets/image/second.png) ![Logic](./../../assets/image/kowalski.png) ![Fifth](./../../assets/image/fifth.png) ![AI Prolog](./../../assets/image/aiprolog.png) ![Expert](./../../assets/image/expert.png)
+
 
 
 
