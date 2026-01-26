@@ -65,7 +65,7 @@ set in, as it became clear that Prolog was not the answer, and interest in the l
 
 
 
-![Clocksin](./../../assets/image/clocksin.png) ![Second](./../../assets/image/second.png) ![Logic](./../../assets/image/kowalski.png) ![Fifth](./../../assets/image/fifth.png) ![AI Prolog](./../../assets/image/aiprolog.png) ![Expert](./../../assets/image/expert.png) ![Art](./../../assets/image/art.png)
+![Clocksin](./../../assets/image/clocksin.png) ![Second](./../../assets/image/second.png) ![Logic](./../../assets/image/kowalski.png) ![Fifth](./../../assets/image/fifth.png) ![AI Prolog](./../../assets/image/aiprolog.png) ![Expert](./../../assets/image/expert.png) ![Art](./../../assets/image/art.png) ![Bratko](./../../assets/image/bratko.png)
 
 
 
