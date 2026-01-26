@@ -19,7 +19,7 @@
 #define MAX_METHODS 16
 #define MAX_ENV 32
 
-/* ============ VALUE SYSTEM ============ */
+/*  VALUE SYSTEM  */
 
 typedef enum {
     VAL_INT,
@@ -73,7 +73,7 @@ struct Value {
     } data;
 };
 
-/* ============ EXPRESSION AST ============ */
+/*  EXPRESSION AST  */
 
 typedef enum {
     EXPR_LITERAL,
@@ -108,7 +108,7 @@ struct Expr {
     } data;
 };
 
-/* ============ CONSTRUCTORS ============ */
+/*  CONSTRUCTORS  */
 
 Value *make_int(int64_t n) {
     Value *v = malloc(sizeof(Value));
@@ -211,7 +211,7 @@ Value *vtable_get(VTable *vt, const char *name) {
     return NULL;
 }
 
-/* ============ EXPRESSION CONSTRUCTORS ============ */
+/*  EXPRESSION CONSTRUCTORS  */
 
 Expr *expr_literal(Value *val) {
     Expr *e = malloc(sizeof(Expr));
@@ -287,7 +287,7 @@ Expr *expr_vcall(Expr *obj, const char *method, Expr **args, int arg_count) {
     return e;
 }
 
-/* ============ INTERPRETER ============ */
+/*  INTERPRETER  */
 
 Value *eval(Expr *expr, Env *env);
 
@@ -447,7 +447,7 @@ void print_value(Value *v) {
     }
 }
 
-/* ============ EXAMPLES ============ */
+/*  EXAMPLES  */
 
 void example_closure(void) {
     printf("Closure example: ");
@@ -640,7 +640,7 @@ void example_shape_area(void) {
 }
 
 int main(void) {
-    printf("=== Minimal OOP Language Interpreter (C) ===\n\n");
+    printf("Minimal OOP Language Interpreter (C)n\n");
     
     printf("Core semantics:\n");
     printf("- Objects = structs with vptr field\n");
@@ -655,7 +655,7 @@ int main(void) {
     example_counter();
     example_shape_area();
     
-    printf("\nAll examples executed successfully!\n");
+    printf("\nDone. All examples executed successfully!\n");
     
     return 0;
 }
