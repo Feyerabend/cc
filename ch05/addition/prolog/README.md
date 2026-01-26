@@ -56,11 +56,15 @@ set in, as it became clear that Prolog was not the answer, and interest in the l
 
 * Clocksin, W. F., & Mellish, C. S. (1981). *Programming in Prolog*. Springer-Verlag.
 
+* Feigenbaum, E. A., McCorduck, P., & Nii, H. P. (1983). *The fifth generation: Artificial intelligence and Japan’s computer challenge to the world*. Reading, MA: Addison-Wesley.
+
 * Kowalski, R. (1979). *Logic for problem solving*. New York, NY: North-Holland.
 
 * Tärnlund, S.-Å. (Ed.). (1984). *Proceedings of the Second International Logic Programming Conference: Uppsala University, Uppsala, Sweden, July 2–6, 1984*. Ord & Form.  [oai_citation:0‡ci.nii.ac.jp](https://ci.nii.ac.jp/ncid/BA35940414)
 
-![Clocksin](./../../assets/image/clocksin.png) ![Second](./../../assets/image/second.png) ![Logic](./../../assets/image/kowalski.png)
+
+
+![Clocksin](./../../assets/image/clocksin.png) ![Second](./../../assets/image/second.png) ![Logic](./../../assets/image/kowalski.png) ![Fifth](./../../assets/image/fifth.png)
 
 
 
