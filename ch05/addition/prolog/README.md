@@ -31,7 +31,6 @@ Think in terms of:
 
 It can be hard to get around starting from an "imperative" perspective.
 Imperative is like: "Do this, then do that."
-
 Prolog is more:
 ```
 This is true.
@@ -219,8 +218,8 @@ This is called backtracking.
 
 
 
-#### 9. Typical Workflow
-1. Write facts and rules in a file, e.g. 'family.pl' (unimplemented)
+#### 9. Typical Workflow (Unimplemented!)
+1. Write facts and rules in a file, e.g. 'family.pl'
 2. Load it:
 ```
 ?- consult(family).
