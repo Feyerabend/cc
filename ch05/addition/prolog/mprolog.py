@@ -9,15 +9,18 @@ import re
 from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
+
 # Parser Combinators (Simple Implementation)
 class ParseError(Exception):
     """Exception raised when parsing fails"""
     pass
+
 def item(input: str) -> Tuple[str, str]:
     """Consume one character from input"""
     if not input:
         raise ParseError("Unexpected end of input")
     return input[0], input[1:]
+
 def satisfy(pred):
     """Parse a character satisfying a predicate"""
     def parser(input: str):
@@ -26,12 +29,15 @@ def satisfy(pred):
             return ch, rest
         raise ParseError(f"Unexpected character: {ch!r}")
     return parser
+
 def literal(ch: str):
     """Parse a specific character"""
     return satisfy(lambda x: x == ch)
+
 def one_of(chars: str):
     """Parse any character from a set"""
     return satisfy(lambda x: x in chars)
+
 def seq(*parsers):
     """Parse a sequence of parsers"""
     def parser(input: str):
@@ -42,6 +48,7 @@ def seq(*parsers):
             results.append(res)
         return results, rest
     return parser
+
 def choice(*parsers):
     """Try parsers in order until one succeeds"""
     def parser(input: str):
@@ -52,6 +59,7 @@ def choice(*parsers):
                 pass
         raise ParseError("No parser matched")
     return parser
+
 def many(parser):
     """Parse zero or more occurrences"""
     def p(input: str):
@@ -64,6 +72,7 @@ def many(parser):
             except ParseError:
                 return results, rest
     return p
+
 def many1(parser):
     """Parse one or more occurrences"""
     def p(input: str):
@@ -71,38 +80,46 @@ def many1(parser):
         more, rest = many(parser)(rest)
         return [res] + more, rest
     return p
+
 def fmap(f, parser):
     """Apply function to parser result"""
     def p(input: str):
         res, rest = parser(input)
         return f(res), rest
     return p
+
 def bind(parser, f):
     """Monadic bind for parser combinators"""
     def p(input: str):
         res, rest = parser(input)
         return f(res)(rest)
     return p
+
 def ws():
     """Parse whitespace"""
     return many(one_of(" \t\n\r"))
+
 def token(parser):
     """Parse with leading whitespace"""
     return bind(ws(), lambda _: parser)
+
 def symbol(s: str):
     """Parse a symbol (string with whitespace)"""
     return token(seq(*[literal(c) for c in s]))
+
 def parens(parser):
     """Parse parenthesized content"""
     return bind(symbol("("),
                 lambda _: bind(parser,
                                lambda res: bind(symbol(")"),
                                                 lambda _: parse_result(res))))
+
 def parse_result(value: Any):
     """Return a parser that always succeeds with given value"""
     def p(input: str):
         return value, input
     return p
+
 def sep_by(parser, separator):
     """Parse items separated by a separator"""
     def p(input: str):
@@ -122,10 +139,12 @@ def sep_by(parser, separator):
                 return results, rest
     return p
 
+
 # Term Representations (Data Classes)
 class Term:
     """Base class for all Prolog terms"""
     pass
+
 class Atom(Term):
     """Atomic term (constant)"""
     def __init__(self, name: str):
@@ -139,6 +158,7 @@ class Atom(Term):
    
     def __hash__(self):
         return hash(('Atom', self.name))
+
 class Variable(Term):
     """Variable term"""
     def __init__(self, name: str):
@@ -152,6 +172,7 @@ class Variable(Term):
    
     def __hash__(self):
         return hash(('Variable', self.name))
+
 class Compound(Term):
     """Compound term with functor and arguments"""
     def __init__(self, functor: str, args: List[Term]):
@@ -171,6 +192,7 @@ class Compound(Term):
    
     def __hash__(self):
         return hash(('Compound', self.functor, self.args))
+
 class ListTerm(Term):
     """List term [elements | tail]"""
     def __init__(self, elements: List[Term], tail: Term = None):
@@ -192,6 +214,7 @@ class ListTerm(Term):
     def __hash__(self):
         return hash(('ListTerm', self.elements, self.tail))
 
+
 # Term Parsers (Using Parser Combinators)
 def parse_atom():
     """Parse an atom (lowercase identifier or special symbols)"""
@@ -212,6 +235,7 @@ def parse_atom():
                 break
         return Atom(first_res + ''.join(rest_chars)), temp
     return parser
+
 def parse_variable():
     """Parse a variable (uppercase identifier)"""
     def parser(input: str):
@@ -227,10 +251,12 @@ def parse_variable():
                 break
         return Variable(first_res + ''.join(rest_chars)), temp
     return parser
+
 def parse_number():
     """Parse a number as an atom"""
     digits = many1(satisfy(str.isdigit))
     return fmap(lambda ds: Atom(''.join(ds)), digits)
+
 def parse_list():
     """Parse a list [elements] or [elements | tail]"""
     def content():
@@ -245,6 +271,7 @@ def parse_list():
             return Atom("[]")
         return res
     return bind(symbol("["), lambda _: bind(content(), lambda res: bind(symbol("]"), lambda _: parse_result(normalize(res)))))
+
 def parse_compound():
     """Parse a compound term functor(args)"""
     def parser(input: str):
@@ -255,6 +282,7 @@ def parse_compound():
         args_res, rest2 = parens(sep_by(parse_term(), symbol(",")))(rest)
         return Compound(functor_res.name, args_res), rest2
     return parser
+
 def parse_primary():
     """Parse primary terms without infix operators"""
     return token(choice(
@@ -264,27 +292,33 @@ def parse_primary():
         parse_variable(),
         parse_atom()
     ))
+
 def parse_unification():
     """Parse infix unification A = B"""
     return bind(parse_primary(), lambda l: bind(token(literal("=")), lambda _: bind(parse_primary(), lambda r: parse_result(Compound("=", [l, r])))))
+
 def parse_term():
     """Parse any term, including unification"""
     return choice(
         parse_unification(),
         parse_primary()
     )
+
 def parse_goals():
     """Parse a comma-separated list of goals"""
     return sep_by(parse_term(), symbol(","))
+
 def parse_clause():
     """Parse a clause: head :- body. or head."""
     head = parse_term()
     rule = bind(symbol(":-"), lambda _: bind(parse_goals(), lambda body: bind(symbol("."), lambda _: parse_result(body))))
     fact = bind(symbol("."), lambda _: parse_result([]))
     return token(bind(head, lambda h: bind(choice(rule, fact), lambda b: parse_result((h, b)))))
+
 def parse_query():
     """Parse a query: ?- goals."""
     return token(bind(symbol("?-"), lambda _: bind(parse_goals(), lambda gs: bind(symbol("."), lambda _: parse_result(gs)))))
+
 def has_variables(term: Term) -> bool:
     """Check if a term contains any variables"""
     if isinstance(term, Variable):
@@ -340,6 +374,7 @@ def parse_input(line: str, is_interactive=False):
             raise ParseError("Extra characters after clause")
         return {"type": "clause", "clause": clause}
 
+
 # Environment and Substitution (Iterative Implementation)
 class Environment:
     """Environment stores variable bindings"""
@@ -365,6 +400,7 @@ class Environment:
                 return val
             current = val
         return current
+
 
 # Core Operations (All Iterative Implementations)
 def substitute(term: Term, env: Environment) -> Term:
@@ -445,6 +481,7 @@ def substitute(term: Term, env: Environment) -> Term:
    
     return result_map.get(id(term), term)
 
+
 def rename_variables(term: Term, suffix: str) -> Term:
     """Rename all variables in term by adding suffix (iterative)"""
     stack = [term]
@@ -498,6 +535,7 @@ def rename_variables(term: Term, suffix: str) -> Term:
    
     return result_map.get(id(term), term)
 
+
 def occurs_check(var: Variable, term: Term, env: Environment) -> bool:
     """Check if variable occurs in term (prevents infinite structures)"""
     stack = [term]
@@ -524,6 +562,7 @@ def occurs_check(var: Variable, term: Term, env: Environment) -> bool:
             stack.append(current.tail)
    
     return False
+
 
 def unify(a: Term, b: Term, env: Environment) -> Optional[Environment]:
     """Unify two terms (iterative algorithm)"""
@@ -587,6 +626,7 @@ def unify(a: Term, b: Term, env: Environment) -> Optional[Environment]:
    
     return env
 
+
 # Database (Clause Storage)
 class Database:
     """Stores Prolog clauses"""
@@ -597,6 +637,7 @@ class Database:
     def add_clause(self, head: Term, body: List[Term]):
         """Add a clause to the database"""
         self.clauses.append((head, body))
+
 
 # Built-in Predicates (Handling)
 def handle_builtin(goal: Compound, env: Environment, db: Database) -> List[Environment]:
@@ -627,6 +668,7 @@ def handle_builtin(goal: Compound, env: Environment, db: Database) -> List[Envir
         return [env]
    
     return []
+
 
 # Solver (Iterative with Stack-Based Backtracking)
 def solve(goals: List[Term], env: Environment, db: Database, max_solutions=None) -> List[Environment]:
@@ -683,6 +725,7 @@ def solve(goals: List[Term], env: Environment, db: Database, max_solutions=None)
    
     return solutions
 
+
 # Init Database (Standard Predicates)
 def initialize_database() -> Database:
     """Initialise database with standard predicates"""
@@ -717,6 +760,7 @@ def initialize_database() -> Database:
    
     return db
 
+
 # Format Solutions (Display)
 def format_solution(env: Environment, original_goals: List[Term]) -> str:
     """Format a solution environment for display"""
@@ -749,6 +793,7 @@ def format_solution(env: Environment, original_goals: List[Term]) -> str:
    
     parts = [f"{name} = {val}" for name, val in sorted(bindings.items())]
     return ", ".join(parts)
+
 
 # Tests
 def run_tests():
@@ -835,6 +880,7 @@ def run_tests():
     print(f"Tests passed: {passed}/{passed + failed}")
     print("-" * 50)
     return passed == len(tests)
+
 
 # REPL
 def main():
