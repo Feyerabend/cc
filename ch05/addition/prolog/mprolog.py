@@ -9,6 +9,7 @@ import re
 from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
+
 # Parser Combinators (Simple Implementation)
 class ParseError(Exception):
     """Exception raised when parsing fails"""
@@ -122,6 +123,7 @@ def sep_by(parser, separator):
                 return results, rest
     return p
 
+
 # Term Representations (Data Classes)
 class Term:
     """Base class for all Prolog terms"""
@@ -191,6 +193,7 @@ class ListTerm(Term):
    
     def __hash__(self):
         return hash(('ListTerm', self.elements, self.tail))
+
 
 # Term Parsers (Using Parser Combinators)
 def parse_atom():
@@ -297,21 +300,26 @@ def parse_input(line: str, is_interactive=False):
         if rest.strip():
             raise ParseError("Extra characters after query")
         return {"type": "query", "goals": goals}
-    else:
-        # In interactive mode, single term without :- is treated as query
-        if is_interactive and ":-" not in line and not line.endswith("."):
-            # It's likely just a goal
-            try:
-                goals, rest = parse_goals()(line)
-                if not rest.strip():
-                    return {"type": "query", "goals": goals}
-            except:
-                pass
-       
+    elif ":-" in line:
+        # It's a rule
         clause, rest = parse_clause()(line)
         if rest.strip():
             raise ParseError("Extra characters after clause")
         return {"type": "clause", "clause": clause}
+    elif is_interactive:
+        # In interactive mode without :- or ?-, treat as query
+        line_no_dot = line.rstrip(".")
+        goals, rest = parse_goals()(line_no_dot)
+        if rest.strip():
+            raise ParseError("Extra characters after goals")
+        return {"type": "query", "goals": goals}
+    else:
+        # Non-interactive: parse as clause (fact)
+        clause, rest = parse_clause()(line)
+        if rest.strip():
+            raise ParseError("Extra characters after clause")
+        return {"type": "clause", "clause": clause}
+
 
 # Environment and Substitution (Iterative Implementation)
 class Environment:
@@ -346,7 +354,11 @@ def substitute(term: Term, env: Environment) -> Term:
         return term
    
     if isinstance(term, Variable):
-        return env.lookup(term)
+        result = env.lookup(term)
+        # Recursively substitute if we got another term
+        if result != term and not isinstance(result, Atom):
+            return substitute(result, env)
+        return result
    
     stack = [term]
     result_map = {}
@@ -368,13 +380,33 @@ def substitute(term: Term, env: Environment) -> Term:
                 new_args = tuple(result_map[id(arg)] for arg in current.args)
                 result_map[current_id] = Compound(current.functor, new_args)
             elif isinstance(current, ListTerm):
-                new_elements = tuple(result_map[id(elem)] for elem in current.elements)
+                new_elements = list(result_map[id(elem)] for elem in current.elements)
                 new_tail = result_map[id(current.tail)]
-                result_map[current_id] = ListTerm(new_elements, new_tail)
+                
+                # Recursively flatten ListTerms
+                final_elements = []
+                for elem in new_elements:
+                    # Recursively substitute each element
+                    subst_elem = substitute(elem, env) if isinstance(elem, (Variable, Compound, ListTerm)) else elem
+                    final_elements.append(subst_elem)
+                
+                # Recursively substitute and flatten tail
+                subst_tail = substitute(new_tail, env) if isinstance(new_tail, (Variable, Compound, ListTerm)) else new_tail
+                
+                # Flatten if tail is also a ListTerm
+                if isinstance(subst_tail, ListTerm):
+                    final_elements.extend(subst_tail.elements)
+                    result_map[current_id] = ListTerm(final_elements, subst_tail.tail)
+                else:
+                    result_map[current_id] = ListTerm(final_elements, subst_tail)
             continue
        
         if isinstance(current, Variable):
-            result_map[current_id] = env.lookup(current)
+            looked_up = env.lookup(current)
+            if looked_up != current:
+                result_map[current_id] = substitute(looked_up, env)
+            else:
+                result_map[current_id] = current
             stack.pop()
         elif isinstance(current, Atom):
             result_map[current_id] = current
@@ -394,6 +426,7 @@ def substitute(term: Term, env: Environment) -> Term:
    
     return result_map.get(id(term), term)
 
+# Variable Renaming (Iterative Implementation)
 def rename_variables(term: Term, suffix: str) -> Term:
     """Rename all variables in term by adding suffix (iterative)"""
     stack = [term]
@@ -447,6 +480,7 @@ def rename_variables(term: Term, suffix: str) -> Term:
    
     return result_map.get(id(term), term)
 
+# Unification (Iterative Implementation)
 def occurs_check(var: Variable, term: Term, env: Environment) -> bool:
     """Check if variable occurs in term (prevents infinite structures)"""
     stack = [term]
@@ -474,6 +508,7 @@ def occurs_check(var: Variable, term: Term, env: Environment) -> bool:
    
     return False
 
+# Unification (Iterative Implementation)
 def unify(a: Term, b: Term, env: Environment) -> Optional[Environment]:
     """Unify two terms (iterative algorithm)"""
     stack = [(a, b)]
@@ -597,7 +632,13 @@ def solve(goals: List[Term], env: Environment, db: Database, max_solutions=None)
         goal = current_goals[0]
         rest_goals = current_goals[1:]
        
-        # Handle built-in predicates
+        # Handle built-in predicates (both Atom and Compound forms)
+        if isinstance(goal, Atom) and goal.name in {"true", "fail"}:
+            if goal.name == "true":
+                stack.append((rest_goals, current_env, 0))
+            # fail just doesn't add anything to stack
+            continue
+        
         if isinstance(goal, Compound) and goal.functor in {"true", "fail", "=", "write", "nl"}:
             result_envs = handle_builtin(goal, current_env, db)
             for new_env in result_envs:
@@ -637,12 +678,12 @@ def initialize_database() -> Database:
         (Compound("=", [Variable("X"), Variable("X")]), []),
        
         # List operations: append
-        (Compound("append", [Atom("[]"), Variable("X"), Variable("X")]), []),
+        (Compound("append", [Atom("[]"), Variable("L"), Variable("L")]), []),
         (Compound("append", [
-            ListTerm([Variable("X")], Variable("Y")),
-            Variable("Z"),
-            ListTerm([Variable("X")], Variable("U"))
-        ]), [Compound("append", [Variable("Y"), Variable("Z"), Variable("U")])]),
+            ListTerm([Variable("H")], Variable("T")),
+            Variable("L"),
+            ListTerm([Variable("H")], Variable("R"))
+        ]), [Compound("append", [Variable("T"), Variable("L"), Variable("R")])]),
        
         # List operations: member
         (Compound("member", [Variable("X"), ListTerm([Variable("X")], Variable("_"))]), []),
@@ -664,25 +705,28 @@ def initialize_database() -> Database:
 def format_solution(env: Environment, original_goals: List[Term]) -> str:
     """Format a solution environment for display"""
     # Collect original variables from goals
-    original_vars = set()
-    stack = list(original_goals)
-    while stack:
-        term = stack.pop()
+    original_vars = {}
+    
+    def collect_vars(term, var_dict):
         if isinstance(term, Variable) and not term.name.startswith("_"):
-            original_vars.add(term.name)
+            var_dict[term] = term.name
         elif isinstance(term, Compound):
-            stack.extend(term.args)
+            for arg in term.args:
+                collect_vars(arg, var_dict)
         elif isinstance(term, ListTerm):
-            stack.extend(term.elements)
-            stack.append(term.tail)
+            for elem in term.elements:
+                collect_vars(elem, var_dict)
+            collect_vars(term.tail, var_dict)
+    
+    for goal in original_goals:
+        collect_vars(goal, original_vars)
    
     bindings = {}
-    for var, val in env.bindings.items():
-        base_name = var.name.split('_')[0]
-        if base_name in original_vars:
-            final_val = substitute(var, env)
-            if final_val != var and not isinstance(final_val, Variable):
-                bindings[base_name] = final_val
+    for var, var_name in original_vars.items():
+        final_val = substitute(var, env)
+        # Only show if it's bound to something other than itself
+        if final_val != var:
+            bindings[var_name] = final_val
    
     if not bindings:
         return "true"
@@ -778,7 +822,6 @@ def run_tests():
 
 # REPL
 def main():
-    """Main REPL loop"""
     # Run tests first
     if "--test" in sys.argv:
         run_tests()
@@ -790,14 +833,17 @@ def main():
     print("Mini-Prolog Interpreter")
     print("-" * 50)
     print("Commands:")
-    print(" ?- goal. Query goals")
-    print(" fact. Add fact")
-    print(" head :- body. Add rule")
-    print(" quit. Exit")
+    print(" goal.             Query goals")
+    print(" fact :- true.     Add fact") # (or use head.) ~ not working
+    print(" head :- body.     Add rule")
+    print(" quit.             Exit")
+    print(" show.             Show database")
     print("-" * 50)
-    print("\nTry: parent(tom, bob).")
-    print(" parent(tom, X).")
-    print(" append([1,2], [3,4], X).")
+    print("\nTo add facts, use syntax: parent(tom, bob) :- true.")
+    print("To query, just type: parent(tom, X).")
+    print("Try: parent(tom, bob) :- true.")
+    print("     parent(tom, X).")
+    print("     append([1,2], [3,4], X).")
    
     while True:
         try:
@@ -815,10 +861,19 @@ def main():
             if line in ["quit.", "exit.", "q."]:
                 print("\nBye!")
                 break
+            
+            if line == "show.":
+                print(f"Database has {len(db.clauses)} clauses:")
+                for i, (head, body) in enumerate(db.clauses):
+                    if body:
+                        print(f"  {i}: {head} :- {', '.join(map(str, body))}.")
+                    else:
+                        print(f"  {i}: {head}.")
+                continue
            
             # Parse input
             parsed = parse_input(line, is_interactive=True)
-           
+            
             if parsed["type"] == "query":
                 goals = parsed["goals"]
                 solutions = solve(goals, Environment(), db)
@@ -831,15 +886,23 @@ def main():
                         print(result, end="")
                        
                         if i < len(solutions) - 1:
-                            sys.stdout.write(" ;\n")
+                            sys.stdout.write(" ;")
                             sys.stdout.flush()
+                            response = sys.stdin.readline().strip()
+                            if response != ";":
+                                print()
+                                break
+                            print()
                         else:
                             print(".")
            
-            else: # Clause
+            elif parsed["type"] == "clause":
                 head, body = parsed["clause"]
                 db.add_clause(head, body)
                 print("true.")
+            
+            else:
+                print(f"Unknown parse type: {parsed['type']}")
        
         except ParseError as e:
             print(f"Syntax error: {e}")
