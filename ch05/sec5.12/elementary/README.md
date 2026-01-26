@@ -77,8 +77,6 @@ Makefile          # Build automation
 ```
 
 
-### Usage
-
 ### Using Makefile
 
 ```bash
@@ -151,7 +149,7 @@ Running with `--verbose` shows:
 - *VM*: Stack-based virtual machine with memory storage
 
 
-### Extension Ideas
+### Extension Ideas / Projects
 
 - Functions with parameters and return values
 - Arrays and lists
