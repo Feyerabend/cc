@@ -272,7 +272,7 @@ You learn:
 #### Project 8: CST vs AST Tool
 
 You build:
-- A CST that preserves formatting.
+- A CST (Concrete Syntax Tree) that preserves formatting.
 - An AST that ignores it.
 
 Then you try:

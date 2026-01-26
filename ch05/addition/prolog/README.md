@@ -46,9 +46,10 @@ programming more broadly.
 
 The Japanese emphasis on Prolog and logic programming provoked responses in the United States
 and Europe. In the U.S., research funding agencies and academic groups accelerated work
-on logic programming theory, Prolog implementations, and compiler technologies. But to no
-surprise a high interest in developing already established AI languages with variations of
-LISP, but also harware in Lisp machines. Efforts such as the development of the
+on logic programming theory, Prolog implementations, and compiler technologies. But
+unsurprisingly, there was strong interest in further developing already established
+AI languages, especially variations of LISP, as well as in building specialised
+hardware such as Lisp machines. Efforts such as the development of the
 [WAM](./../am/wam/) (Warren Abstract Machine) by David H. D. Warren and others led
 to much faster Prolog interpreters and compilers, making logic programming more
 competitive with conventional languages. The WAM, first circulated in the early 1980s,
@@ -58,11 +59,15 @@ set in, as it became clear that Prolog was not the answer, and interest in the l
 
 * Clocksin, W. F., & Mellish, C. S. (1981). *Programming in Prolog*. Springer-Verlag.
 
+* Feigenbaum, E. A., McCorduck, P., & Nii, H. P. (1983). *The fifth generation: Artificial intelligence and Japan’s computer challenge to the world*. Reading, MA: Addison-Wesley.
+
 * Kowalski, R. (1979). *Logic for problem solving*. New York, NY: North-Holland.
 
-* Tärnlund, S.-A. (Ed.). (1984). *Proceedings of the Second International Logic Programming Conference: Uppsala University, Uppsala, Sweden, July 2–6, 1984*. Ord & Form.  [oai_citation:0‡ci.nii.ac.jp](https://ci.nii.ac.jp/ncid/BA35940414)
+* Tärnlund, S.-Å. (Ed.). (1984). *Proceedings of the Second International Logic Programming Conference: Uppsala University, Uppsala, Sweden, July 2–6, 1984*. Ord & Form.  [oai_citation:0‡ci.nii.ac.jp](https://ci.nii.ac.jp/ncid/BA35940414)
 
-![Clocksin](./../../assets/image/clocksin.png) ![Second](./../../assets/image/second.png) ![Logic](./../../assets/image/kowalski.png)
+
+
+![Clocksin](./../../assets/image/clocksin.png) ![Second](./../../assets/image/second.png) ![Logic](./../../assets/image/kowalski.png) ![Fifth](./../../assets/image/fifth.png)
 
 
 
