@@ -27,8 +27,8 @@ Let's follow what happens to this simple code: `x = 5 + 3 * 2;`
 Input:  x = 5 + 3 * 2;
 
 Output: [x] [=] [5] [+] [3] [*] [2] [;]
-        ↓   ↓   ↓   ↓   ↓   ↓   ↓   ↓
-      name  =  num  +  num  *  num  ;
+         ↓   ↓   ↓   ↓   ↓   ↓   ↓   ↓
+       name  =  num  +  num  *  num  ;
 ```
 
 Each piece gets labeled: `x` is an IDENTIFIER, `5`
