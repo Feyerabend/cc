@@ -120,7 +120,8 @@ Both can be expanded similarly, but their designs influence ease:
   - Support more syntax: E.g., add infix operators to Mini-Prolog's parser
     (extend `parse_term` with precedence levels, like Simple-Prolog).
   - Modules/Namespaces: Add to database to group clauses.
-  - Optimizations: Indexing clauses by functor/arity for faster lookup.
+  - Optimisations: Indexing clauses by functor/arity for faster lookup.
+  - Add roubustness to both. The constructions are as they stand fragile.
 
 - *Mini-Prolog-Specific*:
   - Add cut: Use a similar exception mechanism in the stack loop (raise when
