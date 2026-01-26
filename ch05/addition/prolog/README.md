@@ -16,6 +16,8 @@ and problem solving could be expressed in a form close to mathematical logic.
 
 Here you might study an example of a Prolog *interpreter*.
 
+![AI Prolog](./../../assets/image/aiprolog.png) ![Art](./../../assets/image/art.png) ![Expert](./../../assets/image/expert.png)
+
 
 ### Prolog .. in the Early 1980s
 
