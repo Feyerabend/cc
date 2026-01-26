@@ -44,9 +44,10 @@ programming more broadly.
 
 The Japanese emphasis on Prolog and logic programming provoked responses in the United States
 and Europe. In the U.S., research funding agencies and academic groups accelerated work
-on logic programming theory, Prolog implementations, and compiler technologies. But to no
-surprise a high interest in developing already established AI languages with variations of
-LISP, but also harware in Lisp machines. Efforts such as the development of the
+on logic programming theory, Prolog implementations, and compiler technologies. But
+unsurprisingly, there was strong interest in further developing already established
+AI languages, especially variations of LISP, as well as in building specialised
+hardware such as Lisp machines. Efforts such as the development of the
 [WAM](./../am/wam/) (Warren Abstract Machine) by David H. D. Warren and others led
 to much faster Prolog interpreters and compilers, making logic programming more
 competitive with conventional languages. The WAM, first circulated in the early 1980s,
