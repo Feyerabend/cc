@@ -1,4 +1,6 @@
 
+## Teaching / Learning
+
 This chapter is designed primarily for independent study, with extensive and deliberate
 use of LLMs as a learning tool rather than a shortcut. At this point in the book/repository,
 you should be capable of formulating and carrying out your own projects, either on your own
