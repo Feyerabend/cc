@@ -1,5 +1,34 @@
 
-This chapter is intended for individual study, but with use of LLMs in an extensive way.
+This chapter is designed primarily for independent study, with extensive and deliberate
+use of LLMs as a learning tool rather than a shortcut. At this point in the book/repository,
+you should be capable of formulating and carrying out your own projects, either on your own
+or in collaboration with a teacher.
+
+Before starting a project, clearly define a *goal*. The goal should not only describe what
+you want to build, but also what you want to understand better. Ask yourself what concepts,
+techniques, or theoretical ideas you want to explore. A good project is one where the final
+result matters, but where the learning process matters even more.
+
+Decide early what *success* looks like. What properties should your solution have? How will
+you know that it is correct, elegant, efficient, or well-structured? These criteria guide
+your design decisions and help you avoid drifting into unfocused experimentation.
+
+Use *LLMs* actively and critically. Treat them as a sparring partner: ask for explanations,
+alternative formulations, edge cases, and theoretical background. Let them help you generate
+ideas, clarify concepts, and test your understanding. Do not let them replace your reasoning.
+The goal is not to obtain answers quickly, but to deepen your comprehension and sharpen your
+ability to think independently.
+
+Try to make each project slightly *uncomfortable*. Choose problems that force you to confront
+something you do not yet fully understand: recursion, abstraction, formal reasoning,
+computational complexity, logic, or program correctness. Learning happens most effectively
+at the *boundary of your current knowledge*.
+
+Finally, reflect on what you learned after completing a project. What assumptions turned out
+to be wrong? What concepts became clearer? What would you do differently next time? This
+reflection transforms isolated exercises into long-term understanding and helps you grow
+from a user of tools into a thinker in programming and theory.
+
 
 #### Example: From Code to Syntax as Learning by Construction
 
