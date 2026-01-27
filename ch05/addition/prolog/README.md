@@ -15,7 +15,7 @@ to its appeal in artificial intelligence research, where reasoning, inference,
 and problem solving could be expressed in a form close to mathematical logic.
 
 You might study examples of *interpreters*: [Simple-Prolog](./sprolog.py)
-and [Mini-Prolog](mprolog.py).
+and [Mini-Prolog](mprolog.py). Example application [NLP](./nlp/).
 
 
 ### A Small Prolog Tutorial
