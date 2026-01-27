@@ -436,6 +436,6 @@ Go further with:
 - SWI-Prolog DCG library (the gold standard)
 - Grammatical Framework (GF)
 - NLTK's Chart Parsers
-- Earley parsers
+- [Earley](./../../parsers/earley/) parsers
 
 
