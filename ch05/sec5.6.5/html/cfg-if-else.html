@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CFG – If Else</title>
+
+<style>
+body {
+    margin: 0;
+    background: #111;
+    color: #ddd;
+    font-family: monospace;
+}
+
+textarea {
+    width: 100%;
+    height: 180px;
+    background: #000;
+    color: #0f0;
+    border: 1px solid #333;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+canvas {
+    display: block;
+    background: #181818;
+    border: 1px solid #333;
+}
+</style>
+</head>
+<body>
+
+<textarea id="src">
+node Start "Start: x=5" [300 40]
+node Cond "x > 0?" [300 140]
+node True "x = x + 1" [150 240]
+node False "x = x - 1" [450 240]
+node End "End" [300 340]
+
+edge Start Cond ""
+edge Cond True "true"
+edge Cond False "false"
+edge True End ""
+edge False End ""
+</textarea>
+
+<canvas id="canvas" width="700" height="420"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const src = document.getElementById("src");
+
+let graph = null;
+let draggingNode = null;
+let dragOffset = {x:0,y:0};
+
+function parse(text) {
+    const nodes = {};
+    const edges = [];
+    let autoY = 60;
+
+    text.split("\n").forEach(line => {
+        line = line.trim();
+        if (!line || line.startsWith("#")) return;
+
+        if (line.startsWith("node")) {
+            const m = line.match(/node\s+(\w+)\s+"([^"]+)"(?:\s+\[(\d+)\s+(\d+)\])?/);
+            if (!m) return;
+            const id = m[1];
+            const label = m[2];
+            const x = m[3] ? +m[3] : 100;
+            const y = m[4] ? +m[4] : autoY;
+            autoY += 90;
+            nodes[id] = { id, label, x, y, w: 110, h: 36 };
+        }
+
+        if (line.startsWith("edge")) {
+            const m = line.match(/edge\s+(\w+)\s+(\w+)\s+"([^"]*)"/);
+            if (!m) return;
+            edges.push({ from: m[1], to: m[2], label: m[3] });
+        }
+    });
+
+    return { nodes, edges };
+}
+
+function center(n) {
+    return { x: n.x + n.w/2, y: n.y + n.h/2 };
+}
+
+function exitPoint(a, b) {
+    const ca = center(a), cb = center(b);
+    const dx = cb.x - ca.x, dy = cb.y - ca.y;
+
+    if (Math.abs(dx) > Math.abs(dy))
+        return { x: dx > 0 ? a.x + a.w : a.x, y: ca.y };
+    else
+        return { x: ca.x, y: dy > 0 ? a.y + a.h : a.y };
+}
+
+function entryPoint(a, b) {
+    const ca = center(a), cb = center(b);
+    const dx = ca.x - cb.x, dy = ca.y - cb.y;
+
+    if (Math.abs(dx) > Math.abs(dy))
+        return { x: dx > 0 ? b.x + b.w : b.x, y: cb.y };
+    else
+        return { x: cb.x, y: dy > 0 ? b.y + b.h : b.y };
+}
+
+function routeEdge(a, b, offset = 0) {
+    const p1 = exitPoint(a, b);
+    const p4 = entryPoint(a, b);
+    const midX = (p1.x + p4.x) / 2 + offset;
+    const midY = (p1.y + p4.y) / 2 + offset;
+
+    if (Math.abs(p1.x - p4.x) > Math.abs(p1.y - p4.y)) {
+        return [p1, {x:midX, y:p1.y}, {x:midX, y:p4.y}, p4];
+    } else {
+        return [p1, {x:p1.x, y:midY}, {x:p4.x, y:midY}, p4];
+    }
+}
+
+function drawArrowPath(points) {
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++)
+        ctx.lineTo(points[i].x, points[i].y);
+    ctx.stroke();
+
+    const a = points[points.length-2];
+    const b = points[points.length-1];
+    const ang = Math.atan2(b.y - a.y, b.x - a.x);
+    const head = 8;
+
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y);
+    ctx.lineTo(b.x - head*Math.cos(ang - Math.PI/6),
+               b.y - head*Math.sin(ang - Math.PI/6));
+    ctx.lineTo(b.x - head*Math.cos(ang + Math.PI/6),
+               b.y - head*Math.sin(ang + Math.PI/6));
+    ctx.closePath();
+    ctx.fill();
+}
+
+function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle = "#aaa";
+    ctx.fillStyle = "#aaa";
+    ctx.font = "12px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    let edgeIndex = 0;
+    for (const e of graph.edges) {
+        const a = graph.nodes[e.from];
+        const b = graph.nodes[e.to];
+        if (!a || !b) continue;
+
+        const offset = (edgeIndex++ % 5 - 2) * 6;
+        const path = routeEdge(a, b, offset);
+
+        ctx.strokeStyle = "#888";
+        ctx.fillStyle = "#888";
+        drawArrowPath(path);
+
+        if (e.label) {
+            const m = path[Math.floor(path.length/2)];
+            ctx.fillStyle = "#fff";
+            ctx.fillText(e.label, m.x + 6, m.y - 6);
+        }
+    }
+
+    for (const id in graph.nodes) {
+        const n = graph.nodes[id];
+        ctx.strokeStyle = "#aaa";
+        ctx.strokeRect(n.x, n.y, n.w, n.h);
+        ctx.fillStyle = "#ddd";
+        ctx.fillText(n.label, n.x + n.w/2, n.y + n.h/2);
+    }
+}
+
+function getMousePos(evt) {
+    const r = canvas.getBoundingClientRect();
+    return { x: evt.clientX - r.left, y: evt.clientY - r.top };
+}
+
+function hitNode(pos) {
+    for (const id in graph.nodes) {
+        const n = graph.nodes[id];
+        if (pos.x >= n.x && pos.x <= n.x+n.w &&
+            pos.y >= n.y && pos.y <= n.y+n.h)
+            return n;
+    }
+    return null;
+}
+
+canvas.addEventListener("mousedown", e => {
+    const p = getMousePos(e);
+    const n = hitNode(p);
+    if (n) {
+        draggingNode = n;
+        dragOffset.x = p.x - n.x;
+        dragOffset.y = p.y - n.y;
+    }
+});
+
+canvas.addEventListener("mousemove", e => {
+    if (!draggingNode) return;
+    const p = getMousePos(e);
+    draggingNode.x = p.x - dragOffset.x;
+    draggingNode.y = p.y - dragOffset.y;
+    draw();
+});
+
+canvas.addEventListener("mouseup", () => draggingNode = null);
+canvas.addEventListener("mouseleave", () => draggingNode = null);
+
+function updateFromText() {
+    graph = parse(src.value);
+    draw();
+}
+
+src.addEventListener("input", updateFromText);
+updateFromText();
+</script>
+</body>
+</html>
