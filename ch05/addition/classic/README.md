@@ -2,7 +2,7 @@
 ## A Classic Approach to Compilers
 
 This is the first part in a series of two. In [ch07](./../../../ch07/)
-[modern](./../../ch07/addition/modern/) we will look at compilers with a
+[modern](./../../../ch07/addition/modern/) we will look at compilers with a
 different--more modern--approach. To be quite frank: *It is more an application
 of programming concepts that will be introduced through the chapters, than a
 reflection of actual current compiler designs*.
