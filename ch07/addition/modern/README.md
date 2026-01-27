@@ -7,9 +7,9 @@ millions of lines of code, intricate interactions between components, and layers
 that are hard to visualise. Yet, among these, compilers provide a particularly clear lens through
 which to observe the growth of software complexity over time. 
 
-This is the second part in a series of two. We have already explored in [ch05](./../../ch05/)
-an attempt at constructing a simple compiler using [classical](./../../ch05/classic/) techniques.
-Here we will use the introduced different concepts such as design patterns frequent in
+This is the second part in a series of two. We have already explored in [ch05](./../../../ch05/)
+an attempt at constructing a simple compiler using [classical](./../../../ch05/addition/classic/)
+techniques. Here we will use the introduced different concepts such as design patterns frequent in
 object-oriented design, using Packrat as the parser (in contrast to e.g. recursive decent),
 and a plugin architecture to make flexible and dynamic modules possible, without altering
 the main program. It might not be the ultimate solution to compiler design (which it is not),
@@ -193,8 +193,10 @@ classDiagram
     style Software_Projects fill:#f9f9f9,stroke:#333,stroke-width:1px
 ```
 
-[^LOC]: Lines of Code (LOC) can be misleading and potentially inaccurate. LOC is a notoriously unreliable metric for software size, as it can vary widely based on counting methodology and what is included (e.g., comments, tests, third-party libraries).
-Here the inclusion of LOCs is only to *indicate* the size of compilers can be huge in relation to other programs.
+[^LOC]: Lines of Code (LOC) can be misleading and potentially inaccurate. LOC is a notoriously
+unreliable metric for software size, as it can vary widely based on counting methodology and
+what is included (e.g., comments, tests, third-party libraries). Here the inclusion of LOCs
+is only to *indicate* the size of compilers can be huge in relation to other programs.
 
 Today, compilers like GCC and LLVM are no longer mere tools but sprawling platforms that underpin vast swaths
 of the software world. GCC remains the bedrock of the GNU/Linux ecosystem, while as we learned above that LLVM
