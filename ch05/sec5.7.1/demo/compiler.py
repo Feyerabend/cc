@@ -203,7 +203,7 @@ class SSAConverter:
         1. Each assignment creates a new version of the variable
         2. Uses of variables reference the appropriate version
         """
-        # Initialize version counters
+        # Initialise version counters
         for var in variables:
             self.versions[var] = 0
         
@@ -213,7 +213,7 @@ class SSAConverter:
             ssa_instructions = []
             var_map = {}  # Track current SSA version of each variable in this block
             
-            # Initialize with version 0 for all variables
+            # Initialise with version 0 for all variables
             for var in variables:
                 var_map[var] = f"{var}_0"
             
@@ -447,7 +447,7 @@ def demo():
     for block in ssa_blocks:
         print(block)
     
-    # Step 3: Optimize
+    # Step 3: Optimise
     print("\n" + "-"*60)
     print("STEP 3: SSA-Based Optimisations")
     print("-"*60)
