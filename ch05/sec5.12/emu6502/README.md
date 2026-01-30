@@ -1,11 +1,14 @@
 
 ## 6502 Emulator with Monitor
 
-Another way to build a compiler is to work yourself up from a simple emulator.
-This is a MOS 6502 CPU emulator with a built-in interactive monitor for debugging.
-Build an assembler, and other tools you find useful, then build the compiler
-that produce assembly code. Take note of the restrictions given by the
-MOS 6502 CPU, to asseble correctly.
+Another approach to building a compiler is to start from the bottom up, using a
+simple emulator as the foundation. This project uses a MOS 6502 CPU emulator
+with a built-in interactive monitor for debugging.
+
+From this base, implement an assembler and any additional tools you find useful,
+and then develop a compiler that emits 6502 assembly code at target. Be mindful
+of the constraints and architectural limitations of the MOS 6502 CPU to ensure
+that the generated assembly is correct and executable.
 
 ```bash
 gcc -o emu6502 main.c fake6502.c -std=c99
