@@ -25,17 +25,17 @@ syntax rules, facilitating analyses like type checking and partial evaluation
 (constant folding).
 
 
-- *Synthesized Attributes*: These flow bottom-up from leaves to root,
+- *Synthesised Attributes*: These flow bottom-up from leaves to root,
   as in the `infer_type` example in the subsection (which computes types
   recursively from subnodes). Here:
   
-  - Leaves (e.g., `INT` in `factor()`) synthesize `{"type": "i32", "value": int(tok.value)}`.
+  - Leaves (e.g., `INT` in `factor()`) synthesise `{"type": "i32", "value": int(tok.value)}`.
 
   - Operators in `expr()` and `term()` combine child attributes (e.g., adding or multiplying
-    `"value"` from left and right subtrees) and propagate a new synthesized attribute upward.
+    `"value"` from left and right subtrees) and propagate a new synthesised attribute upward.
 
   - This enables constant folding (e.g., `10 + 5` becomes value 15), which is a classic
-    use of synthesized attributes for optimization during parsing.
+    use of synthesised attributes for optimisation during parsing.
 
 
 - *Inherited Attributes*: These flow top-down from parent to children, often for context
