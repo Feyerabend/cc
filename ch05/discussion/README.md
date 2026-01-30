@@ -32,7 +32,7 @@ reflection transforms isolated exercises into long-term understanding and helps 
 from a user of tools into a thinker in programming and theory.
 
 
-#### Example: From Code to Syntax as Learning by Construction
+### Example: From Code to Syntax as Learning by Construction
 
 The section on syntax has been intentionally reduced in comparison to other parts of
 the compilation process. This is not an omission, but a *methodological* choice. Instead
