@@ -49,7 +49,7 @@ If LLM will be used:
   or incomplete explanation from the LLM
 
 
-### Eample: Taching Floating Point
+### Eample: Teaching Floating Point
 
 Floating point is often the first moment where students discover that computers
 do not behave like mathematics. Until then, many assume that numbers in programs
