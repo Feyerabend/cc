@@ -1,6 +1,9 @@
 
 ## Attribute Grammar Concepts
 
+This code qualifies as an implementation of an attribute grammar, or to be more precisely,
+a parser that evaluates attributes in a manner consistent with attribute grammar principles.
+
 - *Semantic Rules Attached to Productions*: Attribute grammars extend context-free
   grammars by associating semantic rules with syntactic productions to compute
   attributes during parsing. In this code, the recursive descent parser methods
