@@ -24,3 +24,9 @@ for reasoning about program transformations, evaluation strategies, and
 correctness. Many compiler IRs and optimisation techniques can be understood
 as structured extensions or translations of lambda-calculus-based semantics.
 
+Here we introduce the lambda calculus primarily to demonstrate concepts beyond
+conventional parsing of imperative languages. But it also serves to show how
+lambda expressions can be represented, analysed, and ultimately transformed into
+executable form.
+
+
