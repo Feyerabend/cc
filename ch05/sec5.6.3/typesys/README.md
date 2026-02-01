@@ -127,7 +127,7 @@ x = 3.14;       // ERROR: cannot assign float to int
 #### Two-Phase Model
 
 1. Parse -> Build AST
-2. Type Check -> Validate att types (before execution)=
+2. Type Check -> Validate att types (before execution)
 
 #### Use Cases
 
