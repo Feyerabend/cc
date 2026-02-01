@@ -1,22 +1,25 @@
 
 ## Type Systems: Projects
 
+As we have learned, and will continue to see, *types* play a central role in
+programming and the design of programming languages.
+
 This project is an educational resource for understanding *type systems*
 in programming languages. It provides hands-on implementations of four
 fundamental typing approaches, allowing you to see how the same code behaves
 under different type system philosophies.
 
+Ideas introduced:
 - *Core Concepts*: Static vs dynamic typing, strong vs weak typing, type inference
 - *Implementation*: How type checkers, inference engines, and coercion systems work
 - *Practical Skills*: Reading compiler errors, designing APIs, choosing the right type system
 
-Languages:
+Languages used:
 - *Python* (`type_systems.py`): High-level implementations with detailed explanations
 - *C* (`type_systems.c`): Low-level perspective on types and memory
 
 
-
-The Type System Hierarchy:
+The Type System Hierarchy (examples):
 ```
 Dynamic Typing <> Type Inference <> Static Typing <> Strong Typing
                   + Coercion
@@ -53,7 +56,7 @@ Intermediate:
 7. Add new operators
 8. Extend type system (arrays, functions)
 
-Advanced:
+Advanced (you have to make the project plans):
 9. Implement Project 4 (Type Inference)
 10. Add polymorphism
 11. Study Hindley-Milner algorithm
@@ -281,9 +284,6 @@ z = x + y       # Result: 8.14
 - Implement implicit type conversions
 - Track and log coercions for debugging
 - Handle edge cases in numeric operations
-
-
-
 
 #### Background
 
@@ -599,7 +599,7 @@ class TypedSymbolTable:
         return self.symbols[name].type_
     
     def mark_initialized(self, name: str) -> None:
-        """Mark a variable as initialized."""
+        """Mark a variable as initialised."""
         if name in self.symbols:
             self.symbols[name].is_initialized = True
 ```
@@ -745,7 +745,7 @@ def check_assignment(self, node: AssignmentNode) -> None:
                     f"  Expression: {node.value}"
                 )
     
-    # Mark variable as initialized
+    # Mark variable as initialised
     self.symbol_table.mark_initialized(node.target)
 ```
 
@@ -770,7 +770,7 @@ class TypeErrorReporter:
         print(f"  {source_line}")
         
         # Point to the error location
-        # (This is simplified; real implementation would track positions)
+        # (This is simplified; real implementation would track positions: your task!)
         print(f"  {' ' * 10}^^^^^^^")
         
         print(f"  {str(error)}")
@@ -797,11 +797,11 @@ x = 3.14
 """
 # Expected:   Error: Cannot assign float to int variable 'x'
 
-# Test 3: Type mismatch in initialization
+# Test 3: Type mismatch in initialisation
 code_invalid2 = """
 int x = "hello"
 """
-# Expected:   Error: Cannot initialize int with string
+# Expected:   Error: Cannot initialise int with string
 
 # Test 4: Undefined variable
 code_invalid3 = """
@@ -1013,7 +1013,7 @@ string message = label + value
 
 *Difficulty*: *** Advanced  
 *Time*: 8-12 hours  
-*Goal*: Implement Hindley-Milner style type inference
+*Goal*: Implement Hindley-Milner style type inference (look it up!)
 
 #### Learning Objectives
 
@@ -1411,14 +1411,10 @@ Inferred types:
 
 
 
-### Additional Resources
+### Readings
 
-#### Recommended Reading
-1. *Types and Programming Languages* - Pierce
-2. *Advanced Topics in Types and Programming Languages* - Pierce (ed.)
-3. [Type Theory Study Group Materials](https://github.com/type-theory)
+- Pierce, B.C. (2002). *Types and programming languages*. [electronic resource] (1). MIT Press.
+- Benjamin C. Pierce (ed) & Pierce, B.C. (2005). *Advanced Topics in Types and Programming Languages* [electronic resource].
+- [Type Theory Study Group Materials](https://github.com/type-theory)
 
-#### Online Courses
-- [Programming Languages (Coursera)](https://www.coursera.org/learn/programming-languages)
-- [Types and Programming Languages (MIT)](https://ocw.mit.edu)
 
