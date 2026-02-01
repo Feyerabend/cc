@@ -4,10 +4,14 @@
 As we have learned, and will continue to see, *types* play a central role in
 programming and the design of programming languages.
 
+Would you like to learn a little more about *type systems*, a starter can be
+[Luca Cardelli](TYPESYS.md).
+
 This project is an educational resource for understanding *type systems*
 in programming languages. It provides hands-on implementations of four
 fundamental typing approaches, allowing you to see how the same code behaves
 under different type system philosophies.
+
 
 Ideas introduced:
 - *Core Concepts*: Static vs dynamic typing, strong vs weak typing, type inference
