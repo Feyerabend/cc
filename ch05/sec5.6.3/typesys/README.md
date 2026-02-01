@@ -45,13 +45,13 @@ Project Difficulty Guide:
 
 
 Beginner:
-1. Run all demonstrations
-2. Modify code examples
-3. Understand error messages
-4. Compare outputs
+    1. Run all demonstrations
+    2. Modify code examples
+    3. Understand error messages
+    4. Compare outputs
 
 Intermediate:
-5. Implement Project 1 (Type Coercion)
+    5. Implement Project 1 (Type Coercion)
 6. Implement Project 2 (Static Checking)
 7. Add new operators
 8. Extend type system (arrays, functions)
