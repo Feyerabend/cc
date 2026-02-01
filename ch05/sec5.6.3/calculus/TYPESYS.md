@@ -1,7 +1,7 @@
 
 ### Introduction to Type Systems
 
-- [Type Systems](http://lucacardelli.name/papers/typesystems.pdf)
+- [Luca Cardelli: Type Systems](http://lucacardelli.name/papers/typesystems.pdf)
 
 An introduction I found valuable reading about type systems many years ago is Luca Cardelli's
 paper "Type Systems" (from 1996). You might find it interesting too. It explores the formal

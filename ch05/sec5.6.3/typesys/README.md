@@ -5,7 +5,7 @@ As we have learned, and will continue to see, *types* play a central role in
 programming and the design of programming languages.
 
 Would you like to learn a little more about *type systems*, a starter can be
-[Luca Cardelli](TYPESYS.md).
+an introduction into [lambda calculus and type systems](./../calculus/).
 
 This project is an educational resource for understanding *type systems*
 in programming languages. It provides hands-on implementations of four
