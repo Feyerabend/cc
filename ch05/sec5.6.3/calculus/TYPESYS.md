@@ -181,3 +181,55 @@ For hands-on: Implement a tiny type checker in Python (use pattern matching for 
 If this level clicks, explore Cardelli's sections on higher-order types or bounded quantification--they
 build on these ideas for real-world systems like ML or Java.
 
+
+
+### Addition to Cardelli
+
+While Cardelli's paper provides a strong foundation in type safety, polymorphism, and inference,
+the code examples in this repository extend these ideas with practical features common in functional
+languages like ML or Haskell. These additions address recursion, algebraic data types (ADTs),
+pattern matching, and explicit polymorphism, enabling more expressive and real-world programming
+while maintaining soundness.
+
+
+#### Recursive Types and Functions
+
+Recursive types (e.g., μ α. τ) allow defining infinite structures like lists or trees directly in
+the type system, preventing type errors in self-referential data. In `recur.py`, we implement μ-types
+via `RecursiveType` and support recursive functions with `LetRec` and `Fix` combinators. For instance, 
+actorial or list folds infer types like `Int → Int` or `(α → β → β) → β → List α → β`, handling occurs
+checks to avoid infinite types during unification. This builds on Cardelli's unityped view by safely
+embedding untyped recursion (e.g., Y-combinator) into typed systems.
+
+
+#### Hindley-Milner Type Inference in Detail
+
+Cardelli touches on inference, but the Hindley-Milner (HM) algorithm (Algorithm W) provides a concrete
+mechanism for polymorphic inference without annotations. In `hm.py`, we detail unification (`unify` for
+equating types via substitutions), generalisation (`generalize` for ∀-quantification), and instantiation,
+inferring types like `α → β → α` for constants. This adds decidable polymorphism to simply typed lambda
+calculus (`lambda.py`), with fresh variables and composition ensuring efficiency and safety.
+
+
+#### Algebraic Data Types and Pattern Matching
+
+ADTs like sums (e.g., Maybe α = None | Some α) and products (e.g., Pair α β) extend polymorphism for
+structured data, with constructors and destructors. `generics.py` and `recur.py` use `TypeApplication`
+for generics and `Match` for exhaustive pattern matching, inferring unified types across cases
+(e.g., `Maybe Int → Int` for unwrap-or-zero). This enhances Cardelli's record/subtyping focus by
+incorporating ML-style variants, ensuring type safety in data decomposition.
+
+
+#### System F: Explicit Polymorphism
+
+For finer control, System F adds explicit universal types (∀α. τ) with type abstraction
+(`TypeAbs` as Λα. e) and application (`TypeInstantiation` as e [τ]). In `generics.py`,
+this allows instantiating generics like `∀α. α → α` to `Int → Int`, contrasting HM's
+implicit style. It addresses Cardelli's higher-order types, enabling rank-n polymorphism
+while preserving decidability in inference.
+
+These features, demonstrated through the Python implementations, show how type theory
+evolves for practical use. For much deeper proofs, consult Pierce's
+*Types and Programming Languages* (TAPL), Chapters 11 (ADTs), 22 (HM), and 23-24
+(System F and recursion).
+
