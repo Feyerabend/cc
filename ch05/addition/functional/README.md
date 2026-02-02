@@ -224,3 +224,5 @@ allowing resumable computations.
   - *Extension Potential:* Add multi-effect support (e.g., IO + Logging). Inspire from libs
     like `python-effect` or research papers on free monads.
 
+Going even further, build a compiler which implements some of the concepts from modern
+functional languages ..
