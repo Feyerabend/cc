@@ -33,7 +33,7 @@ mathematical framework to prove that a program satisfies its specification.
 1. *Correctness Guarantees*: Mathematical proof that code does what it claims
 2. *Bug Prevention*: Find errors before runtime through static analysis
 3. *Documentation*: Formal specifications serve as precise documentation
-4. *Compiler Optimizations*: Enables aggressive optimizations with correctness guarantees
+4. *Compiler Optimisations*: Enables aggressive optimisations with correctness guarantees
 5. *Critical Systems*: Essential for safety-critical software (aerospace, medical, finance)
 
 
@@ -136,8 +136,8 @@ To verify sequential statements:
 
 ```
 {P} S1 {Q}    {Q} S2 {R}
-------------------------
-    {P} S1; S2 {R}
+------------------------------
+       {P} S1; S2 {R}
 ```
 
 *Example*:
@@ -177,7 +177,7 @@ The most complex rule - requires finding a *loop invariant* I:
 ```
 
 *Verification Obligations*:
-1. *Initialization*: Precondition implies invariant: `P → I`
+1. *Initialisation*: Precondition implies invariant: `P → I`
 2. *Preservation*: Invariant + condition implies invariant after body: `{I ∧ B} S {I}`
 3. *Termination*: Eventually ¬B holds (for total correctness)
 4. *Postcondition*: Invariant + ¬condition implies postcondition: `I ∧ ¬B → Q`
@@ -200,7 +200,7 @@ while (x > 0) {
 ```
 
 *Proof*:
-1. *Initialization*: `x = 10 ∧ y = 0` → `x + y = 10 ∧ x ≥ 0` ✓
+1. *Initialisation*: `x = 10 ∧ y = 0` → `x + y = 10 ∧ x ≥ 0` ✓
 2. *Preservation*: If `x + y = 10 ∧ x ≥ 0 ∧ x > 0` before body, then `(x-1) + (y+1) = 10 ∧ (x-1) ≥ 0` after ✓
 3. *Postcondition*: `x + y = 10 ∧ x ≥ 0 ∧ ¬(x > 0)` → `x = 0 ∧ y = 10` ✓
 
@@ -210,8 +210,8 @@ Allows adapting preconditions and postconditions:
 
 ```
 P' → P    {P} S {Q}    Q → Q'
------------------------------
-        {P'} S {Q'}
+------------------------------------
+             {P'} S {Q'}
 ```
 
 *Usage*: Strengthen preconditions (make them more restrictive) or weaken postconditions (make them more general).
@@ -222,7 +222,7 @@ For procedures with contracts:
 
 ```
         {requires} body {ensures}
---------------------------------------------
+--------------------------------------------------------
 {P ∧ P → requires} call proc() {ensures → Q}
 ```
 
@@ -242,7 +242,7 @@ Modern compilers can include *verification passes* that:
 - *Check array bounds*: Prove all array accesses are within bounds
 - *Detect null pointer dereferences*: Prove pointers are non-null before use
 - *Verify integer overflow*: Prove arithmetic stays within type bounds
-- *Ensure initialization*: Prove all variables are initialized before use
+- *Ensure initialisation*: Prove all variables are initialised before use
 
 *Example* (Simplified Compiler Pass):
 
@@ -293,7 +293,7 @@ Invariant: I = (∀j < i: a[j] = x ∧ i ≤ n)
 
 {I ∧ i < n} a[i] = x; i++ {I}  ✓ Proven
 
-Therefore optimization preserves correctness.
+Therefore optimisation preserves correctness.
 ```
 
 __Dead Code Elimination__
@@ -421,7 +421,7 @@ def array_sum(arr, n):
 ```
 
 *Verification*:
-1. *Initialization*: `i = 0 ∧ sum = 0` → `sum = Σ([]) ∧ 0 ≤ 0 ≤ n` ✓
+1. *Initialisation*: `i = 0 ∧ sum = 0` → `sum = Σ([]) ∧ 0 ≤ 0 ≤ n` ✓
 2. *Preservation*: Exercise for reader (use induction)
 3. *Postcondition*: `i = n ∧ sum = Σ(arr[0..i-1])` → `sum = Σ(arr[0..n-1])` ✓
 
