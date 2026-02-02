@@ -84,7 +84,7 @@ In addition to the core material of the first edition, the second edition includ
 
 
 
-![Modern Compilers](./../../assets/image/appel.png)
+![Modern Compilers](./../../assets/image/appel.png) ![Modern Compiler Implementation in Java](./../../assets/image/modern.png)
 
 #### Modern Compiler Implementation
 
