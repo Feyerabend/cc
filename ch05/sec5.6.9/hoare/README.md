@@ -136,8 +136,8 @@ To verify sequential statements:
 
 ```
 {P} S1 {Q}    {Q} S2 {R}
-------------------------------
-       {P} S1; S2 {R}
+------------------------
+     {P} S1; S2 {R}
 ```
 
 *Example*:
@@ -210,8 +210,8 @@ Allows adapting preconditions and postconditions:
 
 ```
 P' → P    {P} S {Q}    Q → Q'
-------------------------------------
-             {P'} S {Q'}
+-----------------------------
+         {P'} S {Q'}
 ```
 
 *Usage*: Strengthen preconditions (make them more restrictive) or weaken postconditions (make them more general).
@@ -222,7 +222,7 @@ For procedures with contracts:
 
 ```
         {requires} body {ensures}
---------------------------------------------------------
+--------------------------------------------
 {P ∧ P → requires} call proc() {ensures → Q}
 ```
 
