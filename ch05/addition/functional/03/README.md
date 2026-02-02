@@ -1,5 +1,5 @@
 
-### Algebraic Data Types & Type Classes
+## Algebraic Data Types & Type Classes
 
 This module extends the functional core with advanced type system
 features from languages like Haskell, Scala, and ML.
