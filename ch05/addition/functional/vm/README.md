@@ -114,7 +114,7 @@ python funlang_repl.py
 ```
 
 
-### REPL Commands
+__REPL Commands__
 
 ```
 :help              Show help
