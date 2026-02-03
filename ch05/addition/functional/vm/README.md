@@ -4,6 +4,11 @@
 *FunLang* is a purely functional programming language (with ML-inspired syntax),
 compiling to a custom virtual machine built on functional programming primitives.
 
+Early functional languages (exmplified by [interpreter](./../../interpreter/))
+maximised expressive freedom. Later languages maximise semantic guarantees,
+and that reflects a deep change in how we think about correctness, responsibility,
+but also the role of the compiler.
+
 - *Pure functional* - Immutable data, no side effects
 - *First-class functions* - Functions are values
 - *Algebraic data types* - Maybe, Result, Lists
