@@ -225,4 +225,4 @@ allowing resumable computations.
     like `python-effect` or research papers on free monads.
 
 Going even further, build a compiler which implements some of the concepts from modern
-functional languages ..
+functional languages .. start with e.g. the [funlang vm](./vm/).
