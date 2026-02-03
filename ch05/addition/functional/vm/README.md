@@ -54,6 +54,13 @@ pattern     ::= _
               | Err ( pattern )
 ```
 
+__Reserved Words__: Reserved words cannot be used as identifiers:
+
+```
+fn let in if then else case of
+True False Some Nothing Ok Err
+```
+
 
 __Type System__: FunLang is currently dynamically typed.
 Runtime values include:
@@ -105,6 +112,58 @@ python funlang_repl.py
 >>> 10 |> add 5 |> fn x -> x * 2
 => 30
 ```
+
+
+### REPL Commands
+
+```
+:help              Show help
+:quit, :q, :exit   Exit REPL
+:clear             Clear screen
+:env               Show all variables
+:reset             Reset environment
+:load <file>       Load and execute file
+:debug on|off      Toggle debug mode
+```
+
+Usage:
+
+```
+>>> let double = fn x -> x * 2
+
+>>> double 21
+=> 42
+
+>>> :env
+Environment:
+  double = <closure x>
+
+>>> 5 |> double |> fn x -> x + 1
+=> 11
+```
+
+---
+
+### Use From Python
+
+```python
+from funlang_parser import run_funlang, compile_funlang
+from functional_vm import FunctionalVM
+
+# Quick run
+result = run_funlang("2 + 3")
+print(result)  # => 5
+
+# Compile to AST
+ast = compile_funlang("fn x -> x * 2")
+
+# Run with VM
+vm = FunctionalVM(debug=False)
+result = vm.run(ast)
+```
+
+
+
 
 ---
 
@@ -446,69 +505,6 @@ try:
     result = run_funlang("let x = ")
 except SyntaxError as e:
     print(f"Parse error: {e}")
-```
-
----
-
-### REPL Commands
-
-```
-:help              Show help
-:quit, :q, :exit   Exit REPL
-:clear             Clear screen
-:env               Show all variables
-:reset             Reset environment
-:load <file>       Load and execute file
-:debug on|off      Toggle debug mode
-```
-
-Usage:
-
-```
->>> let double = fn x -> x * 2
-
->>> double 21
-=> 42
-
->>> :env
-Environment:
-  double = <closure x>
-
->>> 5 |> double |> fn x -> x + 1
-=> 11
-```
-
----
-
-### Use From Python
-
-```python
-from funlang_parser import run_funlang, compile_funlang
-from functional_vm import FunctionalVM
-
-# Quick run
-result = run_funlang("2 + 3")
-print(result)  # => 5
-
-# Compile to AST
-ast = compile_funlang("fn x -> x * 2")
-
-# Run with VM
-vm = FunctionalVM(debug=False)
-result = vm.run(ast)
-```
-
-
-
----
-
-__Reserved Words__
-
-Reserved words cannot be used as identifiers:
-
-```
-fn let in if then else case of
-True False Some Nothing Ok Err
 ```
 
 ---
