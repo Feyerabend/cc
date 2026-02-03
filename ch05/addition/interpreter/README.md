@@ -14,6 +14,9 @@ The core theme across all sources is the implementation of a foundational Lisp, 
 Lisp (specifically Scheme-like), interpreter in C. The sources progressively build upon this
 foundation, introducing some key Lisp concepts and addressing limitations.
 
+The functional languages have seen a sort of return, the [modern view] differs from this more
+historical stance.
+
 
 ### Key Concepts and Ideas
 
