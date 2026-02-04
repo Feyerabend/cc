@@ -52,13 +52,13 @@ Cardelli emphasises that even "untyped" languages can be seen as having a single
 
 3. *Strong vs. Weak Typing*: 
    - *Strong Typing*: Strictly enforces types--no conversions. If something's not compatible,
-     it errors out (e.g., no automatic "5" + 3 in strongly typed langs).
+     it errors out (e.g., no automatic "5" + 3 in strongly typed languages).
    - *Weak Typing*: Allows implicit conversions, like in C where an int might quietly become a float.
      Cardelli warns that weak typing can lead to subtle bugs, as it relaxes rules too much.
 
 4. *Polymorphism*: This is a way of saying "types that work in multiple ways." 
    - *Parametric Polymorphism*: Like generics in Java--a list that can hold any type, as long as it's consistent (e.g., List<T>).
-   - *Subtype Polymorphism*: In object-oriented langs, a subclass can stand in for its parent (e.g., a "Cat" is a subtype of "Animal").
+   - *Subtype Polymorphism*: In object-oriented languages, a subclass can stand in for its parent (e.g., a "Cat" is a subtype of "Animal").
    - Formal touch: Cardelli uses examples from typed lambda calculus, like ∀α. α → α
      (a function that takes any type α and returns the same type, like an identity function).
 
@@ -162,7 +162,7 @@ Cardelli's insight: Untyped languages aren't type-less; they're *unityped*—eve
 say "Any" or "Dyn" (dynamic). This lets us embed untyped into typed systems.
 - Embedding: Map untyped `λx.M` to `λx:Dyn. M`, with implicit checks.
 - Reasoning: Type reconstruction algorithms (like Hindley-Milner) can infer types for untyped code if possible,
-  failing otherwise. This bridges dynamic langs (Python) to static ones (via gradual typing).
+  failing otherwise. This bridges dynamic languages (Python) to static ones (via gradual typing).
 
 
 #### Challenges and Extensions
@@ -197,7 +197,7 @@ while maintaining soundness.
 Recursive types (e.g., μ α. τ) allow defining infinite structures like lists or trees directly in
 the type system, preventing type errors in self-referential data. In `recur.py`, we implement μ-types
 via `RecursiveType` and support recursive functions with `LetRec` and `Fix` combinators. For instance, 
-actorial or list folds infer types like `Int → Int` or `(α → β → β) → β → List α → β`, handling occurs
+factorial or list folds infer types like `Int → Int` or `(α → β → β) → β → List α → β`, handling occurs
 checks to avoid infinite types during unification. This builds on Cardelli's unityped view by safely
 embedding untyped recursion (e.g., Y-combinator) into typed systems.
 
