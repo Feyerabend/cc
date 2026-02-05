@@ -148,5 +148,7 @@ you'd need to program without it. The AI doesn't reduce the knowledge requiremen
 hope--it shifts *where* you spend your time, from writing to reviewing and architecting.
 
 
-*Case in point: [example](./example/) shows that an LLM can get things wrong, and you as a human might
-have to spot such errors.*
+*Case in point: An [example](./new/) shows that an LLM can get things wrong,
+and you as a human might have to spot such errors, even when you done quite
+right to [start](./original/) with?*
+
