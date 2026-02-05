@@ -24,7 +24,7 @@ A new form of craft emerges: *the craft of orchestration and curation*. The "mat
 The *tactile relationship with code* diminishes.
 
 
-#### The "Scientific" Approach Under LLMs
+### The "Scientific" Approach Under LLMs
 
 The scientific philosophy actually *gains power* in some ways but faces different challenges.
 
@@ -51,30 +51,30 @@ testing the LLM's code-generation capabilities, developing empirical knowledge a
 *what prompts produce what qualities of code* for different problem types.
 
 
-#### A New Synthesis?
+### A New Synthesis?
 
 We might see a *three-phase methodology* emerge:
 
-### Phase 1: Empirical Exploration (Scientific + LLM)
+#### Phase 1: Empirical Exploration (Scientific + LLM)
 - Generate multiple approaches via LLM
 - Benchmark and measure systematically  
 - Identify promising directions through data
 - Build empirical understanding of the problem space
 
-### Phase 2: Craft Refinement (Hybrid)
+#### Phase 2: Craft Refinement (Hybrid)
 - Deep reading and understanding of generated code
 - Holistic integration and architectural coherence
 - Manual refinement of critical paths
 - Development of "feel" for the system through review and modification
 
-### Phase 3: Validated Integration (Scientific)
+#### Phase 3: Validated Integration (Scientific)
 - Rigorous testing of the integrated whole
 - Performance profiling and optimization
 - Documentation of what works and why
 - Regression testing to prevent degradation
 
 
-#### The Uncomfortable Questions
+### The Uncomfortable Questions
 
 *For craft:* Can you be a craftsperson if you didn't make the thing? Is there craft in *selection*
 and *refinement* rather than *creation*? The Shaker furniture maker chooses wood carefully and
@@ -84,7 +84,7 @@ finishes it beautifully--but they still cut and joined it themselves.
 fully understand), is it science or just empiricism? You have measurements but potentially less theory.
 
 
-#### What Knowledge Do You Actually Need?
+### What Knowledge Do You Actually Need?
 
 Going back to your earlier challenge, to execute any of these approaches with LLMs, you need:
 1. *Architectural knowledge* -- to structure the problem for the LLM
@@ -97,7 +97,7 @@ The LLM doesn't eliminate these requirements. It might even *intensify* them bec
 need the judgment to evaluate code you didn't write, which is arguably harder than writing it yourself.
 
 
-#### A Completely New Philosophy?
+### A Completely New Philosophy?
 
 Perhaps what emerges is *"Programming as Curation"*:
 - Framing problems precisely
