@@ -26,7 +26,8 @@ than syntax and implementation details.
 *New aspects of craftsmanship might emerge:*
 - Skill in evaluating and improving AI-generated code
 - Ability to break problems into AI-suitable vs. human-suitable components  
-- Understanding when AI solutions are "good enough" versus when human refinement is essential
+- Understanding when AI solutions are "good enough" versus when human refinement
+  is essential
 - Developing a refined sense for what AI can and cannot do well
 
 The core question: does craftsmanship require direct creation,
@@ -146,3 +147,6 @@ To effectively use AI as a programming tool, you probably, just guessing, need 7
 you'd need to program without it. The AI doesn't reduce the knowledge requirement as much as we might
 hope--it shifts *where* you spend your time, from writing to reviewing and architecting.
 
+
+*Case in point: [example](./example/) shows that an LLM can get things wrong, and you as a human might
+have to spot such errors.*
