@@ -64,7 +64,7 @@ __How deep must this knowledge go?__
 Here's where it gets interesting. You might not need to know *how to implement* a particular sorting algorithm,
 but you need to know:
 - That choice of algorithm matters for your data characteristics
-- How to recognize when the AI chose poorly
+- How to recognise when the AI chose poorly
 - What the performance implications are
 - How it interacts with the rest of your system
 
@@ -96,10 +96,10 @@ You can't get this from reading--you need to have *experienced* the pain of choo
 You need to have watched a program crawl because you sorted a million items with bubble sort.
 
 
-__To recognize when AI chose poorly__
+__To recognise when AI chose poorly__
 
 You absolutely need to read the actual code it generated. Which means:
-- Language fluency: understanding idioms, recognizing anti-patterns, spotting subtle bugs
+- Language fluency: understanding idioms, recognising anti-patterns, spotting subtle bugs
 - Knowledge of standard library implementations: knowing that Python's `list.sort()` is
   Timsort (stable, adaptive), while a naive implementation might not be
 - Ability to trace execution mentally: "what happens when this input is empty?
@@ -111,7 +111,7 @@ __To understand performance implications__
 This requires multi-layered knowledge:
 - *Algorithm theory*: Big-O complexity
 - *Implementation details*: Does this language use reference counting or GC? Are these copies or views? 
-- *System knowledge*: CPU cache behavior, disk I/O, network latency, database query plans
+- *System knowledge*: CPU cache behaviour, disk I/O, network latency, database query plans
 - *Empirical experience*: Having actually profiled code and been surprised by what's slow
 
 
@@ -129,7 +129,7 @@ __So what's the minimum viable knowledge?__
 Here's my revised position: You need *layered understanding*:
 
 1. *Theoretical foundation*: Algorithm complexity, data structures, design patterns--the conceptual toolkit
-2. *Language competence*: Ability to read code fluently, recognize idioms and anti-patterns,
+2. *Language competence*: Ability to read code fluently, recognise idioms and anti-patterns,
    understand the execution model
 3. *Empirical intuition*: Experience-based sense of what performs well, what breaks, what's
    maintainable--gained through trial and error
