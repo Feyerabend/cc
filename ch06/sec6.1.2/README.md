@@ -21,7 +21,6 @@ A new form of craft emerges: *the craft of orchestration and curation*. The "mat
 - The art of code review and refinement
 - Architectural judgment about how pieces should fit
 
-But this feels qualitatively different -- more like a conductor than a musician, a curator than a painter.
 The *tactile relationship with code* diminishes.
 
 
