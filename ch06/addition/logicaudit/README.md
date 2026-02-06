@@ -239,11 +239,6 @@ Software freedom with social responsibility
 
 *Shared concern: Responsibility for what we build*
 
-*[Developer Dignity Manifesto](https://www.developerdignity.com/)*
-Treating developers as humans first
-
-*Compatible: Good working conditions enable rigorous thinking*
-
 #### Academic/Formal
 
 *[The Formal Methods Manifesto](https://www.microsoft.com/en-us/research/publication/formal-methods-manifesto/)* (Various authors)
