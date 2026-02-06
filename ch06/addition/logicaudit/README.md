@@ -372,27 +372,6 @@ Your framework will change.
 4. Build a verified implementation
 5. Write about what you learned
 
-#### Join the Conversation
-
-*Communities:*
-- [Alloy Community](https://github.com/AlloyTools)
-- [TLA+ Community](https://groups.google.com/g/tlaplus)
-- [Hypothesis Discord](https://hypothesis.works/community/)
-- [Type Theory Discord](https://discord.gg/type-theory)
-- [Formal Methods Slack](https://formalmethod.slack.com/)
-
-*Write:*
-- Blog about your experiments
-- Share your manifestos
-- Critique this one
-- Propose better approaches
-
-*Build:*
-- Better verification tools
-- IDE integrations
-- LLM prompting frameworks
-- Educational materials
-
 
 
 ### Take This Project Further ..
