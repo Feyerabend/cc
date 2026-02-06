@@ -101,8 +101,8 @@ need the judgment to evaluate code you didn't write, which is arguably harder th
 
 Perhaps what emerges is *"Programming as Curation"*:
 - Framing problems precisely
-- Generating and evaluating multiple solutions
-- Synthesising the best elements from various approaches  
+- Generating and evaluating multiple solutions (one path, another could be constraints directly)
+- Synthesising the best elements from various approaches  (depending on the above)
 - Ensuring coherence and quality across AI-generated and human-written code
 - Building and maintaining understanding of a system you orchestrated but didn't entirely author
 
