@@ -265,23 +265,39 @@ borrowing/reservation rules):
 
 ```mermaid
 stateDiagram-v2
-    [*] --> w0 : start (empty library)
+    [*] --> w0
 
-    w0 : No books borrowed or reserved
     w0 --> w1 : u1 borrows b1
     w0 --> w2 : u1 reserves b2
 
-    w1 : b1 borrowed by u1 (due: 30 days)
-    w1 --> w3 : u2 borrows b2 (VIP exception)
+    w1 --> w3 : u2 borrows b2 (VIP)
     w1 --> w0 : u1 returns b1
 
-    w2 : b2 reserved by u1, b1 available
     w2 --> w1 : u1 cancels reservation
     w2 --> w0 : reservation expires
 
-    w3 : b1 borrowed by u1, b2 borrowed by u2 (VIP)
     w3 --> w1 : u2 returns b2
     w3 --> w0 : both return books
+
+    note right of w0
+        Empty library
+        No loans or reservations
+    end note
+
+    note right of w1
+        b1 borrowed by u1
+        Due in 30 days
+    end note
+
+    note right of w2
+        b2 reserved by u1
+        b1 available
+    end note
+
+    note right of w3
+        b1 borrowed by u1
+        b2 borrowed by u2 (VIP)
+    end note
 ```
 
 *How to read*:
