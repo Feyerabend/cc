@@ -241,11 +241,6 @@ Software freedom with social responsibility
 
 #### Academic/Formal
 
-*[The Formal Methods Manifesto](https://www.microsoft.com/en-us/research/publication/formal-methods-manifesto/)* (Various authors)
-Rigorous specification and verification
-
-*Direct lineage: We apply formal methods to LLM-generated code*
-
 *[The Curry-Howard Correspondence](https://en.wikipedia.org/wiki/Curry%E2%80%93Howard_correspondence)*
 Programs are proofs, types are propositions
 
