@@ -171,69 +171,89 @@ We recommend reading these diverse perspectives:
 
 *[The Agile Manifesto](https://agilemanifesto.org/)* (2001)
 "Individuals and interactions over processes and tools"
+
 *How we relate: Values flexibility, iteration, collaboration*
+
 *How we differ: We add formal rigor to agile's flexibility*
+
 
 *[The Reactive Manifesto](https://www.reactivemanifesto.org/)* (2013)
 "Responsive, Resilient, Elastic, Message-Driven"
+
 *How we relate: Shared concern for system properties*
+
 *How we differ: We focus on normative correctness, they focus on runtime behaviour*
+
 
 *[Software Craftsmanship Manifesto](http://manifesto.softwarecraftsmanship.org/)* (2009)
 "Not only working software, but also well-crafted software"
+
 *How we relate: Deep respect for quality and mastery*
+
 *How we differ: We argue curation can be craft, they emphasize direct creation*
+
 
 #### Specific Practice Manifestos
 
 *[The Twelve-Factor App](https://12factor.net/)* (2011)
 Principles for building software-as-a-service
+
 *Complements our approach: Good architecture + formal verification = trustworthy systems*
 
 *[Test-Driven Development](http://www.extremeprogramming.org/rules/testfirst.html)*
 Write tests before code
+
 *We extend: Tests specify norms → LLM generates → tests verify*
 
 *[Design by Contract](https://www.eiffel.com/values/design-by-contract/)* (Bertrand Meyer)
 Preconditions, postconditions, invariants
+
 *Direct ancestor: We formalize contracts as norms over admissible worlds*
 
 #### Philosophical/Cultural
 
 *[The Cathedral and the Bazaar](http://www.catb.org/~esr/writings/cathedral-bazaar/)* (Eric S. Raymond, 1999)
 On open source development
+
 *Orthogonal: We care about verification method, not development model*
 
 *[Unix Philosophy](https://en.wikipedia.org/wiki/Unix_philosophy)*
 "Do one thing well", "Composition over monoliths"
+
 *We embrace: Compositional verification, modular reasoning*
 
 *[Hammock-Driven Development](https://www.youtube.com/watch?v=f84n5oFoZBc)* (Rich Hickey)
 Think before you code
+
 *We amplify: Specify before you generate*
 
 #### Contemporary/Recent
 
 *[Indie Web Manifesto](https://indieweb.org/principles)*
 Own your data, scratch your own itch
+
 *Different domain: We focus on verification, they focus on independence*
 
 *[Ethical Source](https://ethicalsource.dev/)*
 Software freedom with social responsibility
+
 *Shared concern: Responsibility for what we build*
 
 *[Developer Dignity Manifesto](https://www.developerdignity.com/)*
 Treating developers as humans first
+
 *Compatible: Good working conditions enable rigorous thinking*
 
 #### Academic/Formal
 
 *[The Formal Methods Manifesto](https://www.microsoft.com/en-us/research/publication/formal-methods-manifesto/)* (Various authors)
 Rigorous specification and verification
+
 *Direct lineage: We apply formal methods to LLM-generated code*
 
 *[The Curry-Howard Correspondence](https://en.wikipedia.org/wiki/Curry%E2%80%93Howard_correspondence)*
 Programs are proofs, types are propositions
+
 *Foundation: We use types to encode norms*
 
 #### What We Learn From These
