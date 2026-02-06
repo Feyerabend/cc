@@ -7,7 +7,7 @@
 
 Code reviews become *absolutely essential* but fundamentally different:
 - Previously: reviewing human-written code for bugs, style, logic
-- With LLMs: *validating AI output* — checking for subtle bugs,
+- With LLMs: *validating AI output*--checking for subtle bugs,
   security issues, inappropriate patterns, and verifying it actually
   solves the problem correctly
 
@@ -18,7 +18,7 @@ Are there hidden assumptions? Does this integrate properly with our system?"
 - *Human-AI pairing*: one person prompting, another reviewing output in real-time
 - *Human-human pairing*: both working with AI, but focused on architectural
   decisions and validation rather than typing code
-- The "navigator" role intensifies — less about catching typos, more about
+- The "navigator" role intensifies--less about catching typos, more about
   strategic oversight
 
 *Future:* Even more critical than before, but requires new skills in AI output evaluation.
@@ -31,19 +31,19 @@ Are there hidden assumptions? Does this integrate properly with our system?"
 This one gets weird:
 - Refactoring assumes you understand the code intimately enough to improve it
 - But if LLM generated it, do you have that understanding?
-- You could ask the LLM to refactor its own code — but does that count as craftsmanship?
+- You could ask the LLM to refactor its own code--but does that count as "craftsmanship"?
 
 *Two scenarios emerge:*
 
 1. *Shallow refactoring*: "This generated code is messy, regenerate it better"
-   — fast but doesn't build understanding
+   -- fast but doesn't build understanding
 2. *Deep refactoring*: Manually reworking AI-generated code to truly understand and improve it
-   — this might be where real learning happens
+   -- this might be where real learning happens
 
 *The risk:* Developers skip refactoring entirely because "it works, and I didn't write it anyway,
 so why invest the effort to understand it deeply?"
 
-*Future:* Could split into two camps — those who use LLMs to infinitely regenerate until
+*Future:* Could split into two camps--those who use LLMs to infinitely regenerate until
 "good enough," versus those who manually refactor AI output as a learning/quality practice.
 The second group maintains craft skills; the first doesn't.
 
@@ -138,7 +138,7 @@ Retrospectives need to examine different questions:
 *The learning loop changes:*
 You're not just learning from your code; you're learning from your *interaction with AI*.
 
-*Future:* Retrospectives become more meta — reflecting on the human-AI collaboration process,
+*Future:* Retrospectives become more meta--reflecting on the human-AI collaboration process,
 not just the code produced.
 
 
@@ -172,8 +172,8 @@ messy code. They learn to prompt and review, but do they learn to
 
 *Future:* Mentoring splits into two tracks:
 1. *Fundamentals track*: Teaching core CS concepts, algorithms, system design
-   *without* LLMs initially — building the foundation needed to evaluate AI output
-2. *AI-augmented track**: Teaching effective LLM collaboration — but only after foundations are solid
+   *without* LLMs initially--building the foundation needed to evaluate AI output
+2. *AI-augmented track**: Teaching effective LLM collaboration--but only after foundations are solid
 
 
 
