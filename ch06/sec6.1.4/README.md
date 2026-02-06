@@ -173,7 +173,7 @@ messy code. They learn to prompt and review, but do they learn to
 *Future:* Mentoring splits into two tracks:
 1. *Fundamentals track*: Teaching core CS concepts, algorithms, system design
    *without* LLMs initially — building the foundation needed to evaluate AI output
-2. *AI-augmented track**: Teaching effective LLM collaboration — but only after foundations are solid
+2. *AI-augmented track*: Teaching effective LLM collaboration — but only after foundations are solid
 
 
 
