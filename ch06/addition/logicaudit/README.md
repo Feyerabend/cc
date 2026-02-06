@@ -336,7 +336,6 @@ Your framework will change.
 *Type Theory:*
 - *Types and Programming Languages* by Pierce
 - *Programming in Haskell* by Hutton
-- [Dependent Types in Idris](https://www.idris-lang.org/docs/current/)
 - *The Little Typer* by Friedman & Christiansen
 
 *Deontic Logic:*
