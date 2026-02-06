@@ -96,7 +96,7 @@ This is deeply problematic:
 But it's less embodied, more abstract. This might be the biggest loss for the craft philosophy.
 
 
-### Tool Proficiency and Customization
+### Tool Proficiency and Customisation
 
 *Completely Reshapes*
 

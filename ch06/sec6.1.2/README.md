@@ -42,7 +42,7 @@ The scientific philosophy actually *gains power* in some ways but faces differen
   but less understanding of *why* it performs as it does
 - *Reproducibility* -- LLM outputs vary; the same prompt may yield different implementations
 - *Confounding variables* -- is poor performance due to the algorithm,
-  the specific implementation, or an LLM artifact?
+  the specific implementation, or an LLM artefact?
 
 __What might evolve__
 
@@ -69,7 +69,7 @@ We might see a *three-phase methodology* emerge:
 
 #### Phase 3: Validated Integration (Scientific)
 - Rigorous testing of the integrated whole
-- Performance profiling and optimization
+- Performance profiling and optimisation
 - Documentation of what works and why
 - Regression testing to prevent degradation
 
