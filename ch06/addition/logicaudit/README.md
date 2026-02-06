@@ -3,7 +3,6 @@
 
 > *A framework for trustworthy software in the age of machine-generated code*
 
-
 ### What This Is
 
 This repository presents *Logic Auditing*--a discipline for ensuring that AI-generated
