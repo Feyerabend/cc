@@ -21,7 +21,7 @@ The old model breaks: *write code -> understand through writing -> maintain what
 
 The new reality: *describe intent -> machine generates -> ??? -> hope it works*.
 
-That middle step—the ???—is where everything fails or succeeds.
+That middle step--the ???--is where everything fails or succeeds.
 
 *We need a new discipline.*
 
@@ -44,7 +44,7 @@ And deeper: *"Can we even tell?"*
 - The cost of undetected errors escalates with deployment scale
 
 *The traditional answer fails:*
-"Just review it carefully"—but how? By what standard? With what tools?
+"Just review it carefully"--but how? By what standard? With what tools?
 Human code review catches perhaps 60% of defects. For AI-generated code with no implementation intuition, likely less.
 
 *We need formal foundations.*
@@ -66,14 +66,14 @@ Human code review catches perhaps 60% of defects. For AI-generated code with no 
 
 *This is not new. We've been doing this for 60 years.*
 
-What's new: machines generating code at scale that must satisfy these constraints—and the inversion of the bottleneck from generation to verification.
+What's new: machines generating code at scale that must satisfy these constraints--and the inversion of the bottleneck from generation to verification.
 
 
 #### IV. The Semantic Foundation
 
 *Normativity = World Selection*
 
-- Let W be all possible system behaviors
+- Let W be all possible system behaviours
 - Let A ⊆ W be the admissible subset
 
 *Everything derives from A:*
@@ -142,7 +142,7 @@ The Logic Auditor is a *normative systems analyst* who ensures machine-generated
 
 *But more precisely: The Logic Auditor is a curator.*
 
-Programming becomes *curation*—the skillful orchestration and refinement of:
+Programming becomes *curation*--the skillful orchestration and refinement of:
 - Problem decompositions
 - Specification quality across multiple formalizations
 - Verification strategies (types, tests, proofs, manual analysis)
@@ -150,7 +150,7 @@ Programming becomes *curation*—the skillful orchestration and refinement of:
 - Normative priorities when requirements conflict
 - Risk acceptance for what remains unverified
 
-*This IS craftsmanship—the craft of discernment and composition.*
+*This IS craftsmanship--the craft of discernment and composition.*
 
 The "material" is no longer code syntax. *The material is the admissible space A itself.*
 
@@ -161,7 +161,7 @@ The "material" is no longer code syntax. *The material is the admissible space A
 - You *defend* A through multi-level verification
 - You *document* A for future maintainers
 
-*The craft isn't lost—it's elevated to the semantic level.*
+*The craft isn't lost--it's elevated to the semantic level.*
 
 But this elevation only works if you first mastered the syntactic level. You cannot audit what you cannot implement. More on this in Section XI.
 
@@ -170,29 +170,29 @@ But this elevation only works if you first mastered the syntactic level. You can
 
 *Their practice requires mastery of:*
 
-1. *Hermeneutic understanding*—interpreting what the domain *means*
+1. *Hermeneutic understanding*--interpreting what the domain *means*
  Not just stakeholder requirements, but the deep structure of the problem space. What could go catastrophically wrong? What assumptions are embedded in current practice? What are the true constraints beyond stated requirements?
 
-2. *Formal modeling*—encoding meaning as first-order predicates
+2. *Formal modelling*--encoding meaning as first-order predicates
  Translating human understanding into machine-checkable logic. The gap between informal and formal is where most errors hide.
 
-3. *Admissibility definition*—establishing the boundary of acceptable behavior
- This is the core craft. Not just "what should happen" but "what space of behaviors is permitted." The skill is knowing where the line is, not just what's clearly on each side.
+3. *Admissibility definition*--establishing the boundary of acceptable behaviour
+ This is the core craft. Not just "what should happen" but "what space of behaviours is permitted." The skill is knowing where the line is, not just what's clearly on each side.
 
-4. *Countermodel identification*—making forbidden states explicit
- Don't just specify what's allowed—specify what's *prevented*. Explicit countermodels reveal assumptions and prevent regression.
+4. *Countermodel identification*--making forbidden states explicit
+ Don't just specify what's allowed--specify what's *prevented*. Explicit countermodels reveal assumptions and prevent regression.
 
-5. *Verification orchestration*—using all available tools strategically
- Types, tests, proofs, manual reading—each catches different error classes. The art is knowing which tool for which property and when to combine them.
+5. *Verification orchestration*--using all available tools strategically
+ Types, tests, proofs, manual reading--each catches different error classes. The art is knowing which tool for which property and when to combine them.
 
-6. *Prompt engineering*—guiding generation with normative specifications
+6. *Prompt engineering*--guiding generation with normative specifications
  The LLM is a tool with its own grain. Learning what it does well, what it does poorly, how to constrain its output space through careful specification.
 
-7. *Code reading*—deep analysis of machine output against semantic models
- Reading generated code is different from reading human code. It has different failure modes. No "author's intent" to intuit—only statistical patterns. Requires heightened vigilance.
+7. *Code reading*--deep analysis of machine output against semantic models
+ Reading generated code is different from reading human code. It has different failure modes. No "author's intent" to intuit--only statistical patterns. Requires heightened vigilance.
 
-8. *Surgical refinement*—correcting violations while preserving valid aspects
- When verification fails, precise diagnosis and minimal correction. Don't regenerate everything—understand what failed and fix only that.
+8. *Surgical refinement*--correcting violations while preserving valid aspects
+ When verification fails, precise diagnosis and minimal correction. Don't regenerate everything--understand what failed and fix only that.
 
 *This is craft, but intellectual rather than manual.*
 
@@ -214,21 +214,21 @@ Before any formalism, understand the domain.
 - What are the failure modes of similar systems?
 - What do experts know that's never written down?
 
-*Output: Conceptual model—narrative understanding of the problem space*
+*Output: Conceptual model--narrative understanding of the problem space*
 
 *Warning:* Rushing past this phase produces formally verified systems that solve the wrong problem.
 
 
 ##### Phase 1: Specify (Deontic)
 
-Formalize admissibility.
+Formalise admissibility.
 
 1. Define worlds W (states, trajectories, executions)
-2. Define predicates over worlds (Borrowed, Paid, InStock, Shipped, Authorized)
+2. Define predicates over worlds (Borrowed, Paid, InStock, Shipped, Authorised)
 3. Define norms (obligations, prohibitions, permissions, invariants)
-4. Establish priorities (critical, high, medium, low—with justification)
+4. Establish priorities (critical, high, medium, low--with justification)
 5. Compute admissibility A from norms and priorities
-6. Identify countermodels w₁, w₂, ... explicitly—the forbidden states
+6. Identify countermodels w₁, w₂, ... explicitly--the forbidden states
 7. Document conflicts and trade-offs where norms compete
 
 *Output: Formal specification in first-order logic with explicit priorities*
@@ -313,11 +313,11 @@ Explore different approaches (recursive vs iterative, pure vs stateful, etc.).
 
 Check admissibility at every level.
 
-1. *Type check*—catches basic violations instantly (automated)
-2. *Property test*—finds empirical countermodels through random generation (automated)
-3. *Formal verify*—proves absence of violations for critical properties (semi-automated)
-4. *Manual read*—deep semantic analysis, hermeneutic interpretation (human judgment)
-5. *Priority check*—ensure high-priority norms satisfied, document trade-offs (human judgment)
+1. *Type check*--catches basic violations instantly (automated)
+2. *Property test*--finds empirical countermodels through random generation (automated)
+3. *Formal verify*--proves absence of violations for critical properties (semi-automated)
+4. *Manual read*--deep semantic analysis, hermeneutic interpretation (human judgment)
+5. *Priority check*--ensure high-priority norms satisfied, document trade-offs (human judgment)
 
 *Verification is stratified by criticality:*
 
@@ -336,7 +336,7 @@ Check admissibility at every level.
 Fix violations surgically.
 
 - Type errors -> reject, re-prompt with error details
-- Property failures -> analyze countermodel, understand root cause, decide:
+- Property failures -> analyse countermodel, understand root cause, decide:
 - Is specification wrong? (Fix spec, regenerate)
 - Is implementation wrong? (Fix code or re-prompt)
 - Is priority wrong? (Document trade-off, accept or reject)
@@ -388,41 +388,41 @@ Verify in production.
 #### VIII. The Tools We Use
 
 *Formal Specification:*
-- *Alloy*—lightweight, SAT-based model finding, excellent for exploration
-- *TLA+*—temporal logic, industry-proven for distributed systems
-- *Z notation*—schema-based specification, good for data-heavy systems
-- *First-order logic*—the foundation beneath it all
+- *Alloy*--lightweight, SAT-based model finding, excellent for exploration
+- *TLA+*--temporal logic, industry-proven for distributed systems
+- *Z notation*--schema-based specification, good for data-heavy systems
+- *First-order logic*--the foundation beneath it all
 
 *Type Systems:*
-- *Rust*—affine types, ownership, practical systems programming
-- *Haskell*—algebraic types, type classes, purity, strong inference
-- *OCaml/F#*—practical ML-family languages, good mainstream adoption
-- *Liquid Haskell*—refinement types, SMT-backed verification
-- *Idris/Agda/Lean*—dependent types (research-grade, watch this space)
+- *Rust*--affine types, ownership, practical systems programming
+- *Haskell*--algebraic types, type classes, purity, strong inference
+- *OCaml/F#*--practical ML-family languages, good mainstream adoption
+- *Liquid Haskell*--refinement types, SMT-backed verification
+- *Idris/Agda/Lean*--dependent types (research-grade, watch this space)
 
 *Property-Based Testing:*
-- *Hypothesis* (Python)—generative, shrinking, stateful machines, accessible
-- *QuickCheck* (Haskell)—the original, still excellent
-- *PropEr* (Erlang)—concurrent property testing for distributed systems
-- *fast-check* (JavaScript)—bringing properties to the masses
+- *Hypothesis* (Python)--generative, shrinking, stateful machines, accessible
+- *QuickCheck* (Haskell)--the original, still excellent
+- *PropEr* (Erlang)--concurrent property testing for distributed systems
+- *fast-check* (JavaScript)--bringing properties to the masses
 
 *Model Checkers:*
-- *Alloy Analyzer*—bounded verification, countermodel generation
-- *TLC*—TLA+ model checker, explicit state
-- *SPIN*—LTL verification, mature tooling
-- *CBMC*—bounded model checking for C
+- *Alloy Analyser*--bounded verification, countermodel generation
+- *TLC*--TLA+ model checker, explicit state
+- *SPIN*--LTL verification, mature tooling
+- *CBMC*--bounded model checking for C
 
 *Static Analysis:*
-- *Type checkers*—the first line of defense, zero runtime cost
-- *Linters*—pattern-based error detection
-- *Abstract interpretation*—semantic analysis, sound over-approximation
-- *Symbolic execution*—path exploration, good for security properties
+- *Type checkers*--the first line of defence, zero runtime cost
+- *Linters*--pattern-based error detection
+- *Abstract interpretation*--semantic analysis, sound over-approximation
+- *Symbolic execution*--path exploration, good for security properties
 
 *Category Theory* (when appropriate):
-- *Functors*—structure-preserving mappings
-- *Monads*—effect composition, separation of concerns
-- *Natural transformations*—comparing implementations
-- *String diagrams*—visual reasoning about composition
+- *Functors*--structure-preserving mappings
+- *Monads*--effect composition, separation of concerns
+- *Natural transformations*--comparing implementations
+- *String diagrams*--visual reasoning about composition
 
 *We use whatever works.*
 
@@ -433,7 +433,7 @@ The principle: *verification through multiple independent methods*.
 - Formal methods prove what properties can't (critical properties, exhaustively)
 - Human reading catches what machines don't (semantic errors, domain violations)
 
-*Defense in depth, all serving A.*
+*Defence in depth, all serving A.*
 
 No single method is sufficient. Each has blind spots. Combined, they create trustworthy systems.
 
@@ -463,14 +463,14 @@ Human pattern-matching fails on unfamiliar AI-generated structures.
 - Some properties are undecidable (Rice's theorem, halting problem)
 - Some systems are too complex to model completely (state explosion)
 - Some norms conflict (priority decisions are judgment calls)
-- Some behaviors emerge only at scale (production ≠ test)
+- Some behaviours emerge only at scale (production ≠ test)
 
 Perfect verification is asymptotic. We verify what matters most and acknowledge the rest.
 
-*We pursue rigor, not perfection.*
+*We pursue rigour, not perfection.*
 
 
-*We reject verification theater*
+*We reject verification theatre*
 
 Writing specs that don't capture real requirements accomplishes nothing.
 Property tests that pass but test the wrong thing provide false confidence.
@@ -485,13 +485,13 @@ Specification-first development is often FASTER than debug-later development.
 Finding bugs in testing costs 10x finding them in specification.
 Finding bugs in production costs 100x finding them in testing.
 
-*Rigor is efficiency at scale.*
+*Rigour is efficiency at scale.*
 
 
 *We reject the "move fast and break things" mentality for critical systems*
 
 When your code handles medical decisions, financial transactions, infrastructure control, or personal data:
-Moving fast and breaking things is not innovation—it's negligence.
+Moving fast and breaking things is not innovation--it's negligence.
 
 *For critical systems: specify, verify, then deploy.*
 
@@ -501,7 +501,7 @@ Moving fast and breaking things is not innovation—it's negligence.
 *We embrace intellectual honesty about uncertainty*
 
 Not all properties can be verified.
-Not all norms can be formalized.
+Not all norms can be formalised.
 Not all systems justify formal methods.
 
 We document what we verified, at what level, with what confidence.
@@ -510,7 +510,7 @@ We document what we verified, at what level, with what confidence.
 *Acknowledged uncertainty is better than false confidence.*
 
 
-*We embrace appropriate rigor*
+*We embrace appropriate rigour*
 
 Not every system needs Alloy models and formal proofs.
 
@@ -518,7 +518,7 @@ Not every system needs Alloy models and formal proofs.
 Full formal verification. Proofs for safety properties. Extensive property testing.
 
 *High-value systems* (enterprise, payment processing):
-Strong type systems. Comprehensive property testing. Strategic formal modeling.
+Strong type systems. Comprehensive property testing. Strategic formal modelling.
 
 *Standard applications* (most web apps, internal tools):
 Good types. Solid unit/integration tests. Property tests for complex logic.
@@ -578,10 +578,10 @@ They can prompt. They can run tests. But they cannot *judge*.
 - Implement core algorithms by hand (sorting, searching, graph algorithms)
 - Build systems from scratch (web server, database, compiler)
 - Experience the pain of choosing wrong (bubble sort on 1M items, O(n²) joins)
-- Debug obscure errors, refactor messy code, optimize slow systems
+- Debug obscure errors, refactor messy code, optimise slow systems
 - *Build intuition through struggle*
 
-*Phase 2: Formalization (1-2 years)*
+*Phase 2: Formalisation (1-2 years)*
 - Formal logic and proof techniques
 - Type theory and type systems
 - Formal methods (Alloy, TLA+, model checking)
@@ -624,7 +624,7 @@ The Logic Auditor needs:
 - Teach traditional programming first
 - Add verification modules AFTER implementation competence
 - Focus on property-based testing (accessible, high ROI)
-- Don't claim to produce Logic Auditors in 12 weeks—it takes years
+- Don't claim to produce Logic Auditors in 12 weeks--it takes years
 
 
 *The Dangerous Middle Ground:*
@@ -643,13 +643,13 @@ They miss subtle semantic errors that surface in production.
 *Cargo Cult Verification:*
 
 - Writing formal specs that don't capture real requirements
-- Specifications too weak (allow prohibited behaviors)
-- Specifications too strong (prohibit valid behaviors)
+- Specifications too weak (allow prohibited behaviours)
+- Specifications too strong (prohibit valid behaviours)
 - Property tests that pass but test the wrong thing
 - Type systems that enforce trivial constraints while missing critical ones
 - Formal verification of irrelevant properties
 
-*Verification theater provides false confidence.*
+*Verification theatre provides false confidence.*
 
 
 *Analysis Paralysis:*
@@ -679,7 +679,7 @@ They miss subtle semantic errors that surface in production.
 - Auditors who can use tools but don't understand foundations
 - Specification errors that propagate through entire verification process
 - Missing the semantic violations that slip through syntactic checks
-- Not recognizing when LLM output is plausible but wrong
+- Not recognising when LLM output is plausible but wrong
 - Inability to debug verification failures
 
 *Tools without understanding are dangerous.*
@@ -696,7 +696,7 @@ They miss subtle semantic errors that surface in production.
 *No single tool is sufficient.*
 
 
-*Organizational Resistance:*
+*Organisational Resistance:*
 
 - "We don't have time for formal methods"
 - "Our developers don't know this stuff"
@@ -704,7 +704,7 @@ They miss subtle semantic errors that surface in production.
 - Pressure to ship unverified code to meet deadlines
 - Cutting corners when stressed
 
-*Quality requires sustained organizational commitment.*
+*Quality requires sustained organisational commitment.*
 
 
 #### XIII. The Systems We Build
@@ -714,7 +714,7 @@ They miss subtle semantic errors that surface in production.
 *Explicit in their norms*
 No hidden assumptions. All constraints documented. Admissibility defined.
 
-*Verifiable in their behavior*
+*Verifiable in their behaviour*
 Admissibility checkable at multiple levels. Evidence of correctness, not just absence of detected errors.
 
 *Traceable in their provenance*
@@ -831,13 +831,13 @@ Unverified code = potential injury or death. Formal verification required.
 
 *The Logic Auditor's ethical commitment:*
 
-*I will not deploy code whose failure modes I have not characterized.*
+*I will not deploy code whose failure modes I have not characterised.*
 
 *I will not accept plausible but unverified output from machines.*
 
 *I will document what I verified and what I did not.*
 
-*I will advocate for appropriate rigor based on stakes.*
+*I will advocate for appropriate rigour based on stakes.*
 
 *I will refuse pressure to ship unverified critical systems.*
 
@@ -916,7 +916,7 @@ For standard systems:
 - Invest in team training on formal methods
 - Build verification into your development workflow
 
-*Professionalism requires rigor.*
+*Professionalism requires rigour.*
 
 
 *To researchers:*
@@ -1023,9 +1023,9 @@ No gaps in provenance. Trace requirements to implementation.
 No hidden failure modes. Document what's prevented and how.
 
 *Use all appropriate tools*
-Types, tests, proofs, manual analysis. Defense in depth.
+Types, tests, proofs, manual analysis. Defence in depth.
 
-*Maintain rigor under pressure*
+*Maintain rigour under pressure*
 No shortcuts when stressed. Advocate for appropriate verification.
 
 *Be honest about limitations*
