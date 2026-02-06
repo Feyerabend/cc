@@ -22,6 +22,8 @@ role is to ensure generated code stays within this space.
 
 Read the full manifesto: [MANIFESTO.md](./MANIFESTO.md)
 
+We will through the book/repository return to use of many of the indicated solutions, such as
+property-based testing and dependent types.
 
 
 ### Why This Matters Now
