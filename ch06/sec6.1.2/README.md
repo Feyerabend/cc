@@ -7,10 +7,10 @@ is *embodied knowledge through direct engagement with materials*.
 
 __What breaks__
 
-- "Deep respect for the materials of the code" -- but you didn't write the code,
+- "Deep respect for the materials of the code"--but you didn't write the code,
   didn't feel the resistance of the language, didn't experience the computer's response to your choices
-- "Holistic understanding" -- how can you have holistic understanding of a system where large portions emerged from a black box?
-- "Continuous integration of all aspects" -- but the LLM generates components in ways you didn't experience building
+- "Holistic understanding"--how can you have holistic understanding of a system where large portions emerged from a black box?
+- "Continuous integration of all aspects"--but the LLM generates components in ways you didn't experience building
 
 
 __What might evolve__
@@ -29,19 +29,19 @@ The *tactile relationship with code* diminishes.
 The scientific philosophy actually *gains power* in some ways but faces different challenges.
 
 *What strengthens:*
-- *Rapid hypothesis testing* -- generate multiple implementations instantly,
+- *Rapid hypothesis testing*--generate multiple implementations instantly,
   benchmark them, gather data
-- *Controlled experiments* -- "Does algorithm X outperform algorithm Y for this data?"
+- *Controlled experiments*--"Does algorithm X outperform algorithm Y for this data?"
   becomes trivially easy to test
-- *Empirical validation* -- you can generate test cases, run experiments,
+- *Empirical validation*--you can generate test cases, run experiments,
   measure outcomes at unprecedented speed
-- *A/B testing approaches* -- generate variants, measure, iterate
+- *A/B testing approaches*--generate variants, measure, iterate
 
 *What becomes problematic:*
-- *Understanding causation* -- when the LLM generates code, you have measurements
+- *Understanding causation*--when the LLM generates code, you have measurements
   but less understanding of *why* it performs as it does
-- *Reproducibility* -- LLM outputs vary; the same prompt may yield different implementations
-- *Confounding variables* -- is poor performance due to the algorithm,
+- *Reproducibility*--LLM outputs vary; the same prompt may yield different implementations
+- *Confounding variables*--is poor performance due to the algorithm,
   the specific implementation, or an LLM artefact?
 
 __What might evolve__
@@ -87,11 +87,11 @@ fully understand), is it science or just empiricism? You have measurements but p
 ### What Knowledge Do You Actually Need?
 
 Going back to earlier challenges, to execute any of these approaches with LLMs, you need:
-1. *Architectural knowledge* -- to structure the problem for the LLM
-2. *Algorithmic literacy* -- to evaluate what it produces  
-3. *Implementation fluency* -- to read, debug, and refine generated code
-4. *Empirical experience* -- to know what "good" looks like
-5. *Domain expertise* -- to verify correctness beyond syntax
+1. *Architectural knowledge*--to structure the problem for the LLM
+2. *Algorithmic literacy*--to evaluate what it produces  
+3. *Implementation fluency*--to read, debug, and refine generated code
+4. *Empirical experience*--to know what "good" looks like
+5. *Domain expertise*--to verify correctness beyond syntax
 
 The LLM doesn't eliminate these requirements. It might even *intensify* them because you
 need the judgment to evaluate code you didn't write, which is arguably harder than writing it yourself.

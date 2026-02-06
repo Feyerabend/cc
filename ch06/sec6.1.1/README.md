@@ -5,19 +5,19 @@ So far, we have largely avoided discussing LLMs in relation to methodology and p
 in part because the transformations have been exceptionally rapid. This repository is an
 attempt to address that gap.
 
-*Code quality and maintainability* -- The emphasis might shift from writing maintainable
+*Code quality and maintainability*--The emphasis might shift from writing maintainable
 code to writing maintainable *prompts* and effectively reviewing LLM-generated code.
 "Craft" could become more about knowing what good code looks like and how to guide AI
 toward it, rather than writing every line yourself. However, this also risks lowering
 standards if developers accept AI output without deep understanding.
 
-*Personal style and adaptability* -- Individual coding style may matter less when much
+*Personal style and adaptability*--Individual coding style may matter less when much
 code is AI-generated. Instead, "personal style" might evolve into distinctive approaches
 to problem decomposition, prompt engineering, and AI collaboration workflows. The
 craftsperson's toolkit expands to include knowing which tasks to delegate to AI versus
 handle manually, and how to blend both effectively.
 
-*Mentorship and apprenticeship* -- This could be most profoundly affected. Traditional
+*Mentorship and apprenticeship*--This could be most profoundly affected. Traditional
 learning-by-doing becomes complicated when AI can generate solutions instantly. Juniors
 might struggle to develop intuition and tacit knowledge if they rely too heavily on AI.
 Mentorship may need to focus more on judgment, architecture, and problem-framing rather
@@ -36,19 +36,19 @@ or can it exist in skillful orchestration and refinement?
 
 __What you need to know?__
 
-*Domain and context understanding* -- You must deeply understand the *problem space*: What are you actually
+*Domain and context understanding*--You must deeply understand the *problem space*: What are you actually
 trying to solve? What constraints exist? What could go wrong? This isn't code knowledge--it's about the real-world
 system you're building for. Without this, you can't even properly specify what you want the AI to create.
 
-*Architectural judgment* -- You need to understand how pieces fit together: data flows, dependencies, performance
+*Architectural judgment*--You need to understand how pieces fit together: data flows, dependencies, performance
 characteristics, security boundaries. You don't necessarily need to write every algorithm, but you must know
 *which* algorithms matter, where bottlenecks occur, what tradeoffs exist. This is systems thinking more than coding skill.
 
-*Code literacy for evaluation* -- You need enough understanding to *read* and *critically assess* what the AI produces.
+*Code literacy for evaluation*--You need enough understanding to *read* and *critically assess* what the AI produces.
 Can you spot subtle bugs, security vulnerabilities, or maintainability issues? This requires knowing what good code
 looks like, common pitfalls, edge cases--even if you didn't write it yourself.
 
-*The substrate/interface knowledge* -- Crucially, you need to understand what you're *connecting to*: APIs, databases,
+*The substrate/interface knowledge*--Crucially, you need to understand what you're *connecting to*: APIs, databases,
 hardware constraints, user interfaces, existing codebases. The AI might generate perfect code in isolation that fails
 because it misunderstands the environment it must operate within.
 
