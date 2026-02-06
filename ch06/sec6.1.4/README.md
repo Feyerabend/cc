@@ -35,10 +35,10 @@ This one gets weird:
 
 *Two scenarios emerge:*
 
-1. *Shallow refactoring*: "This generated code is messy, regenerate it better"
-   -- fast but doesn't build understanding
-2. *Deep refactoring*: Manually reworking AI-generated code to truly understand and improve it
-   -- this might be where real learning happens
+1. *Shallow refactoring*: "This generated code is messy, regenerate it better"--fast
+   but doesn't build understanding
+2. *Deep refactoring*: Manually reworking AI-generated code to truly understand and
+   improve it--this might be where real learning happens
 
 *The risk:* Developers skip refactoring entirely because "it works, and I didn't write it anyway,
 so why invest the effort to understand it deeply?"
