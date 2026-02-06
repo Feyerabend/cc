@@ -86,7 +86,7 @@ fully understand), is it science or just empiricism? You have measurements but p
 
 ### What Knowledge Do You Actually Need?
 
-Going back to your earlier challenge, to execute any of these approaches with LLMs, you need:
+Going back to earlier challenges, to execute any of these approaches with LLMs, you need:
 1. *Architectural knowledge* -- to structure the problem for the LLM
 2. *Algorithmic literacy* -- to evaluate what it produces  
 3. *Implementation fluency* -- to read, debug, and refine generated code
