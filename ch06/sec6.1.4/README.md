@@ -64,8 +64,11 @@ This actually gives you *more confidence* because:
 - The tests serve as a specification the LLM must meet
 
 *But there's a trap:*
-- If you ask the LLM to write both tests and implementation, you've lost the validation benefit
+- If you ask the LLM to write both tests and implementation, you've lost the validation benefit[^trap]
 - Tests might pass but test the wrong thing
+
+[^trap]: This actually is parallel problem when training nural networks, where tests conflated with
+training data, affects the learning.
 
 *The methodology transforms* from "test to guide design" to
 "test to validate AI understanding of requirements."
