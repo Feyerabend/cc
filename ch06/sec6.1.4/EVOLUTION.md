@@ -183,3 +183,4 @@ Agile retrospectives reincarnate 1950s quality circles. In this endless recurren
 lies methodology's true nature: not the tools du jour, but the human need to
 ritualise progress amidst chaos--to impose narrative on the entropy of innovation.
 
+So maybe the evolution turns out to be a circular revolution?
