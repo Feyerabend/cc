@@ -13,7 +13,7 @@ easily on most systems. To start, we’ll experiment with a relatively simple an
 this case is an SVG representation of Bill Clinton. The SVG can be seen in the clinton.svg file, though if
 you don’t have access to an SVG viewer, you can still see the rendered output below (n PNG).
 
-![output.ppm](./assets/clinton.png)
+![output.ppm](./assets/tigerb.png)
 
 
 ### Parsing
