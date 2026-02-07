@@ -1,5 +1,5 @@
 
-## Methodical Evolution
+## Methodogical Evolution
 
 Even if we do not intend here to go deep into the vast history of methodology, some
 remarks might help to illuminate the context of, for example, "crafting".
