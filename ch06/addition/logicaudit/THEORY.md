@@ -284,3 +284,7 @@ identify design flaws through mathematical rigor.
 - von Wright, G. H. (1963). *Norm and action: A logical enquiry*. London: Routledge & Kegan Paul.
 - Wikipedia contributors. (n.d.). *Deontic logic*. In *Wikipedia, The Free Encyclopedia*. Retrieved February 7, 2026, from https://en.wikipedia.org/wiki/Deontic_logic
 - Åqvist, L. (1984). Deontic logic. In D. Gabbay & F. Guenthner (Eds.), *Handbook of philosophical logic* (Vol. 2, pp. 605–714). Dordrecht: Reidel.
+
+*I am indebted to a course on deontic logic taught by Jan Berg many years ago,
+which offered an illuminating treatment of the foundational and elementary aspects of deontic logic,
+drawing on Hilpinen’s book.*
