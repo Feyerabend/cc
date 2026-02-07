@@ -115,13 +115,17 @@ The toolset changes radically:
 - Debugging skills intensify (debugging code you didn't write)
 
 *What becomes new:*
-- Proficiency with LLM interfaces and prompt engineering
+- Proficiency with LLM interfaces and prompt engineering[^prompt]
 - Tools for managing prompt libraries and patterns
 - Systems for tracking which code was generated how (provenance)
 
 *Future:* Tool mastery remains crucial but the toolkit expands dramatically.
 The craftsperson's tools now include AI itself.
 
+[^prompt]: Prompt engineering has become an widely accepted concept of future develpment.
+Personally I'm sceptical to the concept, as I find it as volatile as LLMs developments.
+The "specifications" you write as prompts may not have the clarity you want out of
+the LLMs output over different networks, or over time. Time wil tell.
 
 ### Regular Retrospective and Self-Improvement
 
