@@ -10,8 +10,8 @@ used and well-supported. PostScript is unfourtantely not very common today as so
 In this first exercise, we will focus on how to transform vector data into pixel data. Our goal is to take a simple
 SVG image and render it into a rasterized format, such as a PPM (Portable Pixmap) image, which we can view
 easily on most systems. To start, we’ll experiment with a relatively simple and easily parsed image, which in
-this case is an SVG representation of Bill Clinton. The SVG can be seen in the clinton.svg file, though if
-you don’t have access to an SVG viewer, you can still see the rendered output below (n PNG).
+this case is a classic SVG representation of a tiger. The SVG can be seen in the [tiger.svg](./../assets/tiger.svg)
+file, though if you don’t have access to an SVG viewer, you can still see the rendered output below (n PNG).
 
 ![output.ppm](./assets/tigerb.png)
 
