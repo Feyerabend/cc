@@ -134,7 +134,7 @@ The semantic framework above is already near-first-order. We can make this expli
 Define $\mathcal{L}_{FO}$ with:
 - Domain: worlds
 - Unary predicates:
-- $A(w)$: $w$ " is admissible"
+- $A(w)$: " $w$ is admissible"
 - $P_p(w)$: "proposition $p$ holds in world $w$"
 - Ternary predicate: $T(w, a, w')$ for transitions
 
