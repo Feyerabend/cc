@@ -1,6 +1,10 @@
 
 ## Worked Examples: E-Commerce Cart System
 
+Another example, besides the below, is given in a
+[library system example](./../../assets/pdf/library_system_example.pdf).
+
+
 ### Overview
 
 These examples demonstrate how to model a simple e-commerce
@@ -27,8 +31,8 @@ cart system using deontic action logic semantics. We show:
 ### Example Actions
 
 Each action $a \in Act$ has:
-1. *Preconditions* $Pre(a, w)$ — must be true for action to execute
-2. *Effects* $Eff(a, w) \rightarrow w'$ — new world after action
+1. *Preconditions* $Pre(a, w)$ -- must be true for action to execute
+2. *Effects* $Eff(a, w) \rightarrow w'$ -- new world after action
 
 #### 1. AddToCart(i, u)
 
@@ -209,7 +213,7 @@ def checkout(user):
 ```
 
 This mirrors real-world systems: checkout, reservations,
-inventory management—anywhere preconditions and effects are critical.
+inventory management--anywhere preconditions and effects are critical.
 
 
 ### Formalizing Action Logic

@@ -22,8 +22,11 @@ role is to ensure generated code stays within this space.
 
 Read the full manifesto: [MANIFESTO.md](./MANIFESTO.md)
 
-We will through the book/repository return to use of many of the indicated solutions, such as
-property-based testing and dependent types.
+Many of the topics introduced here will reappear throughout the book and the repository,
+such as
+[property-based testing](./../../../ch08/),
+[dependent types](./../../../ch08/),
+and [category theory](./../../../ch08/addition/category/).
 
 
 ### Why This Matters Now
