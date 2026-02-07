@@ -3,6 +3,7 @@
 
 Another example, besides the below, is given in a
 [library system example](./../../assets/pdf/library_system_example.pdf).
+Also an [SVG renderer](./../../sec6.1.2/crafting/modern/03/).
 
 
 ### Overview
