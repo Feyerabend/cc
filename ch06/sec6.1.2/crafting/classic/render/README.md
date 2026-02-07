@@ -33,8 +33,8 @@ is an example of the type of SVG content our parser will handle:
 ```
 
 The key data in this SVG are the 'd' attributes of the <path> elements, which define the drawing commands.
-These paths are described using the "M" (move to) and "C" (cubic Bezier curve) commands, which tell the parser
-how to render the shape.
+These paths are described using the "M" (move to) and "C" ([cubic Bezier curve](./curves/)) commands,
+which tell the parser how to render the shape.
 
 
 ### First Attempt at Rendering
