@@ -172,13 +172,8 @@ messy code. They learn to prompt and review, but do they learn to
 
 *Future:* Mentoring splits into two tracks:
 1. *Fundamentals track*: Teaching core CS concepts, algorithms, system design
-<<<<<<< HEAD
    *without* LLMs initially--building the foundation needed to evaluate AI output
-2. *AI-augmented track**: Teaching effective LLM collaboration--but only after foundations are solid
-=======
-   *without* LLMs initially — building the foundation needed to evaluate AI output
-2. *AI-augmented track*: Teaching effective LLM collaboration — but only after foundations are solid
->>>>>>> 7479266c60c4b078e72203de946dcaf0aa0f8102
+2. *AI-augmented track*: Teaching effective LLM collaboration--but only after foundations are solid
 
 
 
@@ -206,5 +201,3 @@ The ones that fade are those that depended on *learning through doing* when the 
 *The existential question for craft philosophy:*
 Can you become a master craftsperson by exclusively curating and refining the work of others?
 Or does mastery require you to have once built from raw materials yourself?
-
-
