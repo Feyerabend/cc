@@ -1,5 +1,5 @@
 
-## LLM Generating Code
+## LLM Generated Code
 
 Third sample has been inspired by [Logic Audit](./../../addition/logicaudit/).
 
