@@ -109,3 +109,13 @@ Perhaps what emerges is *"Programming as Curation"*:
 This curator needs deep technical knowledge (can't curate what you can't evaluate)
 but expresses it differently than the traditional craftsperson or scientist.
 
+Other explorations of potential developments related to the future of the “crafting”
+philosophy are presented in *[logic auditor](./../addition/logicaudit/)*.
+In contrast to earlier perspectives on craftsmanship, this work brings practitioners
+closer to stakeholders and elevates the role of logical reasoning in software practice.
+It represents a shift from viewing programming primarily as a craft toward seeing
+it as a discipline where proficiency in logic and philosophical reflection on code
+take a central role, echoing traditions such as Donald Knuth’s view of programming
+as an art form grounded in rigorous thought and human understanding.
+[Knuth in Wikipedia](https://en.wikipedia.org/wiki/The_Art_of_Computer_Programming)
+
