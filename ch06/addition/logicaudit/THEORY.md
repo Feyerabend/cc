@@ -277,10 +277,10 @@ identify design flaws through mathematical rigor.
 
 ### References
 
-- Von Wright, G. H. (1951). Deontic logic. *Mind*, 60(237), 1–15.
-- Von Wright, G. H. (1963). *Norm and action: A logical enquiry*. London: Routledge & Kegan Paul.
-- Kanger, S. (1957). New foundations for ethical theory. In R. Hilpinen (Ed.), *Deontic logic: Introductory and systematic readings* (pp. 36–58). Dordrecht: Reidel.
-- Kanger, S. (1971). Formal analysis of normative concepts. *Theoria*, 37, 85–95.
 - Hilpinen, R. (Ed.). (1971). *Deontic logic: Introductory and systematic readings*. Dordrecht: Reidel.
-- Åqvist, L. (1984). Deontic logic. In D. Gabbay & F. Guenthner (Eds.), *Handbook of philosophical logic* (Vol. 2, pp. 605–714). Dordrecht: Reidel.
+- Kanger, S. (1957). New foundations for ethical theory. In R. Hilpinen (Ed.), *Deontic logic: Introductory and systematic readings* (pp. 36–58). Dordrecht: Reidel.
 - McNamara, P. (2018). Deontic logic. In E. N. Zalta (Ed.), *The Stanford Encyclopedia of Philosophy*.
+- von Wright, G. H. (1951). Deontic logic. *Mind*, 60(237), 1–15.
+- von Wright, G. H. (1963). *Norm and action: A logical enquiry*. London: Routledge & Kegan Paul.
+- Wikipedia contributors. (n.d.). *Deontic logic*. In *Wikipedia, The Free Encyclopedia*. Retrieved February 7, 2026, from https://en.wikipedia.org/wiki/Deontic_logic
+- Åqvist, L. (1984). Deontic logic. In D. Gabbay & F. Guenthner (Eds.), *Handbook of philosophical logic* (Vol. 2, pp. 605–714). Dordrecht: Reidel.
