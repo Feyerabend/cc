@@ -67,8 +67,8 @@ This actually gives you *more confidence* because:
 - If you ask the LLM to write both tests and implementation, you've lost the validation benefit[^trap]
 - Tests might pass but test the wrong thing
 
-[^trap]: This actually is parallel problem when training nural networks, where tests conflated with
-training data, affects the learning.
+[^trap]: This mirrors a well-known issue in training neural networks:
+when tests are conflated with training data, the learning process is distorted.
 
 *The methodology transforms* from "test to guide design" to
 "test to validate AI understanding of requirements."
@@ -125,7 +125,7 @@ The craftsperson's tools now include AI itself.
 [^prompt]: Prompt engineering has become an widely accepted concept of future develpment.
 Personally I'm sceptical to the concept, as I find it as volatile as LLMs developments.
 The "specifications" you write as prompts may not have the clarity you want out of
-the LLMs output over different networks, or over time. Time wil tell.
+the LLMs output over different networks, or over time. Time will tell. Only?
 
 ### Regular Retrospective and Self-Improvement
 
