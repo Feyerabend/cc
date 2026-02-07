@@ -411,5 +411,5 @@ svg_data = """
 </svg>
 """
 
-renderer = SVGRenderer(svg_data, 350, 500)
+renderer = SVGRenderer(svg_data, 600, 600)
 renderer.render("output.ppm")
