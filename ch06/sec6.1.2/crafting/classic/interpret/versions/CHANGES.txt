@@ -1,0 +1,30 @@
+CHANGES.txt FAKE LOG
+
+Version 1.1.0 (December 8, 2024)
+- Added logging to key components for better debugging and tracking.
+- Integrated Python’s logging module in the Interpreter, Rasterizer, and GraphicsState classes.
+- Added different log levels (INFO, DEBUG, ERROR) to capture events like drawing commands and state changes.
+- Refactored the rasterizer structure.
+- Introduced the Rasterizer class with clearer separation of concerns (e.g., _draw_line, _flood_fill).
+- Simplified and optimized the line-drawing algorithm using Bresenham’s line algorithm.
+- Fixed minor issues with path handling and stroke color application.
+- Stroke and fill colors were not correctly applied in some edge cases.
+- Improvement to fill handling in Rasterizer.
+- Optimized the flood-fill algorithm to handle large areas more efficiently.
+- Modified the GraphicsState class for better state management.
+- Refined how the path is handled when restoring state.
+- Added more comprehensive saving and restoring of the graphics context.
+- Improved error handling in the Interpreter.
+- The execute method now raises more informative error messages when an unknown command is encountered.
+
+Version 1.0.0 (December 4, 2024)
+- Initial release.
+- Implemented the core graphics state management for the interpreter.
+- Created basic PostScript-like commands (newpath, moveto, lineto, setrgbcolor, etc.).
+- Developed a basic Rasterizer for drawing lines and filling shapes.
+- Added PPM output support to export the canvas.
+
+Version 0.9.0 (November 24, 2024)
+- Pre-release.
+- Initial prototype of the interpreter with basic stack operations.
+- Early implementation of GraphicsState for managing stroke and fill colors.

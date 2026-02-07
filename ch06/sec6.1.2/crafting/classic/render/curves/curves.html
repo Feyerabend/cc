@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De Casteljau's Algorithm for Bézier Curves</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid black;
+        }
+        #controls {
+            margin-top: 20px;
+        }
+        .control-point {
+            display: inline-block;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bézier Curve Visualization with De Casteljau's Algorithm</h1>
+    <canvas id="bezierCanvas" width="800" height="600"></canvas>
+    
+    <div id="controls">
+        <label>
+            <input type="radio" name="curveType" value="quadratic" checked> Quadratic Bézier Curve
+        </label>
+        <label>
+            <input type="radio" name="curveType" value="cubic"> Cubic Bézier Curve
+        </label>
+    </div>
+
+    <script>
+        // Initial control points
+        let p0 = { x: 100, y: 500 };
+        let p1 = { x: 300, y: 100 };
+        let p2 = { x: 500, y: 500 };
+        let p3 = { x: 650, y: 100 };
+
+        let draggingPoint = null;
+        const canvas = document.getElementById('bezierCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Switch between quadratic and cubic curve
+        let curveType = 'quadratic';
+        document.querySelectorAll('input[name="curveType"]').forEach(input => {
+            input.addEventListener('change', () => {
+                curveType = input.value;
+                draw();
+            });
+        });
+
+        // Draw control points, curve, and De Casteljau's steps
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 2;
+
+            // Draw control points
+            [p0, p1, p2, p3].forEach(p => drawControlPoint(p));
+
+            // Draw control polygon
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
+            ctx.lineTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            if (curveType === 'cubic') {
+                ctx.lineTo(p3.x, p3.y);
+            }
+            ctx.strokeStyle = 'blue';
+            ctx.stroke();
+
+            // Draw Bézier curve and De Casteljau's intermediate points
+            ctx.strokeStyle = 'red';
+            if (curveType === 'quadratic') {
+                drawQuadraticBezier(p0, p1, p2);
+            } else {
+                drawCubicBezier(p0, p1, p2, p3);
+            }
+        }
+
+        // Quadratic Bézier curve using De Casteljau's algorithm
+        function drawQuadraticBezier(p0, p1, p2) {
+            const steps = 100;
+            let prevPoint = p0;
+            for (let t = 0; t <= 1; t += 1 / steps) {
+                const q0 = interpolate(p0, p1, t);
+                const q1 = interpolate(p1, p2, t);
+                const point = interpolate(q0, q1, t);
+                if (t > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(prevPoint.x, prevPoint.y);
+                    ctx.lineTo(point.x, point.y);
+                    ctx.stroke();
+                }
+                prevPoint = point;
+            }
+        }
+
+        // Cubic Bézier curve using De Casteljau's algorithm
+        function drawCubicBezier(p0, p1, p2, p3) {
+            const steps = 100;
+            let prevPoint = p0;
+            for (let t = 0; t <= 1; t += 1 / steps) {
+                const q0 = interpolate(p0, p1, t);
+                const q1 = interpolate(p1, p2, t);
+                const q2 = interpolate(p2, p3, t);
+                const r0 = interpolate(q0, q1, t);
+                const r1 = interpolate(q1, q2, t);
+                const point = interpolate(r0, r1, t);
+                if (t > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(prevPoint.x, prevPoint.y);
+                    ctx.lineTo(point.x, point.y);
+                    ctx.stroke();
+                }
+                prevPoint = point;
+            }
+        }
+
+        // Interpolate between two points
+        function interpolate(p0, p1, t) {
+            return {
+                x: (1 - t) * p0.x + t * p1.x,
+                y: (1 - t) * p0.y + t * p1.y
+            };
+        }
+
+        // Draw control points as draggable circles
+        function drawControlPoint(p) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = 'green';
+            ctx.fill();
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
+        }
+
+        // Mouse event listeners to drag control points
+        canvas.addEventListener('mousedown', (e) => {
+            const mousePos = getMousePos(e);
+            draggingPoint = getClosestControlPoint(mousePos);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (draggingPoint) {
+                const mousePos = getMousePos(e);
+                draggingPoint.x = mousePos.x;
+                draggingPoint.y = mousePos.y;
+                draw();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            draggingPoint = null;
+        });
+
+        // Get mouse position relative to canvas
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        // Get closest control point to mouse position
+        function getClosestControlPoint(mousePos) {
+            const controlPoints = [p0, p1, p2, p3];
+            return controlPoints.reduce((closest, point) => {
+                const dist = Math.sqrt(Math.pow(mousePos.x - point.x, 2) + Math.pow(mousePos.y - point.y, 2));
+                if (dist < 10) return point;
+                return closest;
+            }, null);
+        }
+
+        // Initial drawing
+        draw();
+    </script>
+</body>
+</html>

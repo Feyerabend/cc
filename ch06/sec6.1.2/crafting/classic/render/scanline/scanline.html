@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scanline Algorithm Visualization</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+    .controls {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Scanline Algorithm Visualization</h1>
+  <canvas id="canvas" width="600" height="400"></canvas>
+  <div class="controls">
+    <button id="nextStep">Next Step</button>
+    <button id="reset">Reset</button>
+  </div>
+  <script>
+    // Get the canvas and context
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Define a polygon
+    const polygon = [
+      { x: 100, y: 150 },
+      { x: 300, y: 100 },
+      { x: 400, y: 300 },
+      { x: 200, y: 350 }
+    ];
+
+    let scanlineY = 0; // Current scanline position
+    const delay = 100; // Delay in milliseconds
+    let interval = null;
+
+    // Draw the polygon outline
+    function drawPolygon(polygon) {
+      ctx.beginPath();
+      ctx.moveTo(polygon[0].x, polygon[0].y);
+      polygon.forEach(point => ctx.lineTo(point.x, point.y));
+      ctx.closePath();
+      ctx.strokeStyle = "black";
+      ctx.stroke();
+    }
+
+    // Fill the polygon using the scanline algorithm
+    function scanlineFill() {
+      const edges = [];
+      const ymin = Math.min(...polygon.map(p => p.y));
+      const ymax = Math.max(...polygon.map(p => p.y));
+
+      // Create edges from the polygon
+      for (let i = 0; i < polygon.length; i++) {
+        const p1 = polygon[i];
+        const p2 = polygon[(i + 1) % polygon.length];
+
+        if (p1.y !== p2.y) {
+          const yminEdge = Math.min(p1.y, p2.y);
+          const ymaxEdge = Math.max(p1.y, p2.y);
+          const xAtYmin = p1.y < p2.y ? p1.x : p2.x;
+          const slope = (p2.x - p1.x) / (p2.y - p1.y);
+
+          edges.push({
+            ymin: yminEdge,
+            ymax: ymaxEdge,
+            x: xAtYmin,
+            slope: slope
+          });
+        }
+      }
+
+      // Function to fill a scanline
+      function fillScanline(y, intersections) {
+        intersections.sort((a, b) => a - b); // Sort intersections
+        for (let i = 0; i < intersections.length; i += 2) {
+          const x1 = Math.floor(intersections[i]);
+          const x2 = Math.floor(intersections[i + 1]);
+
+          ctx.beginPath();
+          ctx.moveTo(x1, y);
+          ctx.lineTo(x2, y);
+          ctx.strokeStyle = "rgba(0, 0, 255, 0.5)";
+          ctx.stroke();
+        }
+      }
+
+      // Draw the polygon one scanline at a time
+      interval = setInterval(() => {
+        if (scanlineY > ymax) {
+          clearInterval(interval);
+          return;
+        }
+
+        // Find active edges and intersections for the current scanline
+        const activeEdges = edges.filter(edge => scanlineY >= edge.ymin && scanlineY < edge.ymax);
+        const intersections = activeEdges.map(edge => edge.x + edge.slope * (scanlineY - edge.ymin));
+
+        // Fill the scanline
+        fillScanline(scanlineY, intersections);
+
+        // Increment scanline
+        scanlineY++;
+      }, delay);
+    }
+
+    // Initialize the canvas
+    function init() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPolygon(polygon);
+      scanlineY = Math.min(...polygon.map(p => p.y));
+    }
+
+    // Add event listeners to buttons
+    document.getElementById("nextStep").addEventListener("click", () => {
+      if (!interval) {
+        scanlineFill();
+      }
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      clearInterval(interval);
+      interval = null;
+      init();
+    });
+
+    // Initialize the visualization
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# Testing dependencies for SVG Renderer
+# Install with: pip install -r requirements-test.txt
+
+# Property-based testing
+hypothesis>=6.92.0
+
+# Code coverage
+coverage>=7.3.0
+pytest-cov>=4.1.0
+
+# Unit testing framework (built-in but listing for completeness)
+pytest>=7.4.0
+
+# Testing utilities
+pytest-timeout>=2.1.0
+pytest-xdist>=3.3.0  # For parallel test execution
+
+# Code quality
+flake8>=6.1.0
+black>=23.10.0
+mypy>=1.6.0
+
+# Performance testing
+pytest-benchmark>=4.0.0
+
+# Mock and fixtures
+pytest-mock>=3.12.0
