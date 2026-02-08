@@ -1,8 +1,11 @@
 
 ## Documentation
 
-An example following the Bayesian approach structure,
-focusing on a tool that becomes *more* valuable in the LLM era:
+You might adopt a new perspective of *which* tools to use
+under the continued influence of LLMs in programming.
+An example is following the Bayesian approach structure,
+focusing on what tools that becomes *more* valuable in the LLM era.
+Here suggested: *documentation*.
 
 
 ### Code Documentation and Comments

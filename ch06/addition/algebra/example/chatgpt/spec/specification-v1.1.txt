@@ -1,0 +1,145 @@
+SPECIFICATION: CourseEnrollmentSystem v1.1
+
+IMPORTS:
+  NaturalNumbers, Sets, Booleans
+
+SORTS:
+  State
+  StudentID
+  CourseID
+  Student
+  Course
+  EnrollmentStatus = Enrolled | Completed | Dropped
+  Result = Success | CourseFull | AlreadyEnrolled | PrerequisitesNotMet | 
+           NotEnrolled | HasDependentEnrollments | CycleDetected |
+           CannotDropCompleted | CourseNotFound | StudentNotFound
+
+STATE: State
+
+OPERATIONS:
+  // Constructors
+  emptyState: → State
+  
+  // Student Management
+  registerStudent: State × String → State × StudentID
+  
+  // Course Management  
+  createCourse: State × String × Nat → State × CourseID
+  
+  setPrerequisites: State × CourseID × Set(CourseID) → State × Result
+  
+  // Enrollment Operations (Commands)
+  enroll: State × StudentID × CourseID → State × Result
+  drop: State × StudentID × CourseID → State × Result
+  completeCourse: State × StudentID × CourseID → State × Result
+  
+  // Query Operations
+  isEnrolled: State × StudentID × CourseID → Bool
+  hasCompleted: State × StudentID × CourseID → Bool
+  currentEnrollment: State × CourseID → Nat
+  capacity: State × CourseID → Nat
+  isFull: State × CourseID → Bool
+  prerequisites: State × CourseID → Set(CourseID)
+  studentCourses: State × StudentID → Set(CourseID)
+  completedCourses: State × StudentID → Set(CourseID)
+  enrollmentStatus: State × StudentID × CourseID → EnrollmentStatus
+
+DERIVED OPERATIONS:
+  hasMetPrerequisites(s, student, course) =
+    prerequisites(s, course) ⊆ completedCourses(s, student)
+  
+  availableSpots(s, course) = 
+    capacity(s, course) - currentEnrollment(s, course)
+  
+  isFull(s, course) = 
+    currentEnrollment(s, course) ≥ capacity(s, course)
+  
+  hasDependentEnrollments(s, student, course) =
+    exists c in studentCourses(s, student) where
+      course ∈ prerequisites(s, c)
+
+  wouldCreateCycle(s, course, newPrereqs) =
+    course ∈ transitivePrerequisites(s, newPrereqs)
+  
+  transitivePrerequisites(s, courses) =
+    courses ∪ 
+    ⋃{transitivePrerequisites(s, prerequisites(s, c)) | c ∈ courses}
+
+PRE/POST CONDITIONS:
+
+  enroll: State × StudentID × CourseID → State × Result
+    PRE:
+      studentExists(s, student) ∧ courseExists(s, course)
+    POST:
+      let (s', result) = enroll(s, student, course) in
+      CASE result OF
+        Success →
+          isEnrolled(s', student, course) = true ∧
+          currentEnrollment(s', course) = currentEnrollment(s, course) + 1
+        CourseFull → s' = s ∧ isFull(s, course) = true
+        AlreadyEnrolled → s' = s ∧ isEnrolled(s, student, course) = true
+        PrerequisitesNotMet → s' = s ∧ ¬hasMetPrerequisites(s, student, course)
+
+  drop: State × StudentID × CourseID → State × Result
+    PRE:
+      studentExists(s, student) ∧ courseExists(s, course)
+    POST:
+      let (s', result) = drop(s, student, course) in
+      CASE result OF
+        Success →
+          ¬isEnrolled(s', student, course) ∧
+          currentEnrollment(s', course) = currentEnrollment(s, course) - 1
+        NotEnrolled → s' = s ∧ ¬isEnrolled(s, student, course)
+        HasDependentEnrollments → s' = s ∧ hasDependentEnrollments(s, student, course)
+        CannotDropCompleted → s' = s ∧ enrollmentStatus(s, student, course) = Completed
+
+  completeCourse: State × StudentID × CourseID → State × Result
+    PRE:
+      isEnrolled(s, student, course) = true
+    POST:
+      let (s', result) = completeCourse(s, student, course) in
+      result = Success ⇒
+        hasCompleted(s', student, course) = true ∧
+        completedCourses(s', student) = completedCourses(s, student) ∪ {course}
+
+  setPrerequisites: State × CourseID × Set(CourseID) → State × Result
+    PRE:
+      courseExists(s, course)
+    POST:
+      let (s', result) = setPrerequisites(s, course, newPrereqs) in
+      CASE result OF
+        Success → prerequisites(s', course) = newPrereqs
+        CycleDetected → s' = s ∧ wouldCreateCycle(s, course, newPrereqs)
+        CourseNotFound → s' = s ∧ ¬courseExists(s, course)
+
+INVARIANTS:
+
+  INV1: ∀ s:State, c:CourseID.
+    currentEnrollment(s, c) ≤ capacity(s, c)
+  
+  INV2: ∀ s:State, st:StudentID, c:CourseID.
+    isEnrolled(s, st, c) = true ⇔ enrollmentStatus(s, st, c) = Enrolled
+  
+  INV3: ∀ s:State, st:StudentID, c:CourseID.
+    hasCompleted(s, st, c) = true ⇒ 
+      (∀ prereq ∈ prerequisites(s, c). hasCompleted(s, st, prereq) = true)
+  
+  INV4: ∀ s:State, c:CourseID.
+    c ∉ transitivePrerequisites(s, c)
+  
+  INV5: ∀ s:State, st:StudentID, c:CourseID.
+    isEnrolled(s, st, c) = true ∧ prerequisites(s, c) ≠ ∅ ⇒
+      (∀ prereq ∈ prerequisites(s, c). hasCompleted(s, st, prereq) = true)
+
+EQUATIONS:
+
+  EQ1: capacity(createCourse(s, name, cap), courseID) = cap
+  EQ2: currentEnrollment(emptyState, c) = 0
+  EQ3: let (s', Success) = enroll(s, st, c) in
+       currentEnrollment(s', c) = currentEnrollment(s, c) + 1
+  EQ4: let (s', Success) = drop(s, st, c) in
+       currentEnrollment(s', c) = currentEnrollment(s, c) - 1
+  EQ5: let (s', Success) = completeCourse(s, st, c) in
+       completedCourses(s', st) = completedCourses(s, st) ∪ {c}
+
+END SPECIFICATION
