@@ -481,33 +481,33 @@ You can:
 #### The Development Workflow
 
 ```
-┌------------------------------------------┐
-│ 1. Write Specification (Human + LLM)     │
-│    - Extract from requirements           │
-│    - Formalize in algebraic notation     │
-│    - Validate completeness               │
-└------------------------------------------┘
+┌----------------------------------------┐
+│ 1. Write Specification (Human + LLM)   │
+│    - Extract from requirements         │
+│    - Formalize in algebraic notation   │
+│    - Validate completeness             │
+└----------------------------------------┘
                      │
-┌------------------------------------------┐
-│ 2. Generate Tests (LLM)                  │
-│    - Property-based from equations       │
-│    - Invariant checks                    │
-│    - Pre/post condition validation       │
-└------------------------------------------┘
+┌----------------------------------------┐
+│ 2. Generate Tests (LLM)                │
+│    - Property-based from equations     │
+│    - Invariant checks                  │
+│    - Pre/post condition validation     │
+└----------------------------------------┘
                      │
-┌------------------------------------------┐
-│ 3. Generate Implementation (LLM)         │
-│    - Satisfying the spec                 │
-│    - With defensive checks               │
-│    - Documented with spec references     │
-└------------------------------------------┘
+┌----------------------------------------┐
+│ 3. Generate Implementation (LLM)       │
+│    - Satisfying the spec               │
+│    - With defensive checks             │
+│    - Documented with spec references   │
+└----------------------------------------┘
                      │
-┌------------------------------------------┐
-│ 4. Verify (Human)                        │
-│    - Run tests                           │
-│    - Review code against spec            │
-│    - Iterate                             │
-└------------------------------------------┘
+┌----------------------------------------┐
+│ 4. Verify (Human)                      │
+│    - Run tests                         │
+│    - Review code against spec.         │
+│    - Iterate                           │
+└----------------------------------------┘
 ```
 
 #### Prompt Pattern 1: Specification Validation
