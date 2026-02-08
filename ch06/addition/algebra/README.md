@@ -97,9 +97,11 @@ If you understand types, you already get 80% of this.
    add(m1, m2) = add(m2, m1)  // commutative
    ```
 
-That's it. You're defining a "calculator" where you specify what operations exist and what rules they follow.
+That's it. You're defining a "calculator" where you specify
+what operations exist and what rules they follow.
 
-*Why "many-sorted"?* Because you have many types (sorts), unlike basic algebra which just uses numbers.
+*Why "many-sorted"?* Because you have many types (sorts),
+unlike basic algebra which just uses numbers.
 
 #### Example: A Simple Banking Algebra
 
@@ -141,11 +143,13 @@ EQUATIONS:
   subtract(m, zero) = m
 ```
 
-*Notice:* We haven't said *how* to implement `Account` or `Money`. We've just said what operations exist and how they relate. You could implement `Account` as a class, a struct, a row in a database, or a JSON blob - as long as the equations hold.
+*Notice:* We haven't said *how* to implement `Account` or `Money`. We've just
+said what operations exist and how they relate. You could implement `Account`
+as a class, a struct, a row in a database, or a JSON blob--as long as the equations hold.
 
 #### Adding State: The Real World
 
-Pure algebra is timeless - `add(2, 3)` is always 5. But real systems have *state* that changes over time:
+Pure algebra is timeless--`add(2, 3)` is always 5. But real systems have *state* that changes over time:
 - Your account balance *now* vs *after* a deposit
 - Whether a room is booked *now* vs *tomorrow*
 - Who has permission *before* vs *after* a promotion
@@ -167,11 +171,13 @@ OPERATIONS:
   exists: State × AccountID → Bool
 ```
 
-Now operations take the *current state* and return the *next state*. This is like Redux or event sourcing - state transitions are explicit.
+Now operations take the *current state* and return the *next state*.
+This is like Redux or event sourcing--state transitions are explicit.
 
 #### Pre/Post Conditions: What Must Be True
 
-Equations tell you how operations relate. *Pre and post conditions* tell you what must be true before/after an operation:
+Equations tell you how operations relate. *Pre and post conditions*
+tell you what must be true before/after an operation:
 
 ```
 withdraw: State × AccountID × Money → State × Result
@@ -250,7 +256,8 @@ OPERATIONS:
     hasPermission(user, p) = (userPermission(user) ≥ p)
 ```
 
-*Why useful:* You can now specify monotonicity (things only go up), access control, and upgrade paths mathematically.
+*Why useful:* You can now specify monotonicity (things only go up),
+access control, and upgrade paths mathematically.
 
 #### Lattices: When Things Can Be Combined
 
@@ -347,7 +354,8 @@ EQUATIONS:
 
 Let's spec a real feature from scratch.
 
-*Stakeholder says:* *"Users can book meeting rooms for time slots, but only if the room is available and they have permission."*
+*Stakeholder says:* *"Users can book meeting rooms for time slots,
+but only if the room is available and they have permission."*
 
 ##### Step 1: Identify Sorts
 
@@ -467,33 +475,33 @@ You can:
 #### The Development Workflow
 
 ```
-┌─────────────────────────────────────────────────┐
-│ 1. Write Specification (Human + LLM)            │
-│    - Extract from requirements                  │
-│    - Formalize in algebraic notation            │
-│    - Validate completeness                      │
-└─────────────────-───────────────────────────────┘
-                  │
-┌─────────────────-───────────────────────────────┐
-│ 2. Generate Tests (LLM)                         │
-│    - Property-based from equations              │
-│    - Invariant checks                           │
-│    - Pre/post condition validation              │
-└─────────────────-───────────────────────────────┘
-                  │
-┌─────────────────-───────────────────────────────┐
-│ 3. Generate Implementation (LLM)                │
-│    - Satisfying the spec                        │
-│    - With defensive checks                      │
-│    - Documented with spec references            │
-└─────────────────-───────────────────────────────┘
-                  │
-┌─────────────────-───────────────────────────────┐
-│ 4. Verify (Human)                               │
-│    - Run tests                                  │
-│    - Review code against spec                   │
-│    - Iterate                                    │
-└─────────────────────────────────────────────────┘
+┌------------------------------------------┐
+│ 1. Write Specification (Human + LLM)     │
+│    - Extract from requirements           │
+│    - Formalize in algebraic notation     │
+│    - Validate completeness               │
+└------------------------------------------┘
+                     │
+┌------------------------------------------┐
+│ 2. Generate Tests (LLM)                  │
+│    - Property-based from equations       │
+│    - Invariant checks                    │
+│    - Pre/post condition validation       │
+└------------------------------------------┘
+                     │
+┌------------------------------------------┐
+│ 3. Generate Implementation (LLM)         │
+│    - Satisfying the spec                 │
+│    - With defensive checks               │
+│    - Documented with spec references     │
+└------------------------------------------┘
+                     │
+┌------------------------------------------┐
+│ 4. Verify (Human)                        │
+│    - Run tests                           │
+│    - Review code against spec            │
+│    - Iterate                             │
+└------------------------------------------┘
 ```
 
 #### Prompt Pattern 1: Specification Validation
@@ -874,7 +882,8 @@ withdraw: State × AccountID × Money → State
 // But you need concurrent access
 ```
 
-Extend the spec with version numbers or use CRDTs, or tell the LLM: "Wrap all state-modifying operations in a transaction boundary."
+Extend the spec with version numbers or use CRDTs, or tell
+the LLM: "Wrap all state-modifying operations in a transaction boundary."
 
 *3. Error Handling Beyond Business Rules*
 The spec handles business errors (insufficient funds), but what about:
@@ -995,7 +1004,8 @@ Requirements → Algebraic Spec → (LLM generates) Tests + Code
 - Produce correct implementations from specifications
 - Check for logical inconsistencies
 
-*You stay in control* of the *what* (the spec), while delegating more of the *how* (the implementation).
+*You stay in control* of the *what* (the spec), while delegating
+more of the *how* (the implementation).
 
 
 
@@ -1011,7 +1021,7 @@ Requirements → Algebraic Spec → (LLM generates) Tests + Code
    - Want practical tools? → Jackson's "Software Abstractions" + Alloy
    - Want state-based? → Lamport's TLA+ book
 
-4. *Join a community:* TLA+, Alloy, and formal methods communities are welcoming.
+4. *Eventually: Join a community:* TLA+, Alloy, and formal methods communities are welcoming.
    Lots of practitioners sharing real-world experiences.
 
 The goal isn't mathematical perfection. But it iss *clarity about what your code should do*,
