@@ -27,7 +27,7 @@ Let's explore one way ..
 
 [^shift]: This was very much __close__ to the idea behind the interest
 in the beginning of the 80s around *logic programming*: 
-You should be able to specify in code *what* should happend, rather then *how*.
+You should be able to specify in code *what* should happen, rather then *how*.
 
 
 ### Why Should You Care?
@@ -153,7 +153,8 @@ as a class, a struct, a row in a database, or a JSON blob--as long as the equati
 
 #### Adding State: The Real World
 
-Pure algebra is timeless--`add(2, 3)` is always 5. But real systems have *state* that changes over time:
+Pure algebra is timeless--`add(2, 3)` is always 5.
+But real systems have *state* that changes over time:
 - Your account balance *now* vs *after* a deposit
 - Whether a room is booked *now* vs *tomorrow*
 - Who has permission *before* vs *after* a promotion
@@ -265,7 +266,8 @@ access control, and upgrade paths mathematically.
 
 #### Lattices: When Things Can Be Combined
 
-Sometimes you need to *combine* values. *Lattices* give you two operations:
+Sometimes you need to *combine* values.
+*Lattices* give you two operations:
 - *Join (∨)*: least upper bound - "either/or" 
 - *Meet (∧)*: greatest lower bound - "both"
 
@@ -292,7 +294,7 @@ LAWS:
 
 #### Groups: When You Can Undo Things
 
-Some operations are *reversible*. *Groups* formalize this:
+Some operations are *reversible*. *Groups* formalise this:
 
 ```
 GROUP: Transform
@@ -515,7 +517,7 @@ I have this algebraic specification for a meeting room booking system:
 
 [paste your spec]
 
-Please analyze it for:
+Please analyse it for:
 1. Completeness - are there missing pre/post conditions?
 2. Consistency - do any equations contradict?
 3. Edge cases - what scenarios might violate invariants?
@@ -874,7 +876,8 @@ class State {
 }
 ```
 
-Tell the LLM: "Implement this spec, but optimize the `accounts` query to O(1) lookup. Document the representation choice."
+Tell the LLM: "Implement this spec, but optimise the `accounts` query to O(1) lookup.
+Document the representation choice."
 
 *2. Concurrency*
 Your spec might be for a single-threaded model:
@@ -905,7 +908,7 @@ Tell the LLM: "Add a technical error layer separate from the business Result typ
 - Complex business logic with many edge cases
 - Financial, healthcare, booking systems - where correctness matters
 - Systems that will evolve over time (spec documents intent)
-- When multiple stakeholders need to agree on behavior
+- When multiple stakeholders need to agree on behaviour
 - APIs and service boundaries (spec becomes contract)
 
 *Poor Fit:*
@@ -926,7 +929,7 @@ You don't need to specify everything. Focus on:
 Leave unspecified:
 - Obvious CRUD operations
 - Pure implementation details
-- Performance optimizations (unless they affect correctness)
+- Performance optimisations (unless they affect correctness)
 
 #### Living Documentation
 
@@ -964,7 +967,7 @@ CHANGES:
 You don't need to rewrite everything. Start small:
 
 1. *Pick one critical module* (e.g., payment processing)
-2. *Extract its specification* (document current behavior formally)
+2. *Extract its specification* (document current behaviour formally)
 3. *Generate tests from spec* (find bugs in existing code!)
 4. *Refactor toward spec* (incrementally fix discrepancies)
 5. *New features use spec-first* (from now on)
@@ -1003,7 +1006,7 @@ Requirements → Algebraic Spec → (LLM generates) Tests + Code
 *The spec is the source of truth.* Code and tests are derived from it.
 
 *LLMs amplify precision.* They can:
-- Help formalize vague requirements into specs
+- Help formalise vague requirements into specs
 - Generate comprehensive tests from equations
 - Produce correct implementations from specifications
 - Check for logical inconsistencies
@@ -1028,7 +1031,7 @@ more of the *how* (the implementation).
 4. *Eventually: Join a community:* TLA+, Alloy, and formal methods communities are welcoming.
    Lots of practitioners sharing real-world experiences.
 
-The goal isn't mathematical perfection. But it iss *clarity about what your code should do*,
+The goal isn't mathematical perfection. But it is *clarity about what your code should do*,
 precise enough that both humans and LLMs can reason about it.
 
 
