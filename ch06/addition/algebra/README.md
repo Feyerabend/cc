@@ -3,6 +3,7 @@
 
 So if an LLM can generate code, what remains for the programmer?
 
+
 One answer is that programming shifts toward *specification* rather 
 than *implementation*.[^shift] Instead of writing detailed code
 in a particular  language, the programmer "crafts" the problem
