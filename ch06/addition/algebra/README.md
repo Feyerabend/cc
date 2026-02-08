@@ -1,6 +1,31 @@
 
 ## From Algebraic Specifications to Code: A Programmer's Guide
 
+So if an LLM can generate code, what remains for the programmer?
+
+One answer is that programming shifts toward *specification* rather 
+than *implementation*. Instead of writing detailed code in a particular 
+language, the programmer "crafts" the problem in more abstract,
+often mathematical, terms. Much of today's low-level detail is
+pushed down or automated.
+
+This idea is not new. In the 1980s and 1990s, algebraic and formal
+methods aimed to do something similar: describe systems through equations,
+invariants, and transformations, and derive implementations from
+those descriptions. At the time, these approaches saw limited adoption,
+partly because the upfront effort was high, the tools were immature,
+and the benefits were not obvious for everyday software development.
+
+LLMs change the cost–benefit balance. The time-consuming art of "crafting"
+may now pay off, because a precise, high-level specification can be
+rapidly turned into working code, explored, and revised. The
+programmer's role shifts from writing lines of code to choosing abstractions,
+defining constraints, and judging whether the generated behaviour
+actually matches the intended system.
+
+Let's explore one way ..
+
+
 ### Why Should You Care?
 
 You've probably written code where:
