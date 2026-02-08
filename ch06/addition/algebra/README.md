@@ -29,6 +29,15 @@ Let's explore one way ..
 in the beginning of the 80s around *logic programming*: 
 You should be able to specify in code *what* should happen, rather then *how*.
 
+.. But before proceeding, I evaluated this idea using contemporary general-purpose
+LLMs (early 2026). The outcome was limited, most likely because the models'
+training data did not adequately cover the required formal and structural
+material. With fine-tuning or purpose-built models, this could nevertheless
+become a practical approach going forward. Also, as LLMs are stochastic
+by design, their outputs are inherently non-deterministic, precluding
+strictly reproducible results. Whether this will become a bottleneck in
+the future is an open question.
+
 
 ### Why Should You Care?
 
