@@ -97,9 +97,11 @@ If you understand types, you already get 80% of this.
    add(m1, m2) = add(m2, m1)  // commutative
    ```
 
-That's it. You're defining a "calculator" where you specify what operations exist and what rules they follow.
+That's it. You're defining a "calculator" where you specify
+what operations exist and what rules they follow.
 
-*Why "many-sorted"?* Because you have many types (sorts), unlike basic algebra which just uses numbers.
+*Why "many-sorted"?* Because you have many types (sorts),
+unlike basic algebra which just uses numbers.
 
 #### Example: A Simple Banking Algebra
 
@@ -880,7 +882,8 @@ withdraw: State × AccountID × Money → State
 // But you need concurrent access
 ```
 
-Extend the spec with version numbers or use CRDTs, or tell the LLM: "Wrap all state-modifying operations in a transaction boundary."
+Extend the spec with version numbers or use CRDTs, or tell
+the LLM: "Wrap all state-modifying operations in a transaction boundary."
 
 *3. Error Handling Beyond Business Rules*
 The spec handles business errors (insufficient funds), but what about:
@@ -1001,7 +1004,8 @@ Requirements → Algebraic Spec → (LLM generates) Tests + Code
 - Produce correct implementations from specifications
 - Check for logical inconsistencies
 
-*You stay in control* of the *what* (the spec), while delegating more of the *how* (the implementation).
+*You stay in control* of the *what* (the spec), while delegating
+more of the *how* (the implementation).
 
 
 
@@ -1017,7 +1021,7 @@ Requirements → Algebraic Spec → (LLM generates) Tests + Code
    - Want practical tools? → Jackson's "Software Abstractions" + Alloy
    - Want state-based? → Lamport's TLA+ book
 
-4. *Join a community:* TLA+, Alloy, and formal methods communities are welcoming.
+4. *Eventually: Join a community:* TLA+, Alloy, and formal methods communities are welcoming.
    Lots of practitioners sharing real-world experiences.
 
 The goal isn't mathematical perfection. But it iss *clarity about what your code should do*,
