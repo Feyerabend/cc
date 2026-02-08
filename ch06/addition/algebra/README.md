@@ -92,6 +92,8 @@ If you understand types, you already get 80% of this.
    balance: Account → Money
    add: Money × Money → Money
    ```
+   (Here, × denotes the Cartesian product of sorts, i.e. the types of function
+   arguments, not numeric multiplication.)
 
 3. *Equations* (think: laws your functions must obey)
    ```
