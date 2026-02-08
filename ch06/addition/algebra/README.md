@@ -4,10 +4,10 @@
 So if an LLM can generate code, what remains for the programmer?
 
 One answer is that programming shifts toward *specification* rather 
-than *implementation*. Instead of writing detailed code in a particular 
-language, the programmer "crafts" the problem in more abstract,
-often mathematical, terms. Much of today's low-level detail is
-pushed down or automated.
+than *implementation*.[^shift] Instead of writing detailed code
+in a particular  language, the programmer "crafts" the problem
+in more abstract, often mathematical, terms. Much of today's
+low-level detail is pushed down or automated.
 
 This idea is not new. In the 1980s and 1990s, algebraic and formal
 methods aimed to do something similar: describe systems through equations,
@@ -24,6 +24,10 @@ defining constraints, and judging whether the generated behaviour
 actually matches the intended system.
 
 Let's explore one way ..
+
+[^shift]: This was very much __close__ to the idea behind the interest
+in the beginning of the 80s around *logic programming*: 
+You should be able to specify in code *what* should happend, rather then *how*.
 
 
 ### Why Should You Care?
