@@ -141,11 +141,13 @@ EQUATIONS:
   subtract(m, zero) = m
 ```
 
-*Notice:* We haven't said *how* to implement `Account` or `Money`. We've just said what operations exist and how they relate. You could implement `Account` as a class, a struct, a row in a database, or a JSON blob - as long as the equations hold.
+*Notice:* We haven't said *how* to implement `Account` or `Money`. We've just
+said what operations exist and how they relate. You could implement `Account`
+as a class, a struct, a row in a database, or a JSON blob--as long as the equations hold.
 
 #### Adding State: The Real World
 
-Pure algebra is timeless - `add(2, 3)` is always 5. But real systems have *state* that changes over time:
+Pure algebra is timeless--`add(2, 3)` is always 5. But real systems have *state* that changes over time:
 - Your account balance *now* vs *after* a deposit
 - Whether a room is booked *now* vs *tomorrow*
 - Who has permission *before* vs *after* a promotion
@@ -167,11 +169,13 @@ OPERATIONS:
   exists: State × AccountID → Bool
 ```
 
-Now operations take the *current state* and return the *next state*. This is like Redux or event sourcing - state transitions are explicit.
+Now operations take the *current state* and return the *next state*.
+This is like Redux or event sourcing--state transitions are explicit.
 
 #### Pre/Post Conditions: What Must Be True
 
-Equations tell you how operations relate. *Pre and post conditions* tell you what must be true before/after an operation:
+Equations tell you how operations relate. *Pre and post conditions*
+tell you what must be true before/after an operation:
 
 ```
 withdraw: State × AccountID × Money → State × Result
@@ -250,7 +254,8 @@ OPERATIONS:
     hasPermission(user, p) = (userPermission(user) ≥ p)
 ```
 
-*Why useful:* You can now specify monotonicity (things only go up), access control, and upgrade paths mathematically.
+*Why useful:* You can now specify monotonicity (things only go up),
+access control, and upgrade paths mathematically.
 
 #### Lattices: When Things Can Be Combined
 
@@ -347,7 +352,8 @@ EQUATIONS:
 
 Let's spec a real feature from scratch.
 
-*Stakeholder says:* *"Users can book meeting rooms for time slots, but only if the room is available and they have permission."*
+*Stakeholder says:* *"Users can book meeting rooms for time slots,
+but only if the room is available and they have permission."*
 
 ##### Step 1: Identify Sorts
 
@@ -467,33 +473,33 @@ You can:
 #### The Development Workflow
 
 ```
-┌─────────────────────────────────────────────────┐
-│ 1. Write Specification (Human + LLM)            │
-│    - Extract from requirements                  │
-│    - Formalize in algebraic notation            │
-│    - Validate completeness                      │
-└─────────────────-───────────────────────────────┘
-                  │
-┌─────────────────-───────────────────────────────┐
-│ 2. Generate Tests (LLM)                         │
-│    - Property-based from equations              │
-│    - Invariant checks                           │
-│    - Pre/post condition validation              │
-└─────────────────-───────────────────────────────┘
-                  │
-┌─────────────────-───────────────────────────────┐
-│ 3. Generate Implementation (LLM)                │
-│    - Satisfying the spec                        │
-│    - With defensive checks                      │
-│    - Documented with spec references            │
-└─────────────────-───────────────────────────────┘
-                  │
-┌─────────────────-───────────────────────────────┐
-│ 4. Verify (Human)                               │
-│    - Run tests                                  │
-│    - Review code against spec                   │
-│    - Iterate                                    │
-└─────────────────────────────────────────────────┘
+┌------------------------------------------┐
+│ 1. Write Specification (Human + LLM)     │
+│    - Extract from requirements           │
+│    - Formalize in algebraic notation     │
+│    - Validate completeness               │
+└------------------------------------------┘
+                     │
+┌------------------------------------------┐
+│ 2. Generate Tests (LLM)                  │
+│    - Property-based from equations       │
+│    - Invariant checks                    │
+│    - Pre/post condition validation       │
+└------------------------------------------┘
+                     │
+┌------------------------------------------┐
+│ 3. Generate Implementation (LLM)         │
+│    - Satisfying the spec                 │
+│    - With defensive checks               │
+│    - Documented with spec references     │
+└------------------------------------------┘
+                     │
+┌------------------------------------------┐
+│ 4. Verify (Human)                        │
+│    - Run tests                           │
+│    - Review code against spec            │
+│    - Iterate                             │
+└------------------------------------------┘
 ```
 
 #### Prompt Pattern 1: Specification Validation
