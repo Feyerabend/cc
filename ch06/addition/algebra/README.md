@@ -1026,9 +1026,9 @@ more of the *how* (the implementation).
 2. *Experiment with an LLM:* Give it a small spec and ask for tests. See what it produces.
 
 3. *Read deeper:* Pick one reference from the reading list based on what interests you most:
-   - Want formalism? → Guttag's papers on algebraic ADTs
-   - Want practical tools? → Jackson's "Software Abstractions" + Alloy
-   - Want state-based? → Lamport's TLA+ book
+   - Want formalism? → Guttag's papers on algebraic ADTs[^guttag]
+   - Want practical tools? → Jackson's "Software Abstractions" + Alloy[^jackson]
+   - Want state-based? → Lamport's TLA+ book[^lamport]
 
 4. *Eventually: Join a community:* TLA+, Alloy, and formal methods communities are welcoming.
    Lots of practitioners sharing real-world experiences.
@@ -1037,3 +1037,26 @@ The goal isn't mathematical perfection. But it is *clarity about what your code 
 precise enough that both humans and LLMs can reason about it.
 
 
+
+
+[^guttag]: The core idea is to treat data types as a mathematical theory.
+An abstract data type is defined by a set of sorts, a set of operations,
+and	a set of axioms (equations). Meaning precedes implementation.
+A program is correct if it is a model of the specification.
+This is deeply influenced by algebra and model theory.
+
+[^jackson]: Alloy is a lightweight relational logic with bounded model
+checking. You describe sets, relations, and constraints.
+Then the tool searches for counterexamples within a finite scope.
+Design is the act of excluding bad worlds. You do not prove correctness;
+you aggressively hunt for small counterexamples.
+This is a fundamentally falsificationist stance.
+Alloy becomes a conversational design partner rather than a niche tool.
+
+[^lamport]: Lamport’s TLA+ (Temporal Logic of Actions) models systems as
+states, actions (state transitions), and temporal properties over executions.
+You do not write code; you write a mathematical description of how the system may evolve.
+Concurrency, distribution, and time are fundamental.
+You cannot reason about such systems by reading code alone.
+Correctness is about behaviors, not functions.
+This lowers the barrier without weakening the formal core.
