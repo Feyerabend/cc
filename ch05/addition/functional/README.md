@@ -227,6 +227,7 @@ allowing resumable computations.
 Going even further, build a compiler which implements some of the concepts from modern
 functional languages .. start with e.g. the [funlang vm](./vm/).
 
+
 #### Reading
 
 - Tran, Minh Quang. *The Art of Functional Programming*. Wiley, 2019.
@@ -234,4 +235,11 @@ functional languages .. start with e.g. the [funlang vm](./vm/).
   principles and practices of FP, while addressing real-world challenges and
   solutions. It introduces functional programming in an accessible way, focusing
   on techniques for writing modular and reusable code.
+
+- Hudak, P. (2000). *The Haskell school of expression: Learning functional
+  programming through multimedia*. Cambridge University Press.
+
+- Thompson, S. (1999). *Haskell: The craft of functional programming* (2nd ed.).
+  Addison‑Wesley.
+
 
