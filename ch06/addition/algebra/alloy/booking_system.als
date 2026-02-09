@@ -1,21 +1,22 @@
 /**
- * Meeting Room Booking System - Alloy Spec
+ * Meeting Room Booking System - Alloy Specification
  * 
- * Based on the algebraic specification
+ * Based on the algebraic specification from the document.
  * This is an executable model that can find violations of invariants
  * and verify properties of the booking system.
  */
 
 module booking_system
 
-
-/* SORTS (Signatures in Alloy) */
+/******************************************************************************
+ * SORTS (Signatures in Alloy)
+ ******************************************************************************/
 
 sig User {}
 sig Room {}
 
 sig Time {
-  next: lone Time  // discrete time steps
+  succ: lone Time  // successor - discrete time steps (renamed to avoid conflict with integer/next)
 }
 
 sig TimeSlot {
@@ -23,7 +24,7 @@ sig TimeSlot {
   end: one Time
 } {
   // TimeSlot well-formedness: end comes after start
-  end in start.^next  // ^ means transitive closure
+  end in start.^succ  // ^ means transitive closure (one or more steps)
 }
 
 abstract sig Result {}
@@ -45,8 +46,9 @@ sig State {
   permissions: User -> set Room  // which users can book which rooms
 }
 
-
-/* OPERATIONS (as predicates) */
+/******************************************************************************
+ * OPERATIONS (as predicates)
+ ******************************************************************************/
 
 /**
  * Spec: overlaps predicate
@@ -56,19 +58,19 @@ sig State {
  */
 pred overlaps[s1, s2: TimeSlot] {
   // Slots overlap if neither ends before the other starts
-  not (s1.end in s2.start.^*next or s2.end in s1.start.^*next)
+  not (s1.end in s2.start.^*succ or s2.end in s1.start.^*succ)
   // Simplified: they overlap if their time ranges intersect
-  some (s1.start.*next & s2.start.*next) and
-  some (s1.end.^*next & s2.end.^*next) and
-  (s1.start in s2.start.*next implies s1.start in s2.end.^*next) and
-  (s2.start in s1.start.*next implies s2.start in s1.end.^*next)
+  some (s1.start.*succ & s2.start.*succ) and
+  some (s1.end.^*succ & s2.end.^*succ) and
+  (s1.start in s2.start.*succ implies s1.start in s2.end.^*succ) and
+  (s2.start in s1.start.*succ implies s2.start in s1.end.^*succ)
 }
 
 // Simpler, more direct overlaps definition
 pred overlaps_simple[s1, s2: TimeSlot] {
   // Two slots overlap if one starts during the other
-  (s1.start in s2.start.*next and s1.start in s2.end.^*next) or
-  (s2.start in s1.start.*next and s2.start in s1.end.^*next)
+  (s1.start in s2.start.*succ and s1.start in s2.end.^*succ) or
+  (s2.start in s1.start.*succ and s2.start in s1.end.^*succ)
 }
 
 /**
@@ -170,8 +172,9 @@ pred cancelBooking[s, s': State, u: User, bid: BookingID, result: Result] {
   }
 }
 
-
-/* INVARIANTS */
+/******************************************************************************
+ * INVARIANTS
+ ******************************************************************************/
 
 /**
  * Spec: INVARIANT - No double-booking
@@ -211,8 +214,9 @@ pred WellFormedState[s: State] {
   UniqueBookingIDs[s]
 }
 
-
-/* SYSTEM DYNAMICS */
+/******************************************************************************
+ * SYSTEM DYNAMICS
+ ******************************************************************************/
 
 /**
  * Initial state: no bookings, some permissions granted
@@ -248,8 +252,9 @@ pred trace {
   }
 }
 
-
-/* ASSERTIONS TO CHECK */
+/******************************************************************************
+ * ASSERTIONS TO CHECK
+ ******************************************************************************/
 
 /**
  * ASSERTION: Successfully booking makes room unavailable
@@ -311,9 +316,9 @@ assert CanOnlyCancelOwnBookings {
           (cancelBooking[s, s', u, bid, result] and result = Success)
 }
 
-/*
+/******************************************************************************
  * CHECKS - Run these to verify the system
- */
+ ******************************************************************************/
 
 // Check each assertion for counterexamples
 check BookingMakesRoomUnavailable for 5
@@ -323,9 +328,9 @@ check SuccessRequiresPermissionAndAvailability for 5
 check DifferentUsersSameRoomNoOverlap for 5
 check CanOnlyCancelOwnBookings for 5
 
-/*
+/******************************************************************************
  * PREDICATES TO RUN - Generate example scenarios
- */
+ ******************************************************************************/
 
 /**
  * Show a scenario where a booking succeeds
@@ -390,7 +395,7 @@ run showPermissionDenied for 4
 run showDoubleBookingAttempt for 5
 run showComplexScenario for 6
 
-/*
+/******************************************************************************
  * USAGE NOTES:
  * 
  * 1. Install Alloy Analyzer from: https://alloytools.org/
@@ -415,4 +420,4 @@ run showComplexScenario for 6
  *    c) If counterexample found, examine it in visualizer
  *    d) Fix the specification or implementation
  *    e) Repeat
- */
+ ******************************************************************************/
