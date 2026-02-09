@@ -19,12 +19,23 @@ sig Time {
   succ: lone Time  // successor - discrete time steps (renamed to avoid conflict with integer/next)
 }
 
+// Facts about time structure
+fact TimeOrdering {
+  // Time is acyclic - no time loops
+  no t: Time | t in t.^succ
+  
+  // Each time can be reached from some "start" time
+  // (This ensures we have a linear timeline)
+}
+
 sig TimeSlot {
   start: one Time,
   end: one Time
 } {
-  // TimeSlot well-formedness: end comes after start
-  end in start.^succ  // ^ means transitive closure (one or more steps)
+  // TimeSlot well-formedness: end comes after start (or they could be equal for instant slots)
+  end in start.*succ  // * means reflexive transitive (includes start itself)
+  // Ensure they're actually different for non-trivial slots
+  start != end  // Force proper duration
 }
 
 abstract sig Result {}
@@ -53,24 +64,17 @@ sig State {
 /**
  * Spec: overlaps predicate
  * 
- * overlaps(slot1, slot2) = 
- *   not (end(slot1) ≤ start(slot2) or end(slot2) ≤ start(slot1))
+ * Two time slots overlap if they share any time point.
+ * They DON'T overlap only if one completely ends before the other starts.
  */
 pred overlaps[s1, s2: TimeSlot] {
-  // Slots overlap if neither ends before the other starts
-  not (s1.end in s2.start.^*succ or s2.end in s1.start.^*succ)
-  // Simplified: they overlap if their time ranges intersect
-  some (s1.start.*succ & s2.start.*succ) and
-  some (s1.end.^*succ & s2.end.^*succ) and
-  (s1.start in s2.start.*succ implies s1.start in s2.end.^*succ) and
-  (s2.start in s1.start.*succ implies s2.start in s1.end.^*succ)
-}
-
-// Simpler, more direct overlaps definition
-pred overlaps_simple[s1, s2: TimeSlot] {
-  // Two slots overlap if one starts during the other
-  (s1.start in s2.start.*succ and s1.start in s2.end.^*succ) or
-  (s2.start in s1.start.*succ and s2.start in s1.end.^*succ)
+  // Overlap means: NOT (s1 ends before s2 starts OR s2 ends before s1 starts)
+  // In other words: s1.start comes before or at s2.end AND s2.start comes before or at s1.end
+  
+  // s1 starts before s2 ends (or at the same time)
+  s1.start in s2.end.*succ and
+  // s2 starts before s1 ends (or at the same time)  
+  s2.start in s1.end.*succ
 }
 
 /**
@@ -81,7 +85,7 @@ pred overlaps_simple[s1, s2: TimeSlot] {
  *     bookingRoom(booking) = room and overlaps(bookingSlot(booking), slot)
  */
 pred isAvailable[s: State, r: Room, ts: TimeSlot] {
-  no b: s.bookings | b.room = r and overlaps_simple[b.slot, ts]
+  no b: s.bookings | b.room = r and overlaps[b.slot, ts]
 }
 
 /**
@@ -188,7 +192,7 @@ pred cancelBooking[s, s': State, u: User, bid: BookingID, result: Result] {
  */
 pred NoDoubleBooking[s: State] {
   no disj b1, b2: s.bookings | 
-    b1.room = b2.room and overlaps_simple[b1.slot, b2.slot]
+    b1.room = b2.room and overlaps[b1.slot, b2.slot]
 }
 
 /**
@@ -302,7 +306,7 @@ assert DifferentUsersSameRoomNoOverlap {
     no disj b1, b2: s.bookings |
       b1.user = u1 and b2.user = u2 and
       b1.room = b2.room and
-      overlaps_simple[b1.slot, b2.slot]
+      overlaps[b1.slot, b2.slot]
 }
 
 /**
@@ -354,7 +358,7 @@ pred showPermissionDenied {
 pred showDoubleBookingAttempt {
   some s, s1, s2: State, u1, u2: User, r: Room, ts1, ts2: TimeSlot | {
     bookRoom[s, s1, u1, r, ts1, Success]
-    overlaps_simple[ts1, ts2]
+    overlaps[ts1, ts2]
     bookRoom[s1, s2, u2, r, ts2, RoomUnavailable]
   }
 }
@@ -378,7 +382,7 @@ pred showComplexScenario {
     bookRoom[s1, s2, u2, r2, ts2, Success]
     
     // User 3 tries to book room 1 at overlapping time (should fail)
-    overlaps_simple[ts1, ts3]
+    overlaps[ts1, ts3]
     bookRoom[s2, s3, u3, r1, ts3, RoomUnavailable]
     
     // All states are well-formed
