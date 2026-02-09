@@ -226,3 +226,12 @@ allowing resumable computations.
 
 Going even further, build a compiler which implements some of the concepts from modern
 functional languages .. start with e.g. the [funlang vm](./vm/).
+
+#### Reading
+
+- Tran, Minh Quang. *The Art of Functional Programming*. Wiley, 2019.
+  - A deep dive into functional programming, this book explores the underlying
+  principles and practices of FP, while addressing real-world challenges and
+  solutions. It introduces functional programming in an accessible way, focusing
+  on techniques for writing modular and reusable code.
+
