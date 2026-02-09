@@ -230,11 +230,6 @@ functional languages .. start with e.g. the [funlang vm](./vm/).
 
 #### Reading
 
-- Tran, M. Q. (2019). The art of functional programming. Wiley.
-  - A deep dive into functional programming, this book explores the underlying
-  principles and practices of FP, while addressing real-world challenges and
-  solutions. It introduces functional programming in an accessible way, focusing
-  on techniques for writing modular and reusable code.
 
 - Hudak, P. (2000). *The Haskell school of expression: Learning functional
   programming through multimedia*. Cambridge University Press.
@@ -252,4 +247,11 @@ functional languages .. start with e.g. the [funlang vm](./vm/).
   integrates detailed examples that illustrate how functional design leads to
   modular and maintainable code.
 
+- Tran, M. Q. (2019). The art of functional programming. Wiley.
+  - A deep dive into functional programming, this book explores the underlying
+  principles and practices of FP, while addressing real-world challenges and
+  solutions. It introduces functional programming in an accessible way, focusing
+  on techniques for writing modular and reusable code.
 
+![Hudak](./../../assets/image/hudak.png)
+![Thompson](./../../assets/image/thompson.png)
