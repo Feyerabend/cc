@@ -1,13 +1,13 @@
 
 ## Psychology and programming
-	
-- Kahneman, Daniel (2011). Thinking, fast and slow. 1. ed. New York: Farrar, Straus and Giroux
-- Kahneman, D., Sibony, O. & Sunstein, C. R. (2021). Noise: a flaw in human judgment. London: William Collins.
 
-Daniel Kahneman, a psychologist, is best known for his groundbreaking work on decision-making, behavioral
+- Kahneman, D. (2011). *Thinking, fast and slow*. Farrar, Straus and Giroux.
+- Kahneman, D., Sibony, O., & Sunstein, C. R. (2021). *Noise: A flaw in human judgment*. William Collins.
+
+Daniel Kahneman, a psychologist, is best known for his groundbreaking work on decision-making, behavioural
 economics, and cognitive biases. His work, particularly in collaboration with Amos Tversky, has had a
 profound influence on our understanding of how humans think, make decisions, and solve problems. While his
-ideas originate in psychology and behavioral economics, many of them are directly relevant to programming,
+ideas originate in psychology and behavioural economics, many of them are directly relevant to programming,
 software engineering, and software development processes.
 
 This relevance has become even more pronounced with the increasing presence of large language models (LLMs)
@@ -33,16 +33,16 @@ One of Kahneman’s most influential ideas is the distinction between two modes 
 problem-solving and critical thinking, but it requires attention and cognitive resources.
 
 In the context of LLM-assisted programming, this distinction becomes especially important. LLMs effectively
-externalize and automate System 1 thinking: they generate code quickly, fluently, and with high surface
+externalise and automate System 1 thinking: they generate code quickly, fluently, and with high surface
 plausibility. They do not, however, replace System 2 thinking, which remains the programmer’s responsibility.
 
 Programming and debugging: When debugging, programmers often rely on System 1 thinking—jumping to
 conclusions or making quick assumptions about the cause of a problem. This tendency can be reinforced by
 LLMs, which readily propose explanations or fixes that sound reasonable. By deliberately engaging
 System 2 thinking, developers can approach problems more methodically, carefully testing assumptions and
-investigating behavior step by step.
+investigating behaviour step by step.
 
-Example: If a bug occurs, a developer might quickly assume it is a variable initialization issue (System 1),
+Example: If a bug occurs, a developer might quickly assume it is a variable initialisation issue (System 1),
 perhaps reinforced by an LLM-generated suggestion. By stepping through the code, using a debugger, writing
 targeted tests, or inspecting invariants, the developer engages System 2 thinking and is more likely to
 identify the true root cause.
@@ -124,7 +124,7 @@ Kahneman’s work on loss aversion shows that people experience losses more stro
 Refactoring and changes: Developers may resist refactoring or replacing code—especially code generated
 quickly by an LLM—because it feels like discarding something valuable.
 
-Solution: Emphasizing regeneration over preservation can help. When code is viewed as a disposable artifact
+Solution: Emphasising regeneration over preservation can help. When code is viewed as a disposable artefact
 derived from specifications and tests, rather than as a handcrafted asset, loss aversion is reduced.
 
 Risk-averse decisions: Programmers may stick to familiar tools or architectures, even when better options
@@ -142,7 +142,7 @@ The halo effect is the tendency for an overall impression to influence specific 
 Bias in code reviews: A developer’s reputation, or the perceived authority of an LLM-generated solution,
 may bias reviewers toward assuming correctness and overlooking flaws.
 
-Solution: Standardized review processes, explicit criteria, and automated checks help counteract this bias
+Solution: Standardised review processes, explicit criteria, and automated checks help counteract this bias
 by shifting evaluation from reputation to evidence.
 
 
@@ -154,14 +154,14 @@ The endowment effect is the tendency to overvalue what one already owns.
 Code ownership: Developers may overvalue their own code—or code they have iteratively refined with an
 LLM—and resist changes.
 
-Solution: Encouraging collective ownership and emphasizing specifications, tests, and shared goals over
-individual authorship helps detach identity from artifacts. Or, more succinctly: kill your darlings.
+Solution: Encouraging collective ownership and emphasising specifications, tests, and shared goals over
+individual authorship helps detach identity from artefacts. Or, more succinctly: kill your darlings.
 
 
 
 ### Conclusion: Applying Kahneman’s insights to programming
 
-Kahneman’s insights into human behavior, judgment, and bias offer a powerful lens for improving programming
+Kahneman’s insights into human behaviour, judgment, and bias offer a powerful lens for improving programming
 practice. This is especially true in a landscape where LLMs accelerate intuition, pattern completion, and
 surface-level correctness.
 
@@ -170,7 +170,7 @@ workflows that deliberately compensate for these limitations. This leads to bett
 debugging, clearer specifications, and more rational design decisions.
 
 LLMs do not eliminate the need for judgment; they sharpen the need for it. Kahneman’s work helps programmers
-recognize where human and machine intuition are most likely to fail, and how disciplined methods—testing,
+recognise where human and machine intuition are most likely to fail, and how disciplined methods—testing,
 specification, review, and formal reasoning—can turn fast generation into reliable systems.
 
 ![Slow](./../../assets/image/slow.png) ![Noice](./../../assets/image/noice.png)
