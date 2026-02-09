@@ -1,5 +1,5 @@
 /**
- * Meeting Room Booking System - Alloy Specification
+ * Meeting Room Booking System - Alloy Spec
  * 
  * Based on the algebraic specification from the document.
  * This is an executable model that can find violations of invariants
@@ -8,9 +8,9 @@
 
 module booking_system
 
-/******************************************************************************
+/*
  * SORTS (Signatures in Alloy)
- ******************************************************************************/
+ */
 
 sig User {}
 sig Room {}
@@ -57,9 +57,9 @@ sig State {
   permissions: User -> set Room  // which users can book which rooms
 }
 
-/******************************************************************************
+/*
  * OPERATIONS (as predicates)
- ******************************************************************************/
+ */
 
 /**
  * Spec: overlaps predicate
@@ -192,9 +192,9 @@ pred cancelBooking[s, s': State, u: User, bid: BookingID, result: Result] {
   }
 }
 
-/******************************************************************************
+/*
  * INVARIANTS
- ******************************************************************************/
+ */
 
 /**
  * Spec: INVARIANT - No double-booking
@@ -234,9 +234,9 @@ pred WellFormedState[s: State] {
   UniqueBookingIDs[s]
 }
 
-/******************************************************************************
+/*
  * SYSTEM DYNAMICS
- ******************************************************************************/
+ */
 
 /**
  * Initial state: no bookings, some permissions granted
@@ -272,9 +272,9 @@ pred trace {
   }
 }
 
-/******************************************************************************
+/*
  * ASSERTIONS TO CHECK
- ******************************************************************************/
+ */
 
 /**
  * Simple test: if a booking exists for a room+slot, the room should be unavailable
@@ -348,9 +348,9 @@ assert CanOnlyCancelOwnBookings {
           (cancelBooking[s, s', u, bid, result] and result = Success)
 }
 
-/******************************************************************************
+/*
  * CHECKS - Run these to verify the system
- ******************************************************************************/
+ */
 
 // Check each assertion for counterexamples
 check BookingMakesRoomUnavailable for 5
@@ -360,9 +360,9 @@ check SuccessRequiresPermissionAndAvailability for 5
 check DifferentUsersSameRoomNoOverlap for 5
 check CanOnlyCancelOwnBookings for 5
 
-/******************************************************************************
+/*
  * PREDICATES TO RUN - Generate example scenarios
- ******************************************************************************/
+ */
 
 /**
  * Show a scenario where a booking succeeds
@@ -430,7 +430,7 @@ run showComplexScenario for 6
 // DEBUG: This should find NO instances (if it finds one, our logic is broken)
 run testBasicAvailability for 3
 
-/******************************************************************************
+/*
  * USAGE NOTES:
  * 
  * 1. Install Alloy Analyzer from: https://alloytools.org/
@@ -455,4 +455,4 @@ run testBasicAvailability for 3
  *    c) If counterexample found, examine it in visualizer
  *    d) Fix the specification or implementation
  *    e) Repeat
- ******************************************************************************/
+ */
