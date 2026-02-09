@@ -1030,9 +1030,13 @@ more of the *how* (the implementation).
 
 ![Counterexample found by Alloy](./../../assets/image/alloy.png)
 
-In Alloy you can hunt for counterexamples, and debug before you even make
+In Alloy[^alloyex] you can hunt for counterexamples, and debug before you even make
 a program.
 
+[^alloyex]: I found this approach more intuitive than TLA and wrote an article about it
+in 2003: Set Lonnert, "Automatiserad programmering", *Datormagazin*, no. 9, 2003.
+Since this was written years ago, the article likely does not reflect Alloy in its
+current form.
 
 ### Next Steps
 
