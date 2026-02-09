@@ -230,7 +230,7 @@ functional languages .. start with e.g. the [funlang vm](./vm/).
 
 #### Reading
 
-- Tran, Minh Quang. *The Art of Functional Programming*. Wiley, 2019.
+- Tran, M. Q. (2019). The art of functional programming. Wiley.
   - A deep dive into functional programming, this book explores the underlying
   principles and practices of FP, while addressing real-world challenges and
   solutions. It introduces functional programming in an accessible way, focusing
