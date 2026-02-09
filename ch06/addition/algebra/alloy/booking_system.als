@@ -67,14 +67,34 @@ sig State {
  * Two time slots overlap if they share any time point.
  * They DON'T overlap only if one completely ends before the other starts.
  * 
- * In terms of the ordering:
- * - s1 ends at or before s2 starts: s1.end in s2.start.*succ (no overlap)
- * - s2 ends at or before s1 starts: s2.end in s1.start.*succ (no overlap)
- * - Otherwise: they overlap
+ * Key insight: "A comes before B" means "B is reachable from A by following succ"
+ * which is written as: B in A.^succ (or B in A.*succ if equal times count)
+ * 
+ * No overlap when:
+ * - s1 ends before or at s2 starts: s2.start in s1.end.*succ (s2 starts ≥ s1 ends)
+ * - s2 ends before or at s1 starts: s1.start in s2.end.*succ (s1 starts ≥ s2 ends)
  */
 pred overlaps[s1, s2: TimeSlot] {
-  // They overlap if NEITHER slot ends before the other starts
-  not (s1.end in s2.start.*succ or s2.end in s1.start.*succ)
+  // They overlap if NEITHER slot ends before/at the other starts
+  not (s2.start in s1.end.*succ or s1.start in s2.end.*succ)
+}
+
+/**
+ * Test: a slot should always overlap with itself
+ */
+pred testOverlapsSelf {
+  some ts: TimeSlot | overlaps[ts, ts]
+}
+
+/**
+ * Test: slots that share the same time should overlap
+ */
+pred testOverlapsSameTime {
+  some ts1, ts2: TimeSlot | {
+    ts1.start = ts2.start
+    ts1.end = ts2.end
+    overlaps[ts1, ts2]
+  }
 }
 
 /**
@@ -257,6 +277,18 @@ pred trace {
  ******************************************************************************/
 
 /**
+ * Simple test: if a booking exists for a room+slot, the room should be unavailable
+ */
+pred testBasicAvailability {
+  some s: State, r: Room, ts: TimeSlot | {
+    // There's a booking for this room and timeslot
+    some b: s.bookings | b.room = r and b.slot = ts
+    // But the room shows as available (this should be impossible!)
+    isAvailable[s, r, ts]
+  }
+}
+
+/**
  * ASSERTION: Successfully booking makes room unavailable
  * 
  * This is the main POST-CONDITION from the spec
@@ -394,6 +426,9 @@ run showSuccessfulBooking for 4
 run showPermissionDenied for 4
 run showDoubleBookingAttempt for 5
 run showComplexScenario for 6
+
+// DEBUG: This should find NO instances (if it finds one, our logic is broken)
+run testBasicAvailability for 3
 
 /******************************************************************************
  * USAGE NOTES:
