@@ -170,7 +170,7 @@ workflows that deliberately compensate for these limitations. This leads to bett
 debugging, clearer specifications, and more rational design decisions.
 
 LLMs do not eliminate the need for judgment; they sharpen the need for it. Kahneman’s work helps programmers
-recognise where human and machine intuition are most likely to fail, and how disciplined methods—testing,
+recognise where human and machine intuition are most likely to fail, and how disciplined methods--testing,
 specification, review, and formal reasoning—can turn fast generation into reliable systems.
 
 ![Slow](./../../assets/image/slow.png) ![Noice](./../../assets/image/noice.png)

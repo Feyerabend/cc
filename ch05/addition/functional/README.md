@@ -227,11 +227,29 @@ allowing resumable computations.
 Going even further, build a compiler which implements some of the concepts from modern
 functional languages .. start with e.g. the [funlang vm](./vm/).
 
+
 #### Reading
 
-- Tran, Minh Quang. *The Art of Functional Programming*. Wiley, 2019.
+- Tran, M. Q. (2019). The art of functional programming. Wiley.
   - A deep dive into functional programming, this book explores the underlying
   principles and practices of FP, while addressing real-world challenges and
   solutions. It introduces functional programming in an accessible way, focusing
   on techniques for writing modular and reusable code.
+
+- Hudak, P. (2000). *The Haskell school of expression: Learning functional
+  programming through multimedia*. Cambridge University Press.
+  - A practical introduction to functional programming using Haskell, this
+  book emphasizes clear development of core FP concepts alongside hands‑on
+  examples. It guides readers from basic functional techniques to more advanced
+  topics, showing how Haskell’s type system and abstraction mechanisms support
+  robust and expressive software design.
+
+- Thompson, S. (1999). *Haskell: The craft of functional programming* (2nd ed.).
+  Addison‑Wesley.
+  - A foundational text on Haskell and functional programming, this book presents
+  the language’s syntax and semantics with a focus on developing correct, elegant
+  programs. It covers functional abstractions, types, and data structures, and
+  integrates detailed examples that illustrate how functional design leads to
+  modular and maintainable code.
+
 
