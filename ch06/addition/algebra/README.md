@@ -1030,12 +1030,14 @@ more of the *how* (the implementation).
 
 ![Counterexample found by Alloy](./../../assets/image/alloy.png)
 
-In Alloy[^alloyex] you can hunt for counterexamples, and debug before you even make
+Specification can of course be written in a more widely known (written)
+specification language, as you will interact with LLMs. One such is Alloy[^alloyex].
+In Alloy you can hunt for counterexamples, and debug before you even make
 a program.
 
-[^alloyex]: I found this approach more intuitive than TLA and wrote an article about it
-in 2003: Set Lonnert, "Automatiserad programmering", *Datormagazin*, no. 9, 2003.
-Since this was written years ago, the article likely does not reflect Alloy in its
+[^alloyex]: I found this approach more intuitive than TLA/TLA+ and wrote an article about
+it in Swedish 2003: Set Lonnert, "Automatiserad programmering", *Datormagazin*, no. 9, 2003.
+Since this was written years ago, the article certainly does not reflect Alloy in its
 current form.
 
 ### Next Steps
