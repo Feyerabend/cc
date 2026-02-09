@@ -1026,6 +1026,13 @@ Requirements → Algebraic Spec → (LLM generates) Tests + Code
 more of the *how* (the implementation).
 
 
+### Alloy Example
+
+![Counterexample found by Alloy](./../../assets/image/alloy.png)
+
+In Alloy you can hunt for counterexamples, and debug before you even make
+a program.
+
 
 ### Next Steps
 
