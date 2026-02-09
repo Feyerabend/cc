@@ -238,8 +238,18 @@ functional languages .. start with e.g. the [funlang vm](./vm/).
 
 - Hudak, P. (2000). *The Haskell school of expression: Learning functional
   programming through multimedia*. Cambridge University Press.
+  - A practical introduction to functional programming using Haskell, this
+  book emphasizes clear development of core FP concepts alongside hands‑on
+  examples. It guides readers from basic functional techniques to more advanced
+  topics, showing how Haskell’s type system and abstraction mechanisms support
+  robust and expressive software design.
 
 - Thompson, S. (1999). *Haskell: The craft of functional programming* (2nd ed.).
   Addison‑Wesley.
+  - A foundational text on Haskell and functional programming, this book presents
+  the language’s syntax and semantics with a focus on developing correct, elegant
+  programs. It covers functional abstractions, types, and data structures, and
+  integrates detailed examples that illustrate how functional design leads to
+  modular and maintainable code.
 
 
