@@ -66,15 +66,15 @@ sig State {
  * 
  * Two time slots overlap if they share any time point.
  * They DON'T overlap only if one completely ends before the other starts.
+ * 
+ * In terms of the ordering:
+ * - s1 ends at or before s2 starts: s1.end in s2.start.*succ (no overlap)
+ * - s2 ends at or before s1 starts: s2.end in s1.start.*succ (no overlap)
+ * - Otherwise: they overlap
  */
 pred overlaps[s1, s2: TimeSlot] {
-  // Overlap means: NOT (s1 ends before s2 starts OR s2 ends before s1 starts)
-  // In other words: s1.start comes before or at s2.end AND s2.start comes before or at s1.end
-  
-  // s1 starts before s2 ends (or at the same time)
-  s1.start in s2.end.*succ and
-  // s2 starts before s1 ends (or at the same time)  
-  s2.start in s1.end.*succ
+  // They overlap if NEITHER slot ends before the other starts
+  not (s1.end in s2.start.*succ or s2.end in s1.start.*succ)
 }
 
 /**
@@ -116,36 +116,32 @@ pred hasPermission[s: State, u: User, r: Room] {
  *       - hasPermission(state, user, room) = false
  */
 pred bookRoom[s, s': State, u: User, r: Room, ts: TimeSlot, result: Result] {
-  // PRE-CONDITION check determines the result
+  // Determine result based on pre-conditions and update state accordingly
   
-  // Case 1: Permission denied
-  (not hasPermission[s, u, r]) implies {
+  (not hasPermission[s, u, r]) => {
+    // Case 1: Permission denied
     result = PermissionDenied
     s' = s  // state unchanged
-  }
-  
-  // Case 2: Room unavailable (has permission but room is booked)
-  (hasPermission[s, u, r] and not isAvailable[s, r, ts]) implies {
-    result = RoomUnavailable
-    s' = s  // state unchanged
-  }
-  
-  // Case 3: Success (has permission and room is available)
-  (hasPermission[s, u, r] and isAvailable[s, r, ts]) implies {
-    result = Success
-    
-    // Create new booking
-    one newBooking: Booking {
-      newBooking.user = u
-      newBooking.room = r
-      newBooking.slot = ts
-      newBooking.id not in s.bookings.id  // fresh ID
+  } else {
+    (not isAvailable[s, r, ts]) => {
+      // Case 2: Room unavailable (has permission but room is booked)
+      result = RoomUnavailable
+      s' = s  // state unchanged
+    } else {
+      // Case 3: Success (has permission and room is available)
+      result = Success
       
-      // POST-CONDITION: new state has the new booking
-      s'.bookings = s.bookings + newBooking
-      
-      // Permissions unchanged
-      s'.permissions = s.permissions
+      // Create new booking with the exact parameters provided
+      some newBooking: Booking {
+        newBooking.user = u
+        newBooking.room = r
+        newBooking.slot = ts
+        newBooking not in s.bookings
+        
+        // POST-CONDITION: new state has the new booking
+        s'.bookings = s.bookings + newBooking
+        s'.permissions = s.permissions
+      }
     }
   }
 }
