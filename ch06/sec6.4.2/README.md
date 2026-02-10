@@ -58,7 +58,7 @@ relevant codebase or field?
 
 Code review shares a profound, yet often overlooked, analogy with literary critique,
 offering a powerful lens for understanding software development. At its core, code
-functions as a form of text—primarily written for human comprehension, with execution
+functions as a form of text--primarily written for human comprehension, with execution
 by machines as a secondary concern. It is interpreted within layers of context,
 including historical precedents, established conventions, and the expectations of its
 audience. In much the same way, literary critique delves into elements such as structure,
@@ -68,8 +68,8 @@ Many of the bugs and long-term maintenance challenges in software do not stem fr
 straightforward syntax errors but from deeper interpretive issues: ambiguous intent
 that confuses readers, misleading abstractions that obscure true functionality,
 overloaded meanings that lead to misuse, and hidden assumptions that only surface
-under specific conditions. These are fundamentally hermeneutic problems—matters of
-interpretation and meaning—rather than purely technical glitches.
+under specific conditions. These are fundamentally hermeneutic problems--matters of
+interpretation and meaning--rather than purely technical glitches.
 
 Literary studies provide invaluable lessons for programmers in this regard, encouraging
 them to interrogate code with questions like: What does this code claim to accomplish?
@@ -147,16 +147,16 @@ The practical takeaway for code reviewers is to embrace a more humanistic postur
 which involves posing clarifying questions rather than delivering abrupt judgments,
 distinguishing between personal lack of comprehension and actual flaws in the work,
 and acknowledging that any confusion experienced by the reader constitutes a legitimate
-defect in itself—even if the code functions correctly on a technical level. This shift
+defect in itself--even if the code functions correctly on a technical level. This shift
 can transform reviews into more collaborative and constructive exchanges.
 
 
 *One striking difference is tone.*
 
 In the humanities:
-- Critique is often dialogical
-- Multiple interpretations can coexist
-- Disagreement is expected and explored
+- Critique is often *dialogical*
+- Multiple interpretations can *coexist*
+- Disagreement is *expected and explored*
 
 In many engineering cultures:
 - Reviews drift toward adversarial correctness checking
