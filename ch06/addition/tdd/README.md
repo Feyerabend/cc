@@ -14,19 +14,19 @@ allowing developers to address issues at their inception.
 TDD is defined by a three-step cycle, often referred to as Red-Green-Refactor:
 
 1. *Red*
-	- Write a test that describes the desired behaviour of a piece of functionality.
-	- Run the test, and *ensure it fails*. This confirms the test is valid and that
+    - Write a test that describes the desired behaviour of a piece of functionality.
+    - Run the test, and *ensure it fails*. This confirms the test is valid and that
       the functionality doesn't already exist.
 
 2. *Green*
-	- Write the *minimal amount of code* necessary to make the test pass.
-	- Focus only on functionality that addresses the test's requirements, avoiding
+    - Write the *minimal amount of code* necessary to make the test pass.
+    - Focus only on functionality that addresses the test's requirements, avoiding
       premature optimisation or over-engineering.
 
 3. *Refactor*
-	- Refine the code for clarity, efficiency, and maintainability without altering
+    - Refine the code for clarity, efficiency, and maintainability without altering
       its behaviour.
-	- Rerun *all tests* to confirm no existing functionality is broken.
+    - Rerun *all tests* to confirm no existing functionality is broken.
 
 This cycle repeats for every piece of functionality, ensuring that code evolves
 incrementally and systematically.
@@ -132,7 +132,7 @@ improvement.
 An evolution of TDD, focusing on the behaviour of an application from the user's perspective,
 (often using tools like Cucumber or SpecFlow).
 
-- Property-Based Testing
+- Property-Based Testing ([Chapter 08, Section 8.12](./../../../ch08/sec8.12/))
 
 Instead of writing specific tests, property-based testing defines general properties that code
 must satisfy, allowing automated generation of edge cases.
