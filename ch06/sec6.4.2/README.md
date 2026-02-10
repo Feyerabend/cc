@@ -23,7 +23,7 @@ knowledge, and build legitimacy and trust among participants. In the scientific
 realm, the core artefact under scrutiny is a research paper, where the key claims
 revolve around theoretical or empirical insights, and potential flaws often stem
 from conceptual gaps, methodological weaknesses, or interpretive missteps. By
-contrast, in software development, the artifact is the code itself, with claims
+contrast, in software development, the artefact is the code itself, with claims
 centered on functionality, performance, or maintainability, and errors typically
 manifesting as logical inconsistencies, architectural flaws, or semantic ambiguities.
 Ultimately, in both domains, reviewers go beyond mere verification of accuracy;
@@ -31,7 +31,7 @@ they assess how well the work fits within an established framework of norms
 and expectations.
 
 This parallel offers valuable lessons for programmers drawing from scientific peer
-review. It underscores that a review should target the artifact rather than serve
+review. It underscores that a review should target the artefact rather than serve
 as a personal judgment of its author. Reviewers bear a duty not only to identify
 issues but also to contribute constructively toward improving the work, rather
 than simply dismissing it. Disagreements are a natural and often fruitful part
@@ -89,9 +89,9 @@ exploration of communication and intent.
 *This is Code as Text*
 
 Code is:
-- Written for humans first, machines second
-- Interpreted, not just executed
-- Embedded in context (history, conventions, audience)
+- Written for *humans* first, machines second
+- *Interpreted*, not just executed
+- Embedded in *context* (history, conventions, audience)
 
 Literary critique examines:
 - Structure
@@ -115,14 +115,14 @@ From literary studies, programmers can learn to ask:
 - What metaphors or models does it rely on?
 
 For example:
-- Function names are rhetorical acts
-- Comments are narrative framing
-- APIs tell stories about how a system wants to be used
+- Function names are *rhetorical acts*
+- Comments are *narrative framing*
+- APIs *tell stories* about how a system wants to be used
 
 A good code review resembles close reading:
-- Attention to small details
-- Sensitivity to tone and clarity
-- Awareness of reader response
+- *Attention* to small details
+- *Sensitivity* to tone and clarity
+- *Awareness* of reader response
 
 
 
