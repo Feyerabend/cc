@@ -1,0 +1,39 @@
+
+; Basic arithmetic
+(define answer (+ 40 2))
+answer
+
+; Factorial using lambda
+(define fact 
+  (lambda (n)
+    (if (= n 0)
+        1
+        (* n (fact (- n 1))))))
+
+(fact 5)
+
+; List operations
+(define mylist (cons 1 (cons 2 (cons 3 (q ())))))
+mylist
+(car mylist)
+(cdr mylist)
+
+; Higher-order function
+(define twice
+  (lambda (f)
+    (lambda (x)
+      (f (f x)))))
+
+(define inc (lambda (n) (+ n 1)))
+(define add-two ((twice inc) 5))
+add-two
+
+; Comparisons
+(> 5 3)
+(< 10 20)
+(= 7 7)
+
+; Conditional logic
+(if (> 10 5)
+    (q yes)
+    (q no))

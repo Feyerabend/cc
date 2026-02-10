@@ -1,0 +1,102 @@
+
+; Basic arithmetic
+(+ 2 3)              ; => 5
+(* 4 5)              ; => 20  
+(- 10 3)             ; => 7
+(/ 20 4)             ; => 5.0
+
+; Variables
+(define pi 3.14159)
+(define radius 10)
+(* pi (* radius radius))  ; Circle area
+
+; Comparisons
+(> 10 5)             ; => True
+(< 3 7)              ; => True
+(= 5 5)              ; => True
+
+; Conditionals
+(if (> 100 50) 
+    (q big) 
+    (q small))       ; => big
+
+; Lambda functions
+(define add-one (lambda (x) (+ x 1)))
+(add-one 41)         ; => 42
+
+; Recursion - Factorial
+(define factorial
+  (lambda (n)
+    (if (= n 0)
+        1
+        (* n (factorial (- n 1))))))
+
+(factorial 6)        ; => 720
+
+; Recursion - Fibonacci
+(define fib
+  (lambda (n)
+    (if (< n 2)
+        n
+        (+ (fib (- n 1)) 
+           (fib (- n 2))))))
+
+(fib 10)             ; => 55
+
+; List operations
+(define nums (cons 1 (cons 2 (cons 3 (q ())))))
+nums                 ; => (1 2 3)
+(car nums)           ; => 1
+(cdr nums)           ; => (2 3)
+(car (cdr nums))     ; => 2
+
+; Higher-order functions
+(define apply-twice
+  (lambda (f)
+    (lambda (x)
+      (f (f x)))))
+
+(define double (lambda (n) (* n 2)))
+((apply-twice double) 3)  ; => 12
+
+; Nested lambdas (Currying)
+(define make-adder
+  (lambda (n)
+    (lambda (x)
+      (+ n x))))
+
+(define add-5 (make-adder 5))
+(add-5 10)           ; => 15
+
+; Boolean logic with if
+(define abs
+  (lambda (x)
+    (if (< x 0)
+        (- 0 x)
+        x)))
+
+(abs -42)            ; => 42
+(abs 17)             ; => 17
+
+; List predicates
+(null? (q ()))       ; => True
+(null? (q (1 2 3)))  ; => False
+(atom? 42)           ; => True
+(atom? (q (1 2)))    ; => False
+
+; Multiple arguments (using nested lambdas)
+(define add-three
+  (lambda (a)
+    (lambda (b)
+      (lambda (c)
+        (+ a (+ b c))))))
+
+(((add-three 1) 2) 3)  ; => 6
+
+; Begin - sequential evaluation
+(begin
+  (define temp 100)
+  (define result (* temp 2))
+  result)            ; => 200
+
+(q done!)
