@@ -175,3 +175,17 @@ Humanistic critique emphasises:
   even if the code is technically correct
 
 
+### Guidelines
+
+If we integrate lessons from peer review and literary critique, code reviews should:
+- Treat code as an argument, not just instructions
+- Emphasise clarity, intent, and reader experience
+- Encourage dialogue rather than one-sided correction
+- Distinguish between:
+    - Correctness
+    - Quality
+    - Style
+    - Convention
+- Accept that multiple "good" solutions may exist
+
+A strong code review culture looks less like an exam and more like a seminar.
