@@ -1,0 +1,3 @@
+Main-Class: demo.dmz.test.BinarySearchTreeTest
+Class-Path: dmz.jar lib/junit.jar
+Created-By: S. Lonnert
