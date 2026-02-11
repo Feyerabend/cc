@@ -1,46 +1,50 @@
 
 ## Code Reviews from Other Angles
 
-I have long advocated for the integration of the humanities and technology;
-in fact, it’s right there in my company name: *Set Lonnert Humanities and Technology*.
-It likely comes as no surprise, then, that one way to bridge these two worlds
-is through *code reviews*. Here are a few angles to explore.
+There is a particular pleasure in observing how ideas travel between domains
+that are too often kept apart. For years, I have argued for a deliberate
+entanglement of the humanities and technology--a conviction so central that
+it found its way into my company’s name: Set Lonnert Humanities and Technology.
+It is therefore hardly surprising that one of the most fertile meeting grounds
+between these worlds emerges--as I perceive it--in a practice as seemingly
+technical, and yet profoundly human, as the *code review*.
 
-As *Large Language Models* (LLMs) blur the boundaries between natural language
-and code, we could/should look to the humanities for better ways to communicate with
-both machines and humans. We can draw from long-standing traditions of literary
-critique, peer review, and adversarial discourse to bring a deeper level of
-reflection to the way we review code.
+As *Large Language Models* continue to soften the boundary between natural
+language and code, we find ourselves compelled to reconsider how we communicate.
+Not only with machines, but with one another. In this shifting landscape, the
+humanities offer more than ornament or analogy; they offer intellectual tools
+honed over centuries. Traditions of literary critique, scholarly peer review,
+and even adversarial discourse provide frameworks for reflection, interpretation,
+and judgment that can deepen the way we evaluate software.
 
 
 ### Code Review as Peer Review
 
-At a structural level, code review functions much like peer review in academia.
-Both processes share fundamental purposes: they seek to enhance the quality of
-work before it is published or merged, uncover errors that the original creator
-might overlook, uphold community standards, facilitate the sharing of unspoken
-knowledge, and build legitimacy and trust among participants. In the scientific
-realm, the core artefact under scrutiny is a research paper, where the key claims
-revolve around theoretical or empirical insights, and potential flaws often stem
-from conceptual gaps, methodological weaknesses, or interpretive missteps. By
-contrast, in software development, the artefact is the code itself, with claims
-centered on functionality, performance, or maintainability, and errors typically
-manifesting as logical inconsistencies, architectural flaws, or semantic ambiguities.
-Ultimately, in both domains, reviewers go beyond mere verification of accuracy;
-they assess how well the work fits within an established framework of norms
-and expectations.
+Seen from a structural vantage point, code review bears a striking resemblance to
+academic peer review. Both are rituals of scrutiny performed before a work is
+released into the world, designed to elevate quality, expose blind spots, uphold 
+ommunal standards, and cultivate trust. In science, the artefact under examination
+is the *research paper* Its claims are woven from theory, evidence, and interpretation,
+its weaknesses often lurking in conceptual gaps or methodological frailties.
+In software development, the artefact is the *code itself*. The code advance claims
+about functionality, performance, and maintainability, with flaws revealing 
+as logical fractures, architectural misjudgments, or semantic uncertainties.
+Yet in both domains, the reviewer’s task extends beyond the mere verification
+of correctness. What is assessed is not simply whether the work functions, but
+whether it coheres, with norms, with expectations, with the shared understanding
+of a community.
 
-This parallel offers valuable lessons for programmers drawing from scientific peer
-review. It underscores that a review should target the artefact rather than serve
-as a personal judgment of its author. Reviewers bear a duty not only to identify
-issues but also to contribute constructively toward improving the work, rather
-than simply dismissing it. Disagreements are a natural and often fruitful part
-of the process, fostering deeper understanding. Moreover, clarity and reproducibility
-are just as crucial as outright correctness, ensuring the work's long-term value.
-In practice, effective code reviews should probe essential questions: Is the
-underlying intent transparent? Could another skilled practitioner reliably reproduce
-or build upon this code? And does it conform to the prevailing practices in the
-relevant codebase or field?
+This parallel carries lessons of quiet but considerable importance. Scientific peer
+review reminds us that critique is directed toward the artefact rather than the
+individual, that the reviewer’s responsibility lies as much in improving the work
+as in identifying its deficiencies, and that disagreement is neither aberration
+nor failure but an engine of intellectual progress. Clarity and reproducibility
+emerge as virtues equal to accuracy, ensuring that knowledge--or code--may endure
+beyond its initial creation. The same sensibilities, when carried into programming,
+transform the code review from a gatekeeping mechanism into a collaborative act of
+refinement. The central questions become disarmingly simple yet deceptively profound:
+Is the intent lucid? Could another skilled practitioner extend or reconstruct this work?
+Does it resonate with the conventions and practices of its environment?
 
 *Scientific peer review reminds us that:*
 - A review is *not* a judgment of the author, but of the artefact
@@ -56,20 +60,18 @@ relevant codebase or field?
 
 ### Code Review and Literary Critique
 
-Code review shares a profound, yet often overlooked, analogy with literary critique,
-offering a powerful lens for understanding software development. At its core, code
-functions as a form of text--primarily written for human comprehension, with execution
-by machines as a secondary concern. It is interpreted within layers of context,
-including historical precedents, established conventions, and the expectations of its
-audience. In much the same way, literary critique delves into elements such as structure,
-style, voice, underlying assumptions, ambiguities, and even what remains unspoken or implied.
-
-Many of the bugs and long-term maintenance challenges in software do not stem from
-straightforward syntax errors but from deeper interpretive issues: ambiguous intent
-that confuses readers, misleading abstractions that obscure true functionality,
-overloaded meanings that lead to misuse, and hidden assumptions that only surface
-under specific conditions. These are fundamentally hermeneutic problems--matters of
-interpretation and meaning--rather than purely technical glitches.
+Equally illuminating is the comparison between code review and literary critique.
+Code, after all, is a form of text--written primarily for human comprehension,
+only secondarily for mechanical execution. No, the machines can handle *machine
+code*, and do not bother with code in the sense of language. It is read, interpreted,
+and understood within layers of context shaped by history, convention, and audience.
+Literary criticism has long concerned itself with precisely these dimensions: structure,
+style, voice, assumptions, ambiguity, and the eloquence of what remains unsaid.
+Many of the most persistent defects in software do not arise from syntactic missteps
+but from failures of interpretation. Intent becomes obscured, abstractions mislead,
+meanings multiply, assumptions hide beneath the surface. These are hermeneutic problems,
+rooted not in the machinery of code but in the fragile, interpretive space between
+writer and reader.
 
 Literary studies provide invaluable lessons for programmers in this regard, encouraging
 them to interrogate code with questions like: What does this code claim to accomplish?
