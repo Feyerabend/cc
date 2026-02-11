@@ -44,13 +44,13 @@ the other through direction and evaluation. Both demand competence. Both expose 
 Both can yield elegance or mediocrity.
 
 In the end, the programmer--like the artist--remains defined not by the purity of their tools
-but by the clarity of their intent and the rigor of their discernment. Whether composing each
-line from scratch or sculpting behavior through prompts and revisions, the act of creation still
+but by the clarity of their intent and the rigour of their discernment. Whether composing each
+line from scratch or sculpting behaviour through prompts and revisions, the act of creation still
 hinges on the same human faculties:
 to imagine, to judge, to choose, and to accept responsibility for what is brought into being.
 
 
-### So, Now, Where the Programmer Go?
+### So Now, Where Can the Programmer Go?
 
 From what has been argued in this chapter/repository: If programming is understood not merely
 as a profession but as a form of craftsmanship, then the future seems to invite at least two distinct,
