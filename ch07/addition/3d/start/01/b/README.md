@@ -3,8 +3,8 @@
 
 This HTML + JavaScript code draws a 3D cube on a 2D `<canvas>`
 using basic linear algebra and perspective projection any 3D
-library. It shows how to rotate, transform, and project
-3D points onto a 2D screen.
+library. It shows how to rotate, transform, and project 3D
+points onto a 2D screen.
 
 The key idea is:
 1. Represent the cube in 3D using points (vertices).
@@ -52,9 +52,9 @@ X-axis rotation matrix:
 function rotationMatrixX(angle) {
     const c = Math.cos(angle), s = Math.sin(angle);
     return [
-        [1, 0, 0],
-        [0, c, -s],
-        [0, s, c]
+        [1,  0,  0],
+        [0,  c, -s],
+        [0,  s,  c]
     ];
 }
 ```
@@ -67,9 +67,9 @@ Y-axis rotation matrix:
 function rotationMatrixY(angle) {
     const c = Math.cos(angle), s = Math.sin(angle);
     return [
-        [ c, 0, s],
-        [ 0, 1, 0],
-        [-s, 0, c]
+        [ c,  0,  s],
+        [ 0,  1,  0],
+        [-s,  0,  c]
     ];
 }
 ```
