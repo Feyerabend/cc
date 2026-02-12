@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Rotated 3D Cube</title>
+    <style>
+        body { background: #111; margin: 0; color: white; font-family: monospace; }
+        #info { text-align: center; padding: 8px; }
+        canvas { display: block; margin: auto; background: #222; cursor: grab; }
+    </style>
+</head>
+<body>
+<div id="info">angleX: 0°, angleY: 0°</div>
+<canvas id="cubeCanvas" width="600" height="600"></canvas>
+<script>
+const canvas = document.getElementById('cubeCanvas');
+const ctx = canvas.getContext('2d');
+const width = canvas.width;
+const height = canvas.height;
+const info = document.getElementById('info');
+
+const vertices = [
+    [-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],
+    [-1,-1, 1],[1,-1, 1],[1,1, 1],[-1,1, 1]
+];
+
+const edges = [
+    [0,1],[1,2],[2,3],[3,0],
+    [4,5],[5,6],[6,7],[7,4],
+    [0,4],[1,5],[2,6],[3,7]
+];
+
+function rotationMatrixX(angle) {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    return [[1,0,0],[0,c,-s],[0,s,c]];
+}
+
+function rotationMatrixY(angle) {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    return [[c,0,s],[0,1,0],[-s,0,c]];
+}
+
+function matrixVectorMult(m, v) {
+    return [
+        m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2],
+        m[1][0]*v[0] + m[1][1]*v[1] + m[1][2]*v[2],
+        m[2][0]*v[0] + m[2][1]*v[1] + m[2][2]*v[2]
+    ];
+}
+
+function project([x,y,z]) {
+    const scale = 150 / (5 - z);
+    return [x * scale + width/2, -y * scale + height/2];
+}
+
+let angleX = 0;
+let angleY = 0;
+
+function draw() {
+    ctx.clearRect(0, 0, width, height);
+    const Rx = rotationMatrixX(angleX);
+    const Ry = rotationMatrixY(angleY);
+
+    const transformed = vertices.map(v =>
+        matrixVectorMult(Ry, matrixVectorMult(Rx, v))
+    );
+
+    edges.forEach(([a, b]) => {
+        const [x1, y1] = project(transformed[a]);
+        const [x2, y2] = project(transformed[b]);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = '#00ccff';
+        ctx.stroke();
+    });
+
+    info.textContent = `angleX: ${(angleX * 180/Math.PI).toFixed(1)}°, angleY: ${(angleY * 180/Math.PI).toFixed(1)}°`;
+    requestAnimationFrame(draw);
+}
+
+let dragging = false;
+let lastX = 0;
+let lastY = 0;
+
+canvas.addEventListener('mousedown', e => {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    canvas.style.cursor = 'grabbing';
+});
+
+canvas.addEventListener('mouseup', () => {
+    dragging = false;
+    canvas.style.cursor = 'grab';
+});
+
+canvas.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    angleY += dx * 0.01;
+    angleX += dy * 0.01;
+    lastX = e.clientX;
+    lastY = e.clientY;
+});
+
+draw();
+</script>
+</body>
+</html>

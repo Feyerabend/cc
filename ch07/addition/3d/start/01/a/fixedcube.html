@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Static 3D Cube</title>
+    <style>
+        body {
+            background: #111;
+            margin: 0;
+        }
+        canvas {
+            display: block;
+            margin: auto;
+            background: #222;
+        }
+    </style>
+</head>
+<body>
+<canvas id="cubeCanvas" width="600" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById('cubeCanvas');
+const ctx = canvas.getContext('2d');
+const width = canvas.width;
+const height = canvas.height;
+
+// Cube vertices
+const vertices = [
+    [-1, -1, -1], [ 1, -1, -1],
+    [ 1,  1, -1], [-1,  1, -1],
+    [-1, -1,  1], [ 1, -1,  1],
+    [ 1,  1,  1], [-1,  1,  1]
+];
+
+// Edges between vertices
+const edges = [
+    [0, 1], [1, 2], [2, 3], [3, 0],  // back
+    [4, 5], [5, 6], [6, 7], [7, 4],  // front
+    [0, 4], [1, 5], [2, 6], [3, 7]   // sides
+];
+
+function rotationMatrixX(angle) {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    return [
+        [1,  0,  0],
+        [0,  c, -s],
+        [0,  s,  c]
+    ];
+}
+
+function rotationMatrixY(angle) {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    return [
+        [ c,  0,  s],
+        [ 0,  1,  0],
+        [-s,  0,  c]
+    ];
+}
+
+function matrixVectorMult(m, v) {
+    return [
+        m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2],
+        m[1][0]*v[0] + m[1][1]*v[1] + m[1][2]*v[2],
+        m[2][0]*v[0] + m[2][1]*v[1] + m[2][2]*v[2],
+    ];
+}
+
+// Project 3D point to 2D
+function project([x, y, z]) {
+    const scale = 150 / (5 - z);
+    return [
+         x * scale + width  / 2,
+        -y * scale + height / 2
+    ];
+}
+
+// Draw the cube
+function drawCube() {
+    ctx.clearRect(0, 0, width, height);
+
+    const Rx = rotationMatrixX(Math.PI / 6);
+    const Ry = rotationMatrixY(Math.PI / 6);
+    
+    const transformed = vertices.map(v => matrixVectorMult(Ry, matrixVectorMult(Rx, v)));
+
+    edges.forEach(([a, b]) => {
+        const [x1, y1] = project(transformed[a]);
+        const [x2, y2] = project(transformed[b]);
+        ctx.strokeStyle = "#00ccff";
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    });
+}
+
+drawCube();
+</script>
+</body>
+</html>
