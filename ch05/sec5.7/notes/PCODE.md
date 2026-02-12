@@ -97,3 +97,4 @@ modern virtual machines, you may want to consult specific works on the history o
 programming languages or compiler design, such as Wirth's original texts or papers
 on the UCSD Pascal system.
 
+![UCSD](./../../assets/image/ucsd.png)
