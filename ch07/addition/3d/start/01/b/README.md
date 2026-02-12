@@ -1,8 +1,10 @@
 
 ## Simple 3D Cube
 
-This HTML + JavaScript code draws a 3D cube on a 2D <canvas> using basic linear algebra and perspective
-projection any 3D library. It shows how to rotate, transform, and project 3D points onto a 2D screen.
+This HTML + JavaScript code draws a 3D cube on a 2D `<canvas>`
+using basic linear algebra and perspective projection any 3D
+library. It shows how to rotate, transform, and project
+3D points onto a 2D screen.
 
 The key idea is:
 1. Represent the cube in 3D using points (vertices).
@@ -140,5 +142,5 @@ This is a minimal 3D renderer written in plain JavaScript:
 - It defines 3D geometry (cube).
 - Applies 3D rotation using matrix math.
 - Projects the result into 2D using perspective.
-- Draws it on a <canvas>.
+- Draws it on a `<canvas>`.
 
