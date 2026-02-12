@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cube with Shadow Casting and Lighting</title>
+    <style>
+        body { background: #111; margin: 0; color: white; font-family: monospace; }
+        canvas { display: block; margin: auto; background: #222; cursor: grab; }
+        #hud { text-align: center; padding: 10px; }
+        #controls { text-align: center; padding: 10px; }
+        .light-indicator { 
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #ffff00;
+            box-shadow: 0 0 10px #ffff00;
+            margin: 0 5px;
+        }
+        button {
+            background: #333;
+            color: #ffff00;
+            border: 2px solid #ffff00;
+            padding: 8px 16px;
+            font-family: monospace;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #444;
+        }
+        button.active {
+            background: #ffff00;
+            color: #111;
+        }
+    </style>
+</head>
+<body>
+<canvas id="cubeCanvas" width="600" height="600"></canvas>
+<div id="hud">Angles - X: 17°, Y: 29°</div>
+<div id="controls">
+    <span class="light-indicator"></span> Light Position: (3, 5, 3)
+    <br>
+    <button id="toggleRays" class="active">Show Light Rays</button>
+</div>
+
+<script>
+const canvas = document.getElementById('cubeCanvas');
+const ctx = canvas.getContext('2d');
+const width = canvas.width;
+const height = canvas.height;
+const hud = document.getElementById('hud');
+
+// Vertices
+const vertices = [
+    [-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],
+    [-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]
+];
+
+// Faces
+const faces = [
+    [0,1,2,3], // back
+    [4,5,6,7], // front
+    [0,1,5,4], // bottom
+    [2,3,7,6], // top
+    [0,3,7,4], // left
+    [1,2,6,5]  // right
+];
+
+const baseColors = ['#ff5555','#55ff55','#5555ff','#ffff55','#55ffff','#ff55ff'];
+
+const faceNormals = [
+    [0, 0, -1],  [0, 0, 1],   [0, -1, 0],
+    [0, 1, 0],   [-1, 0, 0],  [1, 0, 0]
+];
+
+let angleX = 0.3;
+let angleY = 0.5;
+let showRays = true;
+
+const lightPos = [3, 5, 3];
+const floorLevel = -2;
+
+// Toggle button
+document.getElementById('toggleRays').addEventListener('click', function() {
+    showRays = !showRays;
+    this.textContent = showRays ? 'Show Light Rays' : 'Hide Light Rays';
+    this.classList.toggle('active');
+});
+
+function rotationMatrixX(angle) {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    return [[1,0,0],[0,c,-s],[0,s,c]];
+}
+function rotationMatrixY(angle) {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    return [[c,0,s],[0,1,0],[-s,0,c]];
+}
+function matrixVectorMult(m, v) {
+    return [
+        m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2],
+        m[1][0]*v[0] + m[1][1]*v[1] + m[1][2]*v[2],
+        m[2][0]*v[0] + m[2][1]*v[1] + m[2][2]*v[2]
+    ];
+}
+function project([x,y,z]) {
+    const scale = 150 / (5 - z);
+    return [x * scale + width/2, -y * scale + height/2];
+}
+
+function dotProduct(a, b) {
+    return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+}
+
+function normalize(v) {
+    const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+    return [v[0]/len, v[1]/len, v[2]/len];
+}
+
+// Simple ray-based shadow projection
+function projectShadowPoint([x, y, z]) {
+    // Direction from light to point
+    const dx = x - lightPos[0];
+    const dy = y - lightPos[1];
+    const dz = z - lightPos[2];
+    
+    // Parameter t where ray hits floor (y = floorLevel)
+    const t = (floorLevel - lightPos[1]) / dy;
+    
+    // Shadow position
+    return [
+        lightPos[0] + t * dx,
+        floorLevel,
+        lightPos[2] + t * dz
+    ];
+}
+
+function calculateLighting(faceIndex, transformedNormal) {
+    const face = faces[faceIndex];
+    const center = [0, 0, 0];
+    face.forEach(idx => {
+        center[0] += vertices[idx][0];
+        center[1] += vertices[idx][1];
+        center[2] += vertices[idx][2];
+    });
+    center[0] /= 4; center[1] /= 4; center[2] /= 4;
+    
+    const lightDir = normalize([
+        lightPos[0] - center[0],
+        lightPos[1] - center[1],
+        lightPos[2] - center[2]
+    ]);
+    
+    const diffuse = Math.max(0, dotProduct(transformedNormal, lightDir));
+    const ambient = 0.3;
+    return ambient + (1 - ambient) * diffuse;
+}
+
+function adjustBrightness(color, brightness) {
+    const r = parseInt(color.slice(1,3), 16);
+    const g = parseInt(color.slice(3,5), 16);
+    const b = parseInt(color.slice(5,7), 16);
+    
+    return `rgb(${Math.floor(r * brightness)}, ${Math.floor(g * brightness)}, ${Math.floor(b * brightness)})`;
+}
+
+function drawCube() {
+    ctx.clearRect(0, 0, width, height);
+
+    const Rx = rotationMatrixX(angleX);
+    const Ry = rotationMatrixY(angleY);
+
+    const transformed = vertices.map(v => matrixVectorMult(Ry, matrixVectorMult(Rx, v)));
+    const projected = transformed.map(project);
+    
+    const transformedNormals = faceNormals.map(n => 
+        normalize(matrixVectorMult(Ry, matrixVectorMult(Rx, n)))
+    );
+
+    // Draw floor
+    const floorProjected = project([0, floorLevel, 0]);
+    const floorScreenY = floorProjected[1];
+    
+    ctx.fillStyle = '#2a2a2a';
+    ctx.fillRect(0, floorScreenY, width, height - floorScreenY);
+    
+    // Draw grid
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 1;
+    for (let i = -5; i <= 5; i++) {
+        const p1 = project([i, floorLevel, -5]);
+        const p2 = project([i, floorLevel, 5]);
+        ctx.beginPath();
+        ctx.moveTo(p1[0], p1[1]);
+        ctx.lineTo(p2[0], p2[1]);
+        ctx.stroke();
+        
+        const p3 = project([-5, floorLevel, i]);
+        const p4 = project([5, floorLevel, i]);
+        ctx.beginPath();
+        ctx.moveTo(p3[0], p3[1]);
+        ctx.lineTo(p4[0], p4[1]);
+        ctx.stroke();
+    }
+    
+    // Draw shadow - project all 8 vertices onto floor
+    const shadowVertices = transformed.map(projectShadowPoint);
+    const shadowProjected = shadowVertices.map(project);
+    
+    // Compute convex hull of shadow points for proper silhouette
+    function convexHull(points) {
+        // Sort points by x, then y
+        const sorted = points.map((p, i) => ({x: p[0], y: p[1], idx: i}))
+            .sort((a, b) => a.x === b.x ? a.y - b.y : a.x - b.x);
+        
+        if (sorted.length < 3) return sorted;
+        
+        const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+        
+        const lower = [];
+        for (let i = 0; i < sorted.length; i++) {
+            while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], sorted[i]) <= 0) {
+                lower.pop();
+            }
+            lower.push(sorted[i]);
+        }
+        
+        const upper = [];
+        for (let i = sorted.length - 1; i >= 0; i--) {
+            while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], sorted[i]) <= 0) {
+                upper.pop();
+            }
+            upper.push(sorted[i]);
+        }
+        
+        upper.pop();
+        lower.pop();
+        return lower.concat(upper);
+    }
+    
+    const hull = convexHull(shadowProjected);
+    
+    // Draw shadow using convex hull
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.beginPath();
+    if (hull.length > 0) {
+        ctx.moveTo(hull[0].x, hull[0].y);
+        for (let i = 1; i < hull.length; i++) {
+            ctx.lineTo(hull[i].x, hull[i].y);
+        }
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw cube faces with lighting
+    const faceDepths = faces.map((face, i) => {
+        const avgZ = face.reduce((sum, idx) => sum + transformed[idx][2], 0) / 4;
+        const brightness = calculateLighting(i, transformedNormals[i]);
+        return { index: i, depth: avgZ, brightness };
+    });
+
+    faceDepths.sort((a, b) => a.depth - b.depth);
+
+    for (const {index, brightness} of faceDepths) {
+        const face = faces[index];
+        ctx.beginPath();
+        ctx.moveTo(projected[face[0]][0], projected[face[0]][1]);
+        for (let i = 1; i < face.length; i++) {
+            ctx.lineTo(projected[face[i]][0], projected[face[i]][1]);
+        }
+        ctx.closePath();
+        
+        ctx.fillStyle = adjustBrightness(baseColors[index], brightness);
+        ctx.fill();
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+    
+    // Draw light source indicator with rays to floor showing shadow formation
+    const lightProjected = project(lightPos);
+    
+    if (showRays) {
+        // Draw lines from light through cube vertices to floor (showing shadow rays)
+        ctx.strokeStyle = 'rgba(255, 255, 0, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
+        shadowVertices.forEach((shadowVertex, i) => {
+            const shadowPoint = project(shadowVertex);
+            ctx.beginPath();
+            ctx.moveTo(lightProjected[0], lightProjected[1]);
+            ctx.lineTo(projected[i][0], projected[i][1]); // to cube vertex
+            ctx.lineTo(shadowPoint[0], shadowPoint[1]); // continue to floor
+            ctx.stroke();
+        });
+        ctx.setLineDash([]);
+        
+        // Mark shadow points on floor
+        ctx.fillStyle = 'rgba(255, 255, 0, 0.4)';
+        shadowVertices.forEach(shadowVertex => {
+            const shadowPoint = project(shadowVertex);
+            ctx.beginPath();
+            ctx.arc(shadowPoint[0], shadowPoint[1], 3, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+    
+    // Draw light source as glowing sphere
+    ctx.fillStyle = '#ffff00';
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = '#ffff00';
+    ctx.beginPath();
+    ctx.arc(lightProjected[0], lightProjected[1], 12, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Inner bright core
+    ctx.shadowBlur = 15;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(lightProjected[0], lightProjected[1], 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    
+    // Label
+    ctx.fillStyle = '#ffff00';
+    ctx.font = '12px monospace';
+    ctx.fillText('LIGHT', lightProjected[0] + 20, lightProjected[1] - 10);
+}
+
+// Mouse interaction
+let isDragging = false;
+let lastX, lastY;
+
+canvas.addEventListener('mousedown', e => {
+    isDragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    canvas.style.cursor = "grabbing";
+});
+canvas.addEventListener('mouseup', () => {
+    isDragging = false;
+    canvas.style.cursor = "grab";
+});
+canvas.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    angleY += dx * 0.01;
+    angleX += dy * 0.01;
+    hud.textContent = `Angles - X: ${Math.round(angleX * 180 / Math.PI)}°, Y: ${Math.round(angleY * 180 / Math.PI)}°`;
+});
+
+function animate() {
+    drawCube();
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>

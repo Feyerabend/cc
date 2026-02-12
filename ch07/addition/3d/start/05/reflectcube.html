@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rotating Colored Cube with Reflection</title>
+  <style>
+    body { margin: 0; background: #f0f0f0; }
+    canvas { display: block; margin: 20px auto; background: #d0d0d0; }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="600" height="600"></canvas>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const w = canvas.width, h = canvas.height;
+
+// Cube vertices
+const vertices = [
+  [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], // Front face
+  [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]      // Back face
+];
+
+// Cube faces with colors
+const faces = [
+  { indices: [0, 1, 2, 3], color: "red" },    // Front
+  { indices: [5, 4, 7, 6], color: "blue" },   // Back
+  { indices: [1, 5, 6, 2], color: "green" },  // Right
+  { indices: [4, 0, 3, 7], color: "yellow" }, // Left
+  { indices: [3, 2, 6, 7], color: "purple" }, // Top
+  { indices: [4, 5, 1, 0], color: "orange" }  // Bottom
+];
+
+let angleX = 0, angleY = 0;
+
+// Rotation matrices
+function rotationMatrixX(a) {
+  const c = Math.cos(a), s = Math.sin(a);
+  return [[1, 0, 0], [0, c, -s], [0, s, c]];
+}
+function rotationMatrixY(a) {
+  const c = Math.cos(a), s = Math.sin(a);
+  return [[c, 0, s], [0, 1, 0], [-s, 0, c]];
+}
+function matVecMult(m, v) {
+  return [
+    m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2],
+    m[1][0]*v[0] + m[1][1]*v[1] + m[1][2]*v[2],
+    m[2][0]*v[0] + m[2][1]*v[1] + m[2][2]*v[2]
+  ];
+}
+
+// Perspective projection
+function project([x, y, z]) {
+  const scale = 200 / (5 - z); // Camera at z=5
+  return [x * scale + w/2, -y * scale + h/2];
+}
+
+// Reflect point across y = floorY plane
+function reflectAcrossFloor(v, floorY) {
+  return [v[0], 2 * floorY - v[1], v[2]];
+}
+
+// Shadow projection on y = -1.5 plane
+function projectShadow(v, lightDir) {
+  const t = (v[1] + 1.5) / lightDir[1]; // Project to y = -1.5
+  return [
+    v[0] - lightDir[0] * t,
+    -1.5,
+    v[2] - lightDir[2] * t
+  ];
+}
+
+// Vector math
+function sub(a, b) { return a.map((x, i) => x - b[i]); }
+function cross(a, b) {
+  return [
+    a[1]*b[2] - a[2]*b[1],
+    a[2]*b[0] - a[0]*b[2],
+    a[0]*b[1] - a[1]*b[0]
+  ];
+}
+function dot(a, b) {
+  return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+}
+function normalize(v) {
+  const len = Math.hypot(...v);
+  return len === 0 ? v : v.map(x => x / len);
+}
+
+function drawCube(cube, isReflection = false) {
+  // Sort faces by depth
+  const faceDepths = faces.map((face, i) => {
+    const pts3d = face.indices.map(i => cube[i]);
+    const z = pts3d.reduce((sum, v) => sum + v[2], 0) / pts3d.length;
+    return { face, z };
+  }).sort((a, b) => b.z - a.z);
+
+  // Light direction (above, slight z-offset)
+  const lightDir = normalize([0, 3, 0.5]);
+
+  // Draw cube faces in two passes: back faces first (transparent), then front faces
+  for (let pass = 0; pass < 2; pass++) {
+    for (let { face } of faceDepths) {
+      const pts3d = face.indices.map(i => cube[i]);
+      const center = pts3d.reduce((acc, v) => acc.map((a, i) => a + v[i]), [0, 0, 0]).map(x => x / pts3d.length);
+      const normal = cross(sub(pts3d[1], pts3d[0]), sub(pts3d[2], pts3d[0]));
+      const viewDir = normalize(sub([0, 0, 5], center)); // Camera at (0, 0, 5)
+      
+      let isFrontFacing = dot(normalize(normal), viewDir) > 0;
+      
+      // For reflections, flip the face culling since we're looking at it from "inside"
+      if (isReflection) {
+        isFrontFacing = !isFrontFacing;
+      }
+      
+      // Pass 0: Draw back faces with transparency
+      // Pass 1: Draw front faces normally
+      if (pass === 0 && isFrontFacing) continue; // Skip front faces in first pass
+      if (pass === 1 && !isFrontFacing) continue; // Skip back faces in second pass
+
+      const pts2d = pts3d.map(project);
+      ctx.beginPath();
+      ctx.moveTo(...pts2d[0]);
+      pts2d.slice(1).forEach(p => ctx.lineTo(...p));
+      ctx.closePath();
+
+      // Lambertian lighting (flip normal for reflections)
+      let lightingNormal = normalize(normal);
+      if (isReflection) {
+        lightingNormal = lightingNormal.map(x => -x);
+      }
+      const brightness = Math.max(0.4, dot(lightingNormal, lightDir)) * 0.9;
+      
+      // Adjust opacity and brightness for reflections
+      let alpha = brightness;
+      let finalBrightness = brightness;
+      
+      if (isReflection) {
+        alpha *= 0.4; // Make reflection more transparent
+        finalBrightness *= 0.7; // Make reflection darker
+      }
+      
+      // Make back faces semi-transparent
+      if (pass === 0) {
+        ctx.globalAlpha = alpha * 0.3; // Back faces: 30% opacity
+      } else {
+        ctx.globalAlpha = alpha; // Front faces: normal opacity
+      }
+      
+      // Darken colors for reflection
+      let color = face.color;
+      if (isReflection) {
+        // Convert color name to RGB and darken
+        ctx.fillStyle = face.color;
+        ctx.fillRect(0, 0, 1, 1); // Hack to get computed color
+        const imageData = ctx.getImageData(0, 0, 1, 1);
+        const [r, g, b] = imageData.data;
+        const darkenFactor = finalBrightness;
+        color = `rgb(${Math.floor(r * darkenFactor)}, ${Math.floor(g * darkenFactor)}, ${Math.floor(b * darkenFactor)})`;
+      }
+      
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.globalAlpha = 1.0;
+      
+      // Lighter stroke for reflection
+      ctx.strokeStyle = isReflection ? "rgba(0, 0, 0, 0.3)" : "#000";
+      ctx.stroke();
+    }
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, w, h);
+
+  // Auto-rotate
+  angleX += 0.01;
+  angleY += 0.015;
+
+  const Rx = rotationMatrixX(angleX);
+  const Ry = rotationMatrixY(angleY);
+  const transform = v => matVecMult(Ry, matVecMult(Rx, v));
+  const cube = vertices.map(transform);
+
+  const floorY = -1.5;
+
+  // Create reflection of the cube
+  const reflectedCube = cube.map(v => reflectAcrossFloor(v, floorY));
+
+  // Draw simple perspective floor that extends to edges of canvas
+  const floorDepth = 6; // How far back the floor extends
+  
+  // Create gradient from bottom of canvas to horizon
+  const horizonPoint = project([0, floorY, -floorDepth]);
+  
+  const gradient = ctx.createLinearGradient(0, h, 0, horizonPoint[1]);
+  gradient.addColorStop(0, "#909090");     // Darker floor color at bottom
+  gradient.addColorStop(0.8, "#b0b0b0");  // Lighter as it goes back
+  gradient.addColorStop(1, "#f0f0f0");     // Fades to background at horizon
+  
+  // Draw floor extending to all edges of canvas at bottom, horizon line across top
+  const farWidth = 8; // Width at horizon
+  const farLeft = project([-farWidth, floorY, -floorDepth]);
+  const farRight = project([farWidth, floorY, -floorDepth]);
+  
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.moveTo(0, h);               // Bottom left of canvas
+  ctx.lineTo(w, h);               // Bottom right of canvas  
+  ctx.lineTo(w, horizonPoint[1]); // Right edge to horizon level
+  ctx.lineTo(...farRight);        // Far right of floor
+  ctx.lineTo(...farLeft);         // Far left of floor
+  ctx.lineTo(0, horizonPoint[1]); // Left edge to horizon level
+  ctx.closePath();
+  ctx.fill();
+
+  // Light direction (above, slight z-offset)
+  const lightDir = normalize([0, 3, 0.5]);
+
+  // Draw shadow (very faint)
+  ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
+  ctx.beginPath();
+  for (let { indices } of faces) {
+    const pts3d = indices.map(i => cube[i]);
+    const center = pts3d.reduce((acc, v) => acc.map((a, i) => a + v[i]), [0, 0, 0]).map(x => x / pts3d.length);
+    const normal = cross(sub(pts3d[1], pts3d[0]), sub(pts3d[2], pts3d[0]));
+    // Check if face is visible to light
+    if (dot(normalize(normal), lightDir) > 0) continue; // Skip faces not facing light
+//    const shadowVerts = pts3d.map(v => project(projectShadow(v, lightDir)));
+//    ctx.moveTo(...shadowVerts[0]);
+//    for (let i = 1; i < shadowVerts.length; i++) ctx.lineTo(...shadowVerts[i]);
+    ctx.closePath();
+  }
+  ctx.fill();
+
+  // Draw reflection first (below the floor)
+  drawCube(reflectedCube, true);
+  
+  // Draw main cube
+  drawCube(cube, false);
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+</body>
+</html>
