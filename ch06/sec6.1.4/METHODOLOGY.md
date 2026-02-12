@@ -208,3 +208,4 @@ dual nature of code--executable and communicative--at scale. And it remains to t
 precisely because programming is both technical and linguistic, both logic and narrative,
 both solitary craft and collective endeavour.
 
+![Extreme Kent](./../assets/image/beck.png)
