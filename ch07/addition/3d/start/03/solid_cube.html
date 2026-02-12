@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rotatable Solid Cube</title>
+    <style>
+        body { background: #111; margin: 0; color: white; font-family: monospace; }
+        canvas { display: block; margin: auto; background: #222; cursor: grab; }
+        #hud { text-align: center; padding: 10px; }
+    </style>
+</head>
+<body>
+<canvas id="cubeCanvas" width="600" height="600"></canvas>
+<div id="hud">Angles - X: 0°, Y: 0°</div>
+
+<script>
+const canvas = document.getElementById('cubeCanvas');
+const ctx = canvas.getContext('2d');
+const width = canvas.width;
+const height = canvas.height;
+const hud = document.getElementById('hud');
+
+// Vertices
+const vertices = [
+    [-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],
+    [-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]
+];
+
+// Faces defined by 4 vertices each
+const faces = [
+    [0,1,2,3], // back
+    [4,5,6,7], // front
+    [0,1,5,4], // bottom
+    [2,3,7,6], // top
+    [0,3,7,4], // left
+    [1,2,6,5]  // right
+];
+
+// Colors per face - fully opaque
+const colors = ['#ff5555','#55ff55','#5555ff','#ffff55','#55ffff','#ff55ff'];
+
+let angleX = 0;
+let angleY = 0;
+
+// Rotation matrices
+function rotationMatrixX(angle) {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    return [
+        [1,0,0],
+        [0,c,-s],
+        [0,s,c]
+    ];
+}
+function rotationMatrixY(angle) {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    return [
+        [c,0,s],
+        [0,1,0],
+        [-s,0,c]
+    ];
+}
+function matrixVectorMult(m, v) {
+    return [
+        m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2],
+        m[1][0]*v[0] + m[1][1]*v[1] + m[1][2]*v[2],
+        m[2][0]*v[0] + m[2][1]*v[1] + m[2][2]*v[2]
+    ];
+}
+function project([x,y,z]) {
+    const scale = 150 / (5 - z);
+    return [
+        x * scale + width/2,
+        -y * scale + height/2
+    ];
+}
+
+function drawCube() {
+    ctx.clearRect(0, 0, width, height);
+
+    const Rx = rotationMatrixX(angleX);
+    const Ry = rotationMatrixY(angleY);
+
+    const transformed = vertices.map(v => matrixVectorMult(Ry, matrixVectorMult(Rx, v)));
+    const projected = transformed.map(project);
+
+    // Compute average Z for each face (for depth sorting)
+    const faceDepths = faces.map((face, i) => {
+        const avgZ = face.reduce((sum, idx) => sum + transformed[idx][2], 0) / 4;
+        return { index: i, depth: avgZ };
+    });
+
+    // Sort faces: furthest first (painter's algorithm)
+    faceDepths.sort((a, b) => a.depth - b.depth);
+
+    // Draw faces - fully opaque
+    for (const {index} of faceDepths) {
+        const face = faces[index];
+        ctx.beginPath();
+        ctx.moveTo(projected[face[0]][0], projected[face[0]][1]);
+        for (let i = 1; i < face.length; i++) {
+            ctx.lineTo(projected[face[i]][0], projected[face[i]][1]);
+        }
+        ctx.closePath();
+        ctx.fillStyle = colors[index]; // + '88'; // alpha for transparency
+        ctx.fill();
+        ctx.strokeStyle = "#000";
+        ctx.stroke();
+    }
+}
+
+// Mouse interaction
+let isDragging = false;
+let lastX, lastY;
+
+canvas.addEventListener('mousedown', e => {
+    isDragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    canvas.style.cursor = "grabbing";
+});
+canvas.addEventListener('mouseup', () => {
+    isDragging = false;
+    canvas.style.cursor = "grab";
+});
+canvas.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    angleY += dx * 0.01;
+    angleX += dy * 0.01;
+    hud.textContent = `Angles - X: ${Math.round(angleX * 180 / Math.PI)}°, Y: ${Math.round(angleY * 180 / Math.PI)}°`;
+});
+
+function animate() {
+    drawCube();
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>
