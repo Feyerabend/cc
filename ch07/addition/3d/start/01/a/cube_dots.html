@@ -7,16 +7,23 @@
         body {
             background: #111;
             margin: 0;
+            color: #00ccff;
+            font-family: monospace;
         }
         canvas {
             display: block;
             margin: auto;
             background: #222;
         }
+        #coordinates {
+            text-align: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
 <canvas id="cubeCanvas" width="600" height="600"></canvas>
+<div id="coordinates"></div>
 
 <script>
 const canvas = document.getElementById('cubeCanvas');
@@ -30,13 +37,6 @@ const vertices = [
     [ 1,  1, -1], [-1,  1, -1],
     [-1, -1,  1], [ 1, -1,  1],
     [ 1,  1,  1], [-1,  1,  1]
-];
-
-// Edges between vertices
-const edges = [
-    [0, 1], [1, 2], [2, 3], [3, 0],  // back
-    [4, 5], [5, 6], [6, 7], [7, 4],  // front
-    [0, 4], [1, 5], [2, 6], [3, 7]   // sides
 ];
 
 function rotationMatrixX(angle) {
@@ -83,15 +83,20 @@ function drawCube() {
     
     const transformed = vertices.map(v => matrixVectorMult(Ry, matrixVectorMult(Rx, v)));
 
-    edges.forEach(([a, b]) => {
-        const [x1, y1] = project(transformed[a]);
-        const [x2, y2] = project(transformed[b]);
-        ctx.strokeStyle = "#00ccff";
+    // Draw vertices as dots
+    let coordText = '<h3>Vertex Coordinates:</h3>';
+    transformed.forEach((vertex, i) => {
+        const [x, y] = project(vertex);
+        ctx.fillStyle = "#00ccff";
         ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Print coordinates
+        coordText += `Vertex ${i}: 3D (${vertex[0].toFixed(2)}, ${vertex[1].toFixed(2)}, ${vertex[2].toFixed(2)}) → 2D (${x.toFixed(1)}, ${y.toFixed(1)})<br>`;
     });
+    
+    document.getElementById('coordinates').innerHTML = coordText;
 }
 
 drawCube();

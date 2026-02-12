@@ -19,10 +19,10 @@ Each point is [x, y, z], and the cube is defined with 8 corners:
 
 ```javascript
 const vertices = [
-    [-1, -1, -1], [1, -1, -1],
-    [1,  1, -1], [-1,  1, -1],
-    [-1, -1,  1], [1, -1,  1],
-    [1,  1,  1], [-1,  1,  1]
+    [-1, -1, -1], [ 1, -1, -1],
+    [ 1,  1, -1], [-1,  1, -1],
+    [-1, -1,  1], [ 1, -1,  1],
+    [ 1,  1,  1], [-1,  1,  1]
 ];
 ```
 - This gives a unit cube centered at the origin.
@@ -34,9 +34,9 @@ Pairs of indices connecting vertices:
 
 ```javascript
 const edges = [
-    [0,1],[1,2],[2,3],[3,0], // back square
-    [4,5],[5,6],[6,7],[7,4], // front square
-    [0,4],[1,5],[2,6],[3,7]  // connections between front and back
+    [0, 1], [1, 2], [2, 3], [3, 0], // back square
+    [4, 5], [5, 6], [6, 7], [7, 4], // front square
+    [0, 4], [1, 5], [2, 6], [3, 7]  // connections between front and back
 ];
 ```
 
@@ -65,8 +65,8 @@ Y-axis rotation matrix:
 function rotationMatrixY(angle) {
     const c = Math.cos(angle), s = Math.sin(angle);
     return [
-        [c, 0, s],
-        [0, 1, 0],
+        [ c, 0, s],
+        [ 0, 1, 0],
         [-s, 0, c]
     ];
 }
@@ -96,7 +96,7 @@ This simulates depth — objects farther away look smaller:
 function project([x, y, z]) {
     const scale = 150 / (5 - z);
     return [
-        x * scale + width / 2,
+         x * scale + width  / 2,
         -y * scale + height / 2
     ];
 }
