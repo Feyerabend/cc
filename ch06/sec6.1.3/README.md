@@ -5,7 +5,8 @@ You might adopt a new perspective of *which* tools to use
 under the continued influence of LLMs in programming.
 An example is following the Bayesian approach structure,
 focusing on what tools that becomes *more* valuable in the LLM era.
-Here suggested: *documentation*.
+Here suggested: *documentation*. See also the
+[addition/documentation](./../addition/documentation).
 
 
 ### Code Documentation and Comments

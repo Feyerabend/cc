@@ -35,3 +35,8 @@ architectures.
 In essence, JHotDraw is less about flashy graphics and more about disciplined
 software structure--a framework where drawing becomes a vehicle for exploring
 modularity, behavioral abstraction, and the craft of API design.
+
+- Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994).
+  *Design patterns: Elements of reusable object-oriented software*. Addison-Wesley.
+
+![Design Patterns](./../../../assets/image/gang4.png)
