@@ -30,7 +30,7 @@ raytracing works *backwards*:
 
 ```
    EYE          SCREEN          SCENE
-   (O)  ------>  [pixel] ------> [ x ]
+   (O) ------>  [pixel] ------> [ x ]
          ray              ray hits object
 ```
 
@@ -395,9 +395,9 @@ Add to original: *I - 2(I·N)N*
      ↑
      |
 I ↘  |  ↗ R
-  ↘ | ↗
-   ↘|↗
-════•════ Surface
+   ↘ | ↗
+    ↘|↗
+-----.----- Surface
 ```
 
 Angle of incidence = Angle of reflection
