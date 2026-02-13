@@ -30,7 +30,7 @@ raytracing works *backwards*:
 
 ```
    EYE          SCREEN          SCENE
-    O  ------>  [pixel] ------>  [ ]
+    O  ------>  [pixel] ------> [ x ]
          ray              ray hits object
 ```
 
