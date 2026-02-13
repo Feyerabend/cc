@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-threaded Raytracer with Web Workers</title>
+    <style>
+        body { 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            background: #000; 
+            font-family: Arial, sans-serif;
+        }
+        canvas { 
+            border: 1px solid #333; 
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+        .controls {
+            margin: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            color: #fff;
+        }
+        input[type="file"] {
+            padding: 8px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+        .info {
+            color: #999;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .performance {
+            color: #0f0;
+            font-size: 14px;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <input type="file" id="textureInput" accept="image/*">
+        <div class="performance" id="fps">FPS: --</div>
+    </div>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <div class="info">Multi-threaded raytracer using Web Workers for smooth performance</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const textureInput = document.getElementById('textureInput');
+        const fpsDisplay = document.getElementById('fps');
+        
+        const WIDTH = canvas.width;
+        const HEIGHT = canvas.height;
+        const NUM_WORKERS = navigator.hardwareConcurrency || 4;
+        
+        // Performance tracking
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let lastFrameTime = 0;
+
+        // Worker management
+        let workers = [];
+        let workersReady = 0;
+        let currentFrame = 0;
+        let pendingFrames = new Map();
+        let textureData = null;
+
+        // Scene constants - shared with workers
+        const SCENE_CONFIG = {
+            FOV: 60,
+            BOUNCE_CYCLE_MS: 2000,
+            BOUNCE_HEIGHT: 1.0,
+            BASE_Y: -0.5,
+            HORIZONTAL_BOUNCE_CYCLE_MS: 3000,
+            HORIZONTAL_BOUNCE_AMPLITUDE: 0.8,
+            SPHERE_RADIUS: 1,
+            LIGHT_POS: { x: 2, y: 3, z: 4 },
+            CAMERA_POS: { x: 0, y: 0, z: 3.5 },
+            PLANE_Y: -1.5,
+            BACKGROUND_COLOR: [20, 20, 20],
+            PLANE_COLOR: [50, 50, 50],
+            SHADOW_COLOR: [10, 10, 10],
+            AMBIENT_LIGHT: 0.2,
+            SPECULAR_POWER: 30,
+            EPSILON: 0.01,
+            ROTATION_CYCLE_MS: 5000,
+            PLANE_REFLECTION: 0.4
+        };
+
+        // Worker code as a string
+        const workerCode = `
+            // Scene configuration will be set by main thread
+            let config = {};
+            let textureImage = null;
+
+            // Vector operations
+            class Vector {
+                constructor(x, y, z) {
+                    this.x = x;
+                    this.y = y;
+                    this.z = z;
+                }
+                subtract(v) {
+                    return new Vector(this.x - v.x, this.y - v.y, this.z - v.z);
+                }
+                add(v) {
+                    return new Vector(this.x + v.x, this.y + v.y, this.z + v.z);
+                }
+                scale(s) {
+                    return new Vector(this.x * s, this.y * s, this.z * s);
+                }
+                dot(v) {
+                    return this.x * v.x + this.y * v.y + this.z * v.z;
+                }
+                normalize() {
+                    const mag = Math.sqrt(this.dot(this));
+                    return mag > 0 ? new Vector(this.x / mag, this.y / mag, this.z / mag) : this;
+                }
+            }
+
+            // Get texture color at UV coordinates with rotation
+            function getTextureColor(u, v, time) {
+                if (!textureImage) return [255, 255, 255];
+                const rotationPhase = (time % config.ROTATION_CYCLE_MS) / config.ROTATION_CYCLE_MS;
+                const uRotated = (u + rotationPhase) % 1.0;
+                const uClamped = Math.max(0, Math.min(1, uRotated));
+                const vClamped = Math.max(0, Math.min(1, v));
+                const x = Math.floor(uClamped * textureImage.width) % textureImage.width;
+                const y = Math.floor(vClamped * textureImage.height) % textureImage.height;
+                const index = (y * textureImage.width + x) * 4;
+                return [
+                    textureImage.data[index],
+                    textureImage.data[index + 1],
+                    textureImage.data[index + 2]
+                ];
+            }
+
+            // Trace a ray and return pixel color
+            function traceRay(x, y, time, width, height) {
+                // Normalize pixel coordinates
+                const scale = Math.tan(config.FOV * 0.5 * Math.PI / 180);
+                const aspect = width / height;
+                const rayX = (2 * x / width - 1) * scale * aspect;
+                const rayY = (1 - 2 * y / height) * scale;
+                const rayDir = new Vector(rayX, rayY, -1).normalize();
+
+                // Animate sphere position (up-down and left-right)
+                const bouncePhase = (time % config.BOUNCE_CYCLE_MS) / config.BOUNCE_CYCLE_MS;
+                const bounceY = config.BASE_Y + Math.abs(Math.sin(bouncePhase * Math.PI * 2)) * config.BOUNCE_HEIGHT;
+                const horizontalPhase = (time % config.HORIZONTAL_BOUNCE_CYCLE_MS) / config.HORIZONTAL_BOUNCE_CYCLE_MS;
+                const bounceX = Math.sin(horizontalPhase * Math.PI * 2) * config.HORIZONTAL_BOUNCE_AMPLITUDE;
+                const SPHERE_CENTER = { x: bounceX, y: bounceY, z: 0 };
+
+                let t = Infinity;
+                let color = config.BACKGROUND_COLOR;
+
+                // Ray-sphere intersection
+                const oc = new Vector(config.CAMERA_POS.x, config.CAMERA_POS.y, config.CAMERA_POS.z).subtract(SPHERE_CENTER);
+                const a = rayDir.dot(rayDir);
+                const b = 2 * oc.dot(rayDir);
+                const c = oc.dot(oc) - config.SPHERE_RADIUS * config.SPHERE_RADIUS;
+                const discriminant = b * b - 4 * a * c;
+
+                if (discriminant >= 0) {
+                    const sqrtDisc = Math.sqrt(discriminant);
+                    const t0 = (-b - sqrtDisc) / (2 * a);
+                    const t1 = (-b + sqrtDisc) / (2 * a);
+                    t = t0 > config.EPSILON ? t0 : t1 > config.EPSILON ? t1 : Infinity;
+                    if (t < Infinity) {
+                        const hitPoint = new Vector(config.CAMERA_POS.x, config.CAMERA_POS.y, config.CAMERA_POS.z).add(rayDir.scale(t));
+                        const normal = hitPoint.subtract(SPHERE_CENTER).normalize();
+
+                        // Calculate UV coordinates for spherical mapping
+                        const hitRelative = hitPoint.subtract(SPHERE_CENTER);
+                        const u = 0.5 + Math.atan2(hitRelative.z, hitRelative.x) / (2 * Math.PI);
+                        const v = 0.5 - Math.asin(hitRelative.y / config.SPHERE_RADIUS) / Math.PI;
+                        const sphereColor = getTextureColor(u, v, time);
+
+                        const lightDir = new Vector(config.LIGHT_POS.x, config.LIGHT_POS.y, config.LIGHT_POS.z).subtract(hitPoint).normalize();
+                        const viewDir = rayDir.scale(-1);
+                        const halfDir = lightDir.add(viewDir).normalize();
+                        const diffuse = Math.max(0, normal.dot(lightDir));
+                        const specular = Math.pow(Math.max(0, normal.dot(halfDir)), config.SPECULAR_POWER);
+                        color = [
+                            sphereColor[0] * (diffuse + config.AMBIENT_LIGHT) + 255 * specular,
+                            sphereColor[1] * (diffuse + config.AMBIENT_LIGHT) + 255 * specular,
+                            sphereColor[2] * (diffuse + config.AMBIENT_LIGHT) + 255 * specular
+                        ].map(c => Math.min(255, Math.max(0, c)));
+                    }
+                }
+
+                // Ray-plane intersection and reflection
+                const planeT = (config.PLANE_Y - config.CAMERA_POS.y) / rayDir.y;
+                if (planeT > config.EPSILON && (discriminant < 0 || planeT < t)) {
+                    const planeHit = new Vector(config.CAMERA_POS.x, config.CAMERA_POS.y, config.CAMERA_POS.z).add(rayDir.scale(planeT));
+                    const toLight = new Vector(config.LIGHT_POS.x - planeHit.x, config.LIGHT_POS.y - planeHit.y, config.LIGHT_POS.z - planeHit.z);
+                    const lightDist = Math.sqrt(toLight.dot(toLight));
+                    const lightDir = toLight.normalize();
+
+                    // Shadow ray
+                    const shadowRayOrigin = planeHit.add(lightDir.scale(config.EPSILON));
+                    const ocShadow = shadowRayOrigin.subtract(SPHERE_CENTER);
+                    const bShadow = 2 * ocShadow.dot(lightDir);
+                    const cShadow = ocShadow.dot(ocShadow) - config.SPHERE_RADIUS * config.SPHERE_RADIUS;
+                    const discriminantShadow = bShadow * bShadow - 4 * cShadow;
+
+                    let planeColor = config.PLANE_COLOR;
+                    if (discriminantShadow < 0 || lightDist < config.EPSILON) {
+                        const planeDiffuse = Math.max(0, new Vector(0, 1, 0).dot(lightDir));
+                        planeColor = config.PLANE_COLOR.map(c => Math.min(255, c * (planeDiffuse + config.AMBIENT_LIGHT)));
+                    } else {
+                        planeColor = config.SHADOW_COLOR.map(c => Math.min(255, c * config.AMBIENT_LIGHT));
+                    }
+
+                    // Reflection ray
+                    const planeNormal = new Vector(0, 1, 0);
+                    const reflectDir = rayDir.subtract(planeNormal.scale(2 * rayDir.dot(planeNormal))).normalize();
+                    const reflectOrigin = planeHit.add(planeNormal.scale(config.EPSILON));
+
+                    // Trace reflection ray for sphere intersection
+                    let reflectColor = config.BACKGROUND_COLOR;
+                    const ocReflect = reflectOrigin.subtract(SPHERE_CENTER);
+                    const aReflect = reflectDir.dot(reflectDir);
+                    const bReflect = 2 * ocReflect.dot(reflectDir);
+                    const cReflect = ocReflect.dot(ocReflect) - config.SPHERE_RADIUS * config.SPHERE_RADIUS;
+                    const discriminantReflect = bReflect * bReflect - 4 * aReflect * cReflect;
+
+                    if (discriminantReflect >= 0) {
+                        const sqrtDiscReflect = Math.sqrt(discriminantReflect);
+                        const tReflect0 = (-bReflect - sqrtDiscReflect) / (2 * aReflect);
+                        const tReflect1 = (-bReflect + sqrtDiscReflect) / (2 * aReflect);
+                        const tReflect = tReflect0 > config.EPSILON ? tReflect0 : tReflect1 > config.EPSILON ? tReflect1 : Infinity;
+                        if (tReflect < Infinity) {
+                            const reflectHit = reflectOrigin.add(reflectDir.scale(tReflect));
+                            const reflectNormal = reflectHit.subtract(SPHERE_CENTER).normalize();
+
+                            // Calculate UV coordinates for spherical mapping
+                            const reflectHitRelative = reflectHit.subtract(SPHERE_CENTER);
+                            const uReflect = 0.5 + Math.atan2(reflectHitRelative.z, reflectHitRelative.x) / (2 * Math.PI);
+                            const vReflect = 0.5 - Math.asin(reflectHitRelative.y / config.SPHERE_RADIUS) / Math.PI;
+                            const sphereColor = getTextureColor(uReflect, vReflect, time);
+
+                            const lightDirReflect = new Vector(config.LIGHT_POS.x, config.LIGHT_POS.y, config.LIGHT_POS.z).subtract(reflectHit).normalize();
+                            const viewDirReflect = reflectDir.scale(-1);
+                            const halfDirReflect = lightDirReflect.add(viewDirReflect).normalize();
+                            const diffuseReflect = Math.max(0, reflectNormal.dot(lightDirReflect));
+                            const specularReflect = Math.pow(Math.max(0, reflectNormal.dot(halfDirReflect)), config.SPECULAR_POWER);
+                            reflectColor = [
+                                sphereColor[0] * (diffuseReflect + config.AMBIENT_LIGHT) + 255 * specularReflect,
+                                sphereColor[1] * (diffuseReflect + config.AMBIENT_LIGHT) + 255 * specularReflect,
+                                sphereColor[2] * (diffuseReflect + config.AMBIENT_LIGHT) + 255 * specularReflect
+                            ].map(c => Math.min(255, Math.max(0, c)));
+                        }
+                    }
+
+                    // Blend plane color with reflection color
+                    color = [
+                        planeColor[0] * (1 - config.PLANE_REFLECTION) + reflectColor[0] * config.PLANE_REFLECTION,
+                        planeColor[1] * (1 - config.PLANE_REFLECTION) + reflectColor[1] * config.PLANE_REFLECTION,
+                        planeColor[2] * (1 - config.PLANE_REFLECTION) + reflectColor[2] * config.PLANE_REFLECTION
+                    ].map(c => Math.min(255, Math.max(0, c)));
+                }
+
+                return color;
+            }
+
+            // Process a slice of the image
+            function processSlice(startY, endY, width, height, time, frameId) {
+                const sliceHeight = endY - startY;
+                const imageData = new Uint8ClampedArray(sliceHeight * width * 4);
+                
+                for (let y = startY; y < endY; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const pixelIndex = ((y - startY) * width + x) * 4;
+                        const color = traceRay(x, y, time, width, height);
+                        imageData[pixelIndex] = color[0];
+                        imageData[pixelIndex + 1] = color[1];
+                        imageData[pixelIndex + 2] = color[2];
+                        imageData[pixelIndex + 3] = 255;
+                    }
+                }
+                
+                return { imageData, startY, endY, frameId };
+            }
+
+            // Message handler
+            self.onmessage = function(e) {
+                const { type, data } = e.data;
+                
+                switch (type) {
+                    case 'init':
+                        config = data.config;
+                        textureImage = data.textureImage;
+                        self.postMessage({ type: 'ready' });
+                        break;
+                        
+                    case 'render':
+                        const result = processSlice(
+                            data.startY, 
+                            data.endY, 
+                            data.width, 
+                            data.height, 
+                            data.time,
+                            data.frameId
+                        );
+                        self.postMessage({ type: 'slice', data: result });
+                        break;
+                        
+                    case 'updateTexture':
+                        textureImage = data.textureImage;
+                        break;
+                }
+            };
+        `;
+
+        // Create workers
+        function initializeWorkers() {
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            const workerUrl = URL.createObjectURL(blob);
+            
+            for (let i = 0; i < NUM_WORKERS; i++) {
+                const worker = new Worker(workerUrl);
+                worker.onmessage = handleWorkerMessage;
+                workers.push(worker);
+                
+                // Initialize worker with config
+                worker.postMessage({
+                    type: 'init',
+                    data: {
+                        config: SCENE_CONFIG,
+                        textureImage: textureData
+                    }
+                });
+            }
+            
+            URL.revokeObjectURL(workerUrl);
+        }
+
+        // Handle worker messages
+        function handleWorkerMessage(e) {
+            const { type, data } = e.data;
+            
+            switch (type) {
+                case 'ready':
+                    workersReady++;
+                    if (workersReady === NUM_WORKERS) {
+                        console.log(`Initialized ${NUM_WORKERS} workers`);
+                        requestAnimationFrame(animate);
+                    }
+                    break;
+                    
+                case 'slice':
+                    handleSliceComplete(data);
+                    break;
+            }
+        }
+
+        // Handle completed slice
+        function handleSliceComplete(sliceData) {
+            const { imageData, startY, endY, frameId } = sliceData;
+            
+            if (!pendingFrames.has(frameId)) {
+                return; // Frame was abandoned
+            }
+            
+            const frameInfo = pendingFrames.get(frameId);
+            frameInfo.completedSlices++;
+            
+            // Copy slice data to main image
+            const mainImageData = frameInfo.imageData;
+            const sliceWidth = WIDTH;
+            const sliceHeight = endY - startY;
+            
+            for (let y = 0; y < sliceHeight; y++) {
+                for (let x = 0; x < sliceWidth; x++) {
+                    const srcIndex = (y * sliceWidth + x) * 4;
+                    const dstIndex = ((startY + y) * WIDTH + x) * 4;
+                    
+                    mainImageData.data[dstIndex] = imageData[srcIndex];
+                    mainImageData.data[dstIndex + 1] = imageData[srcIndex + 1];
+                    mainImageData.data[dstIndex + 2] = imageData[srcIndex + 2];
+                    mainImageData.data[dstIndex + 3] = imageData[srcIndex + 3];
+                }
+            }
+            
+            // Check if frame is complete
+            if (frameInfo.completedSlices === NUM_WORKERS) {
+                ctx.putImageData(frameInfo.imageData, 0, 0);
+                pendingFrames.delete(frameId);
+                
+                // Update FPS counter
+                updateFPS();
+            }
+        }
+
+        // Update FPS display
+        function updateFPS() {
+            frameCount++;
+            const now = performance.now();
+            
+            if (now - lastFpsUpdate >= 1000) {
+                const fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
+                fpsDisplay.textContent = `FPS: ${fps}`;
+                frameCount = 0;
+                lastFpsUpdate = now;
+            }
+        }
+
+        // Render frame using workers
+        function renderFrame(time) {
+            if (workersReady < NUM_WORKERS) return;
+            
+            const frameId = currentFrame++;
+            const sliceHeight = Math.ceil(HEIGHT / NUM_WORKERS);
+            
+            // Create frame info
+            const frameInfo = {
+                imageData: ctx.createImageData(WIDTH, HEIGHT),
+                completedSlices: 0
+            };
+            pendingFrames.set(frameId, frameInfo);
+            
+            // Clean up old frames if too many are pending
+            if (pendingFrames.size > 3) {
+                const oldestFrame = Math.min(...pendingFrames.keys());
+                pendingFrames.delete(oldestFrame);
+            }
+            
+            // Distribute work to workers
+            for (let i = 0; i < NUM_WORKERS; i++) {
+                const startY = i * sliceHeight;
+                const endY = Math.min(startY + sliceHeight, HEIGHT);
+                
+                if (startY < HEIGHT) {
+                    workers[i].postMessage({
+                        type: 'render',
+                        data: {
+                            startY,
+                            endY,
+                            width: WIDTH,
+                            height: HEIGHT,
+                            time,
+                            frameId
+                        }
+                    });
+                }
+            }
+        }
+
+        // Animation loop
+        function animate(time) {
+            renderFrame(time);
+            requestAnimationFrame(animate);
+        }
+
+        // Texture handling
+        textureInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = img.width;
+                        tempCanvas.height = img.height;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.drawImage(img, 0, 0);
+                        textureData = tempCtx.getImageData(0, 0, img.width, img.height);
+                        
+                        // Update all workers with new texture
+                        workers.forEach(worker => {
+                            worker.postMessage({
+                                type: 'updateTexture',
+                                data: { textureImage: textureData }
+                            });
+                        });
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Initialize the system
+        initializeWorkers();
+    </script>
+</body>
+</html>
