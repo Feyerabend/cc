@@ -358,7 +358,7 @@ This demo produces *hard shadows* (sharp edges) because:
 Reflective surfaces (mirrors, water, polished metal) show images of other objects.
 
 ```
-    👁 Eye
+    (O) Eye
       \
        \  Primary ray
         \
@@ -728,7 +728,7 @@ const FOV = 60;  // Degrees
          |  |              \        /
          |  |               \      /
          |  |                \    /
-        📷               📷
+           V                   V
     (telephoto)           (wide-angle)
 ```
 
@@ -771,7 +771,7 @@ const rayDir = new Vector(rayX, rayY, -1).normalize();
            |   |
            |___|
               |
-              📷 Camera (0, 0, 0)
+              V Camera (0, 0, 0)
 ```
 
 The image plane is a virtual rectangle 1 unit in front of the camera.
