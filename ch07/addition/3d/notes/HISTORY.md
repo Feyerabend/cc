@@ -49,7 +49,7 @@ If two objects overlap, how does the computer know which one is in front?
 
 * *Z-Buffering*: Invented by Edwin Catmull in 1974, this stores depth
   values for every pixel, ensuring objects are drawn in the correct order.
-* **ack-face Culling*: An optimisation that tells the computer not to
+* *Back-face Culling*: An optimisation that tells the computer not to
   waste time drawing polygons that are facing away from the camera.
 
 
