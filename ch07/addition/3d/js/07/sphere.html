@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raytraced Sphere with Shadow</title>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; }
+        canvas { border: 1px solid #333; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Vector class for 3D operations
+        class Vector {
+            constructor(x, y, z) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+            }
+            subtract(v) {
+                return new Vector(this.x - v.x, this.y - v.y, this.z - v.z);
+            }
+            add(v) {
+                return new Vector(this.x + v.x, this.y + v.y, this.z + v.z);
+            }
+            scale(s) {
+                return new Vector(this.x * s, this.y * s, this.z * s);
+            }
+            dot(v) {
+                return this.x * v.x + this.y * v.y + this.z * v.z;
+            }
+            normalize() {
+                const mag = Math.sqrt(this.dot(this));
+                return mag > 0 ? new Vector(this.x / mag, this.y / mag, this.z / mag) : this;
+            }
+        }
+
+        // Scene setup
+        const sphereCenter = new Vector(0, 0, 0);
+        const sphereRadius = 1;
+        const lightPos = new Vector(2, 3, 4);
+        const cameraPos = new Vector(0, 0, 3); // Moved camera closer
+        const planeY = -1.5;
+
+        function raytrace() {
+            const imageData = ctx.createImageData(width, height);
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const pixelIndex = (y * width + x) * 4;
+
+                    // Map pixel to normalized device coordinates with wider FOV
+                    const fov = 90;
+                    const scale = Math.tan(fov * 0.5 * Math.PI / 180);
+                    const aspect = width / height;
+                    const nx = (2 * x / width - 1) * scale * aspect;
+                    const ny = (1 - 2 * y / height) * scale;
+                    const rayDir = new Vector(nx, ny, -1).normalize();
+
+                    // Ray-sphere intersection
+                    let t = Infinity;
+                    let color = [20, 20, 20]; // Background color
+
+                    const oc = cameraPos.subtract(sphereCenter);
+                    const a = rayDir.dot(rayDir);
+                    const b = 2 * oc.dot(rayDir);
+                    const c = oc.dot(oc) - sphereRadius * sphereRadius;
+                    const discriminant = b * b - 4 * a * c;
+
+                    if (discriminant >= 0) {
+                        const sqrtDisc = Math.sqrt(discriminant);
+                        let t0 = (-b - sqrtDisc) / (2 * a);
+                        let t1 = (-b + sqrtDisc) / (2 * a);
+                        t = t0 > 0 ? t0 : t1 > 0 ? t1 : Infinity;
+                        if (t < Infinity) {
+                            const hitPoint = cameraPos.add(rayDir.scale(t));
+                            const normal = hitPoint.subtract(sphereCenter).normalize();
+                            const lightDir = lightPos.subtract(hitPoint).normalize();
+                            const diffuse = Math.max(0, normal.dot(lightDir));
+                            color = [255 * diffuse, 100 * diffuse, 100 * diffuse]; // Reddish sphere
+                        }
+                    }
+
+                    // Shadow on plane
+                    const planeT = (planeY - cameraPos.y) / rayDir.y;
+                    if (planeT > 0 && (discriminant < 0 || planeT < t)) {
+                        const planeHit = cameraPos.add(rayDir.scale(planeT));
+                        const toLight = lightPos.subtract(planeHit);
+                        const lightDist = Math.sqrt(toLight.dot(toLight));
+                        const lightDir = toLight.normalize();
+
+                        // Check if sphere casts shadow
+                        const shadowRayOrigin = planeHit;
+                        const ocShadow = shadowRayOrigin.subtract(sphereCenter);
+                        const bShadow = 2 * ocShadow.dot(lightDir);
+                        const cShadow = ocShadow.dot(ocShadow) - sphereRadius * sphereRadius;
+                        const discriminantShadow = bShadow * bShadow - 4 * cShadow;
+
+                        if (discriminantShadow < 0 || lightDist < 0.01) {
+                            // No shadow, light plane
+                            const planeDiffuse = Math.max(0, new Vector(0, 1, 0).dot(lightDir));
+                            color = [50 * planeDiffuse, 50 * planeDiffuse, 50 * planeDiffuse];
+                        } else {
+                            // In shadow
+                            color = [10, 10, 10];
+                        }
+                    }
+
+                    // Set pixel color
+                    imageData.data[pixelIndex] = color[0];
+                    imageData.data[pixelIndex + 1] = color[1];
+                    imageData.data[pixelIndex + 2] = color[2];
+                    imageData.data[pixelIndex + 3] = 255; // Alpha
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // Render the scene
+        raytrace();
+    </script>
+</body>
+</html>
