@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clifford vs Matrix Cubes</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+            font-family: monospace;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            min-height: 100vh;
+        }
+        canvas {
+            border: 1px solid #333;
+            background: #111;
+        }
+        .container {
+            text-align: center;
+        }
+        h2 {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Clifford Algebra</h2>
+        <canvas id="cliffordCanvas" width="400" height="400"></canvas>
+    </div>
+    <div class="container">
+        <h2>Matrix Rotation</h2>
+        <canvas id="matrixCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <script>
+        class CliffordBivector {
+            constructor(xy, xz, yz) {
+                this.xy = xy || 0;
+                this.xz = xz || 0;
+                this.yz = yz || 0;
+            }
+
+            static create(t) {
+                return new CliffordBivector(t * 0.3, t * 0.4, t * 0.2);
+            }
+
+            toRotor() {
+                const angle = Math.sqrt(this.xy * this.xy + this.xz * this.xz + this.yz * this.yz);
+                
+                if (angle < 0.001) {
+                    return new CliffordRotor(1, 0, 0, 0);
+                }
+
+                const halfAngle = angle * 0.5;
+                const cosHalf = 1 - halfAngle * halfAngle * 0.5;
+                const sinHalf = halfAngle - halfAngle * halfAngle * halfAngle * 0.16666667;
+                
+                const invAngle = 1.0 / angle;
+                
+                return new CliffordRotor(
+                    cosHalf, 
+                    this.xy * sinHalf * invAngle, 
+                    this.xz * sinHalf * invAngle, 
+                    this.yz * sinHalf * invAngle
+                );
+            }
+        }
+
+        class CliffordRotor {
+            constructor(w, x, y, z) {
+                this.w = w || 1;
+                this.x = x || 0;
+                this.y = y || 0;
+                this.z = z || 0;
+                this.normalize();
+            }
+
+            normalize() {
+                const norm = Math.sqrt(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z);
+                if (norm > 0.0001) {
+                    this.w /= norm;
+                    this.x /= norm;
+                    this.y /= norm;
+                    this.z /= norm;
+                }
+            }
+
+            rotateVector(v) {
+                const qx = this.x, qy = this.y, qz = this.z, qw = this.w;
+                const vx = v.x, vy = v.y, vz = v.z;
+                
+                const ix = qw * vx + qy * vz - qz * vy;
+                const iy = qw * vy + qz * vx - qx * vz;
+                const iz = qw * vz + qx * vy - qy * vx;
+                const iw = -qx * vx - qy * vy - qz * vz;
+                
+                return {
+                    x: ix * qw + iw * -qx + iy * -qz - iz * -qy,
+                    y: iy * qw + iw * -qy + iz * -qx - ix * -qz,
+                    z: iz * qw + iw * -qz + ix * -qy - iy * -qx
+                };
+            }
+        }
+
+        class MatrixRotation {
+            static rotateX(angle) {
+                const c = Math.cos(angle);
+                const s = Math.sin(angle);
+                return [
+                    [1, 0, 0],
+                    [0, c, -s],
+                    [0, s, c]
+                ];
+            }
+
+            static rotateY(angle) {
+                const c = Math.cos(angle);
+                const s = Math.sin(angle);
+                return [
+                    [c, 0, s],
+                    [0, 1, 0],
+                    [-s, 0, c]
+                ];
+            }
+
+            static rotateZ(angle) {
+                const c = Math.cos(angle);
+                const s = Math.sin(angle);
+                return [
+                    [c, -s, 0],
+                    [s, c, 0],
+                    [0, 0, 1]
+                ];
+            }
+
+            static multiply(m1, m2) {
+                const result = [[0,0,0], [0,0,0], [0,0,0]];
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        for (let k = 0; k < 3; k++) {
+                            result[i][j] += m1[i][k] * m2[k][j];
+                        }
+                    }
+                }
+                return result;
+            }
+
+            static applyToVector(matrix, vector) {
+                return {
+                    x: matrix[0][0] * vector.x + matrix[0][1] * vector.y + matrix[0][2] * vector.z,
+                    y: matrix[1][0] * vector.x + matrix[1][1] * vector.y + matrix[1][2] * vector.z,
+                    z: matrix[2][0] * vector.x + matrix[2][1] * vector.y + matrix[2][2] * vector.z
+                };
+            }
+        }
+
+        const cubeVertices = [
+            {x: -1, y: -1, z: -1}, {x: 1, y: -1, z: -1},
+            {x: 1, y: 1, z: -1}, {x: -1, y: 1, z: -1},
+            {x: -1, y: -1, z: 1}, {x: 1, y: -1, z: 1},
+            {x: 1, y: 1, z: 1}, {x: -1, y: 1, z: 1}
+        ];
+
+        const cubeEdges = [
+            [0, 1], [1, 2], [2, 3], [3, 0],
+            [4, 5], [5, 6], [6, 7], [7, 4],
+            [0, 4], [1, 5], [2, 6], [3, 7]
+        ];
+
+        function project(vertex, scale, centerX, centerY) {
+            const perspective = 300 / (300 + vertex.z);
+            return {
+                x: centerX + vertex.x * scale * perspective,
+                y: centerY + vertex.y * scale * perspective
+            };
+        }
+
+        function drawCube(ctx, vertices, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            cubeEdges.forEach(edge => {
+                const v1 = project(vertices[edge[0]], 80, 200, 200);
+                const v2 = project(vertices[edge[1]], 80, 200, 200);
+                ctx.moveTo(v1.x, v1.y);
+                ctx.lineTo(v2.x, v2.y);
+            });
+
+            ctx.stroke();
+        }
+
+        const cliffordCanvas = document.getElementById('cliffordCanvas');
+        const cliffordCtx = cliffordCanvas.getContext('2d');
+        const matrixCanvas = document.getElementById('matrixCanvas');
+        const matrixCtx = matrixCanvas.getContext('2d');
+
+        let time = 0;
+
+        function animate() {
+            time += 0.02;
+
+            cliffordCtx.clearRect(0, 0, 400, 400);
+            matrixCtx.clearRect(0, 0, 400, 400);
+
+            const bivector = CliffordBivector.create(time);
+            const combinedRotor = bivector.toRotor();
+
+            const cliffordVertices = cubeVertices.map(v => combinedRotor.rotateVector(v));
+
+            const matrixX = MatrixRotation.rotateX(time * 0.7);
+            const matrixY = MatrixRotation.rotateY(time);
+            const matrixZ = MatrixRotation.rotateZ(time * 0.5);
+            const combinedMatrix = MatrixRotation.multiply(
+                MatrixRotation.multiply(matrixX, matrixY), 
+                matrixZ
+            );
+
+            const matrixVertices = cubeVertices.map(v => 
+                MatrixRotation.applyToVector(combinedMatrix, v)
+            );
+
+            drawCube(cliffordCtx, cliffordVertices, '#ff4444');
+            drawCube(matrixCtx, matrixVertices, '#44ff44');
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
