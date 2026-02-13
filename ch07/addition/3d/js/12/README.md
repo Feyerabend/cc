@@ -207,7 +207,8 @@ The image is divided into *horizontal strips*, one per worker:
 ┌─────────────┐ ← Worker 0: rows 0-99
 ├─────────────┤ ← Worker 1: rows 100-199
 ├─────────────┤ ← Worker 2: rows 200-299
-└─────────────┘ ← Worker 3: rows 300-399
+├─────────────┤ ← Worker 3: rows 300-399
+└─────────────┘
 ```
 
 ### Slice Calculation
