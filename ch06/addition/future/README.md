@@ -17,48 +17,48 @@ Take that in mind when you work on the questions below.
 
 ### Projects
 
-1. Innovation in Programming Practices
+__1. Innovation in Programming Practices__
  - *How does relying on AI tools for tasks like coding, debugging, and code completion impact
    your problem-solving abilities and understanding of algorithms?*
  - Task: Create a program with minimal AI assistance. Reflect on how using AI in this process
    might have changed your approach to problem-solving. Discuss how deepening your understanding
    of algorithms and data structures could enhance your coding skills.
 
-2. Standardisation and Stagnation in Software
+__2. Standardisation and Stagnation in Software__
  - *Do AI-generated solutions tend to follow established patterns, potentially stifling creativity
    and leading to homogenisation in programming practices?*
  - Task: Develop a piece of software using an AI tool, then replicate the same software manually
    without AI assistance. Compare the two solutions and analyse how the AI may have influenced
    the design and coding choices.
 
-3. Over-Reliance on AI in Development
+__3. Over-Reliance on AI in Development__
  - *What are the risks of becoming too reliant on AI-generated code in terms of innovation,
    custom solutions, and software design?*
  - Task: Attempt to replicate the functionality of a common AI tool with your own custom code.
    Reflect on how this process helped you deepen your understanding of software development
    and problem-solving.
 
-4. Impact on Open Source and Collaborative Innovation
+__4. Impact on Open Source and Collaborative Innovation__
  - *How does the increasing use of AI tools in software development affect the culture of
    open-source collaboration and community-driven innovation?*
  - Task: Contribute to an open-source project while using AI tools for part of the development
    process. Reflect on how this experience compares with previous contributions you've made
    without AI assistance.
 
-5. Ethical and Security Challenges in Software Development
+__5. Ethical and Security Challenges in Software Development__
  - *How might AI-generated code introduce ethical issues or security vulnerabilities in software development?*
  - Task: Write a security review for a piece of software you have developed, considering
    how AI might have impacted security or ethical decision-making. What measures can developers
    take to mitigate these risks?
 
-6. Shifting Roles in Software Development
+__6. Shifting Roles in Software Development__
  - *As AI increasingly automates repetitive tasks in coding, how might the role of programmers
    change? Will you move from __creating__ code to __curating__ AI-generated outputs?*
  - Task: Reflect on your experience as a developer when using AI tools. How does your role shift
    when AI handles more routine tasks? Which skills do you believe will become more crucial
    in the future of programming?
 
-7. Economic Incentives and Consumerism in Software
+__7. Economic Incentives and Consumerism in Software__
  - *How does the growing consumer-oriented development of AI tools impact innovation in programming?
    Are there risks of prioritising short-term, commercial applications over long-term, foundational
    advancements?*
@@ -66,7 +66,7 @@ Take that in mind when you work on the questions below.
    might these tools influence the future of programming? Write a report discussing the impact of
    consumer-driven AI tools on innovation and creativity in programming.
 
-8. AI Dependency in Programming Education
+__8. AI Dependency in Programming Education__
  - *How does the use of AI in programming education affect the development of problem-solving and
    algorithmic thinking skills in learners?*
  - Task: Learn a new programming language or framework using AI assistance. Reflect on how AI
