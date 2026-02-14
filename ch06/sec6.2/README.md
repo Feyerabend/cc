@@ -7,8 +7,11 @@ relation to a given task/project. In this case the given will be
 about a certain idea on sustainability and computers described in
 [SUSTAIN.md](./SUSTAIN.md).
 
-This overview connects four complementary philosophies *Lean*,
-*Frugal Engineering*, *Systems Thinking*, and *Design Science Research (DSR)*
+This overview connects four complementary philosophies
+*[Lean](./phils/LEAN.md)*,
+*[Frugal Engineering](./phils/FRUGAL.md)*,
+*[Systems Thinking](./phils/SYSTEM.md)*, and
+*[Design Science Research (DSR)](./phils/DSR.md)*
 to the sustainable distributed microcontroller-based computing
 vision.
 
