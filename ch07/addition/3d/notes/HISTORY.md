@@ -8,6 +8,7 @@ on a screen into the immersive, photorealistic worlds we see in modern
 gaming and cinema.
 
 
+
 ### 1. The Mathematical Big Bang (1960s – 1970s)
 
 In the beginning, 3D graphics were purely symbolic. Because hardware was
