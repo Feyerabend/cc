@@ -34,7 +34,7 @@ The central challenge is not only technical feasibility but also:
 
 #### Core Focus
 
-Maximize value while eliminating waste.
+Maximise value while eliminating waste.
 
 #### Relevance to Sustainable Computing
 
@@ -141,11 +141,11 @@ Evaluating distributed MCUs requires examining:
 
 #### Core Focus
 
-Create and rigorously evaluate artifacts.
+Create and rigorously evaluate artefacts.
 
 #### Relevance to Sustainable Computing
 
-The project is artifact-centered:
+The project is artefact-centered:
 * New architecture
 * Prototype platform
 * Communication mechanisms
@@ -158,7 +158,7 @@ DSR provides the *research structure*.
 DSR formalises:
 1. Problem definition (energy inefficiency, complexity)
 2. Design objectives (efficiency, modularity, sustainability)
-3. Artifact creation (distributed MCU system)
+3. Artefact creation (distributed MCU system)
 4. Demonstration (real workloads)
 5. Evaluation (energy, latency, robustness)
 6. Knowledge extraction (principles, patterns)
@@ -223,5 +223,5 @@ A combined methodological stance might be:
 1. *Systems Thinking* -> Frame the problem holistically
 2. *Frugal Engineering* -> Define minimal, constraint-driven design
 3. *Lean* -> Iteratively remove waste & refine
-4. *DSR* -> Build, demonstrate, evaluate, and formalize knowledge
+4. *DSR* -> Build, demonstrate, evaluate, and formalise knowledge
 
