@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D World with OBJ Models</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #gameContainer {
+            position: relative;
+        }
+        canvas {
+            border: 2px solid #333;
+            display: block;
+        }
+        #minimap {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border: 2px solid #0f0;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        #instructions {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: #0f0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        #objectLoader {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 5px;
+            color: #0f0;
+            border: 1px solid #0f0;
+        }
+        #objectLoader input {
+            margin-top: 5px;
+            background: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px;
+        }
+        #objectInfo {
+            margin-top: 5px;
+            font-size: 11px;
+            color: #0a0;
+        }
+        .success {
+            color: #0f0;
+        }
+        .error {
+            color: #f00;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="canvas"></canvas>
+        <canvas id="minimap"></canvas>
+        
+        <div id="objectLoader">
+            <strong>LOAD 3D OBJECTS:</strong><br>
+            <input type="file" id="objUpload" accept=".obj">
+            <div id="objectInfo"></div>
+        </div>
+        
+        <div id="instructions">
+            <strong>CONTROLS:</strong><br>
+            W/↑ - Move Forward<br>
+            S/↓ - Move Backward<br>
+            A/← - Turn Left<br>
+            D/→ - Turn Right
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const minimap = document.getElementById('minimap');
+        const mmCtx = minimap.getContext('2d');
+        
+        canvas.width = 800;
+        canvas.height = 600;
+        minimap.width = 150;
+        minimap.height = 150;
+
+        // Game constants
+        const MAP_SIZE = 16;
+        const TILE_SIZE = 64;
+        const FOV = Math.PI / 3;
+        const NUM_RAYS = canvas.width;
+        const MAX_DEPTH = 800;
+        const MOVE_SPEED = 3;
+        const TURN_SPEED = 0.05;
+
+        // Map: 1 = wall, 0 = empty
+        const map = [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ];
+
+        // Objects in the world (sprites)
+        const objects = [
+            { x: TILE_SIZE * 6.5, y: TILE_SIZE * 2.5, radius: 25 },
+            { x: TILE_SIZE * 9.5, y: TILE_SIZE * 4.5, radius: 25 },
+            { x: TILE_SIZE * 2.5, y: TILE_SIZE * 5.5, radius: 25 },
+            { x: TILE_SIZE * 13.5, y: TILE_SIZE * 7.5, radius: 25 },
+            { x: TILE_SIZE * 2.5, y: TILE_SIZE * 9.5, radius: 25 },
+            { x: TILE_SIZE * 6.5, y: TILE_SIZE * 11.5, radius: 25 }
+        ];
+
+        // Player
+        const player = {
+            x: TILE_SIZE * 2,
+            y: TILE_SIZE * 2,
+            angle: 0,
+            moveSpeed: MOVE_SPEED,
+            turnSpeed: TURN_SPEED
+        };
+
+        // 3D Model data
+        let loadedModelData = null;
+        let modelCanvas = null;
+        let modelGL = null;
+        let modelProgram = null;
+        let spriteImages = []; // Pre-rendered sprites from different angles
+
+        // Input handling
+        const keys = {};
+        window.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            keys[e.key] = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+            keys[e.key] = false;
+        });
+
+        // Initialize WebGL for 3D model rendering
+        function initWebGL() {
+            modelCanvas = document.createElement('canvas');
+            modelCanvas.width = 128;
+            modelCanvas.height = 128;
+            modelGL = modelCanvas.getContext('webgl', { 
+                alpha: true, 
+                antialias: true,
+                preserveDrawingBuffer: true 
+            });
+            
+            if (!modelGL) {
+                console.error('WebGL not supported');
+                return false;
+            }
+
+            // Enable OES_element_index_uint for large models
+            const ext = modelGL.getExtension('OES_element_index_uint');
+
+            // Vertex shader
+            const vsSource = `
+                attribute vec4 aVertexPosition;
+                attribute vec3 aVertexNormal;
+                uniform mat4 uModelViewMatrix;
+                uniform mat4 uProjectionMatrix;
+                uniform mat4 uNormalMatrix;
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                void main() {
+                    gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+                    vNormal = (uNormalMatrix * vec4(aVertexNormal, 0.0)).xyz;
+                    vPosition = (uModelViewMatrix * aVertexPosition).xyz;
+                }
+            `;
+
+            // Fragment shader
+            const fsSource = `
+                precision mediump float;
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                void main() {
+                    vec3 lightDir = normalize(vec3(0.5, 1.0, 0.8));
+                    vec3 normal = normalize(vNormal);
+                    float diff = max(dot(normal, lightDir), 0.0);
+                    
+                    // Two-tone shading
+                    vec3 baseColor = vec3(0.2, 0.5, 0.8);
+                    vec3 ambient = baseColor * 0.4;
+                    vec3 diffuse = baseColor * diff * 0.8;
+                    
+                    gl_FragColor = vec4(ambient + diffuse, 1.0);
+                }
+            `;
+
+            const vertexShader = loadShader(modelGL, modelGL.VERTEX_SHADER, vsSource);
+            const fragmentShader = loadShader(modelGL, modelGL.FRAGMENT_SHADER, fsSource);
+
+            modelProgram = modelGL.createProgram();
+            modelGL.attachShader(modelProgram, vertexShader);
+            modelGL.attachShader(modelProgram, fragmentShader);
+            modelGL.linkProgram(modelProgram);
+
+            if (!modelGL.getProgramParameter(modelProgram, modelGL.LINK_STATUS)) {
+                console.error('Unable to initialize shader program');
+                return false;
+            }
+
+            return true;
+        }
+
+        function loadShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            return shader;
+        }
+
+        // Parse OBJ file
+        function parseOBJ(objText) {
+            const vertices = [];
+            const normals = [];
+            const finalVertices = [];
+            const finalNormals = [];
+            const indices = [];
+
+            const lines = objText.split('\n');
+            
+            for (const line of lines) {
+                const parts = line.trim().split(/\s+/);
+                
+                if (parts[0] === 'v') {
+                    vertices.push([
+                        parseFloat(parts[1]),
+                        parseFloat(parts[2]),
+                        parseFloat(parts[3])
+                    ]);
+                } else if (parts[0] === 'vn') {
+                    normals.push([
+                        parseFloat(parts[1]),
+                        parseFloat(parts[2]),
+                        parseFloat(parts[3])
+                    ]);
+                } else if (parts[0] === 'f') {
+                    const faceIndices = [];
+                    for (let i = 1; i < parts.length; i++) {
+                        const vertexData = parts[i].split('/');
+                        const vIdx = parseInt(vertexData[0]) - 1;
+                        const nIdx = vertexData[2] ? parseInt(vertexData[2]) - 1 : -1;
+                        
+                        finalVertices.push(...vertices[vIdx]);
+                        
+                        if (nIdx >= 0 && normals[nIdx]) {
+                            finalNormals.push(...normals[nIdx]);
+                        } else {
+                            finalNormals.push(0, 1, 0);
+                        }
+                        
+                        faceIndices.push(finalVertices.length / 3 - 1);
+                    }
+                    
+                    // Triangulate if needed
+                    for (let i = 1; i < faceIndices.length - 1; i++) {
+                        indices.push(faceIndices[0], faceIndices[i], faceIndices[i + 1]);
+                    }
+                }
+            }
+
+            // Calculate bounds
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+            let minZ = Infinity, maxZ = -Infinity;
+
+            for (let i = 0; i < finalVertices.length; i += 3) {
+                minX = Math.min(minX, finalVertices[i]);
+                maxX = Math.max(maxX, finalVertices[i]);
+                minY = Math.min(minY, finalVertices[i + 1]);
+                maxY = Math.max(maxY, finalVertices[i + 1]);
+                minZ = Math.min(minZ, finalVertices[i + 2]);
+                maxZ = Math.max(maxZ, finalVertices[i + 2]);
+            }
+
+            const center = [
+                (minX + maxX) / 2,
+                (minY + maxY) / 2,
+                (minZ + minZ) / 2
+            ];
+
+            const size = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
+
+            return {
+                vertices: new Float32Array(finalVertices),
+                normals: new Float32Array(finalNormals),
+                indices: indices.length < 65536 ? new Uint16Array(indices) : new Uint32Array(indices),
+                center,
+                size,
+                vertexCount: vertices.length,
+                faceCount: indices.length / 3,
+                use32Bit: indices.length >= 65536
+            };
+        }
+
+        // Render model to sprite from specific angle
+        function renderModelSprite(angleY) {
+            if (!loadedModelData || !modelGL || !modelProgram) return null;
+
+            modelGL.viewport(0, 0, modelCanvas.width, modelCanvas.height);
+            modelGL.clearColor(0, 0, 0, 0);
+            modelGL.clear(modelGL.COLOR_BUFFER_BIT | modelGL.DEPTH_BUFFER_BIT);
+            modelGL.enable(modelGL.DEPTH_TEST);
+
+            // Create buffers
+            const positionBuffer = modelGL.createBuffer();
+            modelGL.bindBuffer(modelGL.ARRAY_BUFFER, positionBuffer);
+            modelGL.bufferData(modelGL.ARRAY_BUFFER, loadedModelData.vertices, modelGL.STATIC_DRAW);
+
+            const normalBuffer = modelGL.createBuffer();
+            modelGL.bindBuffer(modelGL.ARRAY_BUFFER, normalBuffer);
+            modelGL.bufferData(modelGL.ARRAY_BUFFER, loadedModelData.normals, modelGL.STATIC_DRAW);
+
+            const indexBuffer = modelGL.createBuffer();
+            modelGL.bindBuffer(modelGL.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            modelGL.bufferData(modelGL.ELEMENT_ARRAY_BUFFER, loadedModelData.indices, modelGL.STATIC_DRAW);
+
+            // Set up matrices
+            const projectionMatrix = mat4.create();
+            mat4.perspective(projectionMatrix, 45 * Math.PI / 180, 1.0, 0.1, 100.0);
+
+            const modelViewMatrix = mat4.create();
+            mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -3]);
+            
+            // CRITICAL: Rotate the MODEL, not the camera
+            // This way each sprite shows the object from a different side
+            const scale = 1.2 / loadedModelData.size;
+            mat4.scale(modelViewMatrix, modelViewMatrix, [scale, scale, scale]);
+            mat4.translate(modelViewMatrix, modelViewMatrix, [-loadedModelData.center[0], -loadedModelData.center[1], -loadedModelData.center[2]]);
+            mat4.rotateY(modelViewMatrix, modelViewMatrix, angleY);
+
+            const normalMatrix = mat4.create();
+            mat4.invert(normalMatrix, modelViewMatrix);
+            mat4.transpose(normalMatrix, normalMatrix);
+
+            // Use program
+            modelGL.useProgram(modelProgram);
+
+            // Set attributes
+            const vertexPosition = modelGL.getAttribLocation(modelProgram, 'aVertexPosition');
+            modelGL.bindBuffer(modelGL.ARRAY_BUFFER, positionBuffer);
+            modelGL.vertexAttribPointer(vertexPosition, 3, modelGL.FLOAT, false, 0, 0);
+            modelGL.enableVertexAttribArray(vertexPosition);
+
+            const vertexNormal = modelGL.getAttribLocation(modelProgram, 'aVertexNormal');
+            modelGL.bindBuffer(modelGL.ARRAY_BUFFER, normalBuffer);
+            modelGL.vertexAttribPointer(vertexNormal, 3, modelGL.FLOAT, false, 0, 0);
+            modelGL.enableVertexAttribArray(vertexNormal);
+
+            // Set uniforms
+            const projectionMatrixLoc = modelGL.getUniformLocation(modelProgram, 'uProjectionMatrix');
+            const modelViewMatrixLoc = modelGL.getUniformLocation(modelProgram, 'uModelViewMatrix');
+            const normalMatrixLoc = modelGL.getUniformLocation(modelProgram, 'uNormalMatrix');
+
+            modelGL.uniformMatrix4fv(projectionMatrixLoc, false, projectionMatrix);
+            modelGL.uniformMatrix4fv(modelViewMatrixLoc, false, modelViewMatrix);
+            modelGL.uniformMatrix4fv(normalMatrixLoc, false, normalMatrix);
+
+            // Draw
+            modelGL.bindBuffer(modelGL.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            const indexType = loadedModelData.use32Bit ? modelGL.UNSIGNED_INT : modelGL.UNSIGNED_SHORT;
+            modelGL.drawElements(modelGL.TRIANGLES, loadedModelData.indices.length, indexType, 0);
+
+            // Create image from canvas
+            const img = new Image();
+            img.src = modelCanvas.toDataURL();
+            return img;
+        }
+
+        // Pre-render sprites from multiple angles
+        function generateObjectSprites(callback) {
+            const numAngles = 16; // 16 viewing angles for smooth rotation
+            spriteImages = [];
+            let loaded = 0;
+
+            for (let i = 0; i < numAngles; i++) {
+                const angle = (i / numAngles) * Math.PI * 2;
+                const img = renderModelSprite(angle);
+                
+                img.onload = () => {
+                    loaded++;
+                    if (loaded === numAngles && callback) {
+                        callback();
+                    }
+                };
+                
+                spriteImages.push(img);
+            }
+
+            // Set sprite images on all objects
+            objects.forEach(obj => {
+                obj.sprites = spriteImages;
+                obj.hasModel = true;
+            });
+        }
+
+        // Load OBJ file
+        document.getElementById('objUpload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    document.getElementById('objectInfo').innerHTML = '<span class="success">Loading model...</span>';
+                    
+                    if (!modelGL) {
+                        initWebGL();
+                    }
+
+                    loadedModelData = parseOBJ(event.target.result);
+                    
+                    document.getElementById('objectInfo').innerHTML = `
+                        <span class="success">✓ Model loaded!</span><br>
+                        Vertices: ${loadedModelData.vertexCount}<br>
+                        Faces: ${loadedModelData.faceCount}<br>
+                        Generating sprites...
+                    `;
+
+                    // Generate sprites from different angles
+                    setTimeout(() => {
+                        generateObjectSprites(() => {
+                            document.getElementById('objectInfo').innerHTML = `
+                                <span class="success">✓ Ready!</span><br>
+                                ${objects.length} objects placed
+                            `;
+                        });
+                    }, 100);
+
+                } catch (error) {
+                    document.getElementById('objectInfo').innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Collision detection
+        function isColliding(x, y, radius = 20) {
+            const mapX = Math.floor(x / TILE_SIZE);
+            const mapY = Math.floor(y / TILE_SIZE);
+            
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    const checkX = mapX + dx;
+                    const checkY = mapY + dy;
+                    
+                    if (checkX < 0 || checkX >= MAP_SIZE || checkY < 0 || checkY >= MAP_SIZE) {
+                        return true;
+                    }
+                    
+                    const tile = map[checkY][checkX];
+                    if (tile === 1) {
+                        const tileCenterX = (checkX + 0.5) * TILE_SIZE;
+                        const tileCenterY = (checkY + 0.5) * TILE_SIZE;
+                        const dist = Math.sqrt((x - tileCenterX) ** 2 + (y - tileCenterY) ** 2);
+                        
+                        if (dist < TILE_SIZE / 2 + radius) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            // Check collision with objects
+            for (const obj of objects) {
+                const dist = Math.sqrt((x - obj.x) ** 2 + (y - obj.y) ** 2);
+                if (dist < obj.radius + radius) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        // Update player
+        function updatePlayer() {
+            if (keys['a'] || keys['ArrowLeft']) {
+                player.angle -= player.turnSpeed;
+            }
+            if (keys['d'] || keys['ArrowRight']) {
+                player.angle += player.turnSpeed;
+            }
+
+            let moveX = 0;
+            let moveY = 0;
+
+            if (keys['w'] || keys['ArrowUp']) {
+                moveX = Math.cos(player.angle) * player.moveSpeed;
+                moveY = Math.sin(player.angle) * player.moveSpeed;
+            }
+            if (keys['s'] || keys['ArrowDown']) {
+                moveX = -Math.cos(player.angle) * player.moveSpeed;
+                moveY = -Math.sin(player.angle) * player.moveSpeed;
+            }
+
+            const newX = player.x + moveX;
+            const newY = player.y + moveY;
+
+            if (!isColliding(newX, player.y)) {
+                player.x = newX;
+            }
+            if (!isColliding(player.x, newY)) {
+                player.y = newY;
+            }
+        }
+
+        // Raycasting for walls only
+        function castRay(angle) {
+            const sin = Math.sin(angle);
+            const cos = Math.cos(angle);
+            
+            let distance = 0;
+            let hitWall = false;
+            
+            while (!hitWall && distance < MAX_DEPTH) {
+                distance += 0.5;
+                
+                const testX = player.x + cos * distance;
+                const testY = player.y + sin * distance;
+                
+                const mapX = Math.floor(testX / TILE_SIZE);
+                const mapY = Math.floor(testY / TILE_SIZE);
+                
+                if (mapX < 0 || mapX >= MAP_SIZE || mapY < 0 || mapY >= MAP_SIZE) {
+                    hitWall = true;
+                    distance = MAX_DEPTH;
+                } else if (map[mapY][mapX] === 1) {
+                    hitWall = true;
+                }
+            }
+            
+            return distance;
+        }
+
+        // Z-buffer for depth sorting
+        const zBuffer = new Array(canvas.width);
+
+        // Render 3D view
+        function render3D() {
+            // Clear canvas - ceiling and floor
+            ctx.fillStyle = '#2a2a3a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
+            ctx.fillStyle = '#4a4a4a';
+            ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+
+            // Cast rays for walls and fill z-buffer
+            for (let i = 0; i < NUM_RAYS; i++) {
+                const rayAngle = player.angle - FOV / 2 + (i / NUM_RAYS) * FOV;
+                const distance = castRay(rayAngle);
+                
+                // Fix fish-eye effect
+                const correctedDistance = distance * Math.cos(rayAngle - player.angle);
+                zBuffer[i] = correctedDistance;
+                
+                // Calculate wall height
+                const wallHeight = (TILE_SIZE * canvas.height) / (correctedDistance + 0.0001);
+                const brightness = Math.max(0, 255 - (correctedDistance / MAX_DEPTH) * 255);
+                
+                // Draw wall
+                ctx.fillStyle = `rgb(${brightness * 0.8}, ${brightness * 0.4}, ${brightness * 0.4})`;
+                ctx.fillRect(i, (canvas.height - wallHeight) / 2, 1, wallHeight);
+            }
+
+            // Render sprites (objects) - sort by distance
+            const visibleObjects = objects
+                .map(obj => {
+                    const dx = obj.x - player.x;
+                    const dy = obj.y - player.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const angle = Math.atan2(dy, dx);
+                    return { obj, distance, angle };
+                })
+                .filter(({ distance }) => distance < MAX_DEPTH)
+                .sort((a, b) => b.distance - a.distance); // Far to near
+
+            for (const { obj, distance, angle } of visibleObjects) {
+                if (!obj.hasModel || !obj.sprites || obj.sprites.length === 0) {
+                    continue;
+                }
+
+                // Calculate sprite angle relative to player
+                let relativeAngle = angle - player.angle;
+                
+                // Normalize to -PI to PI
+                while (relativeAngle < -Math.PI) relativeAngle += Math.PI * 2;
+                while (relativeAngle > Math.PI) relativeAngle -= Math.PI * 2;
+
+                // Check if sprite is in FOV
+                if (Math.abs(relativeAngle) > FOV / 2 + 0.5) continue;
+
+                // Calculate screen position
+                const spriteScreenX = (relativeAngle / FOV + 0.5) * canvas.width;
+                
+                // Calculate sprite size based on distance
+                const spriteHeight = (TILE_SIZE * canvas.height) / (distance + 0.0001);
+                const spriteWidth = spriteHeight;
+
+                // Which sprite angle to use?
+                // We need to figure out which side of the object we're looking at
+                // Calculate angle FROM player TO object
+                const dx = obj.x - player.x;
+                const dy = obj.y - player.y;
+                const angleToObject = Math.atan2(dy, dx);
+                
+                // The sprite should show the side facing the player
+                // We rotate the view by 180 degrees since we want to see the side facing us
+                let viewAngle = angleToObject + Math.PI;
+                
+                // Normalize to 0 to 2PI
+                while (viewAngle < 0) viewAngle += Math.PI * 2;
+                while (viewAngle >= Math.PI * 2) viewAngle -= Math.PI * 2;
+                
+                const spriteIndex = Math.floor((viewAngle / (Math.PI * 2)) * obj.sprites.length) % obj.sprites.length;
+                const sprite = obj.sprites[spriteIndex];
+
+                if (!sprite || !sprite.complete) continue;
+
+                // Draw sprite column by column with z-buffer check
+                const startX = Math.floor(spriteScreenX - spriteWidth / 2);
+                const endX = Math.floor(spriteScreenX + spriteWidth / 2);
+
+                for (let x = Math.max(0, startX); x < Math.min(canvas.width, endX); x++) {
+                    // Z-buffer check
+                    if (distance < zBuffer[x]) {
+                        const texX = ((x - startX) / spriteWidth) * sprite.width;
+                        
+                        // Draw a vertical stripe from the sprite
+                        ctx.drawImage(
+                            sprite,
+                            texX, 0, 1, sprite.height,
+                            x, (canvas.height - spriteHeight) / 2, 1, spriteHeight
+                        );
+                    }
+                }
+            }
+        }
+
+        // Render minimap
+        function renderMinimap() {
+            const scale = minimap.width / (MAP_SIZE * TILE_SIZE);
+            
+            mmCtx.fillStyle = '#000';
+            mmCtx.fillRect(0, 0, minimap.width, minimap.height);
+            
+            // Draw map
+            for (let y = 0; y < MAP_SIZE; y++) {
+                for (let x = 0; x < MAP_SIZE; x++) {
+                    if (map[y][x] === 1) {
+                        mmCtx.fillStyle = '#666';
+                        mmCtx.fillRect(
+                            x * TILE_SIZE * scale,
+                            y * TILE_SIZE * scale,
+                            TILE_SIZE * scale,
+                            TILE_SIZE * scale
+                        );
+                    }
+                }
+            }
+
+            // Draw objects
+            mmCtx.fillStyle = '#44f';
+            for (const obj of objects) {
+                mmCtx.beginPath();
+                mmCtx.arc(obj.x * scale, obj.y * scale, 4, 0, Math.PI * 2);
+                mmCtx.fill();
+            }
+            
+            // Draw player
+            mmCtx.fillStyle = '#0f0';
+            mmCtx.beginPath();
+            mmCtx.arc(player.x * scale, player.y * scale, 5, 0, Math.PI * 2);
+            mmCtx.fill();
+            
+            // Draw direction
+            mmCtx.strokeStyle = '#0f0';
+            mmCtx.beginPath();
+            mmCtx.moveTo(player.x * scale, player.y * scale);
+            mmCtx.lineTo(
+                player.x * scale + Math.cos(player.angle) * 20,
+                player.y * scale + Math.sin(player.angle) * 20
+            );
+            mmCtx.stroke();
+        }
+
+        // Game loop
+        function gameLoop() {
+            updatePlayer();
+            render3D();
+            renderMinimap();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start
+        gameLoop();
+    </script>
+</body>
+</html>

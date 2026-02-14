@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D World - Raycasting</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #gameContainer {
+            position: relative;
+        }
+        canvas {
+            border: 2px solid #333;
+            display: block;
+        }
+        #minimap {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border: 2px solid #0f0;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        #instructions {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: #0f0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="canvas"></canvas>
+        <canvas id="minimap"></canvas>
+        <div id="instructions">
+            <strong>CONTROLS:</strong><br>
+            W/↑ - Move Forward<br>
+            S/↓ - Move Backward<br>
+            A/← - Turn Left<br>
+            D/→ - Turn Right
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const minimap = document.getElementById('minimap');
+        const mmCtx = minimap.getContext('2d');
+        
+        canvas.width = 800;
+        canvas.height = 600;
+        minimap.width = 150;
+        minimap.height = 150;
+
+        // Game constants
+        const MAP_SIZE = 16;
+        const TILE_SIZE = 64;
+        const FOV = Math.PI / 3; // 60 degrees
+        const NUM_RAYS = canvas.width;
+        const MAX_DEPTH = 800;
+        const MOVE_SPEED = 3;
+        const TURN_SPEED = 0.05;
+
+        // Map: 1 = wall, 0 = empty, 2 = pillar/object
+        const map = [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,1],
+            [1,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,1,0,1,0,0,0,0,0,2,0,1],
+            [1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1],
+            [1,0,2,0,0,0,0,0,0,0,1,1,1,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1],
+            [1,0,0,0,0,0,2,0,0,0,1,0,1,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ];
+
+        // Player
+        const player = {
+            x: TILE_SIZE * 2,
+            y: TILE_SIZE * 2,
+            angle: 0,
+            moveSpeed: MOVE_SPEED,
+            turnSpeed: TURN_SPEED
+        };
+
+        // Input handling
+        const keys = {};
+        
+        window.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            keys[e.key] = true;
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+            keys[e.key] = false;
+        });
+
+        // Collision detection
+        function isColliding(x, y, radius = 20) {
+            const mapX = Math.floor(x / TILE_SIZE);
+            const mapY = Math.floor(y / TILE_SIZE);
+            
+            // Check the tile and surrounding tiles
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    const checkX = mapX + dx;
+                    const checkY = mapY + dy;
+                    
+                    if (checkX < 0 || checkX >= MAP_SIZE || checkY < 0 || checkY >= MAP_SIZE) {
+                        return true;
+                    }
+                    
+                    if (map[checkY][checkX] !== 0) {
+                        // Calculate distance to tile center
+                        const tileCenterX = (checkX + 0.5) * TILE_SIZE;
+                        const tileCenterY = (checkY + 0.5) * TILE_SIZE;
+                        const dist = Math.sqrt((x - tileCenterX) ** 2 + (y - tileCenterY) ** 2);
+                        
+                        if (dist < TILE_SIZE / 2 + radius) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Update player position
+        function updatePlayer() {
+            // Rotation
+            if (keys['a'] || keys['ArrowLeft']) {
+                player.angle -= player.turnSpeed;
+            }
+            if (keys['d'] || keys['ArrowRight']) {
+                player.angle += player.turnSpeed;
+            }
+
+            // Movement
+            let moveX = 0;
+            let moveY = 0;
+
+            if (keys['w'] || keys['ArrowUp']) {
+                moveX = Math.cos(player.angle) * player.moveSpeed;
+                moveY = Math.sin(player.angle) * player.moveSpeed;
+            }
+            if (keys['s'] || keys['ArrowDown']) {
+                moveX = -Math.cos(player.angle) * player.moveSpeed;
+                moveY = -Math.sin(player.angle) * player.moveSpeed;
+            }
+
+            // Apply movement with collision detection
+            const newX = player.x + moveX;
+            const newY = player.y + moveY;
+
+            if (!isColliding(newX, player.y)) {
+                player.x = newX;
+            }
+            if (!isColliding(player.x, newY)) {
+                player.y = newY;
+            }
+        }
+
+        // Raycasting
+        function castRay(angle) {
+            const sin = Math.sin(angle);
+            const cos = Math.cos(angle);
+            
+            let distance = 0;
+            let hitWall = false;
+            let hitType = 0;
+            
+            while (!hitWall && distance < MAX_DEPTH) {
+                distance += 0.5;
+                
+                const testX = player.x + cos * distance;
+                const testY = player.y + sin * distance;
+                
+                const mapX = Math.floor(testX / TILE_SIZE);
+                const mapY = Math.floor(testY / TILE_SIZE);
+                
+                if (mapX < 0 || mapX >= MAP_SIZE || mapY < 0 || mapY >= MAP_SIZE) {
+                    hitWall = true;
+                    distance = MAX_DEPTH;
+                } else if (map[mapY][mapX] !== 0) {
+                    hitWall = true;
+                    hitType = map[mapY][mapX];
+                }
+            }
+            
+            return { distance, hitType };
+        }
+
+        // Render 3D view
+        function render3D() {
+            // Clear canvas
+            ctx.fillStyle = '#333';
+            ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
+            ctx.fillStyle = '#666';
+            ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+
+            // Cast rays
+            for (let i = 0; i < NUM_RAYS; i++) {
+                const rayAngle = player.angle - FOV / 2 + (i / NUM_RAYS) * FOV;
+                const ray = castRay(rayAngle);
+                
+                // Fix fish-eye effect
+                const distance = ray.distance * Math.cos(rayAngle - player.angle);
+                
+                // Calculate wall height
+                const wallHeight = (TILE_SIZE * canvas.height) / (distance + 0.0001);
+                
+                // Calculate color based on distance
+                const brightness = Math.max(0, 255 - (distance / MAX_DEPTH) * 255);
+                
+                // Different colors for different wall types
+                let color;
+                if (ray.hitType === 1) {
+                    color = `rgb(${brightness}, ${brightness * 0.5}, ${brightness * 0.5})`;
+                } else if (ray.hitType === 2) {
+                    color = `rgb(${brightness * 0.5}, ${brightness * 0.8}, ${brightness})`;
+                }
+                
+                // Draw wall slice
+                ctx.fillStyle = color;
+                ctx.fillRect(
+                    i,
+                    (canvas.height - wallHeight) / 2,
+                    1,
+                    wallHeight
+                );
+            }
+        }
+
+        // Render minimap
+        function renderMinimap() {
+            const scale = minimap.width / (MAP_SIZE * TILE_SIZE);
+            
+            mmCtx.fillStyle = '#000';
+            mmCtx.fillRect(0, 0, minimap.width, minimap.height);
+            
+            // Draw map
+            for (let y = 0; y < MAP_SIZE; y++) {
+                for (let x = 0; x < MAP_SIZE; x++) {
+                    if (map[y][x] === 1) {
+                        mmCtx.fillStyle = '#666';
+                    } else if (map[y][x] === 2) {
+                        mmCtx.fillStyle = '#44f';
+                    } else {
+                        continue;
+                    }
+                    mmCtx.fillRect(
+                        x * TILE_SIZE * scale,
+                        y * TILE_SIZE * scale,
+                        TILE_SIZE * scale,
+                        TILE_SIZE * scale
+                    );
+                }
+            }
+            
+            // Draw player
+            mmCtx.fillStyle = '#0f0';
+            mmCtx.beginPath();
+            mmCtx.arc(
+                player.x * scale,
+                player.y * scale,
+                5,
+                0,
+                Math.PI * 2
+            );
+            mmCtx.fill();
+            
+            // Draw direction line
+            mmCtx.strokeStyle = '#0f0';
+            mmCtx.beginPath();
+            mmCtx.moveTo(player.x * scale, player.y * scale);
+            mmCtx.lineTo(
+                player.x * scale + Math.cos(player.angle) * 20,
+                player.y * scale + Math.sin(player.angle) * 20
+            );
+            mmCtx.stroke();
+        }
+
+        // Game loop
+        function gameLoop() {
+            updatePlayer();
+            render3D();
+            renderMinimap();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start game
+        gameLoop();
+    </script>
+</body>
+</html>
