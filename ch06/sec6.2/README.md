@@ -12,8 +12,7 @@ This overview connects four complementary philosophies
 *[Frugal Engineering](./phils/FRUGAL.md)*,
 *[Systems Thinking](./phils/SYSTEM.md)*, and
 *[Design Science Research (DSR)](./phils/DSR.md)*
-to the sustainable distributed microcontroller-based computing
-vision.
+to the sustainable distributed microcontroller-based computing vision.
 
 
 __Context: Sustainable Computing Vision__
