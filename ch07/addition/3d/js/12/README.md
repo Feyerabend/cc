@@ -2,7 +2,7 @@
 ## Multi-threaded Raytracer with Web Workers
 
 This builds on the raytracing demo by adding *parallel processing* using Web Workers.
-*Read the Raytracing README first*--this document only covers the parallelization aspects.
+*Read the Raytracing [README](./../11) first*--this document only covers the parallelization aspects.
 
 
 ### Single-threaded Bottleneck
