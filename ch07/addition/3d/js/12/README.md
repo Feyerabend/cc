@@ -42,10 +42,10 @@ CPU usage: 100% (all cores working)
 ```
 Main Thread              Worker Thread 1
     |                          |
-    |--- Send work -->         |
+    |--- Send work ----------->|
     |                          | (processing)
     |                          |
-    |<-- Receive result ---|   |
+    |<-- Receive result -------|
 ```
 
 *Key properties:*
