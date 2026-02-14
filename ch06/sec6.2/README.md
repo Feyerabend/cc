@@ -1,5 +1,5 @@
 
-## Four Methodological Perspectives in Relation to Sustainable Computing
+## Four Perspectives in Relation to Sustainable Computing
 
 The purpose here is not really building things, but to *discuss* what
 methodologies, philosophies, methods, and so on, can be used in
