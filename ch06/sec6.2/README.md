@@ -165,7 +165,7 @@ DSR formalises:
 
 #### Example Application
 
-Transforming ideas from *SUSTAIN.md* into:
+Transforming ideas from [SUSTAIN.md](./SUSTAIN.md) into:
 * A validated prototype
 * Measured sustainability claims
 * Transferable design knowledge
