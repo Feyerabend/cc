@@ -1,0 +1,2358 @@
+{
+  "metadata": {
+    "format": "hershey_json",
+    "version": "1.0",
+    "source_file": "markers.jhf",
+    "char_count": 95
+  },
+  "characters": {
+    " ": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "!": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "\"": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "#": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "$": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "%": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "&": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "'": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "(": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    ")": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "*": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "+": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    ",": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "-": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    ".": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "/": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "0": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "1": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "2": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "3": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "4": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "5": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "6": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "7": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "8": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "9": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    ":": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    ";": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "<": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "=": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    ">": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "?": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "@": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "A": {
+      "strokes": [
+        [
+          [
+            -1,
+            -7
+          ],
+          [
+            -4,
+            -6
+          ],
+          [
+            -6,
+            -4
+          ],
+          [
+            -7,
+            -1
+          ],
+          [
+            -7,
+            1
+          ],
+          [
+            -6,
+            4
+          ],
+          [
+            -4,
+            6
+          ],
+          [
+            -1,
+            7
+          ],
+          [
+            1,
+            7
+          ],
+          [
+            4,
+            6
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            7,
+            -1
+          ],
+          [
+            6,
+            -4
+          ],
+          [
+            4,
+            -6
+          ],
+          [
+            1,
+            -7
+          ],
+          [
+            -1,
+            -7
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 18,
+      "width": 14,
+      "left_bound": -7,
+      "right_bound": 7
+    },
+    "B": {
+      "strokes": [
+        [
+          [
+            -6,
+            -6
+          ],
+          [
+            -6,
+            6
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            6,
+            -6
+          ],
+          [
+            -6,
+            -6
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 6,
+      "width": 12,
+      "left_bound": -6,
+      "right_bound": 6
+    },
+    "C": {
+      "strokes": [
+        [
+          [
+            0,
+            -8
+          ],
+          [
+            -7,
+            4
+          ],
+          [
+            7,
+            4
+          ],
+          [
+            0,
+            -8
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 5,
+      "width": 14,
+      "left_bound": -7,
+      "right_bound": 7
+    },
+    "D": {
+      "strokes": [
+        [
+          [
+            0,
+            -10
+          ],
+          [
+            -6,
+            0
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            0,
+            -10
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 6,
+      "width": 12,
+      "left_bound": -6,
+      "right_bound": 6
+    },
+    "E": {
+      "strokes": [
+        [
+          [
+            0,
+            -9
+          ],
+          [
+            -2,
+            -3
+          ],
+          [
+            -8,
+            -3
+          ],
+          [
+            -3,
+            1
+          ],
+          [
+            -5,
+            7
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            5,
+            7
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            8,
+            -3
+          ],
+          [
+            2,
+            -3
+          ],
+          [
+            0,
+            -9
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 12,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "F": {
+      "strokes": [
+        [
+          [
+            -2,
+            -6
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -6,
+            -2
+          ],
+          [
+            -6,
+            2
+          ],
+          [
+            -2,
+            2
+          ],
+          [
+            -2,
+            6
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            6,
+            -2
+          ],
+          [
+            2,
+            -2
+          ],
+          [
+            2,
+            -6
+          ],
+          [
+            -2,
+            -6
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 14,
+      "width": 12,
+      "left_bound": -6,
+      "right_bound": 6
+    },
+    "G": {
+      "strokes": [
+        [
+          [
+            0,
+            -7
+          ],
+          [
+            0,
+            7
+          ]
+        ],
+        [
+          [
+            -7,
+            0
+          ],
+          [
+            7,
+            0
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 6,
+      "width": 14,
+      "left_bound": -7,
+      "right_bound": 7
+    },
+    "H": {
+      "strokes": [
+        [
+          [
+            -5,
+            -5
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        [
+          [
+            5,
+            -5
+          ],
+          [
+            -5,
+            5
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 6,
+      "width": 10,
+      "left_bound": -5,
+      "right_bound": 5
+    },
+    "I": {
+      "strokes": [
+        [
+          [
+            0,
+            -6
+          ],
+          [
+            0,
+            6
+          ]
+        ],
+        [
+          [
+            -5,
+            -3
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        [
+          [
+            5,
+            -3
+          ],
+          [
+            -5,
+            3
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 9,
+      "width": 10,
+      "left_bound": -5,
+      "right_bound": 5
+    },
+    "J": {
+      "strokes": [
+        [
+          [
+            -1,
+            -4
+          ],
+          [
+            -3,
+            -3
+          ],
+          [
+            -4,
+            -1
+          ],
+          [
+            -4,
+            1
+          ],
+          [
+            -3,
+            3
+          ],
+          [
+            -1,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            -1
+          ],
+          [
+            3,
+            -3
+          ],
+          [
+            1,
+            -4
+          ],
+          [
+            -1,
+            -4
+          ]
+        ],
+        [
+          [
+            -3,
+            -1
+          ],
+          [
+            -3,
+            1
+          ]
+        ],
+        [
+          [
+            -2,
+            -2
+          ],
+          [
+            -2,
+            2
+          ]
+        ],
+        [
+          [
+            -1,
+            -3
+          ],
+          [
+            -1,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            -3
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        [
+          [
+            1,
+            -3
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        [
+          [
+            2,
+            -2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            -1,
+            3
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 35,
+      "width": 8,
+      "left_bound": -4,
+      "right_bound": 4
+    },
+    "K": {
+      "strokes": [
+        [
+          [
+            -4,
+            -4
+          ],
+          [
+            -4,
+            4
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            4,
+            -4
+          ],
+          [
+            -4,
+            -4
+          ]
+        ],
+        [
+          [
+            -3,
+            -3
+          ],
+          [
+            -3,
+            3
+          ]
+        ],
+        [
+          [
+            -2,
+            -3
+          ],
+          [
+            -2,
+            3
+          ]
+        ],
+        [
+          [
+            -1,
+            -3
+          ],
+          [
+            -1,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            -3
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        [
+          [
+            1,
+            -3
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        [
+          [
+            2,
+            -3
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            3,
+            -3
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 27,
+      "width": 8,
+      "left_bound": -4,
+      "right_bound": 4
+    },
+    "L": {
+      "strokes": [
+        [
+          [
+            0,
+            -6
+          ],
+          [
+            -5,
+            3
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            0,
+            -6
+          ]
+        ],
+        [
+          [
+            0,
+            -3
+          ],
+          [
+            -3,
+            2
+          ]
+        ],
+        [
+          [
+            0,
+            -3
+          ],
+          [
+            3,
+            2
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            -1,
+            2
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 17,
+      "width": 10,
+      "left_bound": -5,
+      "right_bound": 5
+    },
+    "M": {
+      "strokes": [
+        [
+          [
+            -6,
+            0
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            3,
+            -5
+          ],
+          [
+            -6,
+            0
+          ]
+        ],
+        [
+          [
+            -3,
+            0
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            -3,
+            0
+          ],
+          [
+            2,
+            -3
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            -1
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 17,
+      "width": 9,
+      "left_bound": -6,
+      "right_bound": 3
+    },
+    "N": {
+      "strokes": [
+        [
+          [
+            0,
+            6
+          ],
+          [
+            5,
+            -3
+          ],
+          [
+            -5,
+            -3
+          ],
+          [
+            0,
+            6
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            3,
+            -2
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            -3,
+            -2
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            -2
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            -1,
+            -2
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 17,
+      "width": 10,
+      "left_bound": -5,
+      "right_bound": 5
+    },
+    "O": {
+      "strokes": [
+        [
+          [
+            6,
+            0
+          ],
+          [
+            -3,
+            -5
+          ],
+          [
+            -3,
+            5
+          ],
+          [
+            6,
+            0
+          ]
+        ],
+        [
+          [
+            3,
+            0
+          ],
+          [
+            -2,
+            -3
+          ]
+        ],
+        [
+          [
+            3,
+            0
+          ],
+          [
+            -2,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            -2,
+            -1
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            -2,
+            1
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 17,
+      "width": 9,
+      "left_bound": -3,
+      "right_bound": 6
+    },
+    "P": {
+      "strokes": [
+        [
+          [
+            -14,
+            0
+          ],
+          [
+            14,
+            0
+          ]
+        ],
+        [
+          [
+            -14,
+            0
+          ],
+          [
+            0,
+            16
+          ]
+        ],
+        [
+          [
+            14,
+            0
+          ],
+          [
+            0,
+            16
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 9,
+      "width": 28,
+      "left_bound": -14,
+      "right_bound": 14
+    },
+    "Q": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "R": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "S": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "T": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "U": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "V": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "W": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "X": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "Y": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "Z": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "[": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "\\": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "]": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "^": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "_": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "`": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "a": {
+      "strokes": [
+        [
+          [
+            -1,
+            -7
+          ],
+          [
+            -4,
+            -6
+          ],
+          [
+            -6,
+            -4
+          ],
+          [
+            -7,
+            -1
+          ],
+          [
+            -7,
+            1
+          ],
+          [
+            -6,
+            4
+          ],
+          [
+            -4,
+            6
+          ],
+          [
+            -1,
+            7
+          ],
+          [
+            1,
+            7
+          ],
+          [
+            4,
+            6
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            7,
+            -1
+          ],
+          [
+            6,
+            -4
+          ],
+          [
+            4,
+            -6
+          ],
+          [
+            1,
+            -7
+          ],
+          [
+            -1,
+            -7
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 18,
+      "width": 14,
+      "left_bound": -7,
+      "right_bound": 7
+    },
+    "b": {
+      "strokes": [
+        [
+          [
+            -6,
+            -6
+          ],
+          [
+            -6,
+            6
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            6,
+            -6
+          ],
+          [
+            -6,
+            -6
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 6,
+      "width": 12,
+      "left_bound": -6,
+      "right_bound": 6
+    },
+    "c": {
+      "strokes": [
+        [
+          [
+            0,
+            -8
+          ],
+          [
+            -7,
+            4
+          ],
+          [
+            7,
+            4
+          ],
+          [
+            0,
+            -8
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 5,
+      "width": 14,
+      "left_bound": -7,
+      "right_bound": 7
+    },
+    "d": {
+      "strokes": [
+        [
+          [
+            0,
+            -10
+          ],
+          [
+            -6,
+            0
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            0,
+            -10
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 6,
+      "width": 12,
+      "left_bound": -6,
+      "right_bound": 6
+    },
+    "e": {
+      "strokes": [
+        [
+          [
+            0,
+            -9
+          ],
+          [
+            -2,
+            -3
+          ],
+          [
+            -8,
+            -3
+          ],
+          [
+            -3,
+            1
+          ],
+          [
+            -5,
+            7
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            5,
+            7
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            8,
+            -3
+          ],
+          [
+            2,
+            -3
+          ],
+          [
+            0,
+            -9
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 12,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "f": {
+      "strokes": [
+        [
+          [
+            -2,
+            -6
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -6,
+            -2
+          ],
+          [
+            -6,
+            2
+          ],
+          [
+            -2,
+            2
+          ],
+          [
+            -2,
+            6
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            6,
+            -2
+          ],
+          [
+            2,
+            -2
+          ],
+          [
+            2,
+            -6
+          ],
+          [
+            -2,
+            -6
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 14,
+      "width": 12,
+      "left_bound": -6,
+      "right_bound": 6
+    },
+    "g": {
+      "strokes": [
+        [
+          [
+            0,
+            -7
+          ],
+          [
+            0,
+            7
+          ]
+        ],
+        [
+          [
+            -7,
+            0
+          ],
+          [
+            7,
+            0
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 6,
+      "width": 14,
+      "left_bound": -7,
+      "right_bound": 7
+    },
+    "h": {
+      "strokes": [
+        [
+          [
+            -5,
+            -5
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        [
+          [
+            5,
+            -5
+          ],
+          [
+            -5,
+            5
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 6,
+      "width": 10,
+      "left_bound": -5,
+      "right_bound": 5
+    },
+    "i": {
+      "strokes": [
+        [
+          [
+            0,
+            -6
+          ],
+          [
+            0,
+            6
+          ]
+        ],
+        [
+          [
+            -5,
+            -3
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        [
+          [
+            5,
+            -3
+          ],
+          [
+            -5,
+            3
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 9,
+      "width": 10,
+      "left_bound": -5,
+      "right_bound": 5
+    },
+    "j": {
+      "strokes": [
+        [
+          [
+            -1,
+            -4
+          ],
+          [
+            -3,
+            -3
+          ],
+          [
+            -4,
+            -1
+          ],
+          [
+            -4,
+            1
+          ],
+          [
+            -3,
+            3
+          ],
+          [
+            -1,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            -1
+          ],
+          [
+            3,
+            -3
+          ],
+          [
+            1,
+            -4
+          ],
+          [
+            -1,
+            -4
+          ]
+        ],
+        [
+          [
+            -3,
+            -1
+          ],
+          [
+            -3,
+            1
+          ]
+        ],
+        [
+          [
+            -2,
+            -2
+          ],
+          [
+            -2,
+            2
+          ]
+        ],
+        [
+          [
+            -1,
+            -3
+          ],
+          [
+            -1,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            -3
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        [
+          [
+            1,
+            -3
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        [
+          [
+            2,
+            -2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            -1,
+            3
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 35,
+      "width": 8,
+      "left_bound": -4,
+      "right_bound": 4
+    },
+    "k": {
+      "strokes": [
+        [
+          [
+            -4,
+            -4
+          ],
+          [
+            -4,
+            4
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            4,
+            -4
+          ],
+          [
+            -4,
+            -4
+          ]
+        ],
+        [
+          [
+            -3,
+            -3
+          ],
+          [
+            -3,
+            3
+          ]
+        ],
+        [
+          [
+            -2,
+            -3
+          ],
+          [
+            -2,
+            3
+          ]
+        ],
+        [
+          [
+            -1,
+            -3
+          ],
+          [
+            -1,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            -3
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        [
+          [
+            1,
+            -3
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        [
+          [
+            2,
+            -3
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            3,
+            -3
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 27,
+      "width": 8,
+      "left_bound": -4,
+      "right_bound": 4
+    },
+    "l": {
+      "strokes": [
+        [
+          [
+            0,
+            -6
+          ],
+          [
+            -5,
+            3
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            0,
+            -6
+          ]
+        ],
+        [
+          [
+            0,
+            -3
+          ],
+          [
+            -3,
+            2
+          ]
+        ],
+        [
+          [
+            0,
+            -3
+          ],
+          [
+            3,
+            2
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            -1,
+            2
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 17,
+      "width": 10,
+      "left_bound": -5,
+      "right_bound": 5
+    },
+    "m": {
+      "strokes": [
+        [
+          [
+            -6,
+            0
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            3,
+            -5
+          ],
+          [
+            -6,
+            0
+          ]
+        ],
+        [
+          [
+            -3,
+            0
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            -3,
+            0
+          ],
+          [
+            2,
+            -3
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            -1
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 17,
+      "width": 9,
+      "left_bound": -6,
+      "right_bound": 3
+    },
+    "n": {
+      "strokes": [
+        [
+          [
+            0,
+            6
+          ],
+          [
+            5,
+            -3
+          ],
+          [
+            -5,
+            -3
+          ],
+          [
+            0,
+            6
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            3,
+            -2
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            -3,
+            -2
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            -2
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            -1,
+            -2
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 17,
+      "width": 10,
+      "left_bound": -5,
+      "right_bound": 5
+    },
+    "o": {
+      "strokes": [
+        [
+          [
+            6,
+            0
+          ],
+          [
+            -3,
+            -5
+          ],
+          [
+            -3,
+            5
+          ],
+          [
+            6,
+            0
+          ]
+        ],
+        [
+          [
+            3,
+            0
+          ],
+          [
+            -2,
+            -3
+          ]
+        ],
+        [
+          [
+            3,
+            0
+          ],
+          [
+            -2,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            -2,
+            -1
+          ]
+        ],
+        [
+          [
+            0,
+            0
+          ],
+          [
+            -2,
+            1
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 17,
+      "width": 9,
+      "left_bound": -3,
+      "right_bound": 6
+    },
+    "p": {
+      "strokes": [
+        [
+          [
+            -14,
+            0
+          ],
+          [
+            14,
+            0
+          ]
+        ],
+        [
+          [
+            -14,
+            0
+          ],
+          [
+            0,
+            16
+          ]
+        ],
+        [
+          [
+            14,
+            0
+          ],
+          [
+            0,
+            16
+          ]
+        ]
+      ],
+      "char_num": 12345,
+      "vertex_count": 9,
+      "width": 28,
+      "left_bound": -14,
+      "right_bound": 14
+    },
+    "q": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "r": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "s": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "t": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "u": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "v": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "w": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "x": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "y": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "z": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "{": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "|": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "}": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    },
+    "~": {
+      "strokes": [],
+      "char_num": 12345,
+      "vertex_count": 1,
+      "width": 16,
+      "left_bound": -8,
+      "right_bound": 8
+    }
+  }
+}

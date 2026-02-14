@@ -1,0 +1,21 @@
+# config/font_hints.yaml
+# Specifying per-font hinting configurations for rendering adjustments
+font_hints:
+  default:
+    scale_adjustment: 1.0
+    x_offset: 0
+    y_offset: 0
+    kerning_strength: 0.7
+    line_width_modifier: 1.0
+  roman:
+    scale_adjustment: 1.1
+    x_offset: 1
+    y_offset: -1
+    kerning_strength: 0.8
+    line_width_modifier: 1.2
+  gothic:
+    scale_adjustment: 0.9
+    x_offset: 0
+    y_offset: 0
+    kerning_strength: 0.6
+    line_width_modifier: 0.9

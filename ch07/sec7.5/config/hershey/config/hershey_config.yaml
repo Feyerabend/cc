@@ -1,0 +1,23 @@
+# config/hershey_config.yaml
+# default configuration for the Hershey font renderer in YAML format
+hershey_config:
+  rendering:
+    scale: 2.5
+    char_spacing: 1.0
+    line_spacing: 1.8
+    word_spacing_multiplier: 1.8
+    line_width: 2
+    antialias: true
+  spacing_bounds:
+    min_char_spacing: 0.8
+    max_char_spacing: 4.0
+  layout:
+    align: center
+    valign: middle
+    margin: 20
+  colors:
+    background: white
+    foreground: black
+  kerning:
+    enabled: true
+    strength: 0.7
