@@ -681,3 +681,91 @@ void display_cleanup(void) {
         button_callbacks[i] = NULL;
     }
 }
+
+// ============================================================================
+// 3D RENDERING PRIMITIVES
+// ============================================================================
+
+// Helper: swap two integers
+static inline void swap_int(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Apply intensity to RGB565 color
+static uint16_t apply_intensity(uint16_t color, uint8_t intensity) {
+    uint8_t r5 = (color >> 11) & 0x1F;
+    uint8_t g6 = (color >>  5) & 0x3F;
+    uint8_t b5 =  color        & 0x1F;
+    
+    r5 = (r5 * intensity) >> 8;
+    g6 = (g6 * intensity) >> 8;
+    b5 = (b5 * intensity) >> 8;
+    
+    return (r5 << 11) | (g6 << 5) | b5;
+}
+
+// Draw horizontal scanline
+static void draw_scanline(uint16_t *fb, int x0, int x1, int y, uint16_t color) {
+    if (y < 0 || y >= DISPLAY_HEIGHT) return;
+    
+    if (x0 > x1) swap_int(&x0, &x1);
+    
+    // Clip to screen bounds
+    if (x0 < 0) x0 = 0;
+    if (x1 >= DISPLAY_WIDTH) x1 = DISPLAY_WIDTH - 1;
+    
+    int offset = y * DISPLAY_WIDTH + x0;
+    for (int x = x0; x <= x1; x++) {
+        fb[offset++] = color;
+    }
+}
+
+// Draw filled triangle using scanline algorithm
+void draw_filled_triangle(uint16_t *fb, int x0, int y0, int x1, int y1, int x2, int y2, uint16_t color) {
+    // Sort vertices by Y coordinate (y0 <= y1 <= y2)
+    if (y0 > y1) { swap_int(&y0, &y1); swap_int(&x0, &x1); }
+    if (y0 > y2) { swap_int(&y0, &y2); swap_int(&x0, &x2); }
+    if (y1 > y2) { swap_int(&y1, &y2); swap_int(&x1, &x2); }
+    
+    // Degenerate case: all points on same line
+    if (y2 == y0) {
+        int min_x = x0 < x1 ? (x0 < x2 ? x0 : x2) : (x1 < x2 ? x1 : x2);
+        int max_x = x0 > x1 ? (x0 > x2 ? x0 : x2) : (x1 > x2 ? x1 : x2);
+        draw_scanline(fb, min_x, max_x, y0, color);
+        return;
+    }
+    
+    // Calculate inverse slopes
+    float invslope1 = (y1 - y0) != 0 ? (float)(x1 - x0) / (float)(y1 - y0) : 0;
+    float invslope2 = (y2 - y0) != 0 ? (float)(x2 - x0) / (float)(y2 - y0) : 0;
+    
+    float curx1 = x0;
+    float curx2 = x0;
+    
+    // Draw upper half (y0 to y1)
+    for (int scanline = y0; scanline <= y1; scanline++) {
+        draw_scanline(fb, (int)curx1, (int)curx2, scanline, color);
+        curx1 += invslope1;
+        curx2 += invslope2;
+    }
+    
+    // Draw lower half (y1 to y2)
+    if (y2 > y1) {
+        invslope1 = (float)(x2 - x1) / (float)(y2 - y1);
+        curx1 = x1;
+        
+        for (int scanline = y1 + 1; scanline <= y2; scanline++) {
+            draw_scanline(fb, (int)curx1, (int)curx2, scanline, color);
+            curx1 += invslope1;
+            curx2 += invslope2;
+        }
+    }
+}
+
+// Draw filled triangle with shading
+void draw_shaded_triangle(uint16_t *fb, int x0, int y0, int x1, int y1, int x2, int y2, uint16_t base_color, uint8_t intensity) {
+    uint16_t shaded_color = apply_intensity(base_color, intensity);
+    draw_filled_triangle(fb, x0, y0, x1, y1, x2, y2, shaded_color);
+}

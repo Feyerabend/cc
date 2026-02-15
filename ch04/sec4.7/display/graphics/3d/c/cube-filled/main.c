@@ -28,6 +28,32 @@ static const int edges[12][2] = {
     {0, 4}, {1, 5}, {2, 6}, {3, 7}   // Connecting edges
 };
 
+// Cube faces as triangles (two triangles per face, counter-clockwise winding when viewed from outside)
+static const int faces[12][3] = {
+    // Front face (+Z) - vertices 4,5,6,7
+    {4, 5, 7}, {5, 6, 7},
+    // Back face (-Z) - vertices 0,1,2,3 (viewed from outside/front)
+    {1, 0, 2}, {0, 3, 2},
+    // Right face (+X) - vertices 1,2,5,6
+    {1, 5, 2}, {5, 6, 2},
+    // Left face (-X) - vertices 0,3,4,7
+    {4, 0, 7}, {0, 3, 7},
+    // Top face (+Y) - vertices 3,2,7,6
+    {3, 7, 2}, {7, 6, 2},
+    // Bottom face (-Y) - vertices 0,1,4,5
+    {0, 1, 4}, {1, 5, 4}
+};
+
+// Face colors
+static const uint16_t face_colors[6] = {
+    COLOR_RED,     // Front
+    COLOR_GREEN,   // Back
+    COLOR_BLUE,    // Right
+    COLOR_YELLOW,  // Left
+    COLOR_CYAN,    // Top
+    COLOR_MAGENTA  // Bottom
+};
+
 // Rotation angles
 static float angle_x = 0.3f;
 static float angle_y = 0.5f;
@@ -40,11 +66,15 @@ static float speed_z = 0.008f;
 
 // Control state
 static bool auto_rotate = true;
-static bool wireframe = true;
+static bool solid_mode = true;  // Start in solid mode
 static float zoom = 1.5f;
 
 // Projected 2D vertices
 static float projected[8][2];
+
+// Forward declarations for framebuffer functions
+static void fb_draw_string(uint16_t x, uint16_t y, const char* str, uint16_t color, uint16_t bg_color);
+static void fb_draw_char(uint16_t x, uint16_t y, char c, uint16_t color, uint16_t bg_color);
 
 /* Xiaolin Wu anti-aliased line (drawing to framebuffer) */
 static void wu_plot(int x, int y, uint8_t brightness, uint16_t color) {
@@ -149,6 +179,91 @@ static void project(float v[3], float *x, float *y) {
     *y = CENTER_Y + v[1] * CUBE_SIZE * zoom * perspective;
 }
 
+// Cross product for normal calculation
+static void cross_product(float ax, float ay, float az,
+                          float bx, float by, float bz,
+                          float *nx, float *ny, float *nz) {
+    *nx = ay * bz - az * by;
+    *ny = az * bx - ax * bz;
+    *nz = ax * by - ay * bx;
+}
+
+// Calculate if face is visible (backface culling using screen-space method)
+static bool is_face_visible(int face_idx) {
+    // Get three vertices of the triangle
+    int v0 = faces[face_idx][0];
+    int v1 = faces[face_idx][1];
+    int v2 = faces[face_idx][2];
+    
+    // Use 2D projected coordinates to determine winding order
+    float x0 = projected[v0][0];
+    float y0 = projected[v0][1];
+    float x1 = projected[v1][0];
+    float y1 = projected[v1][1];
+    float x2 = projected[v2][0];
+    float y2 = projected[v2][1];
+    
+    // Calculate signed area (cross product in 2D)
+    float area = (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0);
+    
+    // If area is positive, triangle is counter-clockwise (visible)
+    return area > 0;
+}
+
+// Calculate face depth (average Z of vertices)
+static float face_depth(int face_idx, float rotated_vertices[8][3]) {
+    int v0 = faces[face_idx][0];
+    int v1 = faces[face_idx][1];
+    int v2 = faces[face_idx][2];
+    
+    return (rotated_vertices[v0][2] + rotated_vertices[v1][2] + rotated_vertices[v2][2]) / 3.0f;
+}
+
+// Calculate face lighting intensity (0-255)
+static uint8_t calculate_lighting(int face_idx, float rotated_vertices[8][3]) {
+    int v0 = faces[face_idx][0];
+    int v1 = faces[face_idx][1];
+    int v2 = faces[face_idx][2];
+    
+    // Calculate two edges
+    float e1x = rotated_vertices[v1][0] - rotated_vertices[v0][0];
+    float e1y = rotated_vertices[v1][1] - rotated_vertices[v0][1];
+    float e1z = rotated_vertices[v1][2] - rotated_vertices[v0][2];
+    
+    float e2x = rotated_vertices[v2][0] - rotated_vertices[v0][0];
+    float e2y = rotated_vertices[v2][1] - rotated_vertices[v0][1];
+    float e2z = rotated_vertices[v2][2] - rotated_vertices[v0][2];
+    
+    // Calculate normal
+    float nx, ny, nz;
+    cross_product(e1x, e1y, e1z, e2x, e2y, e2z, &nx, &ny, &nz);
+    
+    // Normalize
+    float len = sqrtf(nx * nx + ny * ny + nz * nz);
+    if (len > 0.001f) {
+        nx /= len;
+        ny /= len;
+        nz /= len;
+    }
+    
+    // Light direction (from top-front-right)
+    float lx = 0.5f, ly = -0.5f, lz = -0.7f;
+    float llen = sqrtf(lx * lx + ly * ly + lz * lz);
+    lx /= llen;
+    ly /= llen;
+    lz /= llen;
+    
+    // Calculate lighting intensity (Lambert diffuse)
+    float dot = nx * lx + ny * ly + nz * lz;
+    if (dot < 0) dot = 0;
+    
+    // Ambient + diffuse
+    float ambient = 0.3f;
+    float intensity = ambient + (1.0f - ambient) * dot;
+    
+    return (uint8_t)(intensity * 255.0f);
+}
+
 // Calculate depth for edge sorting
 static float edge_depth(int edge_idx) {
     int v1 = edges[edge_idx][0];
@@ -169,7 +284,330 @@ static float edge_depth(int edge_idx) {
     return (rotated1[2] + rotated2[2]) / 2.0f;
 }
 
-// Render the cube
+// Render with simple painter's algorithm - NO backface culling
+static void render_cube_painter(void) {
+    // Store rotated vertices
+    float rotated_vertices[8][3];
+    
+    // Transform all vertices
+    for (int i = 0; i < 8; i++) {
+        rotated_vertices[i][0] = vertices[i][0];
+        rotated_vertices[i][1] = vertices[i][1];
+        rotated_vertices[i][2] = vertices[i][2];
+        
+        rotate_x(rotated_vertices[i], angle_x);
+        rotate_y(rotated_vertices[i], angle_y);
+        rotate_z(rotated_vertices[i], angle_z);
+        
+        project(rotated_vertices[i], &projected[i][0], &projected[i][1]);
+    }
+    
+    // Create depth-sorted list
+    typedef struct {
+        int index;
+        float depth;
+    } face_data_t;
+    
+    face_data_t face_list[12];
+    
+    // Calculate depth for each face (average Z of its vertices)
+    for (int i = 0; i < 12; i++) {
+        face_list[i].index = i;
+        face_list[i].depth = face_depth(i, rotated_vertices);
+    }
+    
+    // Sort by depth - furthest first (largest Z)
+    for (int i = 0; i < 11; i++) {
+        for (int j = 0; j < 11 - i; j++) {
+            if (face_list[j].depth < face_list[j + 1].depth) {  // Changed: draw furthest first
+                face_data_t temp = face_list[j];
+                face_list[j] = face_list[j + 1];
+                face_list[j + 1] = temp;
+            }
+        }
+    }
+    
+    // Draw ALL faces in depth order (back to front)
+    for (int i = 0; i < 12; i++) {
+        int face_idx = face_list[i].index;
+        int v0 = faces[face_idx][0];
+        int v1 = faces[face_idx][1];
+        int v2 = faces[face_idx][2];
+        
+        // Get 2D coordinates
+        int x0 = (int)(projected[v0][0] + 0.5f);
+        int y0 = (int)(projected[v0][1] + 0.5f);
+        int x1 = (int)(projected[v1][0] + 0.5f);
+        int y1 = (int)(projected[v1][1] + 0.5f);
+        int x2 = (int)(projected[v2][0] + 0.5f);
+        int y2 = (int)(projected[v2][1] + 0.5f);
+        
+        // Get face color
+        uint16_t color = face_colors[face_idx / 2];
+        
+        // Draw filled triangle - front faces paint over back faces
+        draw_filled_triangle(framebuffer, x0, y0, x1, y1, x2, y2, color);
+    }
+}
+
+// Test each face individually with labels
+static void render_face_debug(void) {
+    // Store rotated vertices
+    float rotated_vertices[8][3];
+    
+    // Transform all vertices
+    for (int i = 0; i < 8; i++) {
+        rotated_vertices[i][0] = vertices[i][0];
+        rotated_vertices[i][1] = vertices[i][1];
+        rotated_vertices[i][2] = vertices[i][2];
+        
+        rotate_x(rotated_vertices[i], angle_x);
+        rotate_y(rotated_vertices[i], angle_y);
+        rotate_z(rotated_vertices[i], angle_z);
+        
+        project(rotated_vertices[i], &projected[i][0], &projected[i][1]);
+    }
+    
+    // Create depth-sorted list
+    typedef struct {
+        int index;
+        float depth;
+    } face_data_t;
+    
+    face_data_t face_list[12];
+    
+    for (int i = 0; i < 12; i++) {
+        face_list[i].index = i;
+        face_list[i].depth = face_depth(i, rotated_vertices);
+    }
+    
+    // Sort back to front
+    for (int i = 0; i < 11; i++) {
+        for (int j = 0; j < 11 - i; j++) {
+            if (face_list[j].depth > face_list[j + 1].depth) {
+                face_data_t temp = face_list[j];
+                face_list[j] = face_list[j + 1];
+                face_list[j + 1] = temp;
+            }
+        }
+    }
+    
+    // Draw faces WITH backface culling (FIXED)
+    for (int i = 0; i < 12; i++) {
+        int face_idx = face_list[i].index;
+        int v0 = faces[face_idx][0];
+        int v1 = faces[face_idx][1];
+        int v2 = faces[face_idx][2];
+        
+        // Backface culling - check winding order in screen space
+        float x0 = projected[v0][0];
+        float y0 = projected[v0][1];
+        float x1 = projected[v1][0];
+        float y1 = projected[v1][1];
+        float x2 = projected[v2][0];
+        float y2 = projected[v2][1];
+        
+        float area = (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0);
+        
+        // FIXED: If area is NEGATIVE, triangle is counter-clockwise (visible)
+        // This was backwards before!
+        if (area >= 0) continue;  // Skip clockwise (back-facing) triangles
+        
+        // Get 2D coordinates
+        int ix0 = (int)(x0 + 0.5f);
+        int iy0 = (int)(y0 + 0.5f);
+        int ix1 = (int)(x1 + 0.5f);
+        int iy1 = (int)(y1 + 0.5f);
+        int ix2 = (int)(x2 + 0.5f);
+        int iy2 = (int)(y2 + 0.5f);
+        
+        // Get face color
+        uint16_t color = face_colors[face_idx / 2];
+        
+        // Draw filled triangle
+        draw_filled_triangle(framebuffer, ix0, iy0, ix1, iy1, ix2, iy2, color);
+    }
+    
+    // Draw vertex indices for debugging
+    for (int i = 0; i < 8; i++) {
+        int x = (int)(projected[i][0] + 0.5f);
+        int y = (int)(projected[i][1] + 0.5f);
+        
+        if (x >= 5 && x < 315 && y >= 5 && y < 235) {
+            char buf[4];
+            snprintf(buf, sizeof(buf), "%d", i);
+            fb_draw_string(x + 2, y - 4, buf, COLOR_WHITE, COLOR_BLACK);
+        }
+    }
+}
+
+// Render just one face for debugging
+static void render_one_face_test(void) {
+    // Store rotated vertices
+    float rotated_vertices[8][3];
+    
+    // Transform all vertices
+    for (int i = 0; i < 8; i++) {
+        rotated_vertices[i][0] = vertices[i][0];
+        rotated_vertices[i][1] = vertices[i][1];
+        rotated_vertices[i][2] = vertices[i][2];
+        
+        rotate_x(rotated_vertices[i], angle_x);
+        rotate_y(rotated_vertices[i], angle_y);
+        rotate_z(rotated_vertices[i], angle_z);
+        
+        project(rotated_vertices[i], &projected[i][0], &projected[i][1]);
+    }
+    
+    // Draw just the front face (first triangle)
+    int face_idx = 0;
+    int v0 = faces[face_idx][0];
+    int v1 = faces[face_idx][1];
+    int v2 = faces[face_idx][2];
+    
+    // Get 2D coordinates
+    int x0 = (int)(projected[v0][0] + 0.5f);
+    int y0 = (int)(projected[v0][1] + 0.5f);
+    int x1 = (int)(projected[v1][0] + 0.5f);
+    int y1 = (int)(projected[v1][1] + 0.5f);
+    int x2 = (int)(projected[v2][0] + 0.5f);
+    int y2 = (int)(projected[v2][1] + 0.5f);
+    
+    // Draw filled triangle - bright red
+    draw_filled_triangle(framebuffer, x0, y0, x1, y1, x2, y2, COLOR_RED);
+    
+    // Draw second triangle of front face
+    face_idx = 1;
+    v0 = faces[face_idx][0];
+    v1 = faces[face_idx][1];
+    v2 = faces[face_idx][2];
+    
+    x0 = (int)(projected[v0][0] + 0.5f);
+    y0 = (int)(projected[v0][1] + 0.5f);
+    x1 = (int)(projected[v1][0] + 0.5f);
+    y1 = (int)(projected[v1][1] + 0.5f);
+    x2 = (int)(projected[v2][0] + 0.5f);
+    y2 = (int)(projected[v2][1] + 0.5f);
+    
+    draw_filled_triangle(framebuffer, x0, y0, x1, y1, x2, y2, COLOR_RED);
+    
+    // NOTE: Wireframe removed - it was making the fill look transparent!
+}
+
+// Render the cube with solid faces (simple version - no culling for testing)
+static void render_cube_solid_simple(void) {
+    // Store rotated vertices
+    float rotated_vertices[8][3];
+    
+    // Transform all vertices
+    for (int i = 0; i < 8; i++) {
+        rotated_vertices[i][0] = vertices[i][0];
+        rotated_vertices[i][1] = vertices[i][1];
+        rotated_vertices[i][2] = vertices[i][2];
+        
+        rotate_x(rotated_vertices[i], angle_x);
+        rotate_y(rotated_vertices[i], angle_y);
+        rotate_z(rotated_vertices[i], angle_z);
+        
+        project(rotated_vertices[i], &projected[i][0], &projected[i][1]);
+    }
+    
+    // Draw all 12 triangles
+    for (int face_idx = 0; face_idx < 12; face_idx++) {
+        int v0 = faces[face_idx][0];
+        int v1 = faces[face_idx][1];
+        int v2 = faces[face_idx][2];
+        
+        // Get 2D coordinates
+        int x0 = (int)(projected[v0][0] + 0.5f);
+        int y0 = (int)(projected[v0][1] + 0.5f);
+        int x1 = (int)(projected[v1][0] + 0.5f);
+        int y1 = (int)(projected[v1][1] + 0.5f);
+        int x2 = (int)(projected[v2][0] + 0.5f);
+        int y2 = (int)(projected[v2][1] + 0.5f);
+        
+        // Get face color
+        uint16_t color = face_colors[face_idx / 2];
+        
+        // Draw filled triangle with full brightness
+        draw_filled_triangle(framebuffer, x0, y0, x1, y1, x2, y2, color);
+    }
+}
+
+// Render the cube with solid faces
+static void render_cube_solid(void) {
+    // Store rotated vertices
+    float rotated_vertices[8][3];
+    
+    // Transform all vertices
+    for (int i = 0; i < 8; i++) {
+        rotated_vertices[i][0] = vertices[i][0];
+        rotated_vertices[i][1] = vertices[i][1];
+        rotated_vertices[i][2] = vertices[i][2];
+        
+        rotate_x(rotated_vertices[i], angle_x);
+        rotate_y(rotated_vertices[i], angle_y);
+        rotate_z(rotated_vertices[i], angle_z);
+        
+        project(rotated_vertices[i], &projected[i][0], &projected[i][1]);
+    }
+    
+    // Prepare face data for sorting
+    typedef struct {
+        int index;
+        float depth;
+    } face_data_t;
+    
+    face_data_t face_list[12];
+    
+    // Calculate depth for each face
+    for (int i = 0; i < 12; i++) {
+        face_list[i].index = i;
+        face_list[i].depth = face_depth(i, rotated_vertices);
+    }
+    
+    // Sort faces by depth (back to front for painter's algorithm)
+    for (int i = 0; i < 11; i++) {
+        for (int j = 0; j < 11 - i; j++) {
+            if (face_list[j].depth > face_list[j + 1].depth) {
+                face_data_t temp = face_list[j];
+                face_list[j] = face_list[j + 1];
+                face_list[j + 1] = temp;
+            }
+        }
+    }
+    
+    // Draw faces back to front (with backface culling)
+    for (int i = 0; i < 12; i++) {
+        int face_idx = face_list[i].index;
+        
+        // Check if face is visible
+        if (!is_face_visible(face_idx)) continue;
+        
+        int v0 = faces[face_idx][0];
+        int v1 = faces[face_idx][1];
+        int v2 = faces[face_idx][2];
+        
+        // Get 2D coordinates
+        int x0 = (int)(projected[v0][0] + 0.5f);
+        int y0 = (int)(projected[v0][1] + 0.5f);
+        int x1 = (int)(projected[v1][0] + 0.5f);
+        int y1 = (int)(projected[v1][1] + 0.5f);
+        int x2 = (int)(projected[v2][0] + 0.5f);
+        int y2 = (int)(projected[v2][1] + 0.5f);
+        
+        // Get face color (each pair of triangles = one face)
+        uint16_t color = face_colors[face_idx / 2];
+        
+        // Calculate lighting
+        uint8_t intensity = calculate_lighting(face_idx, rotated_vertices);
+        
+        // Draw filled triangle
+        draw_shaded_triangle(framebuffer, x0, y0, x1, y1, x2, y2, color, intensity);
+    }
+}
+
+// Render the cube (original wireframe version)
 static void render_cube(void) {
     // Transform and project all vertices
     for (int i = 0; i < 8; i++) {
@@ -249,11 +687,7 @@ static void btn_a_callback(button_t btn) {
 
 static void btn_b_callback(button_t btn) { 
     (void)btn;
-    // Reset to default view
-    angle_x = 0.3f;
-    angle_y = 0.5f;
-    angle_z = 0.0f;
-    zoom = 1.5f;
+    solid_mode = !solid_mode;  // Toggle solid/wireframe
 }
 
 static void btn_x_callback(button_t btn) { 
@@ -374,7 +808,7 @@ static const uint8_t simple_font[][5] = {
     {0x1C, 0x20, 0x40, 0x20, 0x1C}, // v
     {0x3C, 0x40, 0x30, 0x40, 0x3C}, // w
     {0x44, 0x28, 0x10, 0x28, 0x44}, // x
-    {0x4C, 0x90, 0x90, 0x90, 0x7C}, // y
+    {0x7C, 0x90, 0x90, 0x90, 0x4C}, // y
     {0x44, 0x64, 0x54, 0x4C, 0x44}, // z
 };
 
@@ -433,7 +867,7 @@ int main(void) {
     printf("3D Cube Demo Started\n");
     printf("Controls:\n");
     printf("  A - Toggle rotation\n");
-    printf("  B - Reset view\n");
+    printf("  B - Toggle solid/wireframe\n");
     printf("  X - Increase speed\n");
     printf("  Y - Cycle zoom\n");
 
@@ -456,12 +890,17 @@ int main(void) {
         }
         
         // Render the cube to framebuffer
-        render_cube();
+        if (solid_mode) {
+            render_cube_painter();  // Simple painter's algorithm, no backface culling
+        } else {
+            render_cube();
+        }
         
         // Draw UI text to framebuffer (before blitting!)
         char buf[50];
-        snprintf(buf, sizeof(buf), "A:%s X:Speed Y:Zoom B:Reset", 
-                 auto_rotate ? "Pause" : "Play ");
+        snprintf(buf, sizeof(buf), "A:%s B:%s X:Speed Y:Zoom", 
+                 auto_rotate ? "Pause" : "Play ",
+                 solid_mode ? "Wire" : "Solid");
         fb_draw_string(5, 5, buf, COLOR_GREEN, COLOR_BLACK);
         
         snprintf(buf, sizeof(buf), "Speed: %.3f  Zoom: %.1fx", 
