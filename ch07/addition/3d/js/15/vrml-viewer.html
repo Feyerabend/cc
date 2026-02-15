@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRML 1.0 Viewer - Robust</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a2e;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            overflow: hidden;
+        }
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        canvas {
+            display: block;
+            cursor: grab;
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            border: 2px solid #00ff88;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 350px;
+        }
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            border: 2px solid #00ff88;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        input[type="file"] {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-top: 5px;
+            border-radius: 3px;
+        }
+        .error { color: #ff3366; }
+        .success { color: #00ff88; }
+        .warning { color: #ffaa00; }
+        button {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin: 2px;
+            border-radius: 3px;
+        }
+        button:hover { background: #00ffaa; }
+        button.active { background: #ff3366; color: #fff; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="glcanvas"></canvas>
+        
+        <div id="info">
+            <strong>VRML 1.0 VIEWER</strong><br>
+            <small>Supports: Geometry, Materials, Transforms, Primitives</small>
+            <div id="status">Ready</div>
+            <input type="file" id="fileInput" accept=".wrl,.vrml">
+            <div id="stats" style="margin-top: 10px;"></div>
+        </div>
+        
+        <div id="controls">
+            <strong>CONTROLS</strong><br>
+            • Drag: Rotate<br>
+            • Scroll: Zoom<br>
+            <button id="toggleRotate" class="active">Auto-Rotate</button>
+            <button id="toggleWireframe">Wireframe</button>
+            <button id="resetView">Reset</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
+    <script>
+        // Robust VRML 1.0 Parser
+        class VRMLParser {
+            constructor() {
+                this.geometryNodes = [];
+                this.definedNodes = {};
+            }
+
+            parse(vrmlText) {
+                const lines = vrmlText.split('\n');
+                
+                console.log(`Total lines: ${lines.length}`);
+                
+                const initialState = {
+                    material: { diffuseColor: [0.8, 0.8, 0.8], ambientColor: [0.2, 0.2, 0.2], specularColor: [0, 0, 0], shininess: 0.2 },
+                    coordinates: null,
+                    transform: mat4.create()
+                };
+                
+                this.parseBlock(lines, 0, lines.length, initialState);
+                
+                console.log(`Final: Parsed ${this.geometryNodes.length} geometry nodes`);
+                return this.geometryNodes;
+            }
+
+            parseBlock(lines, start, end, parentState) {
+                let i = start;
+                
+                console.log(`parseBlock from line ${start} to ${end}`);
+                
+                while (i < end) {
+                    const line = lines[i].trim();
+                    
+                    if (!line || line.startsWith('#')) {
+                        i++;
+                        continue;
+                    }
+                    
+                    // Log what we're looking at
+                    if (i < start + 5) {
+                        console.log(`  Line ${i}: ${line.substring(0, 60)}`);
+                    }
+                    
+                    // DEF - define named node (single or multi-line)
+                    if (line.match(/^DEF\s+(\w+)/)) {
+                        const match = line.match(/^DEF\s+(\w+)\s+(\w+)/);
+                        if (match) {
+                            const [, name, type] = match;
+                            
+                            // Check if it's single-line (material on one line)
+                            if (line.includes('{') && line.includes('}')) {
+                                // Single line DEF - extract and store
+                                if (type === 'Material') {
+                                    const mat = this.extractMaterial(lines, i, i);
+                                    this.definedNodes[name] = { type, state: { material: mat } };
+                                    console.log(`DEF ${name} Material (single-line): ${JSON.stringify(mat.diffuseColor)}`);
+                                }
+                                i++;
+                                continue;
+                            }
+                            
+                            // Multi-line DEF
+                            const result = this.parseNode(lines, i, parentState, type);
+                            this.definedNodes[name] = { type, state: result.state };
+                            console.log(`DEF ${name} ${type} at line ${i}`);
+                            i = result.end;
+                            continue;
+                        }
+                    }
+                    
+                    // USE - reference named node
+                    if (line.match(/^USE\s+(\w+)/)) {
+                        const match = line.match(/^USE\s+(\w+)/);
+                        const nodeDef = this.definedNodes[match[1]];
+                        if (nodeDef && nodeDef.state && nodeDef.state.material) {
+                            parentState.material = nodeDef.state.material;
+                            console.log(`USE ${match[1]} - applied material`);
+                        }
+                        i++;
+                        continue;
+                    }
+                    
+                    // Node type
+                    const nodeMatch = line.match(/^(\w+)\s*\{/);
+                    if (nodeMatch) {
+                        const result = this.parseNode(lines, i, parentState, nodeMatch[1]);
+                        i = result.end;
+                        continue;
+                    }
+                    
+                    i++;
+                }
+            }
+
+            parseNode(lines, startIdx, parentState, nodeType) {
+                console.log(`Parsing ${nodeType} at line ${startIdx}`);
+                
+                const braceIdx = this.findLine(lines, startIdx, line => line.includes('{'));
+                const closeIdx = this.findClosingBrace(lines, braceIdx);
+                
+                let state = parentState;
+                
+                switch (nodeType) {
+                    case 'Separator':
+                    case 'Group':
+                    case 'TransformSeparator':
+                        state = {
+                            material: { ...parentState.material },
+                            coordinates: parentState.coordinates,
+                            transform: mat4.clone(parentState.transform)
+                        };
+                        this.parseBlock(lines, braceIdx + 1, closeIdx, state);
+                        break;
+                        
+                    case 'Material':
+                        const mat = this.extractMaterial(lines, startIdx, closeIdx);
+                        parentState.material = mat;
+                        state = { material: mat };
+                        console.log(`  Material: ${JSON.stringify(mat.diffuseColor)}`);
+                        break;
+                        
+                    case 'Coordinate3':
+                        const coords = this.extractCoordinates(lines, braceIdx, closeIdx);
+                        parentState.coordinates = coords;
+                        console.log(`  Loaded ${coords.length} coordinates`);
+                        break;
+                        
+                    case 'IndexedFaceSet':
+                        this.addIndexedFaceSet(lines, braceIdx, closeIdx, parentState);
+                        break;
+                        
+                    case 'IndexedLineSet':
+                        this.addIndexedLineSet(lines, braceIdx, closeIdx, parentState);
+                        break;
+                        
+                    case 'Translation':
+                        this.applyTranslation(lines, braceIdx, closeIdx, parentState);
+                        break;
+                        
+                    case 'Rotation':
+                        this.applyRotation(lines, braceIdx, closeIdx, parentState);
+                        break;
+                        
+                    case 'Scale':
+                        this.applyScale(lines, braceIdx, closeIdx, parentState);
+                        break;
+                        
+                    case 'Transform':
+                        this.applyTransform(lines, braceIdx, closeIdx, parentState);
+                        break;
+                        
+                    case 'Sphere':
+                        this.addPrimitive('sphere', {}, parentState);
+                        break;
+                        
+                    case 'Cube':
+                        const cubeParams = this.extractFields(lines, braceIdx, closeIdx, ['width', 'height', 'depth']);
+                        this.addPrimitive('cube', cubeParams, parentState);
+                        break;
+                        
+                    case 'Cone':
+                        const coneParams = this.extractFields(lines, braceIdx, closeIdx, ['bottomRadius', 'height']);
+                        this.addPrimitive('cone', coneParams, parentState);
+                        break;
+                        
+                    case 'Cylinder':
+                        const cylParams = this.extractFields(lines, braceIdx, closeIdx, ['radius', 'height']);
+                        this.addPrimitive('cylinder', cylParams, parentState);
+                        break;
+                }
+                
+                return { end: closeIdx + 1, state };
+            }
+
+            extractMaterial(lines, start, end) {
+                let text = '';
+                for (let i = start; i <= end; i++) text += ' ' + lines[i];
+                
+                const material = {
+                    diffuseColor: [0.8, 0.8, 0.8],
+                    ambientColor: [0.2, 0.2, 0.2],
+                    specularColor: [0, 0, 0],
+                    shininess: 0.2
+                };
+                
+                const parseVec3 = (match) => match[1].trim().split(/\s+/).slice(0, 3).map(parseFloat);
+                
+                const diff = text.match(/diffuseColor\s+([\d.\s]+)/);
+                if (diff) material.diffuseColor = parseVec3(diff);
+                
+                const amb = text.match(/ambientColor\s+([\d.\s]+)/);
+                if (amb) material.ambientColor = parseVec3(amb);
+                
+                const spec = text.match(/specularColor\s+([\d.\s]+)/);
+                if (spec) material.specularColor = parseVec3(spec);
+                
+                const shin = text.match(/shininess\s+([\d.]+)/);
+                if (shin) material.shininess = parseFloat(shin[1]);
+                
+                return material;
+            }
+
+            extractCoordinates(lines, start, end) {
+                let text = '';
+                let inPoints = false;
+                
+                for (let i = start; i <= end; i++) {
+                    const line = lines[i];
+                    if (line.includes('point') && line.includes('[')) {
+                        inPoints = true;
+                        text = line.substring(line.indexOf('[') + 1);
+                    } else if (inPoints) {
+                        if (line.includes(']')) {
+                            text += ' ' + line.substring(0, line.indexOf(']'));
+                            break;
+                        }
+                        text += ' ' + line;
+                    }
+                }
+                
+                const nums = text.replace(/,/g, ' ').trim().split(/\s+/).map(parseFloat).filter(n => !isNaN(n));
+                const coords = [];
+                for (let i = 0; i < nums.length; i += 3) {
+                    if (i + 2 < nums.length) coords.push([nums[i], nums[i + 1], nums[i + 2]]);
+                }
+                
+                return coords;
+            }
+
+            extractIndices(lines, start, end) {
+                let text = '';
+                let inIndices = false;
+                
+                for (let i = start; i <= end; i++) {
+                    const line = lines[i];
+                    if (line.includes('coordIndex') && line.includes('[')) {
+                        inIndices = true;
+                        text = line.substring(line.indexOf('[') + 1);
+                    } else if (inIndices) {
+                        if (line.includes(']')) {
+                            text += ' ' + line.substring(0, line.indexOf(']'));
+                            break;
+                        }
+                        text += ' ' + line;
+                    }
+                }
+                
+                return text.replace(/,/g, ' ').trim().split(/\s+/).map(v => parseInt(v)).filter(n => !isNaN(n));
+            }
+
+            extractFields(lines, start, end, fieldNames) {
+                let text = '';
+                for (let i = start; i <= end; i++) text += ' ' + lines[i];
+                
+                const fields = {};
+                for (const field of fieldNames) {
+                    const match = text.match(new RegExp(field + '\\s+([\\d.\\-]+)'));
+                    if (match) fields[field] = parseFloat(match[1]);
+                }
+                return fields;
+            }
+
+            addIndexedFaceSet(lines, start, end, state) {
+                if (!state.coordinates) {
+                    console.log('  IndexedFaceSet: No coordinates available');
+                    return;
+                }
+                
+                const rawIndices = this.extractIndices(lines, start, end);
+                console.log(`  IndexedFaceSet: Raw indices = ${rawIndices.length}`);
+                
+                const indices = [];
+                let face = [];
+                
+                for (const idx of rawIndices) {
+                    if (idx === -1) {
+                        if (face.length >= 3) {
+                            for (let i = 1; i < face.length - 1; i++) {
+                                indices.push(face[0], face[i], face[i + 1]);
+                            }
+                        }
+                        face = [];
+                    } else {
+                        face.push(idx);
+                    }
+                }
+                
+                if (indices.length > 0) {
+                    this.geometryNodes.push({
+                        type: 'faces',
+                        coordinates: state.coordinates,
+                        indices,
+                        material: { ...state.material },
+                        transform: mat4.clone(state.transform)
+                    });
+                    console.log(`  IndexedFaceSet: Added with ${indices.length} triangle indices`);
+                } else {
+                    console.log(`  IndexedFaceSet: No valid indices generated`);
+                }
+            }
+
+            addIndexedLineSet(lines, start, end, state) {
+                if (!state.coordinates) return;
+                
+                const indices = this.extractIndices(lines, start, end).filter(i => i !== -1);
+                
+                if (indices.length > 0) {
+                    this.geometryNodes.push({
+                        type: 'lines',
+                        coordinates: state.coordinates,
+                        indices,
+                        material: { ...state.material },
+                        transform: mat4.clone(state.transform)
+                    });
+                }
+            }
+
+            applyTranslation(lines, start, end, state) {
+                const fields = this.extractFields(lines, start, end, ['translation']);
+                let text = '';
+                for (let i = start; i <= end; i++) text += ' ' + lines[i];
+                const match = text.match(/translation\s+([\d.\-\s]+)/);
+                if (match) {
+                    const [x, y, z] = match[1].trim().split(/\s+/).map(parseFloat);
+                    mat4.translate(state.transform, state.transform, [x, y, z]);
+                }
+            }
+
+            applyRotation(lines, start, end, state) {
+                let text = '';
+                for (let i = start; i <= end; i++) text += ' ' + lines[i];
+                const match = text.match(/rotation\s+([\d.\-\s]+)/);
+                if (match) {
+                    const vals = match[1].trim().split(/\s+/).map(parseFloat);
+                    if (vals.length >= 4) {
+                        mat4.rotate(state.transform, state.transform, vals[3], [vals[0], vals[1], vals[2]]);
+                    }
+                }
+            }
+
+            applyScale(lines, start, end, state) {
+                let text = '';
+                for (let i = start; i <= end; i++) text += ' ' + lines[i];
+                const match = text.match(/scaleFactor\s+([\d.\-\s]+)/);
+                if (match) {
+                    const [x, y, z] = match[1].trim().split(/\s+/).map(parseFloat);
+                    mat4.scale(state.transform, state.transform, [x, y, z]);
+                }
+            }
+
+            applyTransform(lines, start, end, state) {
+                this.applyTranslation(lines, start, end, state);
+                this.applyRotation(lines, start, end, state);
+                this.applyScale(lines, start, end, state);
+            }
+
+            addPrimitive(type, params, state) {
+                let geom;
+                switch (type) {
+                    case 'sphere':
+                        geom = this.genSphere(params.radius || 1, 16, 16);
+                        break;
+                    case 'cube':
+                        geom = this.genCube(params.width || 2, params.height || 2, params.depth || 2);
+                        break;
+                    case 'cone':
+                        geom = this.genCone(params.bottomRadius || 1, params.height || 2, 16);
+                        break;
+                    case 'cylinder':
+                        geom = this.genCylinder(params.radius || 1, params.height || 2, 16);
+                        break;
+                }
+                
+                if (geom) {
+                    this.geometryNodes.push({
+                        type: 'faces',
+                        coordinates: geom.coords,
+                        indices: geom.indices,
+                        material: { ...state.material },
+                        transform: mat4.clone(state.transform)
+                    });
+                }
+            }
+
+            genSphere(r, ws, hs) {
+                const coords = [], indices = [];
+                for (let y = 0; y <= hs; y++) {
+                    const phi = (y / hs) * Math.PI;
+                    for (let x = 0; x <= ws; x++) {
+                        const theta = (x / ws) * Math.PI * 2;
+                        coords.push([
+                            -r * Math.cos(theta) * Math.sin(phi),
+                            r * Math.cos(phi),
+                            r * Math.sin(theta) * Math.sin(phi)
+                        ]);
+                    }
+                }
+                for (let y = 0; y < hs; y++) {
+                    for (let x = 0; x < ws; x++) {
+                        const a = y * (ws + 1) + x;
+                        const b = a + ws + 1;
+                        indices.push(a, b, a + 1, b, b + 1, a + 1);
+                    }
+                }
+                return { coords, indices };
+            }
+
+            genCube(w, h, d) {
+                const hw = w / 2, hh = h / 2, hd = d / 2;
+                return {
+                    coords: [
+                        [-hw,-hh,-hd], [hw,-hh,-hd], [hw,hh,-hd], [-hw,hh,-hd],
+                        [-hw,-hh,hd], [hw,-hh,hd], [hw,hh,hd], [-hw,hh,hd]
+                    ],
+                    indices: [0,1,2,0,2,3, 4,6,5,4,7,6, 4,5,1,4,1,0, 3,2,6,3,6,7, 4,0,3,4,3,7, 1,5,6,1,6,2]
+                };
+            }
+
+            genCone(r, h, s) {
+                const coords = [[0, h / 2, 0]], indices = [];
+                for (let i = 0; i <= s; i++) {
+                    const theta = (i / s) * Math.PI * 2;
+                    coords.push([r * Math.cos(theta), -h / 2, r * Math.sin(theta)]);
+                }
+                for (let i = 0; i < s; i++) {
+                    indices.push(0, i + 1, i + 2);
+                    if (i < s - 1) indices.push(1, i + 2, i + 1);
+                }
+                return { coords, indices };
+            }
+
+            genCylinder(r, h, s) {
+                const coords = [], indices = [];
+                for (let y of [-h / 2, h / 2]) {
+                    for (let i = 0; i <= s; i++) {
+                        const theta = (i / s) * Math.PI * 2;
+                        coords.push([r * Math.cos(theta), y, r * Math.sin(theta)]);
+                    }
+                }
+                for (let i = 0; i < s; i++) {
+                    const a = i, b = i + s + 1;
+                    indices.push(a, b, a + 1, b, b + 1, a + 1);
+                }
+                return { coords, indices };
+            }
+
+            findLine(lines, start, predicate) {
+                for (let i = start; i < lines.length; i++) {
+                    if (predicate(lines[i])) return i;
+                }
+                return start;
+            }
+
+            findClosingBrace(lines, start) {
+                let count = 0;
+                let i = start;
+                
+                // Count braces on the start line
+                for (const char of lines[i]) {
+                    if (char === '{') count++;
+                    if (char === '}') count--;
+                }
+                
+                // If balanced on same line, return same line
+                if (count === 0) {
+                    console.log(`  findClosingBrace(${start}) -> ${i} (same line)`);
+                    return i;
+                }
+                
+                // Continue searching
+                i++;
+                while (i < lines.length && count > 0) {
+                    for (const char of lines[i]) {
+                        if (char === '{') count++;
+                        if (char === '}') count--;
+                        if (count === 0) {
+                            console.log(`  findClosingBrace(${start}) -> ${i}`);
+                            return i;
+                        }
+                    }
+                    i++;
+                }
+                console.log(`  findClosingBrace(${start}) -> ${i} (EOF)`);
+                return i;
+            }
+        }
+
+        // WebGL Renderer (same as before, optimized)
+        class VRMLRenderer {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.gl = canvas.getContext('webgl');
+                if (!this.gl) {
+                    alert('WebGL not supported');
+                    return;
+                }
+
+                this.rotation = { x: 0.3, y: 0.5 };
+                this.zoom = -50;
+                this.autoRotate = true;
+                this.wireframe = false;
+                this.isDragging = false;
+                this.nodes = [];
+                this.isRendering = false;
+
+                this.initWebGL();
+                this.setupControls();
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+            }
+
+            initWebGL() {
+                const gl = this.gl;
+                gl.enable(gl.DEPTH_TEST);
+
+                const vs = `
+                    attribute vec3 aPos, aNorm;
+                    uniform mat4 uProj, uView, uNorm;
+                    varying vec3 vNorm, vPos;
+                    void main() {
+                        gl_Position = uProj * uView * vec4(aPos, 1.0);
+                        vNorm = (uNorm * vec4(aNorm, 0.0)).xyz;
+                        vPos = (uView * vec4(aPos, 1.0)).xyz;
+                    }
+                `;
+
+                const fs = `
+                    precision mediump float;
+                    varying vec3 vNorm, vPos;
+                    uniform vec3 uDiff, uAmb, uSpec;
+                    uniform float uShin;
+                    void main() {
+                        vec3 N = normalize(vNorm);
+                        vec3 L = normalize(vec3(1, 1, 1.5));
+                        vec3 V = normalize(-vPos);
+                        vec3 R = reflect(-L, N);
+                        float diff = max(dot(N, L), 0.0);
+                        float spec = pow(max(dot(V, R), 0.0), uShin * 128.0);
+                        vec3 col = uAmb + uDiff * diff + uSpec * spec;
+                        gl_FragColor = vec4(col, 1.0);
+                    }
+                `;
+
+                this.program = this.createProgram(vs, fs);
+                this.locs = {
+                    aPos: gl.getAttribLocation(this.program, 'aPos'),
+                    aNorm: gl.getAttribLocation(this.program, 'aNorm'),
+                    uProj: gl.getUniformLocation(this.program, 'uProj'),
+                    uView: gl.getUniformLocation(this.program, 'uView'),
+                    uNorm: gl.getUniformLocation(this.program, 'uNorm'),
+                    uDiff: gl.getUniformLocation(this.program, 'uDiff'),
+                    uAmb: gl.getUniformLocation(this.program, 'uAmb'),
+                    uSpec: gl.getUniformLocation(this.program, 'uSpec'),
+                    uShin: gl.getUniformLocation(this.program, 'uShin')
+                };
+            }
+
+            createProgram(vs, fs) {
+                const gl = this.gl;
+                const vShader = gl.createShader(gl.VERTEX_SHADER);
+                gl.shaderSource(vShader, vs);
+                gl.compileShader(vShader);
+
+                const fShader = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(fShader, fs);
+                gl.compileShader(fShader);
+
+                const prog = gl.createProgram();
+                gl.attachShader(prog, vShader);
+                gl.attachShader(prog, fShader);
+                gl.linkProgram(prog);
+
+                return prog;
+            }
+
+            loadVRMLNodes(nodes) {
+                const gl = this.gl;
+                
+                this.nodes = nodes.map(node => {
+                    const verts = [], norms = [];
+                    
+                    if (node.type === 'faces') {
+                        const normals = this.calcNormals(node.coordinates, node.indices);
+                        for (const idx of node.indices) {
+                            if (idx < node.coordinates.length) {
+                                const v = vec3.fromValues(...node.coordinates[idx]);
+                                vec3.transformMat4(v, v, node.transform);
+                                verts.push(v[0], v[1], v[2]);
+                                norms.push(...normals[idx]);
+                            }
+                        }
+                    } else {
+                        for (let i = 0; i < node.indices.length; i += 2) {
+                            const i1 = node.indices[i], i2 = node.indices[i + 1];
+                            if (i1 < node.coordinates.length && i2 < node.coordinates.length) {
+                                const v1 = vec3.fromValues(...node.coordinates[i1]);
+                                const v2 = vec3.fromValues(...node.coordinates[i2]);
+                                vec3.transformMat4(v1, v1, node.transform);
+                                vec3.transformMat4(v2, v2, node.transform);
+                                verts.push(v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]);
+                                norms.push(0, 1, 0, 0, 1, 0);
+                            }
+                        }
+                    }
+
+                    const posBuf = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+
+                    const normBuf = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, normBuf);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(norms), gl.STATIC_DRAW);
+
+                    return {
+                        posBuf, normBuf,
+                        count: verts.length / 3,
+                        type: node.type,
+                        mat: node.material
+                    };
+                });
+
+                this.calcBounds(nodes);
+
+                const tri = this.nodes.filter(n => n.type === 'faces').reduce((s, n) => s + n.count / 3, 0);
+                document.getElementById('stats').innerHTML = `
+                    <div class="success">✓ Loaded ${this.nodes.length} objects</div>
+                    <div>Triangles: ${tri.toFixed(0)}</div>
+                `;
+                
+                if (!this.isRendering) {
+                    this.isRendering = true;
+                    this.render();
+                }
+            }
+
+            calcNormals(coords, indices) {
+                const normals = coords.map(() => [0, 0, 0]);
+                for (let i = 0; i < indices.length; i += 3) {
+                    const [i0, i1, i2] = [indices[i], indices[i + 1], indices[i + 2]];
+                    if (!coords[i0] || !coords[i1] || !coords[i2]) continue;
+                    
+                    const [v0, v1, v2] = [coords[i0], coords[i1], coords[i2]];
+                    const e1 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
+                    const e2 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]];
+                    const n = [
+                        e1[1] * e2[2] - e1[2] * e2[1],
+                        e1[2] * e2[0] - e1[0] * e2[2],
+                        e1[0] * e2[1] - e1[1] * e2[0]
+                    ];
+                    
+                    for (const idx of [i0, i1, i2]) {
+                        normals[idx][0] += n[0];
+                        normals[idx][1] += n[1];
+                        normals[idx][2] += n[2];
+                    }
+                }
+                
+                return normals.map(n => {
+                    const len = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+                    return len > 0 ? [n[0] / len, n[1] / len, n[2] / len] : [0, 1, 0];
+                });
+            }
+
+            calcBounds(nodes) {
+                let min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+                for (const n of nodes) {
+                    for (const c of n.coordinates) {
+                        for (let i = 0; i < 3; i++) {
+                            min[i] = Math.min(min[i], c[i]);
+                            max[i] = Math.max(max[i], c[i]);
+                        }
+                    }
+                }
+                const size = Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
+                this.zoom = -size * 2;
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            setupControls() {
+                this.canvas.addEventListener('mousedown', (e) => {
+                    this.isDragging = true;
+                    this.lastX = e.clientX;
+                    this.lastY = e.clientY;
+                });
+
+                this.canvas.addEventListener('mousemove', (e) => {
+                    if (!this.isDragging) return;
+                    this.rotation.y += (e.clientX - this.lastX) * 0.01;
+                    this.rotation.x += (e.clientY - this.lastY) * 0.01;
+                    this.lastX = e.clientX;
+                    this.lastY = e.clientY;
+                });
+
+                this.canvas.addEventListener('mouseup', () => this.isDragging = false);
+                this.canvas.addEventListener('mouseleave', () => this.isDragging = false);
+
+                this.canvas.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    this.zoom += e.deltaY * 0.1;
+                    this.zoom = Math.max(-1000, Math.min(-1, this.zoom));
+                });
+
+                document.getElementById('toggleRotate').addEventListener('click', (e) => {
+                    this.autoRotate = !this.autoRotate;
+                    e.target.classList.toggle('active');
+                });
+
+                document.getElementById('toggleWireframe').addEventListener('click', (e) => {
+                    this.wireframe = !this.wireframe;
+                    e.target.classList.toggle('active');
+                });
+
+                document.getElementById('resetView').addEventListener('click', () => {
+                    this.rotation = { x: 0.3, y: 0.5 };
+                    if (this.nodes.length > 0) this.calcBounds(this.nodes.map(n => ({ coordinates: [] })));
+                });
+            }
+
+            render() {
+                const gl = this.gl;
+
+                if (this.autoRotate && !this.isDragging) this.rotation.y += 0.005;
+
+                gl.clearColor(0.1, 0.1, 0.15, 1);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+                const proj = mat4.create();
+                mat4.perspective(proj, 45 * Math.PI / 180, this.canvas.width / this.canvas.height, 0.1, 1000);
+
+                const view = mat4.create();
+                mat4.translate(view, view, [0, 0, this.zoom]);
+                mat4.rotateX(view, view, this.rotation.x);
+                mat4.rotateY(view, view, this.rotation.y);
+
+                const norm = mat4.create();
+                mat4.invert(norm, view);
+                mat4.transpose(norm, norm);
+
+                gl.useProgram(this.program);
+                gl.uniformMatrix4fv(this.locs.uProj, false, proj);
+                gl.uniformMatrix4fv(this.locs.uView, false, view);
+                gl.uniformMatrix4fv(this.locs.uNorm, false, norm);
+
+                for (const node of this.nodes) {
+                    gl.uniform3fv(this.locs.uDiff, node.mat.diffuseColor);
+                    gl.uniform3fv(this.locs.uAmb, node.mat.ambientColor);
+                    gl.uniform3fv(this.locs.uSpec, node.mat.specularColor);
+                    gl.uniform1f(this.locs.uShin, node.mat.shininess);
+
+                    gl.bindBuffer(gl.ARRAY_BUFFER, node.posBuf);
+                    gl.vertexAttribPointer(this.locs.aPos, 3, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(this.locs.aPos);
+
+                    gl.bindBuffer(gl.ARRAY_BUFFER, node.normBuf);
+                    gl.vertexAttribPointer(this.locs.aNorm, 3, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(this.locs.aNorm);
+
+                    if (node.type === 'faces') {
+                        if (this.wireframe) {
+                            for (let i = 0; i < node.count; i += 3) {
+                                gl.drawArrays(gl.LINE_LOOP, i, 3);
+                            }
+                        } else {
+                            gl.drawArrays(gl.TRIANGLES, 0, node.count);
+                        }
+                    } else {
+                        gl.drawArrays(gl.LINES, 0, node.count);
+                    }
+                }
+
+                requestAnimationFrame(() => this.render());
+            }
+        }
+
+        // Application
+        let renderer;
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    document.getElementById('status').innerHTML = '<span class="success">Parsing...</span>';
+                    
+                    const parser = new VRMLParser();
+                    const nodes = parser.parse(evt.target.result);
+
+                    if (nodes.length === 0) {
+                        document.getElementById('status').innerHTML = '<span class="error">No geometry found</span>';
+                        return;
+                    }
+
+                    if (!renderer) renderer = new VRMLRenderer(document.getElementById('glcanvas'));
+                    renderer.loadVRMLNodes(nodes);
+                    
+                    document.getElementById('status').innerHTML = `<span class="success">✓ ${file.name}</span>`;
+                } catch (err) {
+                    console.error(err);
+                    document.getElementById('status').innerHTML = `<span class="error">Error: ${err.message}</span>`;
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderer = new VRMLRenderer(document.getElementById('glcanvas'));
+        });
+    </script>
+</body>
+</html>
