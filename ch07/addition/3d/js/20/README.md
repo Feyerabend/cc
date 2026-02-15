@@ -1,15 +1,16 @@
 
 ## 3D Raycasting World with OBJ Model Sprites
 
-This is a *raycasting engine* that creates a 3D first-person view
-from a 2D map, similar to classic games like Wolfenstein 3D (1992)
-and early Doom. The rendering technique creates the illusion of 3D
-using only 2D calculations and clever projection. This version builds
-on the core engine by incorporating billboard sprites rendered from
-OBJ 3D models, transforming them into multi-angle 2D images for
-real-time performance.
+This is a *raycasting engine* (not raytracing) that creates a
+3D first-person view from a 2D map, similar to classic games
+like Wolfenstein 3D (1992) and early Doom. The rendering
+technique creates the illusion of 3D using only 2D calculations
+and clever projection. This version builds on the core engine
+by incorporating billboard sprites rendered from OBJ 3D models,
+transforming them into multi-angle 2D images for real-time performance.
 
-*Read the Web Workers documentation first if comparing to raytracing demos*--this
+*Read the [Web Workers](./../12/) documentation first
+if comparing to raytracing demos*--this
 focuses on raycasting and sprite systems.
 
 
