@@ -9,7 +9,7 @@ at which one chooses to work.
 
 Looking back at earlier technological waves offers useful perspective.
 In the 1990s, I was partly interested in web-based 3D technologies,
-particularly VRML (Virtual Reality Modeling Language). VRML was designed
+particularly VRML (Virtual Reality Modelling Language). VRML was designed
 to extend ideas from HTML into interactive 3D environments. It
 supported animation and promised rich, immersive experiences
 directly in the browser. Conceptually, it was exciting. Practically,
@@ -81,7 +81,7 @@ This leads to a different kind of architectural challenge.
 
 The question is no longer only "How do I build this?" but also:
 * What are the model's failure modes in this domain?
-* How stable is its behavior across prompts and contexts?
+* How stable is its behaviour across prompts and contexts?
 * Where must deterministic logic replace probabilistic output?
 * What guarantees can realistically be offered to users?
 * How should uncertainty be communicated or constrained?
@@ -90,8 +90,8 @@ In other words, judgment becomes central.
 
 Deep knowledge of transformer mathematics may not be required for most
 practitioners, just as most graphics programmers no longer implement 
-asterisers from scratch. Yet architectural competence increasingly
-depends on understanding model behavior, limitations, and emergent properties.
+rasterisers from scratch. Yet architectural competence increasingly
+depends on understanding model behaviour, limitations, and emergent properties.
 
 For example:
 - A programmer who understands latency and token economics
@@ -115,20 +115,20 @@ variability rather than eliminate it.
 This requires new design instincts:
 * Designing guardrails instead of strict rules
 * Validating distributions instead of single outputs
-* Monitoring behaviors instead of states
+* Monitoring behaviours instead of states
 * Treating prompts as part of the codebase
 * Accepting that some components are inherently stochastic
 
 There is also an epistemic dimension.
 
 When building conventional systems, one could often trace causality: a bug
-emerges from identifiable logic. With LLMs, undesired behavior may arise from
+emerges from identifiable logic. With LLMs, undesired behaviour may arise from
 training data biases, token interactions, context truncation, or emergent
-reasoning artifacts. The "why" behind an output is frequently opaque.
+reasoning artefacts. The "why" behind an output is frequently opaque.
 
 Thus, knowledge itself becomes layered:
 1. *Operational knowledge*: how to call APIs, structure prompts, and integrate tools
-2. *Behavioral knowledge*: how models respond, fail, drift, and generalise
+2. *Behavioural knowledge*: how models respond, fail, drift, and generalise
 3. *Conceptual knowledge*. how transformers, embeddings, and training dynamics work
 4. *Meta-knowledge*: knowing what cannot be reliably known or controlled
 
@@ -139,7 +139,7 @@ There is a recurring historical pattern here as well.
 
 Early adopters of new technologies often oscillate between overengineering
 and overtrust. Some dive deeply into internals prematurely; others treat the
-technology as magic. Over time, disciplines stabilise. Best practices emerge.
+technology as "magic". Over time, disciplines stabilise. Best practices emerge.
 Tooling matures. Abstractions thicken.
 
 We are still in that formative phase with LLM architectures.
@@ -149,7 +149,7 @@ but when it becomes valuable:
 * Valuable when systems must be reliable
 * Valuable when stakes are high
 * Valuable when costs scale
-* Valuable when behavior must be explainable
+* Valuable when behaviour must be explainable
 * Valuable when failure is expensive
 
 Conversely, shallow knowledge may be sufficient:
@@ -161,7 +161,7 @@ Conversely, shallow knowledge may be sufficient:
 The tension between these modes is not a flaw but a characteristic of technological evolution.
 
 Returning to the earlier analogy: implementing a renderer was not required to use graphics,
-but it transformed how one thought about graphics. Likewise, studying LLM behavior is not
+but it transformed how one thought about graphics. Likewise, studying LLM behaviour is not
 required to build with LLMs, yet it transforms how one reasons about AI systems.
 
 Perhaps the deeper insight is this:
