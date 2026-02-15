@@ -1,301 +1,143 @@
 
-## Reflection and Floor Rendering Demonstration
+### Shadow Casting and Lighting Demonstration
 
-This interactive demo shows how *realistic reflections* are rendered on a floor plane,
-combined with *diffuse lighting*, *transparency effects*, and *perspective floor rendering*.
+This interactive demo shows how *realistic shadows* are cast from a point light
+source onto a floor plane, combined with *diffuse lighting* on the cube faces.
 
-1. *Mirror Reflection* - cube reflected across floor plane with proper transformations
-2. *Transparency System* - reflections rendered with graduated opacity
+
+
+### Key Features
+
+1. *Point Light Source* - visible glowing sphere showing light position
+2. *Ray-Cast Shadows* - proper planar projection onto floor
 3. *Diffuse Lighting* - faces brighten/darken based on angle to light
-4. *Two-Pass Rendering* - back-face and front-face separation for depth
-5. *Perspective Floor* - gradient floor extending to horizon
-6. *Automatic Rotation* - smooth animation showing all angles
+4. *Light Ray Visualization* - toggle to show how shadows form (educational)
+5. *Interactive Rotation* - drag to rotate cube and see shadow change
+6. *Grid Floor* - depth perception and spatial reference
 
 
-### How Reflections Work
+
+### How Shadows Work
 
 #### The Principle
 
-A reflection is the *mirror image* of an object across a plane.
-Points are transformed symmetrically across the reflection surface.
+A shadow is formed when light rays from a *point source*
+are blocked by an object and cannot reach a surface.
 
 ```
-     Cube
-      □
-  ═════════ Floor (y = -1.5)
-      □
-  Reflection
+        ☀ Light Source
+       /|\
+      / | \
+     /  |  \
+    / Cube  \
+   /    □    \
+  /___________\
+ Floor  Shadow
 ```
 
-#### Planar Reflection Method
+#### Ray Casting Method
 
 For each vertex of the cube:
-1. *Measure distance* from vertex to floor plane
-2. *Project same distance* on opposite side of plane
-3. *Result* is the reflected vertex position
+1. *Cast a ray* from the light source through the vertex
+2. *Find intersection* with the floor plane (y = floorLevel)
+3. *Mark this point* - it's part of the shadow boundary
 
 #### Mathematical Formula
 
 Given:
-- Original vertex: *V = (Vx, Vy, Vz)*
-- Floor plane: *y = floorY* (e.g., y = -1.5)
+- Light position: *L = (Lx, Ly, Lz)*
+- Cube vertex: *V = (Vx, Vy, Vz)*
+- Floor plane: *y = floorLevel* (e.g., y = -2)
 
-The reflected point:
+The ray equation:
 ```
-Vr = (Vx, 2 × floorY - Vy, Vz)
+P(t) = L + t × (V - L)
 ```
 
-*Why this works:*
-- Distance from V to floor: `Vy - floorY`
-- Reflected point must be same distance below: `floorY - (Vy - floorY)`
-- Simplifies to: `2 × floorY - Vy`
+Where *t* is a parameter (t=0 at light, t=1 at vertex, t>1 beyond vertex).
 
-*Example:*
-- Floor at y = -1.5
-- Vertex at (1, 0.5, 2)
-- Distance above floor: 0.5 - (-1.5) = 2.0
-- Reflected point: (1, 2×(-1.5) - 0.5, 2) = (1, -3.5, 2)
-- Distance below floor: -1.5 - (-3.5) = 2.0 ✓
+To find where this ray hits the floor (y = floorLevel):
+```
+Py(t) = Ly + t × (Vy - Ly) = floorLevel
+
+Solving for t:
+t = (floorLevel - Ly) / (Vy - Ly)
+```
+
+The shadow point on the floor:
+```
+Sx = Lx + t × (Vx - Lx)
+Sy = floorLevel
+Sz = Lz + t × (Vz - Lz)
+```
 
 #### Code Implementation
 
 ```javascript
-function reflectAcrossFloor(v, floorY) {
-  return [v[0], 2 * floorY - v[1], v[2]];
-}
-
-// Apply to all cube vertices
-const reflectedCube = cube.map(v => reflectAcrossFloor(v, floorY));
-```
-
-### Normal Vectors in Reflections
-
-#### The Challenge
-
-When rendering the reflected cube, the *surface normals* must also be flipped
-to ensure lighting calculations are correct.
-
-#### Why Normals Matter
-
-A normal vector points *perpendicular* to a surface:
-- *Original cube*: normals point "outward" from cube
-- *Reflected cube*: cube is "flipped upside down"
-- *Problem*: if we don't flip normals, lighting will be backwards
-
-#### The Solution
-
-When reflecting across a horizontal plane (y = constant):
-- *Flip the Y component* of the normal
-- Other components remain the same
-
-```javascript
-// For horizontal floor reflection
-normalReflected = [normal[0], -normal[1], normal[2]]
-```
-
-In the code, we achieve this by passing `isReflection` flag:
-
-```javascript
-let lightingNormal = normalize(normal);
-if (isReflection) {
-  lightingNormal = lightingNormal.map(x => -x);
-}
-```
-
-This flips *all* components, which works for our symmetric lighting setup.
-
-### Face Culling and Reflections
-
-#### What is Face Culling?
-
-*Face culling* means only drawing faces that point toward the camera.
-This prevents rendering the "inside" of objects.
-
-```
-    Camera
-      o
-      v
-   ┌─────┐
-   │  O  │  <- Front face (visible)
-   └─────┘
-      x     <- Back face ("behind") (culled)
-```
-
-#### Determining Front vs Back
-
-Use the *dot product* between:
-- *Normal vector* (perpendicular to face)
-- *View direction* (from face to camera)
-
-```javascript
-const viewDir = normalize(sub([0, 0, 5], center));
-const isFrontFacing = dot(normalize(normal), viewDir) > 0;
-```
-
-- *Positive dot product*: face points toward camera -> front face
-- *Negative dot product*: face points away -> back face
-
-#### Reflection Reversal
-
-When we reflect the cube, we're essentially viewing it "from the other side":
-- What was a front face becomes a back face
-- What was a back face becomes a front face
-
-*Solution:* Flip the culling logic for reflections:
-
-```javascript
-let isFrontFacing = dot(normalize(normal), viewDir) > 0;
-
-if (isReflection) {
-  isFrontFacing = !isFrontFacing;
-}
-```
-
-### Two-Pass Rendering for Transparency
-
-#### Why Two Passes?
-
-To create a sense of depth and allow "seeing through" the cube:
-1. *Pass 0*: Draw back faces with high transparency (30%)
-2. *Pass 1*: Draw front faces with normal transparency
-
-This creates a *depth cue* - we can see the far side through the near side.
-
-#### The Algorithm
-
-```javascript
-for (let pass = 0; pass < 2; pass++) {
-  for (let { face } of faceDepths) {
-    // Determine if front or back facing
-    let isFrontFacing = /* ... */;
+function projectShadowPoint([x, y, z]) {
+    // Direction from light to point
+    const dx = x - lightPos[0];
+    const dy = y - lightPos[1];
+    const dz = z - lightPos[2];
     
-    // Skip faces not belonging to this pass
-    if (pass === 0 && isFrontFacing) continue;  // Pass 0: only back
-    if (pass === 1 && !isFrontFacing) continue; // Pass 1: only front
+    // Parameter t where ray hits floor
+    const t = (floorLevel - lightPos[1]) / dy;
     
-    // Draw with appropriate transparency
-    if (pass === 0) {
-      ctx.globalAlpha = alpha * 0.3; // Back: 30%
-    } else {
-      ctx.globalAlpha = alpha;        // Front: 100%
-    }
-  }
+    // Shadow position
+    return [
+        lightPos[0] + t * dx,
+        floorLevel,
+        lightPos[2] + t * dz
+    ];
 }
 ```
 
-#### Visual Effect
+
+
+### Convex Hull for Shadow Silhouette
+
+#### The Problem
+
+When we project all 8 cube vertices onto the floor, we get 8 shadow points.
+But connecting them in cube-vertex order creates a weird shape with internal divisions.
+
+*Solution*: Use a *convex hull* algorithm to find only the *outer boundary* points.
+
+#### What is a Convex Hull?
+
+The convex hull is the smallest convex polygon that contains
+all points--like stretching a rubber band around the points.
 
 ```
-Pass 0 (30% alpha)    Pass 1 (100% alpha)    Combined
-     │  \                  ┌───┐              ┌───┐
-     │   \                 │░░░│              │███│
-     └────┘                └───┘              └───┘
-   Back faces           Front faces           Depth!
+Points:     * * *        Convex Hull:    /-\
+            *   *                       /   \
+            * * *                       \___/
 ```
 
-### Reflection Transparency and Darkening
+#### Graham Scan Algorithm
 
-#### Making Reflections Look Real
+We use a variation of the Graham scan:
+1. *Sort points* by x-coordinate (then y)
+2. *Build lower hull* - walk left to right, removing points that create right turns
+3. *Build upper hull* - walk right to left, removing points that create right turns
+4. *Combine* lower and upper hulls
 
-Real reflections are:
-1. *Less bright* than the original (floor absorbs some light)
-2. *More transparent* (floor isn't a perfect mirror)
-
-#### Opacity Adjustment
+#### Cross Product for Turn Detection
+To determine if three points make a left or right turn:
 
 ```javascript
-if (isReflection) {
-  alpha *= 0.4; // Reflection is 40% as opaque
-}
+cross(O, A, B) = (A.x - O.x) × (B.y - O.y) - (A.y - O.y) × (B.x - O.x)
 ```
 
-*Why 0.4?*
-- *Too high (0.8)*: reflection looks as solid as original
-- *Too low (0.1)*: reflection barely visible
-- *0.4*: clearly visible but obviously a reflection
+- *Positive*: Left turn → keep point
+- *Negative or Zero*: Right turn → remove previous point
 
-#### Brightness Adjustment
+#### Result
 
-```javascript
-if (isReflection) {
-  finalBrightness *= 0.7; // Reflection is 70% as bright
-}
-```
+The convex hull gives us the *actual silhouette* of the shadow--just the outer boundary points,
+which we connect to create a single filled polygon.
 
-Then we darken the color:
 
-```javascript
-const darkenFactor = finalBrightness;
-color = `rgb(${Math.floor(r * darkenFactor)}, 
-             ${Math.floor(g * darkenFactor)}, 
-             ${Math.floor(b * darkenFactor)})`;
-```
-
-#### Combined Effect
-
-For a face with brightness 0.8 in reflection:
-- Base alpha: 0.8
-- Reflection multiplier: 0.4
-- *Final alpha*: 0.8 × 0.4 = 0.32
-
-- Base brightness: 0.8
-- Reflection multiplier: 0.7
-- *Final brightness*: 0.8 × 0.7 = 0.56
-
-This creates a subtle, realistic reflection effect.
-
-### Perspective Floor Rendering
-
-#### The Challenge
-
-Create a floor that:
-1. Extends to edges of canvas
-2. Shows perspective (appears to recede into distance)
-3. Fades naturally into background
-
-#### Gradient Strategy
-
-Use a *linear gradient* from bottom to horizon:
-
-```javascript
-const gradient = ctx.createLinearGradient(0, h, 0, horizonPoint[1]);
-gradient.addColorStop(0, "#909090");    // Dark at bottom
-gradient.addColorStop(0.8, "#b0b0b0");  // Lighter going back
-gradient.addColorStop(1, "#f0f0f0");    // Fades to background
-```
-
-*Color stops:*
-- *0.0* (bottom): Darkest floor color
-- *0.8* (near horizon): Lighter transition
-- *1.0* (horizon): Matches background, seamless blend
-
-#### Trapezoid Shape
-
-The floor is drawn as a trapezoid:
-- *Near edge*: full width of canvas
-- *Far edge*: narrower width at horizon
-
-```javascript
-const farWidth = 8;  // Width in 3D space
-const farLeft = project([-farWidth, floorY, -floorDepth]);
-const farRight = project([farWidth, floorY, -floorDepth]);
-
-ctx.beginPath();
-ctx.moveTo(0, h);               // Bottom left corner
-ctx.lineTo(w, h);               // Bottom right corner  
-ctx.lineTo(w, horizonPoint[1]); // Right edge to horizon
-ctx.lineTo(...farRight);        // Far right of floor
-ctx.lineTo(...farLeft);         // Far left of floor
-ctx.lineTo(0, horizonPoint[1]); // Left edge to horizon
-ctx.closePath();
-```
-
-#### Why This Works
-
-*Perspective projection* makes distant objects smaller:
-- 8 units wide at z = -6 projects to ~200 pixels
-- Creates natural perspective convergence
-- Floor appears to extend into the distance
 
 ### Diffuse Lighting (Lambertian Reflection)
 
@@ -327,75 +169,78 @@ The dot product of two *unit vectors* equals the *cosine* of the angle between t
 N · L = cos(θ)
 ```
 
-- *θ = 0°* (facing light): cos(0°) = 1 -> fully bright
-- *θ = 45°*: cos(45°) ≈ 0.707 -> 70% bright
-- *θ = 90°* (perpendicular): cos(90°) = 0 -> no direct light
-- *θ > 90°* (facing away): cos(θ) < 0 -> clamped to 0
+- *θ = 0°* (facing light): cos(0°) = 1 → fully bright
+- *θ = 45°*: cos(45°) ≈ 0.707 → 70% bright
+- *θ = 90°* (perpendicular): cos(90°) = 0 → no direct light
+- *θ > 90°* (facing away): cos(θ) < 0 → clamped to 0
+
 
 #### Ambient + Diffuse Model
 
 We add *ambient light* so faces never go completely black:
 
 ```javascript
-const brightness = Math.max(0.4, dot(lightingNormal, lightDir)) * 0.9;
+const ambient = 0.3;  // 30% minimum brightness
+const diffuse = Math.max(0, dotProduct(normal, lightDir));
+const brightness = ambient + (1 - ambient) × diffuse;
 ```
 
-- *Minimum*: 0.4 (40% brightness even in shadow)
-- *Maximum*: 0.4 to 1.0 range, scaled by 0.9 = 0.9 max
-- *Result*: brightness from *0.4* to *0.9*
+This gives brightness from *0.3* (dark side) to *1.0* (bright side).
 
-#### Code Implementation
+#### Transforming Normals
+
+When the cube rotates, the face normals must rotate too:
 
 ```javascript
-// Light from above and slightly forward
-const lightDir = normalize([0, 3, 0.5]);
+const transformedNormals = faceNormals.map(n => 
+    normalize(matrixVectorMult(Ry, matrixVectorMult(Rx, n)))
+);
+```
 
-// Calculate face normal from first three vertices
-const normal = cross(sub(pts3d[1], pts3d[0]), sub(pts3d[2], pts3d[0]));
+*Important*: Always normalize after transformation to keep it a unit vector.
 
-// Flip normal for reflections
-let lightingNormal = normalize(normal);
-if (isReflection) {
-  lightingNormal = lightingNormal.map(x => -x);
+#### Adjusting Color Brightness
+
+Multiply RGB components by brightness:
+
+```javascript
+function adjustBrightness(color, brightness) {
+    const r = parseInt(color.slice(1,3), 16);
+    const g = parseInt(color.slice(3,5), 16);
+    const b = parseInt(color.slice(5,7), 16);
+    
+    return `rgb(${Math.floor(r * brightness)}, 
+                 ${Math.floor(g * brightness)}, 
+                 ${Math.floor(b * brightness)})`;
 }
-
-// Calculate brightness
-const brightness = Math.max(0.4, dot(lightingNormal, lightDir)) * 0.9;
 ```
 
-### Painter's Algorithm (Depth Sorting)
 
-#### The Problem
 
-In 2D canvas, there's no automatic depth buffering.
-Objects drawn last appear in front, regardless of 3D position.
+### Light Ray Visualisation
 
-#### The Solution
+#### Toggle Button
 
-*Sort faces by depth* before drawing:
+Click *"Show Light Rays"* to toggle educational overlays:
 
-```javascript
-const faceDepths = faces.map((face, i) => {
-  const pts3d = face.indices.map(i => cube[i]);
-  const z = pts3d.reduce((sum, v) => sum + v[2], 0) / pts3d.length;
-  return { face, z };
-}).sort((a, b) => b.z - a.z); // Far to near
-```
+*When ON* (default):
+- Dashed yellow lines from light → cube vertex → floor
+- Yellow dots marking shadow points on floor
+- Shows exactly how shadow is formed
 
-*Steps:*
-1. Calculate average Z coordinate of each face
-2. Sort by Z (furthest first)
-3. Draw in sorted order
+*When OFF*:
+- Clean view with just cube, shadow, and light
+- Better for appreciating the final result
 
-*Result:* Faces further from camera are drawn first, nearer faces overdraw them.
+#### What The Rays Show
 
-#### Limitations
+Each ray demonstrates:
+1. Light travels from source in straight lines
+2. Light is blocked by cube vertices
+3. Shadow forms where light cannot reach
+4. All shadow points lie on the floor plane
 
-Painter's algorithm fails for:
-- *Overlapping polygons* (A in front of B, B in front of C, C in front of A)
-- *Intersecting geometry*
 
-For simple convex objects like cubes, it works perfectly.
 
 ### Rendering Pipeline
 
@@ -406,306 +251,173 @@ The complete process each frame:
    v
 2. Apply rotation matrices to cube vertices
    v
-3. Generate reflected cube vertices
+3. Apply rotation matrices to face normals
    v
-4. Draw perspective floor with gradient
+4. Draw floor with grid
    v
-5. Draw shadow placeholder (currently disabled)
+5. Project shadow:
+   - Cast rays through all 8 vertices
+   - Find floor intersections
+   - Compute convex hull
+   - Fill shadow polygon
    v
-6. Draw reflected cube:
-   - Two-pass rendering (back faces, then front faces)
-   - Flipped face culling
-   - Flipped normals for lighting
-   - Reduced opacity (40%)
-   - Darkened colors (70%)
+6. [If rays enabled] Draw light rays and shadow points
    v
-7. Draw main cube:
-   - Two-pass rendering
-   - Normal face culling
-   - Normal lighting
-   - Full opacity
+7. For each face:
+   - Calculate lighting (N · L)
+   - Adjust color brightness
+   - Sort by depth (painter's algorithm)
+   - Draw face
    v
-8. Loop (requestAnimationFrame)
+8. Draw light source indicator
 ```
 
-### Automatic Rotation
 
-#### The Animation
 
-The cube rotates automatically for demonstration:
+### Light Position Effects
 
-```javascript
-angleX += 0.01;   // 0.01 radians per frame ≈ 0.57° per frame
-angleY += 0.015;  // 0.015 radians per frame ≈ 0.86° per frame
-```
+Current: `lightPos = [3, 5, 3]`
 
-At 60 FPS:
-- *X rotation*: ~34° per second
-- *Y rotation*: ~52° per second
+#### X Coordinate (left/right)
+- *x = -5*: Light far left → shadow extends right
+- *x = 0*: Light centered → shadow centered
+- *x = 5*: Light far right → shadow extends left
 
-#### Why Different Rates?
+#### Y Coordinate (height)
+- *y = 2*: Low light → long, stretched shadow
+- *y = 5*: Medium height → moderate shadow
+- *y = 10*: High light → short, compact shadow
+- *y = 100*: Very high → shadow almost directly below cube
 
-Using different rotation speeds (0.01 vs 0.015) creates a *Lissajous pattern* -
-the cube explores all possible orientations smoothly without repeating too quickly.
+#### Z Coordinate (front/back)
+- *z = -5*: Light behind → shadow toward camera
+- *z = 0*: Light at cube depth
+- *z = 5*: Light in front → shadow away from camera
 
-*Benefits:*
-- Shows all faces over time
-- Demonstrates lighting from all angles
-- Reflection visible from multiple perspectives
-- Never gets stuck in repetitive motion
 
-### Color Darkening Technique
 
-#### The Challenge
+### Interactive Controls
 
-Given a CSS color name (like "red"), how do we darken it?
+#### Mouse Drag
+- *Drag horizontally* → rotate around Y-axis (turn left/right)
+- *Drag vertically* → rotate around X-axis (tilt up/down)
+- *Release* → cursor changes back to grab
 
-#### The Hack Solution
+#### Toggle Button
+- *Click* → show/hide light rays
+- *Active state* → yellow background when rays visible
 
-```javascript
-ctx.fillStyle = face.color;
-ctx.fillRect(0, 0, 1, 1); // Draw 1 pixel
-const imageData = ctx.getImageData(0, 0, 1, 1);
-const [r, g, b] = imageData.data; // Extract RGB values
-```
 
-*How it works:*
-1. Set fill color to desired color name
-2. Draw a tiny 1×1 rectangle
-3. Read back the pixel data
-4. Browser has converted color name to RGB for us
 
-#### Applying the Darkening
+### Technical Details
 
-```javascript
-const darkenFactor = finalBrightness; // 0.0 to 1.0
-color = `rgb(${Math.floor(r * darkenFactor)}, 
-             ${Math.floor(g * darkenFactor)}, 
-             ${Math.floor(b * darkenFactor)})`;
-```
-
-Multiply each component by brightness:
-- *Brightness 1.0*: (255, 0, 0) -> rgb(255, 0, 0) - full red
-- *Brightness 0.5*: (255, 0, 0) -> rgb(127, 0, 0) - dark red
-- *Brightness 0.0*: (255, 0, 0) -> rgb(0, 0, 0) - black
-
-### Coordinate System
-
-#### 3D Space
+#### Coordinate System
 - *X-axis*: left (-) to right (+)
 - *Y-axis*: down (-) to up (+)
 - *Z-axis*: far (-) to near (+)
 
-#### Screen Space
-- *X*: left (0) to right (width)
-- *Y*: top (0) to bottom (height)
+#### Floor Plane
+- Fixed at *y = -2*
+- Drawn from this point downward
+- Grid helps show perspective
 
 #### Perspective Projection
-
 ```javascript
-function project([x, y, z]) {
-  const scale = 200 / (5 - z); // Camera at z=5
-  return [x * scale + w/2, -y * scale + h/2];
-}
+scale = 150 / (5 - z)
+screenX = x × scale + width/2
+screenY = -y × scale + height/2
 ```
 
-*Key points:*
-- Camera positioned at z = 5
-- Objects at z = 0 (5 units away) have scale = 40
-- Objects at z = 4 (1 unit away) have scale = 200
-- Y is negated because screen Y increases downward
+Objects closer (higher z) appear larger.
+
+
 
 ### Performance Considerations
 
+#### Convex Hull Complexity
+- *Time*: O(n log n) for n points
+- For 8 cube vertices: very fast
+- Could be optimized with pre-computed silhouettes for static geometry
+
+#### Drawing Order
+1. Floor (background)
+2. Shadow (on floor)
+3. Rays (if enabled)
+4. Cube faces (painter's algorithm)
+5. Light (foreground)
+
 #### Frame Rate
-- *Target*: 60 FPS
-- *Achieved*: Typically 60 FPS on modern browsers
-- *Bottleneck*: Canvas 2D fill operations
+- *60 FPS* typical on modern browsers
+- `requestAnimationFrame` syncs with display refresh
 
-#### Optimization Strategies
 
-*Current optimizations:*
-1. *Depth sorting once per frame* - not per pass
-2. *Minimal state changes* - group similar operations
-3. *requestAnimationFrame* - syncs with display refresh
-
-*Possible improvements:*
-1. *Caching projections* - if camera doesn't move
-2. *Dirty rectangles* - only redraw changed areas
-3. *Web Workers* - offload vector math calculations
-4. *WebGL* - hardware-accelerated 3D rendering
-
-### Shadow Implementation (Disabled)
-
-#### Current State
-
-The shadow code exists but is commented out:
-
-```javascript
-// const shadowVerts = pts3d.map(v => project(projectShadow(v, lightDir)));
-```
-
-#### Why Disabled?
-
-The reflection demo focuses on:
-- Reflection mechanics
-- Transparency effects
-- Floor perspective
-
-Adding shadows would:
-- Complicate visual clarity
-- Require additional explanation
-- Overlap with the separate shadow demo
-
-#### Shadow Implementation
-
-The `projectShadow` function is included:
-
-```javascript
-function projectShadow(v, lightDir) {
-  const t = (v[1] + 1.5) / lightDir[1];
-  return [
-    v[0] - lightDir[0] * t,
-    -1.5,
-    v[2] - lightDir[2] * t
-  ];
-}
-```
-
-This could be enabled by uncommenting the shadow drawing code.
 
 ### Educational Value
 
 This demo teaches:
-1. *Planar reflection* - mirroring objects across a plane
-2. *Normal transformation* - how surface orientations change
-3. *Face culling* - determining visible surfaces
-4. *Transparency composition* - layering semi-transparent objects
-5. *Multi-pass rendering* - drawing objects in multiple stages
-6. *Perspective projection* - 3D to 2D transformation
-7. *Gradient fills* - creating smooth color transitions
-8. *Lighting models* - Lambertian diffuse reflection
+1. *Ray casting* - fundamental technique in graphics
+2. *Planar projection* - how 3D→2D works for specific planes
+3. *Convex hull* - computational geometry algorithm
+4. *Lighting models* - basic Lambertian diffuse reflection
+5. *Dot product* - angle calculation in 3D
+6. *Painter's algorithm* - depth sorting for rendering
+
+
 
 ### Possible Extensions
 
-#### 1. Multiple Reflection Planes
-
-Reflect across vertical walls too:
-
+#### 1. Multiple Light Sources
+Add more lights with different colors:
 ```javascript
-function reflectAcrossVertical(v, planeX) {
-  return [2 * planeX - v[0], v[1], v[2]];
-}
+const lights = [
+    {pos: [3, 5, 3], color: '#ffff00'},
+    {pos: [-2, 4, -2], color: '#ff00ff'}
+];
 ```
 
-Create a "hall of mirrors" effect.
-
-#### 2. Fresnel Effect
-
-Vary reflection intensity by viewing angle:
-
+#### 2. Soft Shadows
+Blur the shadow edges:
 ```javascript
-const viewAngle = Math.abs(dot(normalize(normal), viewDir));
-const fresnelFactor = Math.pow(1 - viewAngle, 3);
-const reflectionAlpha = 0.4 * fresnelFactor;
+ctx.shadowBlur = 10;
+ctx.shadowColor = 'rgba(0,0,0,0.3)';
 ```
 
-Grazing angles show stronger reflections.
-
-#### 3. Distorted Reflections
-
-Add wave distortion for water-like effect:
-
+#### 3. Specular Highlights
+Add shiny reflections (Phong/Blinn-Phong):
 ```javascript
-function reflectWithWaves(v, floorY, time) {
-  const wave = Math.sin(v[0] * 2 + time) * 0.1;
-  return [v[0], 2 * (floorY + wave) - v[1], v[2]];
-}
+const R = reflect(L, N);
+const specular = Math.pow(max(0, R·V), shininess);
 ```
 
-#### 4. Environment Mapping
-
-Reflect a background image instead of just the cube:
-
+#### 4. Colored Shadows
+Light color affects shadow tint:
 ```javascript
-const envMap = document.createElement('img');
-envMap.src = 'skybox.jpg';
-// Use envMap in reflection rendering
+ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.5)`;
 ```
 
-#### 5. Blur Effect
-
-Apply blur to reflection for frosted surface:
-
+#### 5. Shadow Attenuation
+Fade shadow with distance from cube:
 ```javascript
-ctx.filter = 'blur(2px)';
-drawCube(reflectedCube, true);
-ctx.filter = 'none';
+const distance = length(cubePos - shadowPoint);
+const opacity = max(0, 0.5 - distance × 0.05);
 ```
 
-#### 6. Interactive Floor Level
-
-Add slider to adjust floor position:
-
-```javascript
-<input type="range" id="floorY" min="-3" max="0" step="0.1" value="-1.5">
-
-floorY = parseFloat(document.getElementById('floorY').value);
+#### 6. Dynamic Light Control
+Add sliders to move light position:
+```html
+<input type="range" id="lightX" min="-10" max="10" value="3">
+<input type="range" id="lightY" min="2" max="15" value="5">
+<input type="range" id="lightZ" min="-10" max="10" value="3">
 ```
 
-See how reflection changes with floor position.
 
-#### 7. Multiple Objects
-
-Add spheres, pyramids, or other shapes:
-
-```javascript
-const sphere = generateSphereVertices(1, 16);
-const reflectedSphere = sphere.map(v => reflectAcrossFloor(v, floorY));
-```
-
-### Common Pitfalls
-
-#### 1. Forgetting to Flip Normals
-
-*Problem:* Reflected cube has incorrect lighting
-*Solution:* Remember to negate normals when `isReflection === true`
-
-#### 2. Wrong Reflection Formula
-
-*Problem:* Using `[v[0], -v[1], v[2]]` instead of `[v[0], 2*floorY - v[1], v[2]]`
-*Result:* Cube appears to sink into ground
-*Fix:* Always reflect across the actual floor position
-
-#### 3. Drawing Order
-
-*Problem:* Drawing reflection after main cube
-*Result:* Reflection appears in front of cube
-*Fix:* Always draw: floor -> reflection -> main object
-
-#### 4. Alpha Blending
-
-*Problem:* Setting too high or too low alpha for reflection
-*Result:* Looks unrealistic
-*Sweet spot:* 0.3 to 0.5 alpha multiplier
-
-#### 5. Face Culling Direction
-
-*Problem:* Not reversing culling for reflection
-*Result:* Reflection shows wrong faces or appears hollow
-*Fix:* `if (isReflection) isFrontFacing = !isFrontFacing;`
 
 ### Summary
 
 This demonstration combines:
-- *Planar reflection* via coordinate transformation
-- *Normal flipping* for correct lighting
-- *Face culling reversal* for proper visibility
-- *Two-pass rendering* for transparency depth
-- *Perspective floor* with gradient shading
-- *Automatic rotation* for comprehensive viewing
-- *Darkening and opacity* for realistic reflections
-
-The result is a visually compelling demonstration of fundamental 3D graphics
-techniques using only 2D canvas operations.
+- *Shadow casting* via ray-plane intersection
+- *Convex hull* for proper silhouette
+- *Diffuse lighting* using dot product
+- *Interactive controls* for exploration
+- *Educational visualization* of how light creates shadows
 

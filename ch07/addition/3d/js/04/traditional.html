@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traditional 3D Rendering</title>
+    <style>
+        body {
+            margin: 0;
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: monospace;
+            color: white;
+        }
+        .container {
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #555;
+            background: #111;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        .info {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Traditional 3D Rendering</h2>
+        <canvas id="canvas" width="400" height="400"></canvas>
+        <div class="controls">
+            <button onclick="toggleAnimation()">Toggle Animation</button>
+            <button onclick="changeRenderMode()">Change Mode</button>
+        </div>
+        <div class="info">
+            CPU-based rendering: lighting calculated once per triangle<br>
+            Mode: <span id="render-mode">Flat Shading</span>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        let time = 0;
+        let animating = true;
+        let renderMode = 0; // 0: flat shading, 1: wireframe, 2: solid color
+        
+        // Vector utilities
+        class Vec3 {
+            constructor(x = 0, y = 0, z = 0) {
+                this.x = x; this.y = y; this.z = z;
+            }
+            
+            add(v) { return new Vec3(this.x + v.x, this.y + v.y, this.z + v.z); }
+            sub(v) { return new Vec3(this.x - v.x, this.y - v.y, this.z - v.z); }
+            mul(s) { return new Vec3(this.x * s, this.y * s, this.z * s); }
+            dot(v) { return this.x * v.x + this.y * v.y + this.z * v.z; }
+            cross(v) {
+                return new Vec3(
+                    this.y * v.z - this.z * v.y,
+                    this.z * v.x - this.x * v.z,
+                    this.x * v.y - this.y * v.x
+                );
+            }
+            normalize() {
+                const len = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+                return len > 0 ? new Vec3(this.x / len, this.y / len, this.z / len) : new Vec3();
+            }
+        }
+        
+        class Vec4 {
+            constructor(x = 0, y = 0, z = 0, w = 1) {
+                this.x = x; this.y = y; this.z = z; this.w = w;
+            }
+        }
+        
+        // Matrix multiplication
+        function multiplyMV(m, v) {
+            return new Vec4(
+                m[0] * v.x + m[4] * v.y + m[8] * v.z + m[12] * v.w,
+                m[1] * v.x + m[5] * v.y + m[9] * v.z + m[13] * v.w,
+                m[2] * v.x + m[6] * v.y + m[10] * v.z + m[14] * v.w,
+                m[3] * v.x + m[7] * v.y + m[11] * v.z + m[15] * v.w
+            );
+        }
+        
+        function createRotationMatrix(angleX, angleY, angleZ) {
+            const cx = Math.cos(angleX), sx = Math.sin(angleX);
+            const cy = Math.cos(angleY), sy = Math.sin(angleY);
+            const cz = Math.cos(angleZ), sz = Math.sin(angleZ);
+            
+            return [
+                cy * cz, -cy * sz, sy, 0,
+                cx * sz + sx * sy * cz, cx * cz - sx * sy * sz, -sx * cy, 0,
+                sx * sz - cx * sy * cz, sx * cz + cx * sy * sz, cx * cy, 0,
+                0, 0, 0, 1
+            ];
+        }
+        
+        // Define multiple triangles to make a simple 3D shape (pyramid)
+        const triangles = [
+            // Front face
+            {
+                vertices: [
+                    new Vec3(0, 0.8, 0.3),
+                    new Vec3(-0.6, -0.4, 0.3),
+                    new Vec3(0.6, -0.4, 0.3)
+                ],
+                baseColor: new Vec3(1, 0.2, 0.2) // Red
+            },
+            // Right face
+            {
+                vertices: [
+                    new Vec3(0, 0.8, 0.3),
+                    new Vec3(0.6, -0.4, 0.3),
+                    new Vec3(0, -0.4, -0.5)
+                ],
+                baseColor: new Vec3(0.2, 1, 0.2) // Green
+            },
+            // Left face
+            {
+                vertices: [
+                    new Vec3(0, 0.8, 0.3),
+                    new Vec3(0, -0.4, -0.5),
+                    new Vec3(-0.6, -0.4, 0.3)
+                ],
+                baseColor: new Vec3(0.2, 0.2, 1) // Blue
+            },
+            // Bottom face
+            {
+                vertices: [
+                    new Vec3(-0.6, -0.4, 0.3),
+                    new Vec3(0, -0.4, -0.5),
+                    new Vec3(0.6, -0.4, 0.3)
+                ],
+                baseColor: new Vec3(1, 1, 0.2) // Yellow
+            }
+        ];
+        
+        // Transform 3D point to screen coordinates
+        function projectToScreen(point3D) {
+            return {
+                x: (point3D.x + 1) * width * 0.5,
+                y: (1 - point3D.y) * height * 0.5
+            };
+        }
+        
+        // Calculate triangle normal (for lighting)
+        function calculateNormal(v0, v1, v2) {
+            const edge1 = v1.sub(v0);
+            const edge2 = v2.sub(v0);
+            return edge1.cross(edge2).normalize();
+        }
+        
+        // Traditional lighting calculation (once per triangle)
+        function calculateLighting(normal, baseColor) {
+            const lightDir = new Vec3(0.5, 0.5, 1).normalize();
+            const ambient = 0.3;
+            const diffuse = Math.max(0, normal.dot(lightDir)) * 0.7;
+            const intensity = ambient + diffuse;
+            
+            return baseColor.mul(intensity);
+        }
+        
+        // Fill triangle with solid color (traditional rasterization)
+        function fillTriangle(p0, p1, p2, color) {
+            ctx.fillStyle = `rgb(${Math.floor(color.x * 255)}, ${Math.floor(color.y * 255)}, ${Math.floor(color.z * 255)})`;
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
+            ctx.lineTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Draw triangle wireframe
+        function drawWireframe(p0, p1, p2, color) {
+            ctx.strokeStyle = `rgb(${Math.floor(color.x * 255)}, ${Math.floor(color.y * 255)}, ${Math.floor(color.z * 255)})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
+            ctx.lineTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.closePath();
+            ctx.stroke();
+        }
+        
+        function render() {
+            // Clear canvas
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, width, height);
+            
+            const rotationMatrix = createRotationMatrix(time * 0.3, time * 0.5, 0);
+            
+            // Process each triangle
+            const processedTriangles = [];
+            
+            for (const triangle of triangles) {
+                // Transform vertices
+                const transformedVertices = triangle.vertices.map(vertex => {
+                    const v4 = new Vec4(vertex.x, vertex.y, vertex.z, 1);
+                    const transformed = multiplyMV(rotationMatrix, v4);
+                    
+                    // Perspective division
+                    if (transformed.w !== 0) {
+                        transformed.x /= transformed.w;
+                        transformed.y /= transformed.w;
+                        transformed.z /= transformed.w;
+                    }
+                    
+                    return new Vec3(transformed.x, transformed.y, transformed.z);
+                });
+                
+                // Calculate normal in world space (before projection)
+                const normal = calculateNormal(...transformedVertices);
+                
+                // Backface culling - only render if facing towards us
+                if (normal.z > 0) {
+                    // Project to screen space
+                    const screenVertices = transformedVertices.map(projectToScreen);
+                    
+                    // Traditional lighting calculation (once per triangle)
+                    let finalColor;
+                    if (renderMode === 0) {
+                        // Flat shading - calculate lighting once for entire triangle
+                        finalColor = calculateLighting(normal, triangle.baseColor);
+                    } else {
+                        // Use base color without lighting
+                        finalColor = triangle.baseColor;
+                    }
+                    
+                    processedTriangles.push({
+                        screenVertices,
+                        color: finalColor,
+                        depth: (transformedVertices[0].z + transformedVertices[1].z + transformedVertices[2].z) / 3
+                    });
+                }
+            }
+            
+            // Sort by depth (painter's algorithm - far to near)
+            processedTriangles.sort((a, b) => a.depth - b.depth);
+            
+            // Render triangles
+            for (const tri of processedTriangles) {
+                const [p0, p1, p2] = tri.screenVertices;
+                
+                if (renderMode === 1) {
+                    // Wireframe mode
+                    drawWireframe(p0, p1, p2, tri.color);
+                } else {
+                    // Filled triangles
+                    fillTriangle(p0, p1, p2, tri.color);
+                }
+            }
+        }
+        
+        function animate() {
+            if (animating) {
+                time += 0.02;
+                render();
+            }
+            requestAnimationFrame(animate);
+        }
+        
+        function toggleAnimation() {
+            animating = !animating;
+        }
+        
+        function changeRenderMode() {
+            renderMode = (renderMode + 1) % 3;
+            const modes = ["Flat Shading", "Wireframe", "Solid Color"];
+            document.getElementById('render-mode').textContent = modes[renderMode];
+        }
+        
+        // Start the render loop
+        render();
+        animate();
+    </script>
+</body>
+</html>

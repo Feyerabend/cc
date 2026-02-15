@@ -1,146 +1,128 @@
 
-## Raytraced Bouncing Sphere with Texture
+## Raytraced Bouncing Sphere with Animated Color
 
 This explains the mathematics in simple terms. You'll see how each concept helps create the image
 on the canvas and where it appears in the code. The renderer shoots rays from a camera to draw a
-sphere and a plane, adding shadows for realism. It animates the sphere's position with a bounce,
-includes specular highlights for a shiny effect, and maps a user-uploaded texture onto the sphere
-instead of cycling colors.
+sphere and a plane, adding shadows for realism. It also animates the sphere's color over time,
+includes specular highlights for a shiny effect, and makes the sphere bounce up and down on the plane.
 
-This builds on the explanations in the READMEs for "sphere.html" (basic raytracing and shadows),
-"animate-light.html" (advanced shading), and "bouncing-sphere.html" (position animation). Refer to
-those for details on vectors, intersections, shading, shadows, camera/FOV, and bouncing. Here, we'll
-focus on the new texture mapping while briefly recapping how it integrates with the existing math.
-(Note: Color cycling is replaced by texture; the bounce remains.)
+This builds on the explanations in the READMEs for "sphere.html" (basic raytracing and shadows) and
+"animate-light.html" (color animation and advanced shading). Refer to those for details on vectors,
+intersections, shading, shadows, camera/FOV, and color cycling. Here, we'll focus on the new bouncing
+animation while briefly recapping how it integrates with the existing math.
 
 
 ### 1. Vectors: Moving and Pointing in 3D Space
 
 (See "sphere.html" README for full details.) Vectors position the camera, light, and sphere center.
-The bouncing updates the center each frame, and texture mapping uses vectors for hit points to
-compute coordinates.
+In this version, the sphere's center Y-coordinate changes over time for bouncing, but vectors still
+handle all calculations like hit points and directions.
+
+The `Vector` class remains the same, used for operations like subtracting to find distances or
+normalizing for lighting.
 
 
 ### 2. Ray-Sphere Intersection: Finding Where Rays Hit the Sphere
 
-(See "sphere.html" README for full details.) The quadratic equation finds ray hits. Bouncing updates
-the center, and on hit, you now use the point to calculate texture coordinates instead of animated color.
+(See "sphere.html" README for full details.) The quadratic equation finds ray hits on the sphere.
+Here, since the sphere moves (bouncing), you update its center each frame before intersection checks.
+
+The code recalculates the sphere center dynamically:
+```javascript
+const bounceY = BASE_Y + Math.abs(Math.sin(bouncePhase * Math.PI * 2)) * BOUNCE_HEIGHT;
+const SPHERE_CENTER = { x: 0, y: bounceY, z: 0 };
+```
+Then proceeds with the standard intersection math using the updated center.
 
 
 ### 3. Ray-Plane Intersection: Drawing the Ground
 
-(See "sphere.html" README for full details.) Plane math is unchanged; shadows move with the bouncing sphere.
+(See "sphere.html" README for full details.) The plane intersection uses a simple equation for
+the fixed ground at `y = PLANE_Y`. The bouncing sphere casts a moving shadow on it, but the plane
+math stays the same.
 
 
 ### 4. Shading: Lighting the Sphere with Diffuse, Ambient, and Specular
 
-(See "animate-light.html" README for full details.) Shading combines diffuse, ambient, and specular.
-Instead of HSL color, you sample from the texture and scale it by lighting factors.
+(See "animate-light.html" README for full details.) Diffuse, ambient, and specular terms light the
+sphere. The animated color from HSL-to-RGB is scaled by these factors. Bouncing doesn't change the
+shading math, but the moving position affects hit points and thus lighting angles.
 
 
 ### 5. Shadow Rays: Adding Shadows on the Plane
 
-(See "sphere.html" README for full details.) Shadow checks use the updated bouncing position; no changes otherwise.
+(See "sphere.html" README for full details.) Shadow rays check if the sphere blocks light to the plane.
+With bouncing, the shadow moves as the sphere's position changes, creating dynamic shadows. The math
+remains the quadratic check, but uses the updated sphere center each frame.
 
 
 ### 6. Camera and Field of View: Setting Up the View
 
-(See "sphere.html" README for full details.) Pixel-to-ray mapping captures the bouncing and textured sphere.
+(See "sphere.html" README for full details.) Pixel-to-ray mapping with FOV creates the view. The
+bouncing happens in world space, so rays capture the motion without changes to camera math.
 
 
-### 7. Bouncing Animation: Making the Sphere Move Up and Down
+### 7. Color Animation: Cycling Colors with HSL to RGB
 
-(See "bouncing-sphere.html" README for full details.) Sine wave oscillates the sphere's height; integrates
-with texture by updating the center for intersections and sampling.
+(See "animate-light.html" README for full details.) HSL hue cycles over time for color changes.
+This combines with bouncing for a lively effect, applied in shading after intersection.
 
 
-### 8. Texture Mapping: Applying an Image to the Sphere
+### 8. Bouncing Animation: Making the Sphere Move Up and Down
 
-To texture the sphere, you load a user-uploaded image, calculate UV coordinates (a 2D mapping) at each
-hit point, and sample the image's color there. This wraps the texture around the sphere like a map on a globe,
-replacing uniform or animated colors with detailed patterns.
+To animate the sphere bouncing, you oscillate its Y-position using a sine wave. This creates smooth,
+periodic up-and-down motion, like a ball bouncing on the ground. The sine function provides natural
+easing (slow at peaks, fast at bottom).
 
-Textures add visual detail without more geometry, using math to "unwrap" the 3D surface to 2D image space.
-Spherical mapping projects the texture as if from a cylinder or sphere, simple for balls but can distort at poles.
+This adds vertical movement to the scene, making the sphere appear to bounce while updating shadows
+and lighting in real-time. It's a simple harmonic motion approximation, ignoring physics like gravity
+or damping for simplicity.
 
-- *Loading Texture*: Upload an image, draw to a hidden canvas, get pixel data as an array.
-- *UV Coordinates*: For a hit point, compute U (horizontal) and V (vertical) in [0,1]:
-  - U from azimuthal angle: `0.5 + atan2(z, x) / (2π)`.
-  - V from polar angle: `0.5 - asin(y / r) / π` (r is radius).
-- *Sampling*: Map UV to image pixels (floor and modulo for wrapping), get RGB from data array.
-- *Integration*: On sphere hit, sample texture color, then apply shading (multiply by diffuse + ambient, add specular).
+The position follows a sine wave: `y = base + amplitude * |sin(phase)|`.
+- *Phase*: A value from 0 to 1 that cycles over time, scaled to radians for sine.
+- *Sine Wave*: `sin(θ)` oscillates between -1 and 1. You take the absolute value for a "bounce"
+  (positive hump) and multiply by height for amplitude.
+- *Cycle*: Phase wraps every `BOUNCE_CYCLE_MS` milliseconds, creating repeated bounces.
+- *Base and Height*: `BASE_Y` sets the lowest point (where the sphere touches the plane, adjusted
+  for radius), and `BOUNCE_HEIGHT` sets how high it goes.
 
-You load and sample the texture here:
+You calculate the bounce in `traceRay` (per frame):
 ```javascript
-// Texture handling
-let textureImage = null;
-let textureCtx = null;
-const textureCanvas = document.createElement('canvas');
-
-textureInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                textureCanvas.width = img.width;
-                textureCanvas.height = img.height;
-                textureCtx = textureCanvas.getContext('2d');
-                textureCtx.drawImage(img, 0, 0);
-                textureImage = textureCtx.getImageData(0, 0, img.width, img.height);
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-function getTextureColor(u, v) {
-    if (!textureImage) return [255, 255, 255]; // Default white if no texture
-    const x = Math.floor(u * textureImage.width) % textureImage.width;
-    const y = Math.floor(v * textureImage.height) % textureImage.height;
-    const index = (y * textureImage.width + x) * 4;
-    return [
-        textureImage.data[index],
-        textureImage.data[index + 1],
-        textureImage.data[index + 2]
-    ];
-}
+const bouncePhase = (time % BOUNCE_CYCLE_MS) / BOUNCE_CYCLE_MS;
+const bounceY = BASE_Y + Math.abs(Math.sin(bouncePhase * Math.PI * 2)) * BOUNCE_HEIGHT;
+const SPHERE_CENTER = { x: 0, y: bounceY, z: 0 };
 ```
-And map UV on hit:
-```javascript
-const hitRelative = hitPoint.subtract(SPHERE_CENTER);
-const u = 0.5 + Math.atan2(hitRelative.z, hitRelative.x) / (2 * Math.PI);
-const v = 0.5 - Math.asin(hitRelative.y / SPHERE_RADIUS) / Math.PI;
-const sphereColor = getTextureColor(u, v);
-```
-- `hitRelative` is hit point relative to center (like a direction vector).
-- `atan2(z, x)` gives horizontal angle (longitude).
-- `asin(y / r)` gives vertical angle (latitude), adjusted for V.
-- Sampling uses floor for nearest pixel (simple, no filtering); modulo wraps texture.
+- `bouncePhase` is time modulo cycle duration, normalized to [0, 1].
+- `Math.PI * 2` converts phase to a full cycle in radians (one sine period).
+- `Math.abs` flips the negative part of sine to create a bouncing "up-only" motion.
+- `BASE_Y = -0.5` ensures the sphere's bottom touches `PLANE_Y = -1.5` at rest (since radius is 1).
+- `BOUNCE_HEIGHT = 1.0` sets max lift.
 
-You wrap an image on the sphere using spherical coordinates to get UV, then fetch colors.
-The code loads the texture as data and samples it in shading, blending with lights.
+The rest of the raytracing (intersections, shading) uses this updated `SPHERE_CENTER`, so the bounce
+affects hits, lights, and shadows automatically.
+
+You create bouncing with a sine wave to oscillate the sphere's height. The code updates the center
+each frame, letting the existing math handle the visual changes.
 
 
 ### Connecting It All
 
-These math concepts work together to create your textured, bouncing scene:
-- *Vectors*, *intersections*, *shading*, *shadows*, *camera/FOV*, and *bouncing* form the base (see previous READMEs).
-- *Texture mapping* adds detail by loading an image, computing UV at hits, and sampling colors for shading.
-The renderer recalculates everything per frame, so bouncing moves the textured sphere and its shadow.
+These math concepts work together to create your animated scene:
+- *Vectors*, *intersections*, *shading*, *shadows*, *camera/FOV*, and *color animation* form the base (see previous READMEs).
+- *Bouncing animation* adds motion by updating the sphere's position with a sine wave each frame.
+The renderer recalculates everything per frame, so bouncing naturally moves the sphere, shifts shadows,
+and keeps color cycling.
 
 Each piece of math builds part of the image, and the code ties them
-together by calculating positions, intersections, textures, colors, and lighting for every pixel in each frame.
+together by calculating positions, intersections, colors, and lighting for every pixel in each frame.
 
 ### Project Idea: Explore the Math
 To deepen your understanding, try tweaking these in the code:
-- Change UV formulas (e.g., swap atan2 args) to rotate or flip the texture.
-- Add simple bilinear filtering in `getTextureColor` for smoother sampling (average nearby pixels).
-- Make texture repeat differently (e.g., remove modulo for clamping) or add distortion (e.g., noise in UV).
-- Combine with color cycling: Tint the sampled color with HSL hue.
-- Upload different images (e.g., Earth map) and adjust `BASE_Y` to match bounce with texture theme.
+- Change the bounce speed (`BOUNCE_CYCLE_MS`) or height (`BOUNCE_HEIGHT`) to see faster/slower or higher bounces.
+- Replace `Math.abs(Math.sin(...))` with just `Math.sin(...) + 1` for a different oscillation (e.g., floating instead of bouncing).
+- Add X/Z movement (e.g., `x: Math.sin(bouncePhase * Math.PI * 2) * 0.5`) for circling while bouncing.
+- Sync bounce with color cycle by sharing phases or linking hue to height.
+- Experiment with `EPSILON` in shadows to fix any artifacts from the moving sphere.
 
 This renderer is a great way to see the algorithms and mathematics in action,
 and playing with the code will help you grasp how each formula shapes the final image.

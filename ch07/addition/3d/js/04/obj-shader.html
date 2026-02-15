@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D OBJ Rasterizer with Texture Mapping</title>
+    <style>
+        body {
+            margin: 0;
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: monospace;
+            color: white;
+        }
+        .container {
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #555;
+            background: #111;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        .info {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #aaa;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>3D OBJ Rasterizer with Texture Mapping</h2>
+        <canvas id="canvas" width="400" height="400"></canvas>
+        <div class="controls">
+            <input type="file" id="objUpload" accept=".obj">
+            <button onclick="toggleAnimation()">Toggle Animation</button>
+            <button onclick="changeShading()">Change Shading</button>
+        </div>
+        <div class="info">
+            3D OBJ model with texture mapping, vertex & fragment shader in JavaScript<br>
+            Mode: <span id="shading-mode">Texture</span>
+        </div>
+    </div>
+
+    <div id="loadingIndicator" class="loading">
+        <div>Processing OBJ file...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        let imageData = ctx.createImageData(width, height);
+        let pixels = imageData.data;
+        let depthBuffer = new Float32Array(width * height);
+        
+        let time = 0;
+        let animating = true;
+        let shadingMode = 0; // 0: texture, 1: texture with lighting
+        
+        let triangles = []; // Will be populated with OBJ or default to sphere
+        
+        // Vector and matrix utilities
+        class Vec2 {
+            constructor(x = 0, y = 0) {
+                this.x = x; this.y = y;
+            }
+        }
+        
+        class Vec3 {
+            constructor(x = 0, y = 0, z = 0) {
+                this.x = x; this.y = y; this.z = z;
+            }
+            
+            add(v) { return new Vec3(this.x + v.x, this.y + v.y, this.z + v.z); }
+            sub(v) { return new Vec3(this.x - v.x, this.y - v.y, this.z - v.z); }
+            mul(s) { return new Vec3(this.x * s, this.y * s, this.z * s); }
+            dot(v) { return this.x * v.x + this.y * v.y + this.z * v.z; }
+            cross(v) {
+                return new Vec3(
+                    this.y * v.z - this.z * v.y,
+                    this.z * v.x - this.x * v.z,
+                    this.x * v.y - this.y * v.x
+                );
+            }
+            normalize() {
+                const len = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+                return len > 0 ? new Vec3(this.x / len, this.y / len, this.z / len) : new Vec3();
+            }
+        }
+        
+        class Vec4 {
+            constructor(x = 0, y = 0, z = 0, w = 1) {
+                this.x = x; this.y = y; this.z = z; this.w = w;
+            }
+        }
+        
+        // Simple matrix for transformations
+        function multiplyMV(m, v) {
+            return new Vec4(
+                m[0] * v.x + m[4] * v.y + m[8] * v.z + m[12] * v.w,
+                m[1] * v.x + m[5] * v.y + m[9] * v.z + m[13] * v.w,
+                m[2] * v.x + m[6] * v.y + m[10] * v.z + m[14] * v.w,
+                m[3] * v.x + m[7] * v.y + m[11] * v.z + m[15] * v.w
+            );
+        }
+        
+        function createRotationMatrix(angleX, angleY, angleZ) {
+            const cx = Math.cos(angleX), sx = Math.sin(angleX);
+            const cy = Math.cos(angleY), sy = Math.sin(angleY);
+            const cz = Math.cos(angleZ), sz = Math.sin(angleZ);
+            
+            return [
+                cy * cz, -cy * sz, sy, 0,
+                cx * sz + sx * sy * cz, cx * cz - sx * sy * sz, -sx * cy, 0,
+                sx * sz - cx * sy * cz, sx * cz + cx * sy * sz, cx * cy, 0,
+                0, 0, 0, 1
+            ];
+        }
+        
+        // Create checkerboard texture
+        function createCheckerTexture(size = 64) {
+            const texWidth = size;
+            const texHeight = size;
+            const texData = new Uint8ClampedArray(texWidth * texHeight * 4);
+            
+            for (let y = 0; y < texHeight; y++) {
+                for (let x = 0; x < texWidth; x++) {
+                    const checker = ((Math.floor(x / 8) + Math.floor(y / 8)) % 2 === 0) ? 255 : 0;
+                    const i = (y * texWidth + x) * 4;
+                    texData[i] = checker;
+                    texData[i + 1] = checker;
+                    texData[i + 2] = checker;
+                    texData[i + 3] = 255;
+                }
+            }
+            
+            return { width: texWidth, height: texHeight, data: texData };
+        }
+        
+        const texture = createCheckerTexture(64);
+        
+        function sampleTexture(uv, tex) {
+            let x = Math.floor(uv.x * tex.width) % tex.width;
+            if (x < 0) x += tex.width;
+            let y = Math.floor(uv.y * tex.height) % tex.height;
+            if (y < 0) y += tex.height;
+            const i = (y * tex.width + x) * 4;
+            return new Vec3(tex.data[i] / 255, tex.data[i + 1] / 255, tex.data[i + 2] / 255);
+        }
+        
+        // OBJ Parsing adapted from provided code
+        async function parseOBJ(text) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const vertices = [];
+                    const textureCoords = [];
+                    const normals = [];
+                    const parsedTriangles = [];
+                    let hasNormals = false;
+                    let hasUVs = false;
+                    
+                    const lines = text.split('\n');
+                    const totalLines = lines.length;
+                    let lineCount = 0;
+                    
+                    for (let line of lines) {
+                        line = line.trim();
+                        lineCount++;
+                        if (lineCount % 1000 === 0) {
+                            document.getElementById('progressFill').style.width = `${(lineCount / totalLines) * 100}%`;
+                        }
+                        
+                        if (!line || line.startsWith('#')) continue;
+                        
+                        const parts = line.split(/\s+/);
+                        const type = parts[0];
+                        
+                        switch (type) {
+                            case 'v':
+                                vertices.push(new Vec3(
+                                    parseFloat(parts[1]) || 0,
+                                    parseFloat(parts[2]) || 0,
+                                    parseFloat(parts[3]) || 0
+                                ));
+                                break;
+                            case 'vt':
+                                textureCoords.push(new Vec2(
+                                    parseFloat(parts[1]) || 0,
+                                    parseFloat(parts[2]) || 0
+                                ));
+                                hasUVs = true;
+                                break;
+                            case 'vn':
+                                normals.push(new Vec3(
+                                    parseFloat(parts[1]) || 0,
+                                    parseFloat(parts[2]) || 0,
+                                    parseFloat(parts[3]) || 0
+                                ));
+                                hasNormals = true;
+                                break;
+                            case 'f':
+                                const faceParts = parts.slice(1);
+                                const faceVertices = [];
+                                
+                                for (let part of faceParts) {
+                                    const indices = part.split('/').map(i => i ? parseInt(i) : undefined);
+                                    
+                                    let vi = indices[0];
+                                    let ti = indices[1];
+                                    let ni = indices[2];
+                                    
+                                    if (vi < 0) vi = vertices.length + vi;
+                                    if (ti && ti < 0) ti = textureCoords.length + ti;
+                                    if (ni && ni < 0) ni = normals.length + ni;
+                                    
+                                    const v = {
+                                        pos: vertices[vi - 1],
+                                        uv: ti !== undefined ? textureCoords[ti - 1] : new Vec2(0, 0),
+                                        normal: ni !== undefined ? normals[ni - 1] : new Vec3(0, 0, 1)
+                                    };
+                                    
+                                    faceVertices.push(v);
+                                }
+                                
+                                // Triangulate
+                                for (let i = 1; i < faceVertices.length - 1; i++) {
+                                    parsedTriangles.push([faceVertices[0], faceVertices[i], faceVertices[i + 1]]);
+                                }
+                                break;
+                        }
+                    }
+                    
+                    // If no normals, calculate flat normals per triangle
+                    if (!hasNormals) {
+                        for (let tri of parsedTriangles) {
+                            const v0 = tri[0].pos;
+                            const v1 = tri[1].pos;
+                            const v2 = tri[2].pos;
+                            
+                            const edge1 = v1.sub(v0);
+                            const edge2 = v2.sub(v0);
+                            const normal = edge1.cross(edge2).normalize();
+                            
+                            tri[0].normal = normal;
+                            tri[1].normal = normal;
+                            tri[2].normal = normal;
+                        }
+                    }
+                    
+                    resolve(parsedTriangles);
+                }, 100);
+            });
+        }
+        
+        // VERTEX SHADER
+        function vertexShader(vertex, mvp) {
+            const pos4 = new Vec4(vertex.pos.x, vertex.pos.y, vertex.pos.z, 1);
+            const transformed = multiplyMV(mvp, pos4);
+            
+            // Perspective division
+            if (transformed.w !== 0) {
+                transformed.x /= transformed.w;
+                transformed.y /= transformed.w;
+                transformed.z /= transformed.w;
+            }
+            
+            // Screen space conversion
+            const screenX = (transformed.x + 1) * width * 0.5;
+            const screenY = (1 - transformed.y) * height * 0.5;
+            
+            return {
+                position: new Vec3(screenX, screenY, transformed.z),
+                uv: vertex.uv,
+                normal: vertex.normal
+            };
+        }
+        
+        // FRAGMENT SHADER
+        function fragmentShader(interpolated) {
+            let color = sampleTexture(interpolated.uv, texture);
+            
+            if (shadingMode === 1) {
+                // Simple lighting with ambient + diffuse
+                const light = new Vec3(0.5, 0.5, 1).normalize();
+                const diffuse = Math.max(0, interpolated.normal.dot(light));
+                const ambient = 0.4; // Ambient light
+                const intensity = ambient + (1 - ambient) * diffuse;
+                color = color.mul(intensity);
+            }
+            
+            return {
+                r: Math.max(0, Math.min(255, color.x * 255)),
+                g: Math.max(0, Math.min(255, color.y * 255)),
+                b: Math.max(0, Math.min(255, color.z * 255))
+            };
+        }
+        
+        // Barycentric interpolation
+        function barycentric(p, a, b, c) {
+            const v0 = c.sub(a);
+            const v1 = b.sub(a);
+            const v2 = p.sub(a);
+            
+            const dot00 = v0.dot(v0);
+            const dot01 = v0.dot(v1);
+            const dot02 = v0.dot(v2);
+            const dot11 = v1.dot(v1);
+            const dot12 = v1.dot(v2);
+            
+            const invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+            const u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+            const v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+            
+            return { u, v, w: 1 - u - v };
+        }
+        
+        function interpolateVec2(a, b, c, bary) {
+            return new Vec2(
+                a.x * bary.w + b.x * bary.v + c.x * bary.u,
+                a.y * bary.w + b.y * bary.v + c.y * bary.u
+            );
+        }
+        
+        function interpolateVec3(a, b, c, bary) {
+            return new Vec3(
+                a.x * bary.w + b.x * bary.v + c.x * bary.u,
+                a.y * bary.w + b.y * bary.v + c.y * bary.u,
+                a.z * bary.w + b.z * bary.v + c.z * bary.u
+            );
+        }
+        
+        // Triangle rasterization
+        function drawTriangle(v0, v1, v2) {
+            const minX = Math.max(0, Math.floor(Math.min(v0.position.x, v1.position.x, v2.position.x)));
+            const maxX = Math.min(width - 1, Math.ceil(Math.max(v0.position.x, v1.position.x, v2.position.x)));
+            const minY = Math.max(0, Math.floor(Math.min(v0.position.y, v1.position.y, v2.position.y)));
+            const maxY = Math.min(height - 1, Math.ceil(Math.max(v0.position.y, v1.position.y, v2.position.y)));
+            
+            for (let y = minY; y <= maxY; y++) {
+                for (let x = minX; x <= maxX; x++) {
+                    const p = new Vec3(x, y, 0);
+                    const bary = barycentric(p, 
+                        new Vec3(v0.position.x, v0.position.y, 0),
+                        new Vec3(v1.position.x, v1.position.y, 0),
+                        new Vec3(v2.position.x, v2.position.y, 0)
+                    );
+                    
+                    if (bary.u >= 0 && bary.v >= 0 && bary.w >= 0) {
+                        const z = v0.position.z * bary.w + v1.position.z * bary.v + v2.position.z * bary.u;
+                        const pixelIndex = y * width + x;
+                        
+                        if (z < depthBuffer[pixelIndex]) {
+                            depthBuffer[pixelIndex] = z;
+                            
+                            const interpolated = {
+                                uv: interpolateVec2(v0.uv, v1.uv, v2.uv, bary),
+                                normal: interpolateVec3(v0.normal, v1.normal, v2.normal, bary).normalize()
+                            };
+                            
+                            const finalColor = fragmentShader(interpolated);
+                            
+                            const dataIndex = pixelIndex * 4;
+                            pixels[dataIndex] = finalColor.r;
+                            pixels[dataIndex + 1] = finalColor.g;
+                            pixels[dataIndex + 2] = finalColor.b;
+                            pixels[dataIndex + 3] = 255;
+                        }
+                    }
+                }
+            }
+        }
+        
+        function clearBuffers() {
+            pixels.fill(0);
+            depthBuffer.fill(1000);
+        }
+        
+        function render() {
+            clearBuffers();
+            
+            const mvp = createRotationMatrix(time * 0.3, time * 0.5, 0);
+            
+            // Draw all triangles
+            triangles.forEach(triangle => {
+                const transformedVertices = triangle.map(v => vertexShader(v, mvp));
+                drawTriangle(transformedVertices[0], transformedVertices[1], transformedVertices[2]);
+            });
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+        
+        function animate() {
+            if (animating) {
+                time += 0.02;
+                render();
+            }
+            requestAnimationFrame(animate);
+        }
+        
+        function toggleAnimation() {
+            animating = !animating;
+        }
+        
+        function changeShading() {
+            shadingMode = (shadingMode + 1) % 2;
+            const modeText = shadingMode === 0 ? "Texture" : "Texture with Lighting";
+            document.getElementById('shading-mode').textContent = modeText;
+        }
+        
+        // Setup file upload
+        const upload = document.getElementById('objUpload');
+        upload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.style.display = 'block';
+            document.getElementById('progressFill').style.width = '0%';
+            
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    triangles = await parseOBJ(event.target.result);
+                    loadingIndicator.style.display = 'none';
+                } catch (error) {
+                    console.error('Error loading OBJ:', error);
+                    loadingIndicator.style.display = 'none';
+                }
+            };
+            reader.readAsText(file);
+        });
+        
+        // Start the render loop
+        render();
+        animate();
+    </script>
+</body>
+</html>

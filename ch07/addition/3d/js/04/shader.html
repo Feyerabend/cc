@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple JavaScript Shader</title>
+    <style>
+        body {
+            margin: 0;
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: monospace;
+            color: white;
+        }
+        .container {
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #555;
+            background: #111;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        .info {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Software Rasterizer</h2>
+        <canvas id="canvas" width="400" height="400"></canvas>
+        <div class="controls">
+            <button onclick="toggleAnimation()">Toggle Animation</button>
+            <button onclick="changeShading()">Change Shading</button>
+        </div>
+        <div class="info">
+            Simple vertex & fragment shader implemented in JavaScript<br>
+            Mode: <span id="shading-mode">Color Interpolation</span>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        let imageData = ctx.createImageData(width, height);
+        let pixels = imageData.data;
+        let depthBuffer = new Float32Array(width * height);
+        
+        let time = 0;
+        let animating = true;
+        let shadingMode = 0; // 0: interpolated colors, 1: simple lighting
+        
+        // Vector and matrix utilities
+        class Vec3 {
+            constructor(x = 0, y = 0, z = 0) {
+                this.x = x; this.y = y; this.z = z;
+            }
+            
+            add(v) { return new Vec3(this.x + v.x, this.y + v.y, this.z + v.z); }
+            sub(v) { return new Vec3(this.x - v.x, this.y - v.y, this.z - v.z); }
+            mul(s) { return new Vec3(this.x * s, this.y * s, this.z * s); }
+            dot(v) { return this.x * v.x + this.y * v.y + this.z * v.z; }
+            normalize() {
+                const len = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+                return len > 0 ? new Vec3(this.x / len, this.y / len, this.z / len) : new Vec3();
+            }
+        }
+        
+        class Vec4 {
+            constructor(x = 0, y = 0, z = 0, w = 1) {
+                this.x = x; this.y = y; this.z = z; this.w = w;
+            }
+        }
+        
+        // Simple matrix for transformations
+        function multiplyMV(m, v) {
+            return new Vec4(
+                m[0] * v.x + m[4] * v.y + m[8] * v.z + m[12] * v.w,
+                m[1] * v.x + m[5] * v.y + m[9] * v.z + m[13] * v.w,
+                m[2] * v.x + m[6] * v.y + m[10] * v.z + m[14] * v.w,
+                m[3] * v.x + m[7] * v.y + m[11] * v.z + m[15] * v.w
+            );
+        }
+        
+        function createRotationMatrix(angleX, angleY, angleZ) {
+            const cx = Math.cos(angleX), sx = Math.sin(angleX);
+            const cy = Math.cos(angleY), sy = Math.sin(angleY);
+            const cz = Math.cos(angleZ), sz = Math.sin(angleZ);
+            
+            return [
+                cy * cz, -cy * sz, sy, 0,
+                cx * sz + sx * sy * cz, cx * cz - sx * sy * sz, -sx * cy, 0,
+                sx * sz - cx * sy * cz, sx * cz + cx * sy * sz, cx * cy, 0,
+                0, 0, 0, 1
+            ];
+        }
+        
+        // Vertex data: position + color
+        const vertices = [
+            { pos: new Vec3(0, 0.8, 0), color: new Vec3(1, 0, 0), normal: new Vec3(0, 0, 1) },
+            { pos: new Vec3(-0.7, -0.4, 0), color: new Vec3(0, 1, 0), normal: new Vec3(0, 0, 1) },
+            { pos: new Vec3(0.7, -0.4, 0), color: new Vec3(0, 0, 1), normal: new Vec3(0, 0, 1) }
+        ];
+        
+        // VERTEX SHADER
+        function vertexShader(vertex, mvp) {
+            const pos4 = new Vec4(vertex.pos.x, vertex.pos.y, vertex.pos.z, 1);
+            const transformed = multiplyMV(mvp, pos4);
+            
+            // Perspective division
+            if (transformed.w !== 0) {
+                transformed.x /= transformed.w;
+                transformed.y /= transformed.w;
+                transformed.z /= transformed.w;
+            }
+            
+            // Screen space conversion
+            const screenX = (transformed.x + 1) * width * 0.5;
+            const screenY = (1 - transformed.y) * height * 0.5;
+            
+            return {
+                position: new Vec3(screenX, screenY, transformed.z),
+                color: vertex.color,
+                normal: vertex.normal
+            };
+        }
+        
+        // FRAGMENT SHADER
+        function fragmentShader(interpolated) {
+            let color;
+            
+            if (shadingMode === 0) {
+                // Simple color interpolation
+                color = interpolated.color;
+            } else {
+                // Simple lighting - make it more dramatic
+                const light = new Vec3(0.5, 0.5, 1).normalize();
+                const intensity = Math.max(0.1, interpolated.normal.dot(light));
+                color = new Vec3(0.8, 0.6, 1.0).mul(intensity); // Fixed color with lighting
+            }
+            
+            return {
+                r: Math.max(0, Math.min(255, color.x * 255)),
+                g: Math.max(0, Math.min(255, color.y * 255)),
+                b: Math.max(0, Math.min(255, color.z * 255))
+            };
+        }
+        
+        // Barycentric interpolation
+        function barycentric(p, a, b, c) {
+            const v0 = c.sub(a);
+            const v1 = b.sub(a);
+            const v2 = p.sub(a);
+            
+            const dot00 = v0.dot(v0);
+            const dot01 = v0.dot(v1);
+            const dot02 = v0.dot(v2);
+            const dot11 = v1.dot(v1);
+            const dot12 = v1.dot(v2);
+            
+            const invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+            const u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+            const v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+            
+            return { u, v, w: 1 - u - v };
+        }
+        
+        function interpolateVec3(a, b, c, bary) {
+            return new Vec3(
+                a.x * bary.w + b.x * bary.v + c.x * bary.u,
+                a.y * bary.w + b.y * bary.v + c.y * bary.u,
+                a.z * bary.w + b.z * bary.v + c.z * bary.u
+            );
+        }
+        
+        // Triangle rasterization
+        function drawTriangle(v0, v1, v2) {
+            const minX = Math.max(0, Math.floor(Math.min(v0.position.x, v1.position.x, v2.position.x)));
+            const maxX = Math.min(width - 1, Math.ceil(Math.max(v0.position.x, v1.position.x, v2.position.x)));
+            const minY = Math.max(0, Math.floor(Math.min(v0.position.y, v1.position.y, v2.position.y)));
+            const maxY = Math.min(height - 1, Math.ceil(Math.max(v0.position.y, v1.position.y, v2.position.y)));
+            
+            for (let y = minY; y <= maxY; y++) {
+                for (let x = minX; x <= maxX; x++) {
+                    const p = new Vec3(x, y, 0);
+                    const bary = barycentric(p, 
+                        new Vec3(v0.position.x, v0.position.y, 0),
+                        new Vec3(v1.position.x, v1.position.y, 0),
+                        new Vec3(v2.position.x, v2.position.y, 0)
+                    );
+                    
+                    if (bary.u >= 0 && bary.v >= 0 && bary.w >= 0) {
+                        const z = v0.position.z * bary.w + v1.position.z * bary.v + v2.position.z * bary.u;
+                        const pixelIndex = y * width + x;
+                        
+                        if (z < depthBuffer[pixelIndex]) {
+                            depthBuffer[pixelIndex] = z;
+                            
+                            const interpolated = {
+                                color: interpolateVec3(v0.color, v1.color, v2.color, bary),
+                                normal: interpolateVec3(v0.normal, v1.normal, v2.normal, bary).normalize()
+                            };
+                            
+                            const finalColor = fragmentShader(interpolated);
+                            
+                            const dataIndex = pixelIndex * 4;
+                            pixels[dataIndex] = finalColor.r;
+                            pixels[dataIndex + 1] = finalColor.g;
+                            pixels[dataIndex + 2] = finalColor.b;
+                            pixels[dataIndex + 3] = 255;
+                        }
+                    }
+                }
+            }
+        }
+        
+        function clearBuffers() {
+            pixels.fill(0);
+            depthBuffer.fill(1000);
+        }
+        
+        function render() {
+            clearBuffers();
+            
+            const mvp = createRotationMatrix(time * 0.5, time, 0);
+            
+            // Transform vertices
+            const transformedVertices = vertices.map(v => vertexShader(v, mvp));
+            
+            // Draw triangle
+            drawTriangle(transformedVertices[0], transformedVertices[1], transformedVertices[2]);
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+        
+        function animate() {
+            if (animating) {
+                time += 0.02;
+                render();
+            }
+            requestAnimationFrame(animate);
+        }
+        
+        function toggleAnimation() {
+            animating = !animating;
+        }
+        
+        function changeShading() {
+            shadingMode = (shadingMode + 1) % 2;
+            const modeText = shadingMode === 0 ? "Color Interpolation" : "Lighting";
+            document.getElementById('shading-mode').textContent = modeText;
+        }
+        
+        // Start the render loop
+        render();
+        animate();
+    </script>
+</body>
+</html>
