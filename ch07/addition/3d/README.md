@@ -7,7 +7,8 @@ Python [files](./c/), producing graphics without direct access to a rendering wi
 results in modest visual output. Instead of real-time rendering, images are 
 generated, sometimes assembled into animated GIFs.
 
-Previously in [ch04](./../../ch04) we also hinted at 3D graphics with
+Previously in [ch04](./../../../ch04/) we also hinted at
+[3D graphics](./../../../ch04/sec4.7/display/graphics/3d/) with
 [games](./../../../ch04/sec4.7/display/games/c/maze/)
 as an application in programming the Raspberry Pico with a Pimorni DisplayPack 2.0.
 
