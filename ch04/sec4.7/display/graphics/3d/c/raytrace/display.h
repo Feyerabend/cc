@@ -81,3 +81,4 @@ extern void draw_filled_triangle(uint16_t *fb, int x0, int y0, int x1, int y1, i
 void draw_shaded_triangle(uint16_t *fb, int x0, int y0, int x1, int y1, int x2, int y2, uint16_t base_color, uint8_t intensity);
 
 #endif // DISPLAY_H
+ 

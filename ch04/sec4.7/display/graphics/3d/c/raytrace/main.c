@@ -11,17 +11,24 @@
 #include "display.h"
 
 // Scene configuration
-#define MAX_SPHERES 3  // Ground + 2 spheres
 #define MAX_DEPTH 2
-#define EPSILON 0.001f
+#define EPSILON 0.01f
 
 // Render at half resolution for speed
 #define RENDER_WIDTH (DISPLAY_WIDTH / 2)
 #define RENDER_HEIGHT (DISPLAY_HEIGHT / 2)
 
 // Camera settings
-#define CAMERA_FOV 60.0f
+#define CAMERA_FOV 90.0f
 #define ASPECT_RATIO ((float)RENDER_WIDTH / (float)RENDER_HEIGHT)
+
+// Animation settings
+#define COLOR_CYCLE_TIME 10.0f  // 10 seconds for full color cycle
+#define BOUNCE_CYCLE_TIME 2.0f  // 2 seconds for bounce cycle
+#define BOUNCE_HEIGHT 1.0f
+#define BASE_Y -0.5f
+#define SPHERE_RADIUS 1.0f
+#define PLANE_Y -1.5f
 
 // Vector 3D
 typedef struct {
@@ -34,33 +41,6 @@ typedef struct {
     vec3 direction;
 } ray;
 
-// Material
-typedef struct {
-    vec3 color;
-    float specular;     // 0-1, shininess
-    float reflective;   // 0-1, reflection amount
-    float diffuse;      // 0-1, diffuse lighting
-} material;
-
-// Sphere
-typedef struct {
-    vec3 center;
-    float radius;
-    material mat;
-} sphere;
-
-// Light
-typedef struct {
-    vec3 position;
-    float intensity;
-} light;
-
-// Scene
-static sphere spheres[MAX_SPHERES];
-static int num_spheres = 0;
-static light lights[3];
-static int num_lights = 0;
-
 // Framebuffer
 static uint16_t framebuffer[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 
@@ -71,6 +51,15 @@ static float anim_time = 0.0f;
 static volatile bool core1_ready = false;
 static volatile bool core1_done = false;
 static volatile bool render_frame = false;
+
+// Current sphere position and color (shared between cores)
+static volatile vec3 sphere_center;
+static volatile vec3 sphere_color;
+
+// Dirty rectangle tracking (only render where sphere can be)
+static volatile int dirty_x_min, dirty_x_max;
+static volatile int dirty_y_min, dirty_y_max;
+static bool first_frame = true;
 
 // Vector operations
 static inline vec3 vec3_new(float x, float y, float z) {
@@ -90,10 +79,6 @@ static inline vec3 vec3_mul(vec3 v, float s) {
     return vec3_new(v.x * s, v.y * s, v.z * s);
 }
 
-static inline vec3 vec3_mul_v(vec3 a, vec3 b) {
-    return vec3_new(a.x * b.x, a.y * b.y, a.z * b.z);
-}
-
 static inline float vec3_dot(vec3 a, vec3 b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
@@ -110,267 +95,302 @@ static inline vec3 vec3_normalize(vec3 v) {
     return v;
 }
 
-static inline vec3 vec3_reflect(vec3 v, vec3 n) {
-    return vec3_sub(v, vec3_mul(n, 2.0f * vec3_dot(v, n)));
+// Clamp float to 0-1 range
+static inline float clamp(float x, float min, float max) {
+    if (x < min) return min;
+    if (x > max) return max;
+    return x;
+}
+
+// Procedural checkerboard texture
+static vec3 checkerboard_texture(vec3 point, vec3 base_color1, vec3 base_color2, float scale) {
+    // Use floor to create checker pattern
+    int check_x = (int)floorf(point.x * scale);
+    int check_y = (int)floorf(point.y * scale);
+    int check_z = (int)floorf(point.z * scale);
+    
+    // XOR to create alternating pattern
+    bool is_even = ((check_x + check_y + check_z) & 1) == 0;
+    
+    return is_even ? base_color1 : base_color2;
+}
+
+// Helper function for HSL to RGB conversion
+static float hue2rgb(float p, float q, float t) {
+    if (t < 0.0f) t += 1.0f;
+    if (t > 1.0f) t -= 1.0f;
+    if (t < 1.0f/6.0f) return p + (q - p) * 6.0f * t;
+    if (t < 1.0f/2.0f) return q;
+    if (t < 2.0f/3.0f) return p + (q - p) * (2.0f/3.0f - t) * 6.0f;
+    return p;
+}
+
+// HSL to RGB conversion for color cycling
+static vec3 hsl_to_rgb(float h, float s, float l) {
+    float r, g, b;
+    
+    if (s == 0.0f) {
+        r = g = b = l;
+    } else {
+        float q = l < 0.5f ? l * (1.0f + s) : l + s - l * s;
+        float p = 2.0f * l - q;
+        r = hue2rgb(p, q, h + 1.0f/3.0f);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1.0f/3.0f);
+    }
+    
+    return vec3_new(r, g, b);
 }
 
 // Ray-sphere intersection
-static bool intersect_sphere(ray r, sphere s, float *t) {
-    vec3 oc = vec3_sub(r.origin, s.center);
+static bool intersect_sphere(ray r, vec3 center, float radius, float *t) {
+    vec3 oc = vec3_sub(r.origin, center);
     float a = vec3_dot(r.direction, r.direction);
     float b = 2.0f * vec3_dot(oc, r.direction);
-    float c = vec3_dot(oc, oc) - s.radius * s.radius;
-    float discriminant = b * b - 4 * a * c;
+    float c = vec3_dot(oc, oc) - radius * radius;
+    float discriminant = b * b - 4.0f * a * c;
     
     if (discriminant < 0) {
         return false;
     }
     
-    float t1 = (-b - sqrtf(discriminant)) / (2.0f * a);
-    float t2 = (-b + sqrtf(discriminant)) / (2.0f * a);
+    float sqrt_disc = sqrtf(discriminant);
+    float t0 = (-b - sqrt_disc) / (2.0f * a);
+    float t1 = (-b + sqrt_disc) / (2.0f * a);
     
-    if (t1 > EPSILON) {
-        *t = t1;
+    if (t0 > EPSILON) {
+        *t = t0;
         return true;
     }
-    if (t2 > EPSILON) {
-        *t = t2;
+    if (t1 > EPSILON) {
+        *t = t1;
         return true;
     }
     
     return false;
 }
 
-// Find closest intersection
-static bool find_closest_intersection(ray r, float t_min, float t_max, 
-                                       int *hit_sphere, float *t_hit) {
-    *t_hit = t_max;
-    *hit_sphere = -1;
-    
-    for (int i = 0; i < num_spheres; i++) {
-        float t;
-        if (intersect_sphere(r, spheres[i], &t)) {
-            if (t >= t_min && t < *t_hit) {
-                *t_hit = t;
-                *hit_sphere = i;
-            }
-        }
+// Ray-plane intersection
+static bool intersect_plane(ray r, float plane_y, float *t) {
+    // Plane with normal (0, 1, 0) at y = plane_y
+    if (fabsf(r.direction.y) < EPSILON) {
+        return false; // Ray parallel to plane
     }
     
-    return *hit_sphere != -1;
-}
-
-// Calculate lighting at a point (simplified for speed)
-static float compute_lighting(vec3 point, vec3 normal, vec3 view, float specular) {
-    float intensity = 0.1f; // Lower ambient for darker scene
-    
-    for (int i = 0; i < num_lights; i++) {
-        vec3 light_dir = vec3_sub(lights[i].position, point);
-        
-        // Check if point is in shadow
-        ray shadow_ray;
-        shadow_ray.origin = point;
-        shadow_ray.direction = vec3_normalize(light_dir);
-        
-        int hit_sphere;
-        float t_hit;
-        float max_t = vec3_length(light_dir);
-        
-        if (find_closest_intersection(shadow_ray, EPSILON, max_t, &hit_sphere, &t_hit)) {
-            continue; // In shadow
-        }
-        
-        // Diffuse lighting only (no specular for speed)
-        light_dir = vec3_normalize(light_dir);
-        float n_dot_l = vec3_dot(normal, light_dir);
-        if (n_dot_l > 0) {
-            intensity += lights[i].intensity * n_dot_l;
-        }
-    }
-    
-    return intensity;
+    *t = (plane_y - r.origin.y) / r.direction.y;
+    return *t > EPSILON;
 }
 
 // Trace a ray through the scene
-static vec3 trace_ray(ray r, float t_min, float t_max, int depth) {
-    if (depth <= 0) {
-        return vec3_new(0, 0, 0); // Black background
-    }
+static vec3 trace_ray(ray r) {
+    vec3 camera_pos = vec3_new(0, 0, 0);  // Camera at origin like original!
+    vec3 light_pos = vec3_new(2, 3, 4);
+    float ambient_light = 0.2f;
+    float specular_power = 20.0f;
     
-    int hit_sphere;
-    float t_hit;
+    // Background color
+    vec3 background = vec3_new(0.078f, 0.078f, 0.078f); // RGB(20, 20, 20)
     
-    if (!find_closest_intersection(r, t_min, t_max, &hit_sphere, &t_hit)) {
-        // Dark sky - simple gradient
-        float t = 0.5f * (r.direction.y + 1.0f);
-        vec3 sky_top = vec3_new(0.05f, 0.05f, 0.1f);     // Very dark blue
-        vec3 sky_bottom = vec3_new(0.02f, 0.02f, 0.02f); // Almost black
-        return vec3_add(vec3_mul(sky_bottom, 1.0f - t), vec3_mul(sky_top, t));
-    }
+    // Initialize t values
+    float t_sphere = 1e10f;  // Large value instead of INFINITY
+    float t_plane = 1e10f;
     
-    // Hit point and normal
-    vec3 hit_point = vec3_add(r.origin, vec3_mul(r.direction, t_hit));
-    vec3 normal = vec3_normalize(vec3_sub(hit_point, spheres[hit_sphere].center));
-    vec3 view = vec3_mul(r.direction, -1.0f);
+    // Get current sphere state with memory barrier
+    __dmb();
+    vec3 s_center = {sphere_center.x, sphere_center.y, sphere_center.z};
+    vec3 s_color = {sphere_color.x, sphere_color.y, sphere_color.z};
+    __dmb();
     
-    // Calculate local color with lighting
-    material mat = spheres[hit_sphere].mat;
-    float light_intensity = compute_lighting(hit_point, normal, view, mat.specular);
-    vec3 local_color = vec3_mul(mat.color, light_intensity * mat.diffuse);
+    // Check sphere intersection
+    bool hit_sphere = intersect_sphere(r, s_center, SPHERE_RADIUS, &t_sphere);
     
-    // Reflection
-    if (mat.reflective > EPSILON && depth > 1) {
-        vec3 reflect_dir = vec3_reflect(vec3_mul(r.direction, -1.0f), normal);
-        ray reflect_ray;
-        reflect_ray.origin = hit_point;
-        reflect_ray.direction = reflect_dir;
+    // Check plane intersection
+    bool hit_plane = intersect_plane(r, PLANE_Y, &t_plane);
+    
+    // Determine what was hit first (need to check both hit AND t value)
+    if (hit_sphere && (!hit_plane || t_sphere < t_plane)) {
+        // Hit sphere first (or only sphere)
+        vec3 hit_point = vec3_add(r.origin, vec3_mul(r.direction, t_sphere));
+        vec3 normal = vec3_normalize(vec3_sub(hit_point, s_center));
+        vec3 light_dir = vec3_normalize(vec3_sub(light_pos, hit_point));
+        vec3 view_dir = vec3_mul(r.direction, -1.0f);
+        vec3 half_dir = vec3_normalize(vec3_add(light_dir, view_dir));
         
-        vec3 reflected_color = trace_ray(reflect_ray, EPSILON, INFINITY, depth - 1);
+        // Apply black and white checkerboard texture to sphere
+        // Use spherical coordinates for proper UV mapping
+        float u = 0.5f + atan2f(normal.z, normal.x) / (2.0f * 3.14159f);
+        float v = 0.5f - asinf(normal.y) / 3.14159f;
         
-        // Mix local color with reflection
-        local_color = vec3_add(
-            vec3_mul(local_color, 1.0f - mat.reflective),
-            vec3_mul(reflected_color, mat.reflective)
+        // Create checker pattern in UV space
+        int check_u = (int)floorf(u * 8.0f);  // 8 checks around
+        int check_v = (int)floorf(v * 8.0f);  // 8 checks vertically
+        bool is_white = ((check_u + check_v) & 1) == 0;
+        
+        // Simple black and white texture
+        vec3 texture_color = is_white ? vec3_new(1.0f, 1.0f, 1.0f) : vec3_new(0.0f, 0.0f, 0.0f);
+        
+        // Diffuse lighting
+        float diffuse = fmaxf(0.0f, vec3_dot(normal, light_dir));
+        
+        // Specular lighting (stronger on white squares)
+        float specular = is_white ? powf(fmaxf(0.0f, vec3_dot(normal, half_dir)), specular_power) : 0.0f;
+        
+        // Combine lighting with texture
+        float intensity = diffuse + ambient_light;
+        vec3 color = vec3_new(
+            clamp(texture_color.x * intensity + specular, 0.0f, 1.0f),
+            clamp(texture_color.y * intensity + specular, 0.0f, 1.0f),
+            clamp(texture_color.z * intensity + specular, 0.0f, 1.0f)
         );
+        
+        return color;
+        
+    } else if (hit_plane) {
+        // Hit plane
+        vec3 plane_hit = vec3_add(r.origin, vec3_mul(r.direction, t_plane));
+        vec3 plane_normal = vec3_new(0, 1, 0);
+        
+        // Apply black and white checkerboard texture to plane
+        vec3 white = vec3_new(0.8f, 0.8f, 0.8f);  // Light gray for white squares
+        vec3 black = vec3_new(0.2f, 0.2f, 0.2f);  // Dark gray for black squares
+        vec3 textured_plane_color = checkerboard_texture(plane_hit, white, black, 2.0f);
+        
+        // Vector to light
+        vec3 to_light = vec3_sub(light_pos, plane_hit);
+        float light_dist = vec3_length(to_light);
+        vec3 light_dir = vec3_normalize(to_light);
+        
+        // Check if in shadow (cast shadow ray to sphere)
+        ray shadow_ray;
+        shadow_ray.origin = vec3_add(plane_hit, vec3_mul(light_dir, EPSILON));
+        shadow_ray.direction = light_dir;
+        
+        float t_shadow;
+        bool in_shadow = intersect_sphere(shadow_ray, s_center, SPHERE_RADIUS, &t_shadow) && 
+                         t_shadow < light_dist;
+        
+        if (in_shadow) {
+            // In shadow - darker
+            float intensity = ambient_light * 0.3f;
+            return vec3_mul(textured_plane_color, intensity);
+        } else {
+            // Lit plane
+            float diffuse = fmaxf(0.0f, vec3_dot(plane_normal, light_dir));
+            float intensity = diffuse + ambient_light;
+            return vec3_mul(textured_plane_color, intensity);
+        }
     }
     
-    return local_color;
+    // Hit nothing - return background
+    return background;
 }
 
-// Convert float color (0-1) to RGB565 with dithering
+// Convert float color (0-1) to RGB565
 static uint16_t vec3_to_rgb565(vec3 color) {
-    // Clamp
-    if (color.x < 0) color.x = 0;
-    if (color.x > 1) color.x = 1;
-    if (color.y < 0) color.y = 0;
-    if (color.y > 1) color.y = 1;
-    if (color.z < 0) color.z = 0;
-    if (color.z > 1) color.z = 1;
+    // Clamp to valid range
+    float r = clamp(color.x, 0.0f, 1.0f);
+    float g = clamp(color.y, 0.0f, 1.0f);
+    float b = clamp(color.z, 0.0f, 1.0f);
     
-    // Convert to RGB565 range
-    float r_float = color.x * 31.0f;
-    float g_float = color.y * 63.0f;
-    float b_float = color.z * 31.0f;
+    // Convert to RGB565 with proper rounding
+    uint8_t r5 = (uint8_t)(r * 31.0f + 0.5f);
+    uint8_t g6 = (uint8_t)(g * 63.0f + 0.5f);
+    uint8_t b5 = (uint8_t)(b * 31.0f + 0.5f);
     
-    // Simple dithering - add small random noise to reduce banding
-    // Use fractional part as dither threshold
-    float r_frac = r_float - (int)r_float;
-    float g_frac = g_float - (int)g_float;
-    float b_frac = b_float - (int)b_float;
+    // Ensure within range
+    if (r5 > 31) r5 = 31;
+    if (g6 > 63) g6 = 63;
+    if (b5 > 31) b5 = 31;
     
-    uint8_t r = (uint8_t)r_float + (r_frac > 0.5f ? 1 : 0);
-    uint8_t g = (uint8_t)g_float + (g_frac > 0.5f ? 1 : 0);
-    uint8_t b = (uint8_t)b_float + (b_frac > 0.5f ? 1 : 0);
-    
-    // Clamp after rounding
-    if (r > 31) r = 31;
-    if (g > 63) g = 63;
-    if (b > 31) b = 31;
-    
-    return (r << 11) | (g << 5) | b;
+    return (r5 << 11) | (g6 << 5) | b5;
 }
 
-// Setup the scene (minimal - 2 spheres with distinct colors)
-static void setup_scene(void) {
-    num_spheres = 0;
-    num_lights = 0;
+// Update animation state
+static void update_animation(void) {
+    // Bounce animation
+    float bounce_phase = fmodf(anim_time, BOUNCE_CYCLE_TIME) / BOUNCE_CYCLE_TIME;
+    float bounce_y = BASE_Y + fabsf(sinf(bounce_phase * 2.0f * 3.14159f)) * BOUNCE_HEIGHT;
     
-    // Ground sphere (darker for contrast)
-    spheres[num_spheres++] = (sphere){
-        .center = {0, -5001, 0},
-        .radius = 5000,
-        .mat = {
-            .color = {0.2f, 0.2f, 0.2f},  // Very dark gray
-            .specular = 0.0f,
-            .reflective = 0.15f,  // Less reflective ground
-            .diffuse = 1.0f
-        }
-    };
+    // Color cycling
+    float hue = fmodf(anim_time, COLOR_CYCLE_TIME) / COLOR_CYCLE_TIME;
+    vec3 color = hsl_to_rgb(hue, 0.8f, 0.5f);
     
-    // Left sphere - PURE RED (mostly matte)
-    spheres[num_spheres++] = (sphere){
-        .center = {-1.8f, 0.3f, -4.0f},  // Start position
-        .radius = 1.0f,
-        .mat = {
-            .color = {1.0f, 0.0f, 0.0f},  // Pure red
-            .specular = 0.0f,
-            .reflective = 0.2f,  // Only 20% reflective - mostly opaque
-            .diffuse = 1.0f
-        }
-    };
+    // Update sphere position and color atomically
+    // Sphere should be IN FRONT of camera (negative Z since camera is at origin)
+    __dmb(); // Data memory barrier before write
+    sphere_center.x = 0;
+    sphere_center.y = bounce_y;
+    sphere_center.z = -4.0f;  // IN FRONT of camera (negative Z)
+    sphere_color.x = color.x;
+    sphere_color.y = color.y;
+    sphere_color.z = color.z;
+    __dmb(); // Data memory barrier after write
     
-    // Right sphere - PURE YELLOW (mostly matte)
-    spheres[num_spheres++] = (sphere){
-        .center = {1.8f, 0.3f, -4.0f},  // Start position
-        .radius = 1.0f,
-        .mat = {
-            .color = {1.0f, 1.0f, 0.0f},  // Pure yellow
-            .specular = 0.0f,
-            .reflective = 0.2f,  // Only 20% reflective - mostly opaque
-            .diffuse = 1.0f
-        }
-    };
+    // Calculate dirty region (bounding box of sphere + shadow area)
+    // Project sphere to screen space
+    float fov_rad = CAMERA_FOV * 3.14159f / 180.0f;
+    float viewport_height = 2.0f * tanf(fov_rad / 2.0f);
+    float viewport_width = viewport_height * ASPECT_RATIO;
     
-    // Single main light
-    lights[num_lights++] = (light){
-        .position = {0, 8, -2},  // Higher and slightly forward
-        .intensity = 1.0f
-    };
-}
-
-// Animate the scene (simplified for 2 spheres)
-static void animate_scene(void) {
-    // Keep spheres above ground (Y should stay >= 0)
-    // Move them up and down gently
-    spheres[1].center.y = 0.3f + sinf(anim_time) * 0.2f;  // Red: 0.1 to 0.5
-    spheres[2].center.y = 0.3f + sinf(anim_time + 3.14159f) * 0.2f;  // Yellow: 0.1 to 0.5
+    // Sphere bounds in world space (with some margin for shadow)
+    float world_x_min = sphere_center.x - SPHERE_RADIUS - 0.5f;
+    float world_x_max = sphere_center.x + SPHERE_RADIUS + 0.5f;
+    float world_y_min = sphere_center.y - SPHERE_RADIUS - 0.5f;
+    float world_y_max = sphere_center.y + SPHERE_RADIUS + 2.0f;  // Extra for shadow
     
-    // Rotate around center more slowly
-    float angle = anim_time * 0.3f;  // Slower rotation
-    float radius = 1.8f;  // Slightly more spread out
+    // Project to normalized device coordinates (-1 to 1)
+    float z_dist = fabsf(sphere_center.z);
+    float ndc_x_min = world_x_min / (z_dist * viewport_width / 2.0f);
+    float ndc_x_max = world_x_max / (z_dist * viewport_width / 2.0f);
+    float ndc_y_min = world_y_min / (z_dist * viewport_height / 2.0f);
+    float ndc_y_max = world_y_max / (z_dist * viewport_height / 2.0f);
     
-    spheres[1].center.x = cosf(angle) * radius;
-    spheres[1].center.z = -4.0f + sinf(angle) * 0.3f;
+    // Convert to screen space
+    int screen_x_min = (int)((ndc_x_min + 1.0f) * 0.5f * RENDER_WIDTH) - 2;
+    int screen_x_max = (int)((ndc_x_max + 1.0f) * 0.5f * RENDER_WIDTH) + 2;
+    int screen_y_min = (int)((1.0f - ndc_y_max) * 0.5f * RENDER_HEIGHT) - 2;
+    int screen_y_max = (int)((1.0f - ndc_y_min) * 0.5f * RENDER_HEIGHT) + 2;
     
-    spheres[2].center.x = cosf(angle + 3.14159f) * radius;
-    spheres[2].center.z = -4.0f + sinf(angle + 3.14159f) * 0.3f;
+    // Clamp to screen bounds
+    dirty_x_min = screen_x_min < 0 ? 0 : screen_x_min;
+    dirty_x_max = screen_x_max >= RENDER_WIDTH ? RENDER_WIDTH - 1 : screen_x_max;
+    dirty_y_min = screen_y_min < 0 ? 0 : screen_y_min;
+    dirty_y_max = screen_y_max >= RENDER_HEIGHT ? RENDER_HEIGHT - 1 : screen_y_max;
 }
 
 // Render a range of scanlines (for multicore)
 static void render_scanlines(int start_y, int end_y) {
-    vec3 camera_pos = vec3_new(0, 0, 0);
+    vec3 camera_pos = vec3_new(0, 0, 0);  // Camera at origin!
     float viewport_height = 2.0f * tanf((CAMERA_FOV * 3.14159f / 180.0f) / 2.0f);
     float viewport_width = viewport_height * ASPECT_RATIO;
     
+    // Get dirty region bounds
+    int dx_min = dirty_x_min;
+    int dx_max = dirty_x_max;
+    int dy_min = dirty_y_min;
+    int dy_max = dirty_y_max;
+    
     for (int y = start_y; y < end_y; y++) {
+        // Skip rows outside dirty region (unless first frame)
+        if (!first_frame && (y < dy_min || y > dy_max)) {
+            continue;
+        }
+        
         for (int x = 0; x < RENDER_WIDTH; x++) {
-            // Anti-aliasing: sample 4 sub-pixels and average
-            vec3 color_sum = vec3_new(0, 0, 0);
-            
-            // 2x2 supersampling
-            for (int sy = 0; sy < 2; sy++) {
-                for (int sx = 0; sx < 2; sx++) {
-                    // Offset within pixel
-                    float offset_x = (sx + 0.5f) / 2.0f;
-                    float offset_y = (sy + 0.5f) / 2.0f;
-                    
-                    // Convert to viewport coordinates
-                    float u = (2.0f * (x + offset_x) / RENDER_WIDTH - 1.0f) * viewport_width / 2.0f;
-                    float v = (1.0f - 2.0f * (y + offset_y) / RENDER_HEIGHT) * viewport_height / 2.0f;
-                    
-                    // Create ray
-                    ray r;
-                    r.origin = camera_pos;
-                    r.direction = vec3_normalize(vec3_new(u, v, -1.0f));
-                    
-                    // Trace ray and accumulate color
-                    vec3 sample_color = trace_ray(r, 1.0f, INFINITY, MAX_DEPTH);
-                    color_sum = vec3_add(color_sum, sample_color);
-                }
+            // Skip pixels outside dirty region (unless first frame)
+            if (!first_frame && (x < dx_min || x > dx_max)) {
+                continue;
             }
             
-            // Average the 4 samples
-            vec3 color = vec3_mul(color_sum, 0.25f);
+            // Single sample - fast!
+            float u = (2.0f * (x + 0.5f) / RENDER_WIDTH - 1.0f) * viewport_width / 2.0f;
+            float v = (1.0f - 2.0f * (y + 0.5f) / RENDER_HEIGHT) * viewport_height / 2.0f;
+            
+            ray r;
+            r.origin = camera_pos;
+            r.direction = vec3_normalize(vec3_new(u, v, -1.0f));
+            
+            vec3 color = trace_ray(r);
             
             // Convert to RGB565
             uint16_t pixel = vec3_to_rgb565(color);
@@ -378,10 +398,14 @@ static void render_scanlines(int start_y, int end_y) {
             // Write 2x2 block to framebuffer (simple upscaling)
             int fx = x * 2;
             int fy = y * 2;
-            framebuffer[fy * DISPLAY_WIDTH + fx] = pixel;
-            framebuffer[fy * DISPLAY_WIDTH + fx + 1] = pixel;
-            framebuffer[(fy + 1) * DISPLAY_WIDTH + fx] = pixel;
-            framebuffer[(fy + 1) * DISPLAY_WIDTH + fx + 1] = pixel;
+            
+            // Bounds check
+            if (fx + 1 < DISPLAY_WIDTH && fy + 1 < DISPLAY_HEIGHT) {
+                framebuffer[fy * DISPLAY_WIDTH + fx] = pixel;
+                framebuffer[fy * DISPLAY_WIDTH + fx + 1] = pixel;
+                framebuffer[(fy + 1) * DISPLAY_WIDTH + fx] = pixel;
+                framebuffer[(fy + 1) * DISPLAY_WIDTH + fx + 1] = pixel;
+            }
         }
     }
 }
@@ -455,10 +479,24 @@ int main(void) {
     display_clear(COLOR_BLACK);
     display_set_backlight(true);
     
-    printf("Raytracer Demo Started (Dual-Core)\n");
+    printf("Bouncing Sphere Raytracer Started (Dual-Core)\n");
+    printf("Rendering: Dirty region optimization (fast!)\n");
     printf("Controls:\n");
     printf("  A - Pause/Play animation\n");
     printf("  B - Reset animation\n");
+    
+    // Initialize sphere position and color BEFORE launching core 1
+    sphere_center.x = 0;
+    sphere_center.y = BASE_Y;
+    sphere_center.z = -4.0f;  // IN FRONT of camera (negative Z)
+    sphere_color.x = 1.0f;
+    sphere_color.y = 0.0f;
+    sphere_color.z = 0.0f;
+    
+    // Initialize framebuffer to black
+    for (int i = 0; i < DISPLAY_WIDTH * DISPLAY_HEIGHT; i++) {
+        framebuffer[i] = COLOR_BLACK;
+    }
     
     // Launch core 1
     multicore_launch_core1(core1_entry);
@@ -470,30 +508,47 @@ int main(void) {
     
     printf("Core 1 ready!\n");
     
-    setup_scene();
+    // Do initial animation update before first frame
+    update_animation();
+    
+    printf("Initial sphere state:\n");
+    printf("  Position: (%f, %f, %f)\n", sphere_center.x, sphere_center.y, sphere_center.z);
+    printf("  Color: (%f, %f, %f)\n", sphere_color.x, sphere_color.y, sphere_color.z);
+    printf("  Radius: %f\n", SPHERE_RADIUS);
+    printf("  Camera at: (0, 0, 3)\n");
+    printf("  Plane Y: %f\n", PLANE_Y);
     
     while (1) {
         buttons_update();
         
-        // Update animation
+        // Update animation with smoother timestep
         if (!paused) {
-            animate_scene();
-            anim_time += 0.05f;
+            update_animation();
+            anim_time += 0.05f;  // Back to original speed since we removed AA
         }
         
-        // Render scene with both cores
+        // Render scene with both cores (now with dirty region optimization!)
         uint32_t start_time = to_ms_since_boot(get_absolute_time());
         render_scene();
         uint32_t render_time = to_ms_since_boot(get_absolute_time()) - start_time;
         
+        // After first frame, enable dirty region optimization
+        if (first_frame) {
+            first_frame = false;
+            printf("First frame complete, dirty region optimization enabled\n");
+            printf("Dirty region: x[%d,%d] y[%d,%d]\n", 
+                   dirty_x_min, dirty_x_max, dirty_y_min, dirty_y_max);
+        }
+        
         printf("Frame rendered in %ld ms (%.1f fps)\n", 
                render_time, 1000.0f / render_time);
         
-        // Limit frame rate
-        if (render_time < 100) {
-            sleep_ms(100 - render_time);
+        // Target 15 FPS for smooth animation
+        if (render_time < 67) {
+            sleep_ms(67 - render_time);
         }
     }
     
     return 0;
 }
+
