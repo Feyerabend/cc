@@ -58,7 +58,7 @@ static struct {
     float angle;
 } player;
 
-// Target structure - simplified
+// Target structure - practice
 typedef struct {
     float x;
     float y;
@@ -89,6 +89,7 @@ static uint16_t framebuffer[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 static bool btn_state[4] = {false, false, false, false};
 
 // Fast sine/cosine approximation using lookup table
+// Often used in raycasters and the like for performance
 #define TRIG_TABLE_SIZE 360
 static float sin_table[TRIG_TABLE_SIZE];
 static float cos_table[TRIG_TABLE_SIZE];
@@ -102,7 +103,7 @@ static void init_trig_tables(void) {
 }
 
 static inline float fast_sin(float angle) {
-    // Normalize angle to 0-2π
+    // Normalise angle to 0-2π
     while (angle < 0) angle += 2.0f * 3.14159f;
     while (angle >= 2.0f * 3.14159f) angle -= 2.0f * 3.14159f;
     
@@ -118,7 +119,7 @@ static inline float fast_cos(float angle) {
     return cos_table[index];
 }
 
-// Initialize targets at random positions
+// Initialise targets at random positions
 static void init_targets(void) {
     total_targets = 0;
     score = 0;
@@ -138,16 +139,22 @@ static void init_targets(void) {
     };
     
     for (int i = 0; i < MAX_TARGETS; i++) {
+
+        // probably check for open space here in a more complex map,
+        // but since our map is mostly open with just a few pillars,
+        // we can just place them at predefined positions that we know are open
+        // check if they do not hide i a wall or pillar -- your task!
+
         targets[i].x = positions[i].x * TILE_SIZE + TILE_SIZE / 2;
         targets[i].y = positions[i].y * TILE_SIZE + TILE_SIZE / 2;
         targets[i].active = true;
         total_targets++;
-        
+    
         printf("Target %d at map (%d,%d) = world (%.1f,%.1f)\n", 
                i, positions[i].x, positions[i].y, targets[i].x, targets[i].y);
     }
     
-    // Initialize projectile as inactive
+    // Initialise projectile as inactive
     projectile.active = false;
 }
 
@@ -393,6 +400,7 @@ static void render_3d_view(void) {
         uint8_t bright_val = (uint8_t)(brightness * 255);
         
         // Different colors for different wall types
+        // You might want to use less colors ..
         uint16_t wall_color;
         if (ray.hit_type == 1) {
             // Regular walls - reddish
@@ -539,8 +547,6 @@ static void render_3d_view(void) {
                 int screenX = (int)(DISPLAY_WIDTH / 2 + (angle_diff / FOV) * DISPLAY_WIDTH);
                 
                 if (screenX >= 0 && screenX < DISPLAY_WIDTH) {
-                    // FIX: Much stronger distance scaling - should shrink dramatically with distance
-                    // Using same formula as walls for consistency
                     int projSize = (int)(WALL_HEIGHT_SCALE / distance * 0.15f);
                     if (projSize < 3) projSize = 3;
                     if (projSize > 40) projSize = 40;
@@ -576,9 +582,7 @@ static void render_3d_view(void) {
         }
     }
     
-    // Draw HUD directly to framebuffer - score and targets remaining  
-    // (We'll use simple pixel drawing instead of display_draw_string)
-    
+    // Draw HUD directly to framebuffer - score and targets remaining
     // Draw mini-map in top-right corner
     int map_start_x = DISPLAY_WIDTH - 85;
     int map_start_y = 5;

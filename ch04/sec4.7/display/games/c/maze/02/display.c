@@ -682,9 +682,8 @@ void display_cleanup(void) {
     }
 }
 
-// ============================================================================
-// 3D RENDERING PRIMITIVES
-// ============================================================================
+
+// 3d rendering addition
 
 // Helper: swap two integers
 static inline void swap_int(int *a, int *b) {
@@ -770,9 +769,10 @@ void draw_shaded_triangle(uint16_t *fb, int x0, int y0, int x1, int y1, int x2, 
     draw_filled_triangle(fb, x0, y0, x1, y1, x2, y2, shaded_color);
 }
 
-// ============================================================================
-// FRAMEBUFFER TEXT RENDERING
-// ============================================================================
+
+// This is actually doubling the concept from above
+// TBD: Simplify this! We do not need the double buffering and DMA for text
+
 
 // Simple 3x5 font for numbers and letters
 void draw_char_to_fb(uint16_t *fb, int x, int y, char c, uint16_t color) {
