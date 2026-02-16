@@ -80,5 +80,9 @@ extern void draw_filled_triangle(uint16_t *fb, int x0, int y0, int x1, int y1, i
 // Draw filled triangle with flat shading (intensity 0-255)
 void draw_shaded_triangle(uint16_t *fb, int x0, int y0, int x1, int y1, int x2, int y2, uint16_t base_color, uint8_t intensity);
 
+// Draw text to framebuffer
+void draw_char_to_fb(uint16_t *fb, int x, int y, char c, uint16_t color);
+void draw_string_to_fb(uint16_t *fb, int x, int y, const char *str, uint16_t color);
+
 #endif // DISPLAY_H
  
