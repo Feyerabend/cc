@@ -100,7 +100,10 @@ characteristics of the von Neumann architecture:
     it required manual intervention to change its program by altering wiring and switches, which contrasts
     with the automated and dynamic sequence of instructions in a von Neumann system.
 
-Although ENIAC was later modified in 1948 to include some aspects of a stored-program system, this was a
-'retrofit' rather than part of its original design. As such, ENIAC remains firmly categorized as a precursor.
+Although ENIAC was later modified in 1948 to include some aspects of a stored-program system,
+this was a 'retrofit' rather than part of its original design. As such, ENIAC remains firmly categorised as a precursor.
+
+[Short film on starting the ENIAC](https://www.youtube.com/watch?v=lPiXi7CUNU4)
 
 ![ENIAC, publ. domain](./../../assets/image/eniac.png)
+
