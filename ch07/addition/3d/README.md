@@ -7,7 +7,7 @@ Python [files](./c/), producing graphics without direct access to a rendering wi
 results in modest visual output. Instead of real-time rendering, images are 
 generated, sometimes assembled into animated GIFs.
 
-Previously in ch04 we also hinted at 3D graphics with
+Previously in [ch04](./../../ch04) we also hinted at 3D graphics with
 [games](./../../../ch04/sec4.7/display/games/c/maze/)
 as an application in programming the Raspberry Pico with a Pimorni DisplayPack 2.0.
 
@@ -27,10 +27,6 @@ for game development may involve learning graphics pipelines, understanding fram
 rendering, managing performance constraints, and working with engines or frameworks
 designed for real-time interaction. Such preparation helps bridge the gap between
 simple graphical experiments and the complexity of modern games.
-
-In essence, the tools and languages chosen shape both the learning experience and
-the scope of achievable projects. Simpler environments reduce barriers to entry,
-while more advanced setups unlock greater creative and technical possibilities.
 
 One valuable source is to learn graphics with the primary aim of gaming at:
 [https://scratchapixel.com/](https://scratchapixel.com/).
