@@ -33,5 +33,5 @@ the scope of achievable projects. Simpler environments reduce barriers to entry,
 while more advanced setups unlock greater creative and technical possibilities.
 
 One valuable source is to learn graphics with the primary aim of gaming at:
-[https://scratchapixel.com/index.html](https://scratchapixel.com/index.html).
+[https://scratchapixel.com/](https://scratchapixel.com/).
 
