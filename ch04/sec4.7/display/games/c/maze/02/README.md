@@ -10,5 +10,10 @@ from perhaps this half finished project.
 
 DOOM can, as you know, be played on a lot of things .. including [toothbrushes](https://www.techradar.com/home/smart-home/doom-can-now-run-on-an-electric-toothbrush-but-should-you-be-worried) ..
 
+Another inspiration comes from one of my favorite arcade game 
+[Battle Zone](https://en.wikipedia.org/wiki/Battlezone_(1980_video_game))--mostly
+because it used vector graphics.
+
+
 ![Maze 2](./../../../../../../assets/image/display/maze2.png)
 
