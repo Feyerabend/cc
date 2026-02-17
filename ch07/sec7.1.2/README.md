@@ -798,4 +798,4 @@ Everything else follows from those rules.
 
 * Knuth, D. E. (1998). *The art of computer programming: Vol. 3. Sorting and searching* (2nd ed.). Addison-Wesley.
 
-![CLRS](.)
+![CLRS](./../assets/image/CLRS.png)
