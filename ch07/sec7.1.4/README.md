@@ -29,13 +29,13 @@ are all tools used to establish confidence in correctness.
 // Returns index of target in sorted array, or -1 if not found.
 // Correctly handles: empty arrays, single elements, duplicates.
 int binary_search(const int *arr, int n, int target) {
-    if (n <= 0) return -1;          // edge: empty array
+    if (n <= 0) return -1; // edge: empty array
     int lo = 0, hi = n - 1;
     while (lo <= hi) {
         int mid = lo + (hi - lo) / 2; // avoids integer overflow vs. (lo+hi)/2
         if (arr[mid] == target) return mid;
         else if (arr[mid] < target)  lo = mid + 1;
-        else                          hi = mid - 1;
+        else                         hi = mid - 1;
     }
     return -1;
 }
