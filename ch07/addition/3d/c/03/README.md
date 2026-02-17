@@ -5,8 +5,8 @@ A pipeline for rendering 3D OBJ models as rotating wireframe animations in GIF f
 
 This system consists of two main components:
 
-1. *C Program* (`obj_animator.c`) - Loads an OBJ file and renders multiple animation frames to PAM 7 ASCII format
-2. *Python Script* (`pam_to_gif.py`) - Merges PAM frames into an animated GIF
+1. *C Program* (`obj_animator.c`) -- Loads an OBJ file and renders multiple animation frames to PAM 7 ASCII format
+2. *Python Script* (`pam_to_gif.py`) -- Merges PAM frames into an animated GIF
 
 - Loads standard OBJ files (vertices and triangular faces)
 - 3D wireframe rendering with perspective projection
