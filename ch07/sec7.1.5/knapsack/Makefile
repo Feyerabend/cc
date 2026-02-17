@@ -15,20 +15,19 @@ all: knapsack knapsack_original
 
 help:
 	@echo "Knapsack Problem - Build System"
-	@echo "================================"
+	@echo "-------------------------------"
 	@echo ""
 	@echo "Available targets:"
 	@echo "  all          - Build all C implementations"
 	@echo "  clean        - Remove compiled binaries"
 	@echo "  test         - Run all tests"
-	@echo "  run-c        - Run enhanced C implementation"
-	@echo "  run-python   - Run enhanced Python implementation"
-	@echo "  run-html     - Open HTML visualization"
+	@echo "  run-c        - Run C implementation"
+	@echo "  run-python   - Run Python implementation"
+	@echo "  run-html     - Open HTML visualisation"
 	@echo "  install-deps - Install Python dependencies"
 	@echo ""
 	@echo "Individual builds:"
-	@echo "  knapsack  - Build enhanced C version"
-	@echo "  knapsack_original  - Build original C version"
+	@echo "  knapsack           - Build C version"
 	@echo "  debug              - Build with debug symbols"
 	@echo ""
 	@echo "Usage examples:"
@@ -38,46 +37,38 @@ help:
 
 # Build enhanced C implementation
 knapsack: knapsack.c
-	@echo "Building enhanced C implementation..."
+	@echo "Building C implementation.."
 	$(CC) $(CFLAGS) -o knapsack knapsack.c
-	@echo "✓ Built: knapsack"
-
-# Build original C implementation
-knapsack_original: knapsack.c
-	@echo "Building original C implementation..."
-	$(CC) $(CFLAGS) -o knapsack_original knapsack.c
-	@echo "✓ Built: knapsack_original"
+	@echo "  Built: knapsack"
 
 # Debug builds
 debug: knapsack.c
-	@echo "Building with debug symbols..."
+	@echo "Building with debug symbols.."
 	$(CC) $(CFLAGS_DEBUG) -o knapsack_debug knapsack.c
-	@echo "✓ Built: knapsack_debug (use with gdb)"
+	@echo "  Built: knapsack_debug (use with gdb)"
 
 # Clean compiled files
 clean:
-	@echo "Cleaning up..."
-	rm -f knapsack knapsack_original knapsack_debug
+	@echo "Cleaning u..."
+	rm -f knapsack knapsack_debug
 	rm -rf __pycache__ *.pyc
-	@echo "✓ Clean complete"
+	@echo "Clean complete"
 
 # Run C implementation
 run-c: knapsack
-	@echo "Running enhanced C implementation..."
+	@echo "Running C implementation.."
 	@echo ""
 	./knapsack
 
 # Run Python implementation
 run-python:
-	@echo "Running enhanced Python implementation..."
+	@echo "Running enhanced Python implementation.."
 	@echo ""
 	$(PYTHON) knapsack.py
 
 # Run comprehensive Python tests
 test: knapsack
-	@echo "========================"
 	@echo "COMPREHENSIVE TEST SUITE"
-	@echo "========================"
 	@echo ""
 	@echo "1. Testing Python implementation..."
 	@echo ""
@@ -87,13 +78,11 @@ test: knapsack
 	@echo ""
 	./knapsack
 	@echo ""
-	@echo "========================"
-	@echo "✓ All tests completed"
-	@echo "========================"
+	@echo "All tests completed"
 
-# Open HTML visualization
+# Open HTML visualisation
 run-html:
-	@echo "Opening HTML visualization..."
+	@echo "Opening HTML visualisation.."
 	@if command -v xdg-open > /dev/null; then \
 		xdg-open knapsack.html; \
 	elif command -v open > /dev/null; then \
@@ -104,14 +93,14 @@ run-html:
 
 # Install Python dependencies (if needed)
 install-deps:
-	@echo "Checking Python dependencies..."
+	@echo "Checking Python dependencies.."
 	@$(PYTHON) -c "import typing" 2>/dev/null || pip install typing
-	@echo "✓ Dependencies ready"
+	@echo "Dependencies ready"
 
 # Memory check with valgrind (if available)
 memcheck: knapsack
 	@if command -v valgrind > /dev/null; then \
-		echo "Running memory check with valgrind..."; \
+		echo "Running memory check with valgrind.."; \
 		valgrind --leak-check=full --show-leak-kinds=all ./knapsack; \
 	else \
 		echo "valgrind not found. Install it for memory checking."; \
@@ -122,20 +111,17 @@ profile:
 	$(CC) $(CFLAGS) -pg -o knapsack_profile knapsack.c
 	./knapsack_profile
 	gprof knapsack_profile gmon.out > analysis.txt
-	@echo "✓ Profile saved to analysis.txt"
+	@echo "Profile saved to analysis.txt"
 
 # Benchmark all implementations
 benchmark: all
-	@echo "Running benchmarks..."
+	@echo "Running benchmarks.."
 	@echo ""
-	@echo "Python (Enhanced):"
+	@echo "Python:"
 	@time $(PYTHON) knapsack.py > /dev/null
 	@echo ""
-	@echo "C (Enhanced):"
+	@echo "C:"
 	@time ./knapsack > /dev/null
-	@echo ""
-	@echo "C (Original):"
-	@time ./knapsack_original > /dev/null
 
 # Static analysis (if cppcheck available)
 analyze:
