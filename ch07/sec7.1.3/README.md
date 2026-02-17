@@ -243,6 +243,26 @@ int main(void) {
 }
 ```
 
+To compile the program using the array-based
+stack implementation (from `stack.c`):
+
+```
+gcc main.c stack.c -o balanced_checker
+```
+
+To compile using the linked-list stack
+implementation (from `stack_linked.c`):
+
+```
+gcc main.c stack_linked.c -o balanced_checker
+```
+
+In both cases, run the executable with `./balanced_checker`
+(assuming a Unix-like environment; adjust for Windows if needed).
+Note that you cannot compile both `stack.c` and `stack_linked.c` together,
+as they provide duplicate function definitions.
+
+
 *Output:*
 ```
 ({[a + b] * (c - d)})          -> BALANCED
@@ -312,17 +332,17 @@ class ArrayStack(StackADT[T]):
         self._data: list[T] = []
 
     def push(self, value: T) -> None:
-        self._data.append(value)           ## O(1) amortized
+        self._data.append(value)           # O(1) amortized
 
     def pop(self) -> T:
         if self.is_empty():
             raise IndexError("pop from empty stack")
-        return self._data.pop()            ## O(1)
+        return self._data.pop()            # O(1)
 
     def peek(self) -> T:
         if self.is_empty():
             raise IndexError("peek at empty stack")
-        return self._data[-1]              ## O(1)
+        return self._data[-1]              # O(1)
 
     def is_empty(self) -> bool:
         return len(self._data) == 0
@@ -447,7 +467,9 @@ what algorithms exist--and makes them swappable.*
 
 #### The Scenario: A Payment System
 
-A checkout system must support multiple payment methods: credit card, PayPal, and cryptocurrency. New methods will be added later. We don't want a giant `if/elif` chain.
+A checkout system must support multiple payment methods: credit card,
+PayPal, and cryptocurrency. New methods will be added later.
+We don't want a giant `if/elif` chain.
 
 #### Python: Strategy Pattern with ADTs
 
