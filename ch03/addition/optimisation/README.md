@@ -181,7 +181,7 @@ maximisation or minimisation:
 | Control Systems     | Minimise cost function             | $\`J(x, u)\`$                |
 | Economics           | Maximise utility/profit/welfare    | $\`U(x), \pi(x)\`$           |
 | Research (AI)       | Maximise expected rewards          | $\`V(s)\`$ (Bellman)         |
-| Statistics/ML	      | Minimise expected loss             | $\`\mathbb{E}[L(y, f(x))]\`$ |
+| Statistics/ML       | Minimise expected loss             | $\`\mathbb{E}[L(y, f(x))]\`$ |
 
 - Duality: Many problems can be framed in both ways. For example, maximising rewards is equivalent
   to minimising negative rewards.
@@ -263,7 +263,7 @@ desirable.
 
 ### General Criticism of Optimisation as a Universal Goal
 
-__1.	Optimisation as Reductionism__
+__1. Optimisation as Reductionism__
 
 Many optimisation problems involve simplifying complex, multi-dimensional realities into quantifiable
 metrics. This reductionist approach can lead to distortions, where important aspects of a system
@@ -272,7 +272,7 @@ For example, economic models optimising for GDP growth often fail to account for
 wealth inequality, or social well-being.
 
 
-__2.	The Problem of Overfitting to Metrics__
+__2. The Problem of Overfitting to Metrics__
 
 In machine learning, overfitting refers to a model that performs well on training data but fails in
 the real world. In broader systems, when a single metric is over-optimised, it can lead to perverse
@@ -292,7 +292,7 @@ This makes Goodhart's Law a crucial cautionary principle in optimisation--highli
 chasing a metric can degrade the very system it was meant to improve.
 
 
-__3.	Trade-Off Blindness__
+__3. Trade-Off Blindness__
 
 Optimisation always involves trade-offs, but when optimisation becomes an unquestioned goal, it often
 ignores broader social, ethical, or environmental consequences.
@@ -300,7 +300,7 @@ ignores broader social, ethical, or environmental consequences.
   worsening traffic congestion.
 
 
-__4.	Short-Termism vs. Long-Term Stability__
+__4. Short-Termism vs. Long-Term Stability__
 
 Optimisation often emphasises immediate gains over long-term resilience. The financial sector’s emphasis
 on optimising short-term profits contributed to the 2008 financial crisis, as financial products were
