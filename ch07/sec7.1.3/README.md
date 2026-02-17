@@ -17,7 +17,7 @@ This is the principle of *encapsulation*.
 
 
 
-### Why ADTs Are Important
+#### Why ADTs Are Important
 
 | Benefit | Explanation |
 |---------|-------------|
@@ -30,7 +30,7 @@ This is the principle of *encapsulation*.
 
 
 
-### Classic ADTs and Their Operations
+#### Classic ADTs and Their Operations
 
 | ADT | Core Operations | Property |
 |-----|-----------------|----------|
