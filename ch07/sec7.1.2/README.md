@@ -29,7 +29,7 @@ This is why choosing the right algorithm matters far more than hardware speed.
 
 
 
-### 2. The Formal Definition
+### The Formal Definition
 
 #### The Mathematical Definition of Big O
 
@@ -97,7 +97,7 @@ We aim for the *tightest* correct bound.
 
 
 
-### 3. The Complexity Classes
+### The Complexity Classes
 
 Listed from best to worst:
 
@@ -105,7 +105,7 @@ Listed from best to worst:
 O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(n³) < O(2ⁿ) < O(n!)
 ```
 
-#### O(1)--Constant
+#### O(1): Constant
 
 Runtime is *independent of input size*.
 The same work is done whether `n = 1` or `n = 1,000,000`.
@@ -117,7 +117,7 @@ stack push/pop, returning the first element.
 
 
 
-#### O(log n)--Logarithmic
+#### O(log n): Logarithmic
 
 The algorithm *halves* (or thirds, or divides by k)
 the problem with each step.
@@ -140,7 +140,7 @@ only ~30 steps are needed.
 
 
 
-#### O(n)--Linear
+#### O(n): Linear
 
 Work grows *proportionally* to input.
 Every element is visited a constant number of times.
@@ -152,7 +152,7 @@ reading a file.
 
 
 
-#### O(n log n)--Linearithmic
+#### O(n log n): Linearithmic
 
 Appears in *divide-and-conquer* algorithms: split the data
 (log n levels), do O(n) work at each level.
@@ -173,7 +173,7 @@ The best possible for comparison-based sorting.
 
 
 
-#### O(n²)--Quadratic
+#### O(n²): Quadratic
 
 Typically arises from *two nested loops* each iterating over the input.
 
@@ -183,7 +183,7 @@ Typically arises from *two nested loops* each iterating over the input.
 
 
 
-#### O(2ⁿ)--Exponential
+#### O(2ⁿ): Exponential
 
 Each new element *doubles* the total work. Arises in brute-force
 combinatorial search.
@@ -196,7 +196,7 @@ than a modern computer can run in thousands of years.
 
 
 
-#### O(n!)--Factorial
+#### O(n!): Factorial
 
 Even worse than exponential. Arises in *permutation* problems.
 
@@ -206,7 +206,7 @@ Even worse than exponential. Arises in *permutation* problems.
 
 
 
-### 4. The Four Rules of Simplification
+### The Four Rules of Simplification
 
 These rules let you reduce any expression to its Big O class.
 
@@ -277,7 +277,7 @@ O(n²) × O(n)     =  O(n³)
 
 
 
-### 5. Calculating Big O Step by Step
+### Calculating Big O Step by Step
 
 #### Method
 
@@ -288,7 +288,7 @@ O(n²) × O(n)     =  O(n³)
 
 
 
-#### Worked Example A--Two separate loops
+#### Worked Example A: Two separate loops
 
 ```python
 for i in range(n):       ## Loop 1: n iterations
@@ -308,7 +308,7 @@ Step-by-step:
 
 
 
-#### Worked Example B--Nested loops
+#### Worked Example B: Nested loops
 
 ```python
 for i in range(n):        ## Outer: n iterations
@@ -325,7 +325,7 @@ Step-by-step:
 
 
 
-#### Worked Example C--Constant inner loop (a common trap)
+#### Worked Example C: Constant inner loop (a common trap)
 
 ```python
 for i in range(n):           ## Outer: n iterations
@@ -341,7 +341,7 @@ Step-by-step:
 
 
 
-#### Worked Example D--Shrinking inner loop
+#### Worked Example D: Shrinking inner loop
 
 ```python
 for i in range(n):
@@ -369,7 +369,7 @@ the total is still quadratic.
 
 
 
-#### Worked Example E--Logarithmic recursion
+#### Worked Example E: Logarithmic recursion
 
 ```python
 def halving(n):
@@ -387,7 +387,7 @@ Step-by-step:
 
 
 
-#### Worked Example F--Mixed complexity
+#### Worked Example F: Mixed complexity
 
 ```python
 for i in range(n):                  ## O(n)
@@ -415,9 +415,9 @@ Step-by-step:
 
 
 
-### 6. Real Algorithm Analysis
+### Real Algorithm Analysis
 
-#### Linear Search--O(n)
+#### Linear Search: O(n)
 
 ```python
 def linear_search(arr, target):
@@ -434,7 +434,7 @@ Worst case: target is last or not present -> n comparisons.
 
 
 
-#### Binary Search--O(log n)
+#### Binary Search: O(log n)
 
 ```python
 def binary_search(arr, target):
@@ -470,7 +470,7 @@ worth it if you search many times (otherwise the sort cost dominates).*
 
 
 
-#### Bubble Sort--O(n²)
+#### Bubble Sort: O(n²)
 
 ```python
 def bubble_sort(arr):
@@ -491,7 +491,7 @@ Drop lower term and constant -> `O(n²)`.
 
 
 
-#### Merge Sort--O(n log n)
+#### Merge Sort: O(n log n)
 
 ```python
 def merge_sort(arr):
@@ -547,7 +547,7 @@ comparison sort can do better than O(n log n) in the worst case.
 
 
 
-#### Naive Fibonacci--O(2ⁿ)
+#### Naive Fibonacci: O(2ⁿ)
 
 ```python
 def fib(n):
@@ -575,7 +575,7 @@ Many subproblems are recalculated repeatedly. Fix:
 
 
 
-#### Hash Table Lookup--O(1) average
+#### Hash Table Lookup: O(1) average
 
 ```python
 table = {"alice": 42, "bob": 7}
@@ -590,7 +590,7 @@ A good hash function makes this astronomically rare in practice.
 
 
 
-#### QuickSort--O(n log n) average, O(n²) worst
+#### QuickSort: O(n log n) average, O(n²) worst
 
 ```python
 def quicksort(arr, lo, hi):
@@ -614,7 +614,7 @@ Fix: random pivot or median-of-three selection keeps expected time at `O(n log n
 
 
 
-### 7. Best, Average, and Worst Case
+### Best, Average, and Worst Case
 
 Big O typically describes *worst-case* behaviour, but algorithms have three cases:
 
@@ -642,7 +642,7 @@ Big O typically describes *worst-case* behaviour, but algorithms have three case
 
 
 
-### 8. Space Complexity
+### Space Complexity
 
 Big O applies to *memory* too. Every variable, recursive call frame,
 and data structure costs space.
@@ -697,7 +697,7 @@ O(1) lookups instead of O(n) searches.
 
 
 
-### 9. Data Structure Reference
+### Data Structure Reference
 
 #### Time Complexity
 
@@ -725,14 +725,13 @@ O(1) lookups instead of O(n) searches.
 
 
 
-### 10. Common Mistakes
+### Common Mistakes
 
 #### Mistake 1: Confusing O with Θ
 
 Saying "bubble sort is O(n)" is technically true by the formal definition,
 but useless. Always aim for the *tightest* correct bound.
 Bubble sort is Θ(n²) in the worst and average case.
-
 
 
 #### Mistake 2: Forgetting that constant-bound inner loops are O(1)
@@ -744,8 +743,6 @@ for i in range(n):
 ```
 
 This is `O(n)`, not `O(n²)`. The inner loop iterates a fixed 10 times.
-
-
 
 #### Mistake 3: Assuming two inputs are the same
 
@@ -761,8 +758,6 @@ def combine(a, b):
 This is `O(m × n)`, not `O(n²)`. If m and n are independent,
 they must stay separate.
 
-
-
 #### Mistake 4: Ignoring amortised complexity
 
 A dynamic array (like Python's `list`) occasionally doubles its capacity, costing O(n).
@@ -771,8 +766,6 @@ But averaged across many appends, each append costs O(1) amortised:
 ```
 n appends: n×O(1) + occasional O(n) resize  ->  total O(n)  ->  O(1) per append
 ```
-
-
 
 #### Mistake 5: Thinking O(n log n) is "almost" O(n)
 
