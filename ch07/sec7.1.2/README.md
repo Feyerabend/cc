@@ -798,3 +798,11 @@ add for sequence, then simplify*.
 Everything else follows from those rules.
 
 
+
+### Reference
+
+* Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C. (2022). *Introduction to algorithms* (4th ed.). The MIT Press.
+
+* Knuth, D. E. (1998). *The art of computer programming: Vol. 3. Sorting and searching* (2nd ed.). Addison-Wesley.
+
+![CLRS](.)
