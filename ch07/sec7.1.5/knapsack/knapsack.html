@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knapsack DP Visualization</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+    background: #f7f7f7;
+}
+
+h1, h2 { margin-bottom: 10px; }
+
+section {
+    background: white;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+label { margin-right: 10px; }
+
+input[type="number"] {
+    width: 80px;
+    padding: 4px;
+}
+
+button {
+    padding: 6px 12px;
+    margin: 5px 5px 5px 0;
+    cursor: pointer;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 6px;
+    text-align: center;
+}
+
+th { background: #333; color: white; }
+
+.knapsack {
+    min-height: 80px;
+    padding: 10px;
+    border: 2px dashed #888;
+    background: #fafafa;
+}
+.item-box {
+    background: #333;
+    color: white;
+    padding: 5px;
+    margin: 4px 0;
+    border-radius: 4px;
+}
+.highlight {
+    background: #d4edda;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Knapsack Problem (Dynamic Programming)</h1>
+
+<section>
+<h2>Configuration</h2>
+<label>Capacity:</label>
+<input type="number" id="capacity" value="50" min="1">
+<br>
+<button id="add-item">Add Item</button>
+<button id="solve">Solve</button>
+<button id="reset">Reset</button>
+</section>
+
+<section>
+<h2>Items</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+<th>Weight</th>
+<th>Ratio</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="items-body">
+<tr>
+<td>Item 1</td>
+<td><input type="number" class="item-value" value="60"></td>
+<td><input type="number" class="item-weight" value="10"></td>
+<td class="ratio"></td>
+<td><button class="remove-item">X</button></td>
+</tr>
+<tr>
+<td>Item 2</td>
+<td><input type="number" class="item-value" value="100"></td>
+<td><input type="number" class="item-weight" value="20"></td>
+<td class="ratio"></td>
+<td><button class="remove-item">X</button></td>
+</tr>
+<tr>
+<td>Item 3</td>
+<td><input type="number" class="item-value" value="120"></td>
+<td><input type="number" class="item-weight" value="30"></td>
+<td class="ratio"></td>
+<td><button class="remove-item">X</button></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Knapsack</h2>
+<div class="knapsack" id="knapsack">No solution yet</div>
+<p>Weight: <span id="weight">0</span></p>
+<p>Value: <span id="value">0</span></p>
+</section>
+
+<section id="solution">
+<h2>Solution</h2>
+<p>Run solver to compute optimal selection.</p>
+</section>
+
+<section id="dp-container" style="display:none;">
+<h2>DP Table (truncated)</h2>
+<div style="overflow-x:auto;">
+<table id="dp-table"></table>
+</div>
+</section>
+
+<script>
+let nextItemId = 4;
+
+const itemsBody = document.getElementById("items-body");
+const capacityInput = document.getElementById("capacity");
+const knapsackDiv = document.getElementById("knapsack");
+const weightSpan = document.getElementById("weight");
+const valueSpan = document.getElementById("value");
+const solutionDiv = document.getElementById("solution");
+const dpContainer = document.getElementById("dp-container");
+const dpTable = document.getElementById("dp-table");
+
+function updateRatios() {
+    document.querySelectorAll("#items-body tr").forEach(row => {
+        const v = parseInt(row.querySelector(".item-value").value);
+        const w = parseInt(row.querySelector(".item-weight").value);
+        row.querySelector(".ratio").textContent = (v / w).toFixed(2);
+    });
+}
+
+itemsBody.addEventListener("input", updateRatios);
+
+document.getElementById("add-item").onclick = () => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td>Item ${nextItemId}</td>
+        <td><input type="number" class="item-value" value="50"></td>
+        <td><input type="number" class="item-weight" value="10"></td>
+        <td class="ratio"></td>
+        <td><button class="remove-item">X</button></td>`;
+    itemsBody.appendChild(row);
+    nextItemId++;
+    updateRatios();
+};
+
+itemsBody.addEventListener("click", e => {
+    if (e.target.classList.contains("remove-item")) {
+        if (itemsBody.children.length > 1)
+            e.target.closest("tr").remove();
+    }
+});
+
+function getItems() {
+    return [...document.querySelectorAll("#items-body tr")].map((row, i) => ({
+        id: i + 1,
+        value: parseInt(row.querySelector(".item-value").value),
+        weight: parseInt(row.querySelector(".item-weight").value)
+    }));
+}
+
+function knapsackDP(capacity, items) {
+    const n = items.length;
+    const dp = Array.from({length: n+1}, () => Array(capacity+1).fill(0));
+
+    for (let i = 1; i <= n; i++) {
+        for (let w = 0; w <= capacity; w++) {
+            const {value, weight} = items[i-1];
+            dp[i][w] = weight <= w
+                ? Math.max(value + dp[i-1][w-weight], dp[i-1][w])
+                : dp[i-1][w];
+        }
+    }
+
+    const chosen = [];
+    let w = capacity;
+    for (let i = n; i > 0; i--) {
+        if (dp[i][w] !== dp[i-1][w]) {
+            chosen.push(items[i-1]);
+            w -= items[i-1].weight;
+        }
+    }
+
+    return [dp[n][capacity], chosen, dp];
+}
+
+document.getElementById("solve").onclick = () => {
+    const capacity = parseInt(capacityInput.value);
+    const items = getItems();
+
+    const start = performance.now();
+    const [maxValue, chosen, dp] = knapsackDP(capacity, items);
+    const time = (performance.now() - start).toFixed(3);
+
+    let totalW = 0, totalV = 0;
+    knapsackDiv.innerHTML = "";
+
+    chosen.forEach(item => {
+        totalW += item.weight;
+        totalV += item.value;
+        const div = document.createElement("div");
+        div.className = "item-box";
+        div.textContent = `Item ${item.id} (V=${item.value}, W=${item.weight})`;
+        knapsackDiv.appendChild(div);
+    });
+
+    if (!chosen.length) knapsackDiv.textContent = "No items selected";
+
+    weightSpan.textContent = `${totalW}/${capacity}`;
+    valueSpan.textContent = totalV;
+
+    solutionDiv.innerHTML = `
+        <h2>Solution</h2>
+        <p>Max Value: ${maxValue}</p>
+        <p>Chosen Items: ${chosen.map(i => i.id).join(", ") || "None"}</p>
+        <p>Time: ${time} ms</p>`;
+
+    renderDP(dp, capacity, items);
+};
+
+function renderDP(dp, capacity, items) {
+    dpContainer.style.display = "block";
+    dpTable.innerHTML = "";
+
+    const maxW = Math.min(capacity, 15);
+    const maxI = Math.min(items.length, 8);
+
+    let header = "<tr><th>i/w</th>";
+    for (let w = 0; w <= maxW; w++) header += `<th>${w}</th>`;
+    header += "</tr>";
+    dpTable.innerHTML += header;
+
+    for (let i = 0; i <= maxI; i++) {
+        let row = `<tr><td>${i}</td>`;
+        for (let w = 0; w <= maxW; w++)
+            row += `<td>${dp[i][w]}</td>`;
+        row += "</tr>";
+        dpTable.innerHTML += row;
+    }
+}
+
+document.getElementById("reset").onclick = () => location.reload();
+
+updateRatios();
+</script>
+
+</body>
+</html>
+
