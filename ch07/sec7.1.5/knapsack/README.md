@@ -1,5 +1,5 @@
 
-## Knapsack Problem: Complete Implementation Guide
+## Knapsack Problem
 
 The *Knapsack Problem* is a classic optimisation problem in computer
 science and mathematics that demonstrates fundamental algorithmic paradigms.
