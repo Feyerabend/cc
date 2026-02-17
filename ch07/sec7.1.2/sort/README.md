@@ -255,7 +255,7 @@ So:
 
 ```
 T(n) = 2·T(n/2) + O(n)
-T(1) = O(1)           ← base case: one element is already sorted
+T(1) = O(1)           <- base case: one element is already sorted
 ```
 
 #### Solving by Expansion (Substitution)
