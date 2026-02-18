@@ -536,7 +536,6 @@ for t in sorted_tasks:
 ```
 
 
-
 ### Summary Table
 
 | Criterion | Key Question | Target |
