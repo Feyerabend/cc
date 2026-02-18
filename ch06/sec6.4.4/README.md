@@ -1,6 +1,9 @@
 
 ## Null and Alternative Hypotheses
 
+> [!NOTE]
+> More on the Null hypothesis and testing with an early LLM: [GPT2](./../addition/gpt2/).
+
 Think of debugging as a scientific experiment.
 Your *program is the system*, the *bug is the phenomenon*, and your *hypotheses explain why it happens*.
 

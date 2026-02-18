@@ -1,0 +1,31 @@
+# Configuration File Example
+# Copy this to config.json and customize as needed
+
+{
+  "data": {
+    "num_problems": 1000,
+    "max_operand_value": 100,
+    "train_split": 0.8,
+    "random_seed": 42
+  },
+  "model": {
+    "name": "gpt2",
+    "max_length": 128
+  },
+  "training": {
+    "epochs": 3,
+    "batch_size": 8,
+    "learning_rate": 5e-5,
+    "warmup_steps": 500,
+    "weight_decay": 0.01,
+    "output_dir": "./fine_tuned_model",
+    "log_dir": "./logs"
+  },
+  "evaluation": {
+    "max_generation_length": 50
+  },
+  "hypothesis_test": {
+    "alpha": 0.05,
+    "bootstrap_samples": 10000
+  }
+}

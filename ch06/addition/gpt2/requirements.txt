@@ -1,0 +1,15 @@
+# Core dependencies for GPT-2 math fine-tuning project
+transformers>=4.30.0
+torch>=2.0.0
+datasets>=2.12.0
+
+# Scientific computing
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Utilities
+tqdm>=4.65.0
+
+# Optional but recommended
+accelerate>=0.20.0  # For faster training
+tensorboard>=2.13.0  # For training visualisation
