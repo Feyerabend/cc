@@ -171,4 +171,3 @@ if __name__ == "__main__":
     print(f"Total value: {total_value}")
     
     print("Done.")
-´
