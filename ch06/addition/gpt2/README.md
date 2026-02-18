@@ -1,8 +1,9 @@
 
 ## GPT-2 Math Fine-Tuning Project
 
-To get a sense of what LLMs are, but also to show the Null hypothesis:
-A framework for fine-tuning GPT-2 on mathematical reasoning tasks and testing
+To get a sense of what LLMs are, but also to show the
+[Null hypothesis](./../../sec6.4.4/): A framework for
+fine-tuning GPT-2 on mathematical reasoning tasks and testing
 the hypothesis that specialised training improves mathematical
 problem-solving capabilities.
 
