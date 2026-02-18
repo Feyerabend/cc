@@ -1,11 +1,28 @@
 
 ## GPT-2 Math Fine-Tuning Project
 
-GPT-2 marked a major shift in how language models were perceived by demonstrating that simply scaling up a relatively straightforward architecture could yield surprisingly powerful results. Built by OpenAI and released in 2019, GPT-2 used the transformer decoder architecture but was trained at an unprecedented scale for its time (1.5 billion parameters) on a large, diverse corpus of internet text. Its key breakthrough was the empirical finding that larger models trained on more data could exhibit qualitatively new capabilities: coherent long-form text generation, rudimentary reasoning, translation-like behavior, summarization, and question answering—all without task-specific fine-tuning.
+GPT-2 marked a major shift in how language models were perceived by demonstrating
+that simply scaling up a relatively straightforward architecture could yield surprisingly
+powerful results. Built by OpenAI and released in 2019, GPT-2 used the transformer
+decoder architecture but was trained at an unprecedented scale for its time (1.5
+billion parameters) on a large, diverse corpus of internet text. Its key breakthrough
+was the empirical finding that larger models trained on more data could exhibit
+qualitatively new capabilities: coherent long-form text generation, rudimentary
+reasoning, translation-like behavior, summarization, and question answering—all without
+task-specific fine-tuning.
 
-Equally significant was GPT-2’s impact on the research community and public discourse. Its outputs were realistic enough to raise concerns about misuse (e.g., automated misinformation), leading to a staged release strategy rather than an immediate full model publication. Scientifically, GPT-2 strengthened the case for unsupervised pretraining followed by adaptation, helped popularize the idea of "emergent abilities," and accelerated the trend toward scaling laws in AI. In hindsight, GPT-2 served as a bridge between earlier NLP systems that relied heavily on supervised datasets and today’s large foundation models capable of broad, flexible language understanding and generation.
+Equally significant was GPT-2’s impact on the research community and public discourse.
+Its outputs were realistic enough to raise concerns about misuse (e.g., automated
+misinformation), leading to a staged release strategy rather than an immediate full model
+publication. Scientifically, GPT-2 strengthened the case for unsupervised pretraining
+followed by adaptation, helped popularize the idea of "emergent abilities," and accelerated
+the trend toward scaling laws in AI. In hindsight, GPT-2 served as a bridge between earlier
+NLP systems that relied heavily on supervised datasets and today’s large foundation models
+capable of broad, flexible language understanding and generation.
 
-This project provides a framework for fine-tuning GPT-2 on mathematical reasoning tasks and testing the hypothesis that specialized training improves mathematical problem-solving capabilities. It demonstrates:
+This project provides a framework for fine-tuning GPT-2 on mathematical reasoning tasks
+and testing the hypothesis that specialized training improves mathematical problem-solving
+capabilities. It demonstrates:
 1. Data Synthesis: Generating custom math problem datasets
 2. Model Fine-Tuning: Training GPT-2 on mathematical reasoning
 3. Hypothesis Testing: Statistically validating performance improvements
@@ -35,25 +52,25 @@ This project provides a framework for fine-tuning GPT-2 on mathematical reasonin
 
 ```
 gpt2/
-├── README.md                         ## This file
-├── requirements.txt                  ## Python dependencies
+├── README.md                         # This file
+├── requirements.txt                  # Python dependencies
 ├── scripts/
-│   ├── 1_generate_dataset.py         ## Synthesize math problems
-│   ├── 2_prepare_data.py             ## Format data for training
-│   ├── 3_finetune_model.py           ## Fine-tune GPT-2
-│   ├── 4_evaluate_models.py          ## Compare baseline vs fine-tuned
-│   ├── 5_test_hypothesis.py          ## Statistical hypothesis testing
-│   └── utils.py                      ## Helper functions
+│   ├── 1_generate_dataset.py         # Synthesize math problems
+│   ├── 2_prepare_data.py             # Format data for training
+│   ├── 3_finetune_model.py           # Fine-tune GPT-2
+│   ├── 4_evaluate_models.py          # Compare baseline vs fine-tuned
+│   ├── 5_test_hypothesis.py          # Statistical hypothesis testing
+│   └── utils.py                      # Helper functions
 ├── data/
-│   ├── math_dataset.json             ## Generated math problems
-│   ├── train.json                    ## Training split
-│   └── test.json                     ## Test split
+│   ├── math_dataset.json             # Generated math problems
+│   ├── train.json                    # Training split
+│   └── test.json                     # Test split
 ├── results/
-│   ├── baseline_results.json         ## Baseline model outputs
-│   ├── finetuned_results.json        ## Fine-tuned model outputs
-│   └── hypothesis_test.json          ## Statistical test results
+│   ├── baseline_results.json         # Baseline model outputs
+│   ├── finetuned_results.json        # Fine-tuned model outputs
+│   └── hypothesis_test.json          # Statistical test results
 └── docs/
-    └── METHODOLOGY.md                ## Detailed methodology explanation
+    └── METHODOLOGY.md                # Detailed methodology explanation
 ```
 
 
@@ -93,7 +110,8 @@ pip install -r requirements.txt
 python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
 ```
 
-If CUDA is available, fine-tuning will be significantly faster. If not, training will use CPU (10-20x slower).
+If CUDA is available, fine-tuning will be significantly faster.
+If not, training will use CPU (10-20x slower).
 
 
 ### Quick Run
