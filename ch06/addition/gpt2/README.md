@@ -1,19 +1,6 @@
 
 ## GPT-2 Math Fine-Tuning Project
 
-To get a sense of what LLMs are, but also to show the
-[Null hypothesis](./../../sec6.4.4/): A framework for
-fine-tuning GPT-2 on mathematical reasoning tasks and testing
-the hypothesis that specialised training improves mathematical
-problem-solving capabilities.
-
-This project demonstrates:
-1. *Data Synthesis*: Generating custom math problem datasets
-2. *Model Fine-Tuning*: Training GPT-2 on mathematical reasoning
-3. *Hypothesis Testing*: Statistically validating performance improvements
-4. *Evaluation*: Comparing baseline vs. fine-tuned model performance
-
-
 #### GPT-2
 
 GPT-2 marked a major shift in how language models were perceived by
@@ -41,7 +28,17 @@ capable of broad, flexible language understanding and generation.
 
 #### Null Hypothesis
 
-Back to the hypthesis:
+To get a sense of what LLMs are, but also to show the
+[Null hypothesis](./../../sec6.4.4/): A framework for
+fine-tuning GPT-2 on mathematical reasoning tasks and testing
+the hypothesis that specialised training improves mathematical
+problem-solving capabilities.
+
+This project demonstrates:
+1. *Data Synthesis*: Generating custom math problem datasets
+2. *Model Fine-Tuning*: Training GPT-2 on mathematical reasoning
+3. *Hypothesis Testing*: Statistically validating performance improvements
+4. *Evaluation*: Comparing baseline vs. fine-tuned model performance
 
 *H₀*: Fine-tuning GPT-2 on mathematical problems does not significantly improve its accuracy on math tasks.
 
