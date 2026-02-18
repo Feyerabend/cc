@@ -957,7 +957,9 @@ checkout():                        checkout(PaymentStrategy* s):
 - The context (e.g., `ShoppingCart`) depends on the abstraction,
   not the concrete type
 
-Gang of Four, *Design Patterns* (1994):
-The golden rule is to
-*Program to an interface, not an implementation.*
 
+### Reference
+
+*The golden rule is to: program to an interface, not an implementation.*
+
+* Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). *Design patterns: Elements of reusable object-oriented software*. Addison-Wesley.
