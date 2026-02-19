@@ -389,25 +389,11 @@ Requires closures / heap-allocated environments.
 
 ### 15. Big picture
 
-You’re effectively building: A categorical abstract machine in C
+We’re effectively building: A categorical abstract machine in C
 
 Very close to:
 
-- SECD machine variants
+- [SECD](./../../../ch05/addition/am/secd/) machine variants
 - Linear logic machines
 - Concatenative VM
-- Compiler intermediate representations
-
-
-
-If you'd like next, we can:
-
-- Add static typing
-- Implement tensor properly
-- Add parser for a tiny language
-- Add linear logic checker
-- Generate diagrams
-- Compile to bytecode
-
-What direction shall we push this C prototype?
-
+- Compiler intermediate representations ([IR](./../../../ch05/sec5.7/IR/))
