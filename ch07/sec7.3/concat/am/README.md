@@ -9,12 +9,15 @@ mathematical structure and executable code can be
 made very "thin". It can be thin enough to compile
 in C with gcc -O2 and run in milliseconds.
 
-`catmachine.c` is a single-file implementation of a small abstract machine
-that sits at the intersection of two usually separate worlds: *category theory*
-as a mathematical foundation for computation, and *concatenative languages*
-(Forth, Joy, Factor, Cat) as a practical model of stack-based program composition.
+`catmachine.c` is a single-file implementation of
+a small abstract machine that sits at the intersection
+of two usually separate worlds: *category theory*
+as a mathematical foundation for computation, and
+*concatenative languages* (Forth, Joy, Factor, Cat)
+as a practical model of stack-based program composition.
 
-The result is not quite a language, not quite a library--it is a *demonstrable theoretical object*.
+The result is not quite a language, not quite a
+library--it is a *demonstrable theoretical object*.
 Every construct in the code has a precise categorical meaning,
 and every categorical concept has a concrete, runnable C representation.
 
@@ -109,7 +112,7 @@ categorical foundation of primitive recursion.
 ### What This Could Be Used For
 
 This machine is not production software!
-It is a *theoretical workbench*--but a workbench with real practical directions.
+It is a *theoretical workbench*--but a workbench with real practical *directions*.
 
 
 #### Compiler Intermediate Representation Design
@@ -128,7 +131,8 @@ with an additional adjoint structure. Every quantum gate is a morphism, circuits
 compose sequentially, and qubits are tensored. The `tensor_run` implementation here
 is structurally identical to how a quantum simulator must route qubits to gate inputs.
 Replacing `double` with complex amplitudes and enforcing the linear discipline
-(no cloning, no deletion--the no-cloning theorem) would yield a toy quantum circuit interpreter.
+(no cloning, no deletion--the no-cloning theorem) would yield a toy quantum
+circuit interpreter.
 
 #### Dataflow and Stream Processing
 
@@ -176,12 +180,12 @@ The only headers used are `stdio.h`, `stdlib.h`, `string.h`, `stdarg.h`, and `as
 ### Theoretical Roots
 
 The design draws on several lines of work:
-- *Lambek (1958)* - the original observation that syntactic calculi are categories
-- *Lawvere (1963)* - functorial semantics, categories as algebraic theories
-- *Girard (1987)* - linear logic, the `!`-modality, resource sensitivity
-- *Mac Lane (1971)* - coherence for symmetric monoidal categories
-- *von Thun (1994–2003)* - Joy language, quotations as first-class morphisms
-- *Joyal & Street (1991)* - string diagrams as a sound and complete graphical calculus for monoidal categories
+- *Lambek (1958)*            - the original observation that syntactic calculi are categories
+- *Lawvere (1963)*           - functorial semantics, categories as algebraic theories
+- *Girard (1987)*            - linear logic, the `!`-modality, resource sensitivity
+- *Mac Lane (1971)*          - coherence for symmetric monoidal categories
+- *von Thun (1994–2003)*     - Joy language, quotations as first-class morphisms
+- *Joyal & Street (1991)*    - string diagrams as a sound and complete graphical calculus for monoidal categories
 - *Abramsky & Coecke (2004)* - categorical quantum mechanics, dagger compact categories
 - *Atkey et al. (2009–2013)* - parametricity and effect systems in categorical terms
 
