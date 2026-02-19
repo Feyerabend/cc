@@ -1,7 +1,7 @@
 
 ## Mol: A Simple OO & Functional Language
 
-Mol has evolved from its [earlier](./../../../ch05/sec5.12/mol/) definition
+Mol has evolved from its [earlier definition](./../../../ch05/sec5.12/mol/)
 into an extended, lightweight, interpreted programming language that blends
 functional and object-oriented paradigms. It also incorporates selected
 imperative elements beneath the surface. As a result, Mol can be characterised
@@ -9,8 +9,9 @@ as a multi-paradigm language.
 
 It is implemented in C and supports features like first-class functions, closures,
 recursion, lists, strings, structs, and a simple OOP system using virtual tables
-(vtables) from before. Mol is designed for simplicity and expressiveness,
-drawing some inspiration from languages like Scheme, Smalltalk (and Lua).
+([vtables](./../../../ch05/addition/vtable/)) from before. Mol is designed
+for simplicity and expressiveness, drawing some inspiration from languages
+like Scheme, Smalltalk (and Lua).
 
 The language is executed via a C-based interpreter, which includes:
 - A REPL (Read-Eval-Print Loop) for interactive coding.
