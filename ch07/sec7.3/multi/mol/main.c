@@ -58,9 +58,9 @@ static void test(const char *label, const char *code, const char *expected) {
 
     if (strcmp(buf, expected) == 0) {
         pass_count++;
-        printf("  \033[32m✓\033[0m %s\n", label);
+        printf("  \033[32mok\033[0m %s\n", label);
     } else {
-        printf("  \033[31m✗\033[0m %s\n    expected: %s\n    got:      %s\n",
+        printf("  \033[31mno\033[0m %s\n    expected: %s\n    got:      %s\n",
                label, expected, buf);
     }
 }
