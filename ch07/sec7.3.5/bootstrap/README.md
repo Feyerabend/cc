@@ -20,5 +20,6 @@ This approach has several advantages:
 * It makes the language independent of external implementation languages in the long run.
 * It provides a practical way to evolve and refine the language while staying consistent.
 
-Famous examples include C (early versions of the C compiler were rewritten in C itself),
+Famous examples include [C](./../../sec7.3/imp/mcc/)
+(early versions of the C compiler were rewritten in C itself),
 Lisp, and Rust.
