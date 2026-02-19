@@ -3,8 +3,8 @@
 
 A minimal but working C compiler that targets the MOS 6502 processor.
 This project demonstrates compiler construction principles and provides
-a foundation for building a self-hosting compiler (if you want to build
-a real compiler, here is where to start).
+a foundation for building a [self-hosting compiler](./../../sec7.3.5/bootstrap/)
+(if you want to build a real compiler, here is where to start).
 
 
 ### Current Status
@@ -278,4 +278,5 @@ echo 'int main() { return 5 * 6; }' > test.c
 - *Milestone 5*: File I/O and multi-file compilation
 - *Milestone 6*: Self-hosting!
 
-*"If you wish to write a C compiler from scratch, you must first write a C compiler."* - The Bootstrap Paradox
+*"If you wish to write a C compiler from scratch, you must first write a C compiler."*
+-- The [Bootstrap](./../../sec7.3.5/bootstrap/) Paradox
