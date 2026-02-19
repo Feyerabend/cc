@@ -1,0 +1,5 @@
+: SQUARE DUP * ;
+5
+SQUARE
+.
+BYE
