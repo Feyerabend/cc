@@ -3,7 +3,7 @@
 
 *An amalgamation of category theory and concatenative language design, expressed in portable C.*
 
-This is not suppose to be a programming language.  
+This is not suppose to be a programming language.
 The machine demonstrates that the boundary between
 mathematical structure and executable code can be
 made very "thin". It can be thin enough to compile
