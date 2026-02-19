@@ -18,8 +18,9 @@ as a practical model of stack-based program composition.
 
 The result is not quite a language, not quite a
 library--it is a *demonstrable theoretical object*.
-Every construct in the code has a precise categorical meaning,
-and every categorical concept has a concrete, runnable C representation.
+Every construct in the code has a precise categorical
+meaning, and every categorical concept has a concrete,
+runnable C representation.
 
 
 ### The Two Traditions It Draws From
@@ -38,12 +39,13 @@ Manfred von Thun on Joy--but rarely appear in implementation.
 
 #### Category Theory
 
-Category theory provides a precise language for composition. A *morphism* `f : A → B` is an
-arrow between objects. Two morphisms compose when the output type of one matches the input
-type of the next: if `f : A → B` and `g : B → C`, then `g ∘ f : A → C`. A *symmetric monoidal category*
-adds a tensor product `⊗` that lets morphisms operate in parallel on disjoint "regions" of
-structure. A *Cartesian category* additionally permits copying (diagonal map `Δ : A → A ⊗ A`)
-and discarding (terminal map `! : A → I`). *Linear categories* remove both, forcing every
+[Category theory](./../../../../ch08/addition/category/) provides a precise language for
+composition. A *morphism* `f : A → B` is an arrow between objects. Two morphisms compose
+when the output type of one matches the input type of the next: if `f : A → B` and `g : B → C`,
+then `g ∘ f : A → C`. A *symmetric monoidal category* adds a tensor product `⊗` that lets
+morphisms operate in parallel on disjoint "regions" of structure. A *Cartesian category*
+additionally permits copying (diagonal map `Δ : A → A ⊗ A`) and discarding
+(terminal map `! : A → I`). *Linear categories* remove both, forcing every
 resource to be used exactly once.
 
 Concatenative languages are, in this light, programs in the *free symmetric monoidal category*

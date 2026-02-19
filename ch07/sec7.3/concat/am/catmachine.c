@@ -703,9 +703,9 @@ static void lstack_check_exhausted(LinearStack *ls) {
  */
 
 static void separator(const char *title) {
-    printf("\n--------\n");
+    printf("\n----------------------------------------------------------\n");
     printf("  %-56s\n", title);
-    printf("--------\n");
+    printf("----------------------------------------------------------\n");
 }
 
 /* ── Demo 1: Basic composition ──
@@ -941,7 +941,7 @@ int main(void) {
     printf("\n");
     printf("          Categorical Abstract Machine in C\n");
     printf("   Free Symmetric Monoidal Category + Traced Extensions\n");
-    printf("------------------------------------------------------------\n");
+    printf("----------------------------------------------------------\n");
 
     demo_basic_composition();
     demo_tensor();
