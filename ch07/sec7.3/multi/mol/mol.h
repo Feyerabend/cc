@@ -14,12 +14,12 @@
 #define MAX_INPUT 65536
 #define MAX_SEQ     64
 
-/* ────────────────── FORWARD DECLS ────────────────────────────────────────── */
+/* -- FWD DECL -- */
 typedef struct Value   Value;
 typedef struct Expr    Expr;
 typedef struct Env     Env;
 
-/* ────────────────── VALUES ───────────────────────────────────────────────── */
+/* -- VALUES -- */
 
 typedef enum {
     VAL_INT, VAL_BOOL, VAL_STRING, VAL_STRUCT,
@@ -60,7 +60,7 @@ struct Value {
     } data;
 };
 
-/* ────────────────── AST ──────────────────────────────────────────────────── */
+/* -- AST -- */
 
 typedef enum {
     EXPR_LITERAL, EXPR_VAR,
@@ -99,7 +99,7 @@ struct Expr {
     } data;
 };
 
-/* ────────────────── LEXER ────────────────────────────────────────────────── */
+/* -- LEXER -- */
 
 typedef enum {
     TOK_EOF, TOK_INT, TOK_STRING, TOK_ID,
@@ -116,7 +116,7 @@ typedef enum {
 typedef struct { TokenType type; char *text; int64_t int_val; int line; } Token;
 typedef struct { const char *input; int pos; int line; Token current; } Lexer;
 
-/* ────────────────── ENV ──────────────────────────────────────────────────── */
+/* -- ENV -- */
 
 typedef struct EnvEntry {
     char            *name;
@@ -129,7 +129,7 @@ struct Env {
     Env      *parent;
 };
 
-/* ────────────────── PROTOTYPES ───────────────────────────────────────────── */
+/* -- PROTOTYPES -- */
 
 /* values */
 Value *make_int(int64_t n);

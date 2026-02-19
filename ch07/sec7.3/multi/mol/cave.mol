@@ -1,0 +1,248 @@
+
+letrec digit_char =
+  fn(d)
+    if d == 0 "0" else
+    if d == 1 "1" else
+    if d == 2 "2" else
+    if d == 3 "3" else
+    if d == 4 "4" else
+    if d == 5 "5" else
+    if d == 6 "6" else
+    if d == 7 "7" else
+    if d == 8 "8" else
+    if d == 9 "9";
+
+letrec to_str =
+  fn(n)
+    if n == 0 "0" else
+    if n < 0 "-" ++ to_str(-n) else
+    letrec
+      digits = fn(m, acc) if m == 0 acc else digits(m / 10, cons(m % 10, acc));
+    foldl(fn(a, d) a ++ digit_char(d), "", digits(n, nil));
+
+letrec elem? =
+  fn(x, lst)
+    if nil?(lst) false else
+    head(lst) == x or elem?(x, tail(lst));
+
+letrec find_item =
+  fn(name, lst)
+    if nil?(lst) nil else
+    if head(lst).name == name head(lst) else
+    find_item(name, tail(lst));
+
+letrec remove_item =
+  fn(name, lst)
+    if nil?(lst) nil else
+    if head(lst).name == name tail(lst) else
+    cons(head(lst), remove_item(name, tail(lst)));
+
+letrec add_item =
+  fn(item, lst)
+    if elem?(item.name, map(fn(i) i.name, lst)) lst else
+    cons(item, lst);
+
+letrec reverse =
+  fn(lst, acc)
+    if nil?(lst) acc else
+    reverse(tail(lst), cons(head(lst), acc));
+
+
+let get_room =
+  fn(dir, connections)
+    letrec find =
+      fn(lst) if nil?(lst) error("Invalid direction") else
+              if head(lst).dir == dir head(lst).room else find(tail(lst));
+    find(connections);
+
+let RoomVT = {
+  describe:
+    fn(self, player)
+      let desc = self.desc ++ "\n";
+      let items_str = if nil?(self.items) "" else "Items here: " ++ head(self.items).name ++ foldl(fn(a, b) a ++ ", " ++ b.name, "", tail(self.items)) ++ "\n";
+      let event_fn = self.events;
+      let event_msg = if nil?(self.events) "" else event_fn(player);
+      let exits_str = "Exits: " ++ foldl(fn(a, b) a ++ " " ++ b, "", self.exits) ++ "\n";
+    player.add_output(desc ++ items_str ++ event_msg ++ exits_str),
+
+  add_item:
+    fn(self, item) let _ = self.items = cons(item, self.items);
+    null,
+
+  remove_item:
+    fn(self, item_name)
+      letrec filter_items =
+        fn(lst) if nil?(lst) nil else
+        if head(lst).name == item_name tail(lst) else
+        cons(head(lst), filter_items(tail(lst)));
+    let _ = self.items = filter_items(self.items);
+    null
+};
+
+let ItemVT = {
+    use:
+      fn(self, player) let _ = player.add_output("Used " ++ self.name ++ ": " ++ self.effect ++ "\n");
+      null
+};
+
+let PlayerVT = {
+  add_output:
+    fn(self, s) let _ = self.output = cons(s, self.output); null,
+  move:
+    fn(self, dir)
+      if not elem?(dir, self.room.exits)
+        let _ = self.add_output("Can't go " ++ dir ++ "!\n");
+      self.room else
+        let new_room = get_room(dir, self.room.connections);
+    let _ = self.room = new_room;
+    new_room,
+
+  pickup:
+    fn(self, item_name)
+      let item = find_item(item_name, self.room.items);
+      if nil?(item) let _ = self.add_output("No such item!\n");
+        null else
+        let _ = self.room.remove_item(item_name);
+      let _ = self.inventory = cons(item, self.inventory);
+      let _ = self.add_output("Picked up " ++ item_name ++ "\n");
+      null,
+
+  use_item:
+    fn(self, item_name)
+      let item = find_item(item_name, self.inventory);
+      if nil?(item) let _ = self.add_output("No such item in inventory!\n");
+        null else
+        let _ = item.use(self); let _ = self.inventory = remove_item(item_name, self.inventory);
+      null,
+
+  status:
+    fn(self)
+      let inv_str = if nil?(self.inventory) "" else head(self.inventory).name ++ foldl(fn(a, b) a ++ ", " ++ b.name, "", tail(self.inventory));
+      let s = "Health: " ++ to_str(self.health) ++ ", Inventory: " ++ inv_str ++ "\n";
+      let _ = self.add_output(s);
+      null
+};
+
+
+let make_room = fn(desc, exits) {vptr: RoomVT, desc: desc, exits: exits, items: nil, events: nil};
+let make_item = fn(name, effect) {vptr: ItemVT, name: name, effect: effect};
+let make_player = fn(start_room) {vptr: PlayerVT, room: start_room, health: 10, inventory: nil, output: nil};
+
+let entrance = make_room("Entrance hall. Dimly lit.", ["north", "east"]);
+let hallway = make_room("Long hallway. Echoes abound.", ["south", "west", "north"]);
+let treasure = make_room("Treasure room. Gold shines.", ["east"]);
+let monster = make_room("Monster's lair. Growls echo.", ["west"]);
+let exit_room = make_room("Exit chamber. Freedom awaits, but locked.", ["south"]);
+
+let _ = entrance.connections = [{dir: "north", room: hallway}, {dir: "east", room: monster}];
+let _ = hallway.connections = [{dir: "south", room: entrance}, {dir: "west", room: treasure}, {dir: "north", room: exit_room}];
+let _ = treasure.connections = [{dir: "east", room: hallway}];
+let _ = monster.connections = [{dir: "west", room: entrance}];
+let _ = exit_room.connections = [{dir: "south", room: hallway}];
+
+let torch    = make_item("torch",   "lights the darkness -- you feel braver");
+let key      = make_item("key",     "a heavy iron key -- perhaps it opens something");
+let potion   = make_item("potion",  "restores 5 health points -- you feel refreshed");
+let sword    = make_item("sword",   "a rusty but sharp blade -- ready to fight");
+let gold     = make_item("gold",    "a glittering coin -- wealth beyond measure");
+
+let _ = entrance.add_item(torch);
+let _ = entrance.add_item(potion);
+let _ = treasure.add_item(key);
+let _ = treasure.add_item(gold);
+let _ = monster.add_item(sword);
+
+let _ = monster.events = fn(player)
+  "A fearsome troll blocks your path and eyes your belongings!\n";
+
+let _ = exit_room.events = fn(player)
+  if find_item("key", player.inventory) != nil
+    "The key glows -- the lock clicks open. VICTORY IS YOURS!\n"
+  else
+    "The door is sealed tight. You need a key..\n";
+
+let player = make_player(entrance);
+
+let separator = "-----------------------------------\n";
+
+let print_output =
+  fn(p)
+    let lines = reverse(p.output, nil);
+    let _ = p.output = nil;
+    foldl(fn(_, s) print(s), null, lines);
+
+let _ = print("\n=== ADVENTURE ===\n");
+let _ = print(separator);
+
+let _ = print("** You wake in the entrance hall **\n");
+let _ = player.room.describe(player);
+let _ = print_output(player);
+
+let _ = print(separator);
+let _ = print(">> pick up torch\n");
+let _ = player.pickup("torch");
+let _ = print_output(player);
+
+let _ = print(">> pick up potion\n");
+let _ = player.pickup("potion");
+let _ = print_output(player);
+
+let _ = player.status();
+let _ = print_output(player);
+
+let _ = print(separator);
+let _ = print(">> go east (to monster's lair)\n");
+let _ = player.move("east");
+let _ = player.room.describe(player);
+let _ = print_output(player);
+
+let _ = print(">> pick up sword\n");
+let _ = player.pickup("sword");
+let _ = print_output(player);
+
+let _ = print(">> use torch\n");
+let _ = player.use_item("torch");
+let _ = print_output(player);
+
+let _ = print(separator);
+let _ = print(">> go west (back to entrance)\n");
+let _ = player.move("west");
+let _ = player.room.describe(player);
+let _ = print_output(player);
+
+let _ = print(">> go north (to hallway)\n");
+let _ = player.move("north");
+let _ = player.room.describe(player);
+let _ = print_output(player);
+
+let _ = print(">> go west (to treasure room)\n");
+let _ = player.move("west");
+let _ = player.room.describe(player);
+let _ = print_output(player);
+
+let _ = print(">> pick up key\n");
+let _ = player.pickup("key");
+let _ = print_output(player);
+
+let _ = print(">> pick up gold\n");
+let _ = player.pickup("gold");
+let _ = print_output(player);
+
+let _ = player.status();
+let _ = print_output(player);
+
+let _ = print(separator);
+let _ = print(">> go east then north to exit chamber\n");
+let _ = player.move("east");
+let _ = player.move("north");
+let _ = player.room.describe(player);
+let _ = print_output(player);
+
+let _ = print(">> use potion\n");
+let _ = player.use_item("potion");
+let _ = print_output(player);
+
+let _ = print(separator);
+let _ = print("** FINAL STATUS **\n");
+let _ = player.status();
+print_output(player)

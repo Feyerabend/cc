@@ -22,19 +22,19 @@
  *             | '(' expr ')' | '{' fields '}' | '[' items ']'
  */
 
-/* ── helpers ────────────────────────────────────────────────────────────── */
+/* -- helpers -- */
 
 static int at(Lexer *lex, TokenType t) { return lex->current.type == t; }
 
 static Expr *set_line(Expr *e, int line) { if (e) e->line = line; return e; }
 
-/* ── forward decls ──────────────────────────────────────────────────────── */
+/* -- forward decls -- */
 static Expr *parse_or(Lexer *lex);
 static Expr *parse_unary(Lexer *lex);
 static Expr *parse_postfix(Lexer *lex);
 static Expr *parse_primary(Lexer *lex);
 
-/* ── lambda ─────────────────────────────────────────────────────────────── */
+/* -- lambda ─-- */
 
 static Expr *parse_lambda(Lexer *lex) {
     int line = lex->current.line;
@@ -75,7 +75,7 @@ static Expr *parse_lambda(Lexer *lex) {
     return set_line(e, line);
 }
 
-/* ── struct literal ─────────────────────────────────────────────────────── */
+/* -- struct literal -- */
 
 static Expr *parse_struct_lit(Lexer *lex) {
     int line = lex->current.line;
@@ -104,7 +104,7 @@ static Expr *parse_struct_lit(Lexer *lex) {
     return set_line(e, line);
 }
 
-/* ── list literal ───────────────────────────────────────────────────────── */
+/* -- list literal -- */
 
 static Expr *parse_list_lit(Lexer *lex) {
     int line = lex->current.line;
@@ -126,7 +126,7 @@ static Expr *parse_list_lit(Lexer *lex) {
     return set_line(expr_call(list_fn, items, n), line);
 }
 
-/* ── primary ────────────────────────────────────────────────────────────── */
+/* -- primary -- */
 
 static Expr *parse_primary(Lexer *lex) {
     int line = lex->current.line;
@@ -164,7 +164,7 @@ static Expr *parse_primary(Lexer *lex) {
     exit(1);
 }
 
-/* ── postfix: calls, field access, method calls ─────────────────────────── */
+/* -- postfix: calls, field access, method calls -- */
 
 static Expr *parse_args(Lexer *lex, Expr **args_out, int *argc_out) {
     expect(lex, TOK_LPAREN);
@@ -216,7 +216,7 @@ static Expr *parse_postfix(Lexer *lex) {
     return e;
 }
 
-/* ── unary ──────────────────────────────────────────────────────────────── */
+/* -- unary -- */
 
 static Expr *parse_unary(Lexer *lex) {
     int line = lex->current.line;
@@ -231,7 +231,7 @@ static Expr *parse_unary(Lexer *lex) {
     return parse_postfix(lex);
 }
 
-/* ── multiplicative ─────────────────────────────────────────────────────── */
+/* -- multiplicative -- */
 
 static Expr *parse_multiplicative(Lexer *lex) {
     Expr *left = parse_unary(lex);
@@ -245,7 +245,7 @@ static Expr *parse_multiplicative(Lexer *lex) {
     return left;
 }
 
-/* ── additive ───────────────────────────────────────────────────────────── */
+/* -- additive -- */
 
 static Expr *parse_additive(Lexer *lex) {
     Expr *left = parse_multiplicative(lex);
@@ -264,7 +264,7 @@ static Expr *parse_additive(Lexer *lex) {
     return left;
 }
 
-/* ── comparison ─────────────────────────────────────────────────────────── */
+/* -- comparison -- */
 
 static Expr *parse_comparison(Lexer *lex) {
     Expr *left = parse_additive(lex);
@@ -280,7 +280,7 @@ static Expr *parse_comparison(Lexer *lex) {
     return left;
 }
 
-/* ── and / or ───────────────────────────────────────────────────────────── */
+/* -- and / or -- */
 
 static Expr *parse_and(Lexer *lex) {
     Expr *left = parse_comparison(lex);
@@ -302,7 +302,7 @@ static Expr *parse_or(Lexer *lex) {
     return left;
 }
 
-/* ── if/else ────────────────────────────────────────────────────────────── */
+/* -- if/else -- */
 
 static Expr *parse_if(Lexer *lex) {
     int line = lex->current.line;
@@ -323,31 +323,41 @@ static Expr *parse_if(Lexer *lex) {
     return set_line(expr_if(cond, then, els), line);
 }
 
-/* ── top-level expr ─────────────────────────────────────────────────────── */
+/* -- top-level expr -- */
 
 Expr *parse_expr(Lexer *lex) {
     int line = lex->current.line;
 
-    /* let id = expr ; expr */
+    /* let id = expr [ ; expr ] */
     if (at(lex, TOK_LET)) {
         next_token(lex);
         char *name = expect_id(lex);
         expect(lex, TOK_EQ);
         Expr *val  = parse_expr(lex);
-        expect(lex, TOK_SEMI);
-        Expr *body = parse_expr(lex);
+        Expr *body;
+        if (at(lex, TOK_SEMI)) {
+            next_token(lex);
+            body = at(lex, TOK_EOF) ? expr_var(name) : parse_expr(lex);
+        } else {
+            body = expr_var(name); /* bare `let x = e` — body defaults to x */
+        }
         Expr *e = set_line(expr_let(name, val, body), line);
         free(name); return e;
     }
 
-    /* letrec id = expr ; expr */
+    /* letrec id = expr [ ; expr ] */
     if (at(lex, TOK_LETREC)) {
         next_token(lex);
         char *name = expect_id(lex);
         expect(lex, TOK_EQ);
         Expr *val  = parse_expr(lex);
-        expect(lex, TOK_SEMI);
-        Expr *body = parse_expr(lex);
+        Expr *body;
+        if (at(lex, TOK_SEMI)) {
+            next_token(lex);
+            body = at(lex, TOK_EOF) ? expr_var(name) : parse_expr(lex);
+        } else {
+            body = expr_var(name); /* bare `letrec f = fn..` — body defaults to f */
+        }
         Expr *e = set_line(expr_letrec(name, val, body), line);
         free(name); return e;
     }
@@ -361,7 +371,7 @@ Expr *parse_expr(Lexer *lex) {
     return parse_or(lex);
 }
 
-/* ── program ────────────────────────────────────────────────────────────── */
+/* -- program -- */
 
 Expr *parse_program(Lexer *lex) {
     Expr *exprs[MAX_SEQ];
