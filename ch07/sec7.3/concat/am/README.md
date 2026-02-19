@@ -22,6 +22,15 @@ Every construct in the code has a precise categorical
 meaning, and every categorical concept has a concrete,
 runnable C representation.
 
+However, the ideas have applications if we extend
+the ideas further. One such use is in relation to
+the φ-node problem in manufacturing SSA
+([ch05, SSA](./../../../../ch05/sec5.7.1/ssa/)).
+It is not easy, and can easily go wrong when the
+semantics is not clear for the IR. Using linear
+logic we can avoid the hack that φ-node introduce.
+Exactly this is what can be observed in `linear_ssa.c`.
+
 
 ### The Two Traditions It Draws From
 
