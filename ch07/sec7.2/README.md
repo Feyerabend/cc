@@ -130,25 +130,28 @@ computation while shaping real-world programming language design.
 
 ```mermaid
 graph TD
-    A[Type Systems] --> B[Static Typing]
-    A --> C[Dynamic Typing]
-    B --> D[Strong Typing]
-    B --> E[Weak Typing]
-    D --> F[Nominal Typing]
-    D --> G[Structural Typing]
+    A[Type_Systems] --> B[Static_Typing]
+    A --> C[Dynamic_Typing]
 
-    F --> H[Subtype Polymorphism]
+    B --> D[Strong_Typing]
+    B --> E[Weak_Typing]
+
+    D --> F[Nominal_Typing]
+    D --> G[Structural_Typing]
+
+    F --> H[Subtype_Polymorphism]
     G --> H
-    B --> I[Polymorphism]
-    I --> J[Parametric (Generics)]
-    I --> K[Ad-hoc (Overloading)]
-    I --> H[Subtype Polymorphism]
 
-    B --> L[Dependent Types]
-    B --> M[Refinement Types]
-    B --> N[Linear Types]
-    B --> O[Effect Systems]
-    B --> P[Gradual Typing]
+    B --> I[Polymorphism]
+    I --> J[Parametric_Generics]
+    I --> K[Ad_hoc_Overloading]
+    I --> H
+
+    B --> L[Dependent_Types]
+    B --> M[Refinement_Types]
+    B --> N[Linear_Types]
+    B --> O[Effect_Systems]
+    B --> P[Gradual_Typing]
 
     classDef typeSystem fill:#f2f2f2,stroke:#333,stroke-width:1px;
     class A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P typeSystem;
