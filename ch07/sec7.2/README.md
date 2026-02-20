@@ -114,3 +114,18 @@ Type systems can be categorised along several axes:
    * *Refinement types* constrain existing types with
      predicates, encoding invariants directly in the type system.
 
+
+### Beyond Safety
+
+Advanced type systems can encode complex program invariants:
+* *Effect systems* track side effects (e.g., state, exceptions, I/O).
+* *Linear types* ensure resources are used exactly once, preventing leaks or double frees.
+* *Gradual typing* allows mixing static and dynamic typing in the same program.
+
+These extensions make types a tool for reasoning, verification,
+and program documentation, not just error prevention.
+
+Type systems thus bridge theory and practice: they formalise
+computation while shaping real-world programming language design.
+
+
