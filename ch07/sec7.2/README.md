@@ -128,4 +128,28 @@ and program documentation, not just error prevention.
 Type systems thus bridge theory and practice: they formalise
 computation while shaping real-world programming language design.
 
+```mermaid
+graph TD
+    A[Type Systems] --> B[Static Typing]
+    A --> C[Dynamic Typing]
+    B --> D[Strong Typing]
+    B --> E[Weak Typing]
+    D --> F[Nominal Typing]
+    D --> G[Structural Typing]
 
+    F --> H[Subtype Polymorphism]
+    G --> H
+    B --> I[Polymorphism]
+    I --> J[Parametric (Generics)]
+    I --> K[Ad-hoc (Overloading)]
+    I --> H[Subtype Polymorphism]
+
+    B --> L[Dependent Types]
+    B --> M[Refinement Types]
+    B --> N[Linear Types]
+    B --> O[Effect Systems]
+    B --> P[Gradual Typing]
+
+    classDef typeSystem fill:#f2f2f2,stroke:#333,stroke-width:1px;
+    class A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P typeSystem;
+```
