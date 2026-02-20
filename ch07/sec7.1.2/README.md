@@ -234,7 +234,7 @@ As n -> ∞, the dominant term overwhelms all others.
 O(n² + n)          ->  O(n²)
 O(n³ + n² + n + 1) ->  O(n³)
 O(2ⁿ + n¹⁰⁰)       ->  O(2ⁿ)
-O(n log n + n)      ->  O(n log n)
+O(n log n + n)     ->  O(n log n)
 ```
 
 *Why:* At `n = 1000`, `n² = 1,000,000` vs `n = 1,000`.
@@ -245,13 +245,11 @@ The smaller term is less than 0.1% of the total.
 #### Rule 3: Sequential Steps Add
 
 If you do step A, then step B, add their complexities:
-
 ```
 O(A) + O(B)
 ```
 
 Then apply Rule 2 to simplify.
-
 ```
 O(n) + O(n²)     =  O(n + n²)  ->  O(n²)
 O(log n) + O(n)  =  O(n)
@@ -263,7 +261,6 @@ O(n) + O(n)      =  O(2n)      ->  O(n)
 #### Rule 4: Nested Steps Multiply
 
 If step A contains step B (a loop inside a loop), multiply:
-
 ```
 O(A) × O(B)
 ```
@@ -350,11 +347,10 @@ for i in range(n):
 ```
 
 Step-by-step--count total iterations precisely:
-
 ```
 When i=0: n   iterations
 When i=1: n-1 iterations
-...
+..
 When i=n-1: 1 iteration
 
 Total = n + (n-1) + (n-2) + ... + 1 = n(n+1)/2
