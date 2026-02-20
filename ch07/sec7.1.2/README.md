@@ -288,10 +288,10 @@ O(n²) × O(n)     =  O(n³)
 #### Worked Example A: Two separate loops
 
 ```python
-for i in range(n):       ## Loop 1: n iterations
+for i in range(n):       # Loop 1: n iterations
     print(i)
 
-for j in range(n):       ## Loop 2: n iterations
+for j in range(n):       # Loop 2: n iterations
     print(j * 2)
 ```
 
@@ -308,8 +308,8 @@ Step-by-step:
 #### Worked Example B: Nested loops
 
 ```python
-for i in range(n):        ## Outer: n iterations
-    for j in range(n):    ## Inner: n iterations each time
+for i in range(n):        # Outer: n iterations
+    for j in range(n):    # Inner: n iterations each time
         print(i, j)
 ```
 
@@ -325,8 +325,8 @@ Step-by-step:
 #### Worked Example C: Constant inner loop (a common trap)
 
 ```python
-for i in range(n):           ## Outer: n iterations
-    for j in range(1000):    ## Inner: 1000--a fixed constant
+for i in range(n):           # Outer: n iterations
+    for j in range(1000):    # Inner: 1000--a fixed constant
         print(i, j)
 ```
 
@@ -342,7 +342,7 @@ Step-by-step:
 
 ```python
 for i in range(n):
-    for j in range(i, n):    ## Inner runs n-i times
+    for j in range(i, n):    # Inner runs n-i times
         print(i, j)
 ```
 
@@ -371,7 +371,7 @@ the total is still quadratic.
 def halving(n):
     if n <= 1:
         return
-    halving(n // 2)    ## Problem is halved each call
+    halving(n // 2)    # Problem is halved each call
 ```
 
 Step-by-step:
@@ -386,16 +386,16 @@ Step-by-step:
 #### Worked Example F: Mixed complexity
 
 ```python
-for i in range(n):                  ## O(n)
+for i in range(n):                  # O(n)
     print(i)
 
-for i in range(n):                  ## O(n log n)
+for i in range(n):                  # O(n log n)
     j = n
     while j > 1:
-        j = j // 2                  ## halves: O(log n) iterations
+        j = j // 2                  # halves: O(log n) iterations
         print(i, j)
 
-for i in range(n):                  ## O(n²)
+for i in range(n):                  # O(n²)
     for j in range(n):
         print(i * j)
 ```
@@ -417,7 +417,7 @@ Step-by-step:
 
 ```python
 def linear_search(arr, target):
-    for i in range(len(arr)):    ## worst case: all n elements
+    for i in range(len(arr)):    # worst case: all n elements
         if arr[i] == target:
             return i
     return -1
@@ -471,8 +471,8 @@ worth it if you search many times (otherwise the sort cost dominates).*
 ```python
 def bubble_sort(arr):
     n = len(arr)
-    for i in range(n):              ## outer: n
-        for j in range(n - i - 1): ## inner: n-1, n-2, ..., 1
+    for i in range(n):             # outer: n
+        for j in range(n - i - 1): # inner: n-1, n-2, ..., 1
             if arr[j] > arr[j + 1]:
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
 ```
@@ -494,9 +494,9 @@ def merge_sort(arr):
     if len(arr) <= 1:
         return arr
     mid = len(arr) // 2
-    left  = merge_sort(arr[:mid])   ## recurse left half
-    right = merge_sort(arr[mid:])   ## recurse right half
-    return merge(left, right)       ## O(n) merge step
+    left  = merge_sort(arr[:mid])   # recurse left half
+    right = merge_sort(arr[mid:])   # recurse right half
+    return merge(left, right)       # O(n) merge step
 ```
 
 *Analysis via recurrence relation:*
@@ -591,7 +591,7 @@ A good hash function makes this astronomically rare in practice.
 ```python
 def quicksort(arr, lo, hi):
     if lo < hi:
-        pivot = partition(arr, lo, hi)   ## O(n)
+        pivot = partition(arr, lo, hi)   # O(n)
         quicksort(arr, lo, pivot - 1)
         quicksort(arr, pivot + 1, hi)
 ```
@@ -649,7 +649,7 @@ and data structure costs space.
 
 ```python
 def sum_array(arr):
-    total = 0           ## one variable
+    total = 0           # one variable
     for x in arr:
         total += x
     return total
@@ -661,7 +661,7 @@ def sum_array(arr):
 def copy_array(arr):
     result = []
     for x in arr:
-        result.append(x)  ## grows with n
+        result.append(x)  # grows with n
     return result
 ```
 
@@ -670,7 +670,7 @@ def copy_array(arr):
 ```python
 def factorial(n):
     if n == 0: return 1
-    return n * factorial(n - 1)  ## n frames on the stack
+    return n * factorial(n - 1)  # n frames on the stack
 ```
 
 *O(log n) space*--binary search recursively (depth = log n):
@@ -734,7 +734,7 @@ Bubble sort is Θ(n²) in the worst and average case.
 
 ```python
 for i in range(n):
-    for j in range(10):   ## This is O(1), not O(n)
+    for j in range(10):   # This is O(1), not O(n)
         print(j)
 ```
 
@@ -746,8 +746,8 @@ If a function takes two lists of sizes `m` and `n`:
 
 ```python
 def combine(a, b):
-    for x in a:      ## O(m)
-        for y in b:  ## O(n)
+    for x in a:      # O(m)
+        for y in b:  # O(n)
             print(x, y)
 ```
 
