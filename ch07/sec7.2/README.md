@@ -17,6 +17,9 @@ Modern languages now span a wide spectrum, from dynamically typed
 (*Python*, *JavaScript*) to richly statically typed (*Rust*,
 *Haskell*, *Scala*).
 
+We give an [example](./design/) of how type systems play a role
+in the design of programming langauges.
+
 Type systems are not just about safety; they influence program design,
 optimisation, and documentation. Advanced type systems can express
 invariants, encode protocols, and even reason about effects like
