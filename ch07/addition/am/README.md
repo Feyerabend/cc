@@ -1,5 +1,5 @@
 
-## A Categorical Abstract Machine (AM) in C: `catmachine`
+## A Categorical Abstract Machine in C: `catmachine`
 
 *An amalgamation of category theory and concatenative language design, expressed in portable C.*
 
