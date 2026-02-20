@@ -25,7 +25,7 @@ runnable C representation.
 However, the ideas have applications if we extend
 the ideas further. One such use is in relation to
 the φ-node problem in manufacturing SSA
-([ch05, SSA](./../../../../ch05/sec5.7.1/ssa/)).
+([ch05, SSA](./../../../ch05/sec5.7.1/ssa/)).
 It is not easy, and can easily go wrong when the
 semantics is not clear for the IR. Using linear
 logic we can avoid the hack that φ-node introduce.
@@ -48,7 +48,7 @@ Manfred von Thun on Joy--but rarely appear in implementation.
 
 #### Category Theory
 
-[Category theory](./../../../../ch08/addition/category/) provides a precise language for
+[Category theory](./../../../ch08/addition/category/) provides a precise language for
 composition. A *morphism* `f : A → B` is an arrow between objects. Two morphisms compose
 when the output type of one matches the input type of the next: if `f : A → B` and `g : B → C`,
 then `g ∘ f : A → C`. A *symmetric monoidal category* adds a tensor product `⊗` that lets
