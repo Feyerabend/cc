@@ -32,7 +32,7 @@ Type systems serve multiple purposes:
 
 1. *Safety*: Prevent invalid operations at compile time
 2. *Documentation*: Types communicate programmer intent
-3. *Optimization*: Enable compiler to generate better code
+3. *Optimisation*: Enable compiler to generate better code
 4. *Abstraction*: Allow reasoning about code without running it
 
 For 6502 compilation, types also:
@@ -101,7 +101,7 @@ This minimal calculus is:
 #### 3.1 Why Formalise Semantics?
 
 Formal semantics provide:
-- *Precise specification*: No ambiguity about behavior
+- *Precise specification*: No ambiguity about behaviour
 - *Correctness proofs*: Verify compilation preserves meaning
 - *Implementation guide*: Clear rules for interpreter/compiler
 - *Testing oracle*: Generate correct test cases
@@ -259,7 +259,7 @@ This equivalence is crucial for correctness:
 
 #### 4.1 The Purpose of Types
 
-Types classify values and expressions by their behavior:
+Types classify values and expressions by their behaviour:
 
 ```text
 Int8: Values fitting in one byte (0-255 or -128 to 127)
@@ -532,7 +532,7 @@ S₅ = unify(S₄(τt), τf)
 Γ ⊢ if c then t else f ⇒ (S₅(τf), S₅ ∘ S₄ ∘ S₃ ∘ S₂ ∘ S₁)
 ```
 
-*Let Binding (with Generalization):*
+*Let Binding (with Generalisation):*
 ```math
 Γ ⊢ e₁ ⇒ (τ₁, S₁)
 τ₁' = generalize(S₁(Γ), τ₁)
@@ -1011,7 +1011,7 @@ $11: t2 (zero page)
 
 
 
-### 9. Optimization Opportunities
+### 9. Optimisation Opportunities
 
 #### 9.1 Peephole Optimisation
 
@@ -1478,7 +1478,7 @@ Property: Type Preservation
     if e is well-typed,
     then lower(e) has equivalent semantics
     
-Property: Optimization Correctness
+Property: Optimisation Correctness
   ∀ IR program p:
     optimize(p) produces same result as p
 ```
@@ -1681,7 +1681,7 @@ To extend this language:
 
 1. *Add features*: Arrays, structs, strings
 2. *Improve types*: Polymorphism, type classes
-3. *Optimize*: Better register allocation, inlining
+3. *Optimise*: Better register allocation, inlining
 4. *Target more architectures*: x86, ARM, RISC-V
 5. *Add tools*: Debugger, profiler, IDE integration
 
