@@ -120,7 +120,7 @@ e ⇓ v
 ##### Core Rules:
 
 *Literals:*
-```math
+```
 -----
 n ⇓ n
 
@@ -132,28 +132,28 @@ false ⇓ false
 ```
 
 *Addition:*
-```math
+```
 e₁ ⇓ n₁    e₂ ⇓ n₂
 ------------------
 e₁ + e₂ ⇓ n₁ + n₂
 ```
 
 *Conditional (True):*
-```math
+```
 c ⇓ true    t ⇓ v
 ----------------------
 if c then t else f ⇓ v
 ```
 
 *Conditional (False):*
-```math
+```
 c ⇓ false    f ⇓ v
 ----------------------
 if c then t else f ⇓ v
 ```
 
 *Let Binding:*
-```math
+```
 e₁ ⇓ v₁    e₂[x ↦ v₁] ⇓ v₂
 --------------------------
 let x = e₁ in e₂ ⇓ v₂
@@ -166,7 +166,7 @@ Where `e[x ↦ v]` denotes capture-avoiding substitution.
 #### 3.3 Small-Step Operational Semantics
 
 Small-step semantics show individual computation steps:
-```math
+```
 e -> e'
 ```
 
@@ -175,54 +175,54 @@ e -> e'
 ##### Core Reduction Rules
 
 *Addition (Left):*
-```math
-e₁ -> e₁'
+```
+     e₁ -> e₁'
 ------------------
 e₁ + e₂ -> e₁' + e₂
 ```
 
 *Addition (Right):*
-```math
-e₂ -> e₂'
+```
+    e₂ -> e₂'
 -----------------
 v + e₂ -> v + e₂'
 ```
 
 *Addition (Final):*
-```math
+```
 -------------
 n₁ + n₂ -> n₃
 ```
 where n₃ = n₁ + n₂
 
 *Let (Evaluate Binding):*
-```math
-e₁ -> e₁'
+```
+              e₁ -> e₁'
 -------------------------------------
 let x = e₁ in e₂ -> let x = e₁' in e₂
 ```
 
 *Let (Substitute):*
-```math
+```
 --------------------------
 let x = v in e -> e[x ↦ v]
 ```
 
 *Conditional (Reduce Condition):*
-```math
-c -> c'
+```
+                 c -> c'
 -----------------------------------------
 if c then t else f -> if c' then t else f
 ```
 
 *Conditional (True):*
-```math
+```
 --------------------------
 if true then t else f -> t
 ```
 
 *Conditional (False):*
-```math
+```
 ----------------------------
 if false then t else f -> f
 ```
