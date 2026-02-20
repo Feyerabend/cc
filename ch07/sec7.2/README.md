@@ -11,7 +11,7 @@ in the *Curry–Howard correspondence*, where types are viewed as
 logical propositions and programs as proofs.
 
 In programming languages, type systems became practically important
-with languages like *Algol**, *ML*, and *Haskell*, where static
+with languages like *Algol*, *ML*, and *Haskell*, where static
 typing was used to improve safety and reasoning about programs.
 Modern languages now span a wide spectrum, from dynamically typed
 (*Python*, *JavaScript*) to richly statically typed (*Rust*,
