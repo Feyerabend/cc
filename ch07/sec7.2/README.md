@@ -17,6 +17,11 @@ Modern languages now span a wide spectrum, from dynamically typed
 (*Python*, *JavaScript*) to richly statically typed (*Rust*,
 *Haskell*, *Scala*).
 
+Type systems are not just about safety; they influence program design,
+optimisation, and documentation. Advanced type systems can express
+invariants, encode protocols, and even reason about effects like
+state or exceptions.
+
 
 ### Formal Introduction
 
@@ -70,4 +75,42 @@ If $e_1$ and $e_2$ are integers, then $e_1 + e_2$ is also an integer.
 
 These formal rules allow reasoning about programs rigorously
 and form the foundation for modern type theory.  
+
+
+### Type System Dimensions
+
+Type systems can be categorised along several axes:
+
+1. *Static vs Dynamic Typing*
+   * *Static typing* checks types at compile time,
+     enabling early error detection and optimisation.
+   * *Dynamic typing* defers checks until runtime,
+     allowing more flexibility but potentially runtime errors.
+
+2. *Strong vs Weak Typing*
+   * *Strongly typed* languages prevent implicit type coercions
+     that can lead to unexpected behaviour.
+   * *Weakly typed* languages allow more implicit conversions,
+     trading safety for convenience.
+
+3. *Nominal vs Structural Typing*
+   * *Nominal typing* requires explicit type declarations and
+     matches by name (*Java*, *C#*).
+   * *Structural typing* matches by the shape or structure of
+     data (*TypeScript*, *OCaml*).
+
+4. *Polymorphism*
+   * *Parametric polymorphism* lets functions operate on any
+     type uniformly (generics).
+   * *Ad-hoc polymorphism* (overloading) allows different
+     behaviour for different types.
+   * *Subtype polymorphism* enables treating objects of
+     different types under a common interface.
+
+5. *Dependent and Refinement Types*
+
+   * *Dependent types* allow types to depend on values,
+     enabling precise specifications (*Agda*, *Idris*).
+   * *Refinement types* constrain existing types with
+     predicates, encoding invariants directly in the type system.
 
