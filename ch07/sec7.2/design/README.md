@@ -587,13 +587,13 @@ Instruction ::= t = op a, b -- Binary operation
               | ret t -- Return value
               | call t, f, a₁, ..., aₙ -- Function call
 
-Operand ::= t -- Temporary
-          | n -- Literal
-          | L -- Label
+     Operand ::= t -- Temporary
+              | n -- Literal
+              | L -- Label
 
-Operator ::= add | sub | mul -- Arithmetic
-           | lt | le | eq -- Comparison
-           | neg | not -- Unary
+    Operator ::= add | sub | mul -- Arithmetic
+              | lt | le | eq -- Comparison
+              | neg | not -- Unary
 ```
 
 #### 6.3 IR Semantics
