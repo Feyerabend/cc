@@ -18,7 +18,7 @@ Modern languages now span a wide spectrum, from dynamically typed
 *Haskell*, *Scala*).
 
 We give an [example](./design/) of how type systems play a role
-in the design of programming langauges.
+in the design of programming languages.
 
 Type systems are not just about safety; they influence program design,
 optimisation, and documentation. Advanced type systems can express
