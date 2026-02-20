@@ -1,52 +1,52 @@
+# Designing Programming Languages: From Type Theory to 6502 Assembly
 
-## Designing Programming Languages: From Type Theory to 6502 Assembly
-
-*A Comprehensive Guide to Language Design with Emphasis on Type Systems*
-
-
-### Part I: Foundations of Language Design
+**A Comprehensive Guide to Language Design with Emphasis on Type Systems**
 
 
 
-### 1. The Design Philosophy
+# Part I: Foundations of Language Design
 
-#### 1.1 What Makes a Good Language?
+
+
+# 1. The Design Philosophy
+
+## 1.1 What Makes a Good Language?
 
 A well-designed programming language embodies several principles:
 
-- *Clarity*: Semantics should be unambiguous
-- *Expressiveness*: Complex ideas in simple terms
-- *Safety*: Errors caught early (at compile time when possible)
-- *Efficiency*: Predictable performance characteristics
-- *Teachability*: Concepts build on each other logically
+- **Clarity**: Semantics should be unambiguous
+- **Expressiveness**: Complex ideas in simple terms
+- **Safety**: Errors caught early (at compile time when possible)
+- **Efficiency**: Predictable performance characteristics
+- **Teachability**: Concepts build on each other logically
 
 For educational purposes targeting 6502 assembly, we add:
-- *Transparency*: Students see how high-level constructs map to machine code
-- *Minimalism*: Small language core exposes compilation fundamentals
+- **Transparency**: Students see how high-level constructs map to machine code
+- **Minimalism**: Small language core exposes compilation fundamentals
 
 
 
-#### 1.2 The Role of Type Systems
+## 1.2 The Role of Type Systems
 
 Type systems serve multiple purposes:
 
-1. *Safety*: Prevent invalid operations at compile time
-2. *Documentation*: Types communicate programmer intent
-3. *Optimization*: Enable compiler to generate better code
-4. *Abstraction*: Allow reasoning about code without running it
+1. **Safety**: Prevent invalid operations at compile time
+2. **Documentation**: Types communicate programmer intent
+3. **Optimization**: Enable compiler to generate better code
+4. **Abstraction**: Allow reasoning about code without running it
 
 For 6502 compilation, types also:
-- *Guide register allocation*: Different types have different storage needs
-- *Determine calling conventions*: How data flows between functions
-- *Enable static analysis*: Detect overflow, size mismatches
+- **Guide register allocation**: Different types have different storage needs
+- **Determine calling conventions**: How data flows between functions
+- **Enable static analysis**: Detect overflow, size mismatches
 
 
 
-### 2. Choosing Your Language Model
+# 2. Choosing Your Language Model
 
-#### 2.1 Computation Model
+## 2.1 Computation Model
 
-We adopt a *pure, expression-oriented, strict evaluation* model:
+We adopt a **pure, expression-oriented, strict evaluation** model:
 
 ```text
 Computation Style:
@@ -55,7 +55,7 @@ Computation Style:
 - Strict: Call-by-value evaluation
 ```
 
-*Why this model?*
+**Why this model?**
 - Referential transparency simplifies reasoning
 - Expressions compose naturally
 - Strict evaluation has predictable execution order (crucial for 6502)
@@ -63,7 +63,7 @@ Computation Style:
 
 
 
-#### 2.2 Core Language: A Minimal Calculus
+## 2.2 Core Language: A Minimal Calculus
 
 We design a minimal language sufficient for teaching compilation:
 
@@ -83,79 +83,80 @@ e ::= n          -- Integer literals
     | e * e      -- Multiplication
     | e < e      -- Comparison
     | e == e     -- Equality
-    | if e then e else e         -- Conditional
-    | let x = e in e             -- Local binding
+    | if e then e else e  -- Conditional
+    | let x = e in e      -- Local binding
     | fn(x₁: τ₁, ..., xₙ: τₙ) -> τ { e }  -- Function definition
-    | f(e₁, ..., eₙ)             -- Function call
+    | f(e₁, ..., eₙ)      -- Function call
 ```
 
 This minimal calculus is:
-- *Complete*: Can express all computations
-- *Simple*: Few constructs to implement
-- *Representative*: Shows key compilation challenges
+- **Complete**: Can express all computations
+- **Simple**: Few constructs to implement
+- **Representative**: Shows key compilation challenges
 
 
 
-### 3. Formal Semantics
+# 3. Formal Semantics
 
-#### 3.1 Why Formalise Semantics?
+## 3.1 Why Formalize Semantics?
 
 Formal semantics provide:
-- *Precise specification*: No ambiguity about behavior
-- *Correctness proofs*: Verify compilation preserves meaning
-- *Implementation guide*: Clear rules for interpreter/compiler
-- *Testing oracle*: Generate correct test cases
+- **Precise specification**: No ambiguity about behavior
+- **Correctness proofs**: Verify compilation preserves meaning
+- **Implementation guide**: Clear rules for interpreter/compiler
+- **Testing oracle**: Generate correct test cases
 
 
 
-#### 3.2 Big-Step Operational Semantics
+## 3.2 Big-Step Operational Semantics
 
 Big-step semantics describe evaluation from expression to final value:
+
 ```math
 e ⇓ v
 ```
 
-*Read as*: "Expression e evaluates to value v"
+**Read as**: "Expression e evaluates to value v"
 
-##### Core Rules:
+### Core Rules:
 
-*Literals:*
-```
------
+**Literals:**
+```math
+─────────
 n ⇓ n
 
------------
+─────────
 true ⇓ true
 
--------------
+─────────
 false ⇓ false
 ```
 
-*Addition:*
-```
+**Addition:**
+```math
 e₁ ⇓ n₁    e₂ ⇓ n₂
-------------------
+─────────────────────
 e₁ + e₂ ⇓ n₁ + n₂
 ```
 
-*Conditional (True):*
-```
+**Conditional (True):**
+```math
 c ⇓ true    t ⇓ v
-----------------------
+──────────────────────────
 if c then t else f ⇓ v
 ```
 
-*Conditional (False):*
-```
+**Conditional (False):**
+```math
 c ⇓ false    f ⇓ v
-----------------------
+──────────────────────────
 if c then t else f ⇓ v
 ```
 
-*Let Binding:*
-```
+**Let Binding:**
+```math
 e₁ ⇓ v₁    e₂[x ↦ v₁] ⇓ v₂
---------------------------
+─────────────────────────────
 let x = e₁ in e₂ ⇓ v₂
 ```
 
@@ -163,86 +164,87 @@ Where `e[x ↦ v]` denotes capture-avoiding substitution.
 
 
 
-#### 3.3 Small-Step Operational Semantics
+## 3.3 Small-Step Operational Semantics
 
 Small-step semantics show individual computation steps:
-```
-e -> e'
+
+```math
+e → e'
 ```
 
-*Read as*: "Expression e reduces to e' in one step"
+**Read as**: "Expression e reduces to e' in one step"
 
-##### Core Reduction Rules
+### Core Reduction Rules:
 
-*Addition (Left):*
-```
-     e₁ -> e₁'
-------------------
-e₁ + e₂ -> e₁' + e₂
-```
-
-*Addition (Right):*
-```
-    e₂ -> e₂'
------------------
-v + e₂ -> v + e₂'
+**Addition (Left):**
+```math
+e₁ → e₁'
+──────────────────
+e₁ + e₂ → e₁' + e₂
 ```
 
-*Addition (Final):*
+**Addition (Right):**
+```math
+e₂ → e₂'
+──────────────────
+v + e₂ → v + e₂'
 ```
--------------
-n₁ + n₂ -> n₃
+
+**Addition (Final):**
+```math
+─────────────────
+n₁ + n₂ → n₃
 ```
 where n₃ = n₁ + n₂
 
-*Let (Evaluate Binding):*
-```
-              e₁ -> e₁'
--------------------------------------
-let x = e₁ in e₂ -> let x = e₁' in e₂
-```
-
-*Let (Substitute):*
-```
---------------------------
-let x = v in e -> e[x ↦ v]
+**Let (Evaluate Binding):**
+```math
+e₁ → e₁'
+────────────────────────────
+let x = e₁ in e₂ → let x = e₁' in e₂
 ```
 
-*Conditional (Reduce Condition):*
-```
-                 c -> c'
------------------------------------------
-if c then t else f -> if c' then t else f
-```
-
-*Conditional (True):*
-```
---------------------------
-if true then t else f -> t
+**Let (Substitute):**
+```math
+───────────────────────────
+let x = v in e → e[x ↦ v]
 ```
 
-*Conditional (False):*
-```
-----------------------------
-if false then t else f -> f
+**Conditional (Reduce Condition):**
+```math
+c → c'
+─────────────────────────────────────
+if c then t else f → if c' then t else f
 ```
 
-##### Multi-Step Reduction
+**Conditional (True):**
+```math
+────────────────────────────
+if true then t else f → t
+```
+
+**Conditional (False):**
+```math
+────────────────────────────
+if false then t else f → f
+```
+
+### Multi-Step Reduction:
 
 ```math
-e ->* e'
+e →* e'
 ```
 
 Means: e reduces to e' in zero or more steps.
 
 
 
-#### 3.4 Semantic Equivalence
+## 3.4 Semantic Equivalence
 
 Both semantics should agree:
 
 ```math
-e ⇓ v  ⟺  e ->* v
+e ⇓ v  ⟺  e →* v
 ```
 
 This equivalence is crucial for correctness:
@@ -251,13 +253,13 @@ This equivalence is crucial for correctness:
 
 
 
-### Part II: Type System Design
+# Part II: Type System Design
 
 
 
-### 4. Type System Foundations
+# 4. Type System Foundations
 
-#### 4.1 The Purpose of Types
+## 4.1 The Purpose of Types
 
 Types classify values and expressions by their behavior:
 
@@ -268,15 +270,16 @@ Bool: True or false values
 ```
 
 Types enable:
-- *Static verification*: Catch errors before running
-- *Memory layout*: Know how much space to allocate
-- *Instruction selection*: Choose appropriate 6502 instructions
+- **Static verification**: Catch errors before running
+- **Memory layout**: Know how much space to allocate
+- **Instruction selection**: Choose appropriate 6502 instructions
 
 
 
-#### 4.2 Typing Contexts
+## 4.2 Typing Contexts
 
 A typing context tracks variable types:
+
 ```math
 Γ ::= ∅                  -- Empty context
     | Γ, x: τ            -- Extended context
@@ -289,116 +292,117 @@ Example:
 
 
 
-#### 4.3 Typing Judgment
+## 4.3 Typing Judgment
 
 The fundamental typing judgment:
+
 ```math
 Γ ⊢ e : τ
 ```
 
-*Read as*: "Under context Γ, expression e has type τ"
+**Read as**: "Under context Γ, expression e has type τ"
 
 
 
-#### 4.4 Type System Rules
+## 4.4 Type System Rules
 
-##### Literals:
+### Literals:
 
 ```math
--------------
+─────────────────
 Γ ⊢ n : Int16
 ```
 
 (Default: literals are Int16)
 
 ```math
----------------
+─────────────────
 Γ ⊢ true : Bool
 
-----------------
+─────────────────
 Γ ⊢ false : Bool
 ```
 
-##### Variables:
+### Variables:
 
 ```math
 x: τ ∈ Γ
-----------
+─────────────
 Γ ⊢ x : τ
 ```
 
-##### Addition:
+### Addition:
 
 ```math
 Γ ⊢ e₁ : Int16    Γ ⊢ e₂ : Int16
----------------------------------
+─────────────────────────────────
 Γ ⊢ e₁ + e₂ : Int16
 ```
 
-##### Subtraction:
+### Subtraction:
 
 ```math
 Γ ⊢ e₁ : Int16    Γ ⊢ e₂ : Int16
----------------------------------
+─────────────────────────────────
 Γ ⊢ e₁ - e₂ : Int16
 ```
 
-##### Comparison:
+### Comparison:
 
 ```math
 Γ ⊢ e₁ : Int16    Γ ⊢ e₂ : Int16
----------------------------------
+─────────────────────────────────
 Γ ⊢ e₁ < e₂ : Bool
 ```
 
-##### Conditional:
+### Conditional:
 
 ```math
 Γ ⊢ c : Bool    Γ ⊢ t : τ    Γ ⊢ f : τ
----------------------------------------
+────────────────────────────────────────
 Γ ⊢ if c then t else f : τ
 ```
 
-*Key constraint*: Both branches must have the *same type*.
+**Key constraint**: Both branches must have the *same type*.
 
-##### Let Binding:
+### Let Binding:
 
 ```math
 Γ ⊢ e₁ : τ₁    Γ, x: τ₁ ⊢ e₂ : τ₂
-----------------------------------
+────────────────────────────────────
 Γ ⊢ let x = e₁ in e₂ : τ₂
 ```
 
-##### Function Definition:
+### Function Definition:
 
 ```math
 Γ, x₁: τ₁, ..., xₙ: τₙ ⊢ e : τ
-------------------------------------------------------------
-Γ ⊢ fn(x₁: τ₁, ..., xₙ: τₙ) -> τ { e } : τ₁ -> ... -> τₙ -> τ
+────────────────────────────────────────────
+Γ ⊢ fn(x₁: τ₁, ..., xₙ: τₙ) -> τ { e } : τ₁ → ... → τₙ → τ
 ```
 
-##### Function Application:
+### Function Application:
 
 ```math
-Γ ⊢ f : τ₁ -> ... -> τₙ -> τ    Γ ⊢ e₁ : τ₁    ...    Γ ⊢ eₙ : τₙ
------------------------------------------------------------------
+Γ ⊢ f : τ₁ → ... → τₙ → τ    Γ ⊢ e₁ : τ₁    ...    Γ ⊢ eₙ : τₙ
+───────────────────────────────────────────────────────────────
 Γ ⊢ f(e₁, ..., eₙ) : τ
 ```
 
 
 
-#### 4.5 Type Soundness
+## 4.5 Type Soundness
 
-The type system is *sound* if:
+The type system is **sound** if:
 
-*Preservation*: 
+**Preservation**: 
 ```math
-If Γ ⊢ e : τ and e -> e', then Γ ⊢ e' : τ
+If Γ ⊢ e : τ and e → e', then Γ ⊢ e' : τ
 ```
 
-*Progress*:
+**Progress**:
 ```math
-If ∅ ⊢ e : τ, then either e is a value or e -> e'
+If ∅ ⊢ e : τ, then either e is a value or e → e'
 ```
 
 These properties guarantee:
@@ -408,14 +412,15 @@ These properties guarantee:
 
 
 
-### 5. Type Inference
+# 5. Type Inference
 
-#### 5.1 Why Type Inference?
+## 5.1 Why Type Inference?
 
 Type inference allows omitting type annotations:
+
 ```text
-Instead of:         let x: Int16 = 2 + 3 in x - 1
-Programmer writes:  let x = 2 + 3 in x - 1
+Instead of:      let x: Int16 = 2 + 3 in x - 1
+Programmer writes: let x = 2 + 3 in x - 1
 ```
 
 Benefits:
@@ -425,9 +430,10 @@ Benefits:
 
 
 
-#### 5.2 Type Variables
+## 5.2 Type Variables
 
 Introduce type variables for unknown types:
+
 ```text
 τ ::= Int8 | Int16 | Bool | α
 ```
@@ -436,9 +442,10 @@ Where α, β, γ are type variables.
 
 
 
-#### 5.3 Substitutions
+## 5.3 Substitutions
 
 A substitution maps type variables to types:
+
 ```math
 S = [α ↦ Int16, β ↦ Bool]
 ```
@@ -447,97 +454,100 @@ Applying substitution:
 ```math
 S(α) = Int16
 S(Int16) = Int16
-S(α -> β) = Int16 -> Bool
+S(α → β) = Int16 → Bool
 ```
 
 
 
-#### 5.4 Unification
+## 5.4 Unification
 
 Unification finds substitutions making types equal:
+
 ```text
 unify(τ₁, τ₂) = S such that S(τ₁) = S(τ₂)
 ```
 
-*Examples:*
+**Examples:**
+
 ```text
 unify(Int16, Int16) = ∅ (already equal)
 unify(α, Int16) = [α ↦ Int16]
 unify(α, α) = ∅
 unify(Int16, Bool) = fail (incompatible)
-unify(α -> β, Int16 -> Bool) = [α ↦ Int16, β ↦ Bool]
+unify(α → β, Int16 → Bool) = [α ↦ Int16, β ↦ Bool]
 ```
 
-##### Unification Algorithm:
+### Unification Algorithm:
 
 ```text
 unify(τ₁, τ₂):
   case (τ₁, τ₂):
-    (τ, τ) -> ∅
-    (α, τ) -> [α ↦ τ] if α ∉ FV(τ)  -- occurs check
-    (τ, α) -> [α ↦ τ] if α ∉ FV(τ)
-    (τ₁ -> τ₁', τ₂ -> τ₂') ->
+    (τ, τ) → ∅
+    (α, τ) → [α ↦ τ] if α ∉ FV(τ)  -- occurs check
+    (τ, α) → [α ↦ τ] if α ∉ FV(τ)
+    (τ₁ → τ₁', τ₂ → τ₂') →
       S₁ = unify(τ₁, τ₂)
       S₂ = unify(S₁(τ₁'), S₁(τ₂'))
       S₂ ∘ S₁
-    _ -> fail
+    _ → fail
 ```
 
-The *occurs check* prevents infinite types like `α = α -> Int16`.
+The **occurs check** prevents infinite types like `α = α → Int16`.
 
 
 
-#### 5.5 Inference Algorithm (Hindley-Milner)
+## 5.5 Inference Algorithm (Hindley-Milner)
 
 The inference judgment:
+
 ```math
 Γ ⊢ e ⇒ (τ, S)
 ```
 
-*Read as*: "Under Γ, expression e infers type τ with substitution S"
+**Read as**: "Under Γ, expression e infers type τ with substitution S"
 
-##### Inference Rules:
+### Inference Rules:
 
-*Integer Literal:*
+**Integer Literal:**
 ```math
-------------------
+─────────────────────────
 Γ ⊢ n ⇒ (Int16, ∅)
 ```
 
-*Variable:*
+**Variable:**
 ```math
 x: τ ∈ Γ
---------------
+─────────────────────
 Γ ⊢ x ⇒ (τ, ∅)
 ```
 
-*Addition:*
+**Addition:**
 ```math
 Γ ⊢ e₁ ⇒ (τ₁, S₁)
 S₁(Γ) ⊢ e₂ ⇒ (τ₂, S₂)
 S₃ = unify(S₂(τ₁), Int16)
 S₄ = unify(S₃(S₂(τ₂)), Int16)
-----------------------------------------
+──────────────────────────────────────────────
 Γ ⊢ e₁ + e₂ ⇒ (Int16, S₄ ∘ S₃ ∘ S₂ ∘ S₁)
 ```
 
-*Conditional:*
+**Conditional:**
 ```math
 Γ ⊢ c ⇒ (τc, S₁)
 S₂ = unify(τc, Bool)
 S₂(S₁(Γ)) ⊢ t ⇒ (τt, S₃)
 S₃(S₂(S₁(Γ))) ⊢ f ⇒ (τf, S₄)
 S₅ = unify(S₄(τt), τf)
----------------------------------------------------------
+──────────────────────────────────────────────────────
 Γ ⊢ if c then t else f ⇒ (S₅(τf), S₅ ∘ S₄ ∘ S₃ ∘ S₂ ∘ S₁)
 ```
 
-*Let Binding (with Generalization):*
+**Let Binding (with Generalization):**
 ```math
 Γ ⊢ e₁ ⇒ (τ₁, S₁)
 τ₁' = generalize(S₁(Γ), τ₁)
 S₁(Γ), x: τ₁' ⊢ e₂ ⇒ (τ₂, S₂)
-------------------------------------
+────────────────────────────────────
 Γ ⊢ let x = e₁ in e₂ ⇒ (τ₂, S₂ ∘ S₁)
 ```
 
@@ -545,77 +555,78 @@ Where `generalize(Γ, τ)` introduces universal quantification for type variable
 
 
 
-#### 5.6 Example: Type Inference in Action
+## 5.6 Example: Type Inference in Action
 
-*Program:*
+**Program:**
 ```text
 let x = 2 + 3 in
 if x < 10 then x - 1 else x + 1
 ```
 
-*Inference Steps:*
+**Inference Steps:**
 
-1. *Infer `2 + 3`:*
+1. **Infer `2 + 3`:**
    - `2 ⇒ (Int16, ∅)`
    - `3 ⇒ (Int16, ∅)`
    - `2 + 3 ⇒ (Int16, ∅)`
 
-2. *Bind x:*
+2. **Bind x:**
    - `x: Int16`
 
-3. *Infer `x < 10`:*
+3. **Infer `x < 10`:**
    - `x ⇒ (Int16, ∅)`
    - `10 ⇒ (Int16, ∅)`
    - `x < 10 ⇒ (Bool, ∅)`
 
-4. *Infer then branch `x - 1`:*
+4. **Infer then branch `x - 1`:**
    - `x ⇒ (Int16, ∅)`
    - `1 ⇒ (Int16, ∅)`
    - `x - 1 ⇒ (Int16, ∅)`
 
-5. *Infer else branch `x + 1`:*
+5. **Infer else branch `x + 1`:**
    - `x + 1 ⇒ (Int16, ∅)`
 
-6. *Unify branches:*
+6. **Unify branches:**
    - `unify(Int16, Int16) = ∅`
 
-7. *Final type:*
+7. **Final type:**
    - Entire expression: `Int16`
 
 
 
-### Part III: From High-Level to Machine Code
+# Part III: From High-Level to Machine Code
 
 
 
-### 6. Intermediate Representation (IR)
+# 6. Intermediate Representation (IR)
 
-#### 6.1 Why an IR?
+## 6.1 Why an IR?
 
 An Intermediate Representation bridges high-level language and machine code:
 
-*High-level code:*
+**High-level code:**
 ```text
 let x = a + b in x - 1
 ```
 
-*Too abstract* for direct translation to assembly:
+**Too abstract** for direct translation to assembly:
 - Nested expressions
 - Implicit control flow
 - Named variables
 
-*IR makes explicit:*
+**IR makes explicit:**
 - Evaluation order
 - Temporary storage
 - Control flow graph
 
 
 
-#### 6.2 IR Design
+## 6.2 IR Design
 
-Our IR is a *three-address code* with explicit temporaries:
+Our IR is a **three-address code** with explicit temporaries:
+
 ```text
-Instruction ::= t = op a, b         -- Binary operation
+Instruction ::= t = op a, b        -- Binary operation
               | t = op a            -- Unary operation
               | t = a               -- Move/copy
               | br t, L₁, L₂        -- Conditional branch
@@ -624,62 +635,63 @@ Instruction ::= t = op a, b         -- Binary operation
               | ret t               -- Return value
               | call t, f, a₁, ..., aₙ  -- Function call
 
-Operand ::= t                       -- Temporary
-          | n                       -- Literal
-          | L                       -- Label
+Operand ::= t                      -- Temporary
+          | n                      -- Literal
+          | L                      -- Label
 
-Operator ::= add | sub | mul        -- Arithmetic
-           | lt | le | eq           -- Comparison
-           | neg | not              -- Unary
+Operator ::= add | sub | mul       -- Arithmetic
+           | lt | le | eq          -- Comparison
+           | neg | not             -- Unary
 ```
 
 
 
-#### 6.3 IR Semantics
+## 6.3 IR Semantics
 
-IR execution uses a *store* mapping temporaries to values:
+IR execution uses a **store** mapping temporaries to values:
+
 ```math
-σ : Temp -> Value
+σ : Temp → Value
 ```
 
-##### Operational Semantics:
+### Operational Semantics:
 
-*Binary Operation:*
+**Binary Operation:**
 ```math
 σ(a) = v₁    σ(b) = v₂    v = op(v₁, v₂)
-----------------------------------------
-(t = op a, b, σ) -> σ[t ↦ v]
+──────────────────────────────────────────
+(t = op a, b, σ) → σ[t ↦ v]
 ```
 
-*Conditional Branch:*
+**Conditional Branch:**
 ```math
 σ(t) = true
-----------------------
-(br t, L₁, L₂, σ) -> L₁
+───────────────────────
+(br t, L₁, L₂, σ) → L₁
 
 σ(t) = false
------------------------
-(br t, L₁, L₂, σ) -> L₂
+───────────────────────
+(br t, L₁, L₂, σ) → L₂
 ```
 
-*Return:*
+**Return:**
 ```math
 σ(t) = v
---------------
+──────────────────
 (ret t, σ) ⇓ v
 ```
 
 
 
-#### 6.4 Example: Lowering to IR
+## 6.4 Example: Lowering to IR
 
-*Source:*
+**Source:**
 ```text
 let x = 2 + 3 in
 if x < 10 then x - 1 else x + 1
 ```
 
-*IR:*
+**IR:**
 ```text
 t1 = add 2, 3           ; Compute 2 + 3
 t2 = lt t1, 10          ; Test t1 < 10
@@ -694,30 +706,30 @@ L_else:
   ret t4                ; Return result
 ```
 
-*Key transformations:*
-- `let x = ...` -> temporary `t1`
-- Nested conditional -> explicit branches and labels
-- Each operation -> separate instruction
+**Key transformations:**
+- `let x = ...` → temporary `t1`
+- Nested conditional → explicit branches and labels
+- Each operation → separate instruction
 
 
 
-### 7. Lowering: From AST to IR
+# 7. Lowering: From AST to IR
 
-#### 7.1 Lowering Strategy
+## 7.1 Lowering Strategy
 
 Lowering transforms abstract syntax trees to IR through recursive descent:
 
 ```text
-lower : Expr -> IR
+lower : Expr → IR
 ```
 
 Each expression type has a lowering rule.
 
 
 
-#### 7.2 Lowering Rules
+## 7.2 Lowering Rules
 
-##### Literals:
+### Literals:
 
 ```text
 lower(n) = 
@@ -726,14 +738,14 @@ lower(n) =
   return t
 ```
 
-##### Variables:
+### Variables:
 
 ```text
 lower(x) = 
   return lookup(x)  -- Return temporary for x
 ```
 
-##### Binary Operations:
+### Binary Operations:
 
 ```text
 lower(e₁ + e₂) =
@@ -744,7 +756,7 @@ lower(e₁ + e₂) =
   return t
 ```
 
-##### Conditionals:
+### Conditionals:
 
 ```text
 lower(if c then t else f) =
@@ -770,7 +782,7 @@ lower(if c then t else f) =
   return result
 ```
 
-##### Let Bindings:
+### Let Bindings:
 
 ```text
 lower(let x = e₁ in e₂) =
@@ -783,40 +795,40 @@ lower(let x = e₁ in e₂) =
 
 
 
-#### 7.3 Lowering Correctness
+## 7.3 Lowering Correctness
 
-*Theorem (Semantic Preservation):*
+**Theorem (Semantic Preservation):**
 
 ```math
 e ⇓ v  ⟺  lower(e) ⇓ v
 ```
 
-*Proof sketch:*
+**Proof sketch:**
 1. By structural induction on e
 2. Show each lowering rule preserves semantics
 3. Use IR semantics to show equivalence
 
 
 
-### 8. Backend: Targeting 6502
+# 8. Backend: Targeting 6502
 
-#### 8.1 6502 Architecture Overview
+## 8.1 6502 Architecture Overview
 
 The 6502 processor has:
 
-*Registers:*
+**Registers:**
 - `A` (Accumulator): 8-bit, primary arithmetic register
 - `X`, `Y` (Index): 8-bit, addressing and loops
 - `SP` (Stack Pointer): 8-bit, points to stack (page $01)
 - `PC` (Program Counter): 16-bit
 - `P` (Status): 8-bit flags (N, V, Z, C, etc.)
 
-*Memory:*
+**Memory:**
 - 64KB address space ($0000-$FFFF)
 - Zero page ($0000-$00FF): Fast access
 - Stack ($0100-$01FF): Fixed location
 
-*Key constraints:*
+**Key constraints:**
 - No direct register-to-register operations
 - Most operations through accumulator
 - 8-bit accumulator (16-bit requires multi-instruction sequences)
@@ -824,53 +836,53 @@ The 6502 processor has:
 
 
 
-#### 8.2 Calling Convention
+## 8.2 Calling Convention
 
 We define a simple calling convention:
 
-*Arguments:*
+**Arguments:**
 - First 2 arguments in zero page ($00-$01 for arg1, $02-$03 for arg2)
 - Additional arguments on stack
 
-*Return value:*
+**Return value:**
 - 8-bit: In accumulator (A)
 - 16-bit: Low byte in A, high byte in X
 
-*Caller-save:*
+**Caller-save:**
 - Caller preserves X, Y if needed
 
-*Callee-save:*
+**Callee-save:**
 - Callee preserves zero page arguments
 
 
 
-#### 8.3 Temporary Allocation
+## 8.3 Temporary Allocation
 
 IR temporaries map to:
 
-1. *Zero page* ($10-$FF): Fast access, limited space
-2. *Stack*: Slower, more space
-3. *Registers* (A, X, Y): When possible
+1. **Zero page** ($10-$FF): Fast access, limited space
+2. **Stack**: Slower, more space
+3. **Registers** (A, X, Y): When possible
 
-*Allocation strategy:*
+**Allocation strategy:**
 ```text
-- Hot temporaries -> Zero page
-- Live range analysis -> Register allocation
-- Spilled temporaries -> Stack
+- Hot temporaries → Zero page
+- Live range analysis → Register allocation
+- Spilled temporaries → Stack
 ```
 
 
 
-#### 8.4 IR to 6502 Translation
+## 8.4 IR to 6502 Translation
 
-##### Binary Addition (Int8)
+### Binary Addition (Int8):
 
-*IR:*
+**IR:**
 ```text
 t3 = add t1, t2
 ```
 
-*6502:*
+**6502:**
 ```assembly
 LDA t1      ; Load first operand into A
 CLC         ; Clear carry flag
@@ -878,14 +890,14 @@ ADC t2      ; Add second operand with carry
 STA t3      ; Store result
 ```
 
-##### Binary Addition (Int16)
+### Binary Addition (Int16):
 
-*IR:*
+**IR:**
 ```text
 t3 = add t1, t2
 ```
 
-*6502:*
+**6502:**
 ```assembly
 ; Add low bytes
 LDA t1_lo
@@ -899,14 +911,14 @@ ADC t2_hi
 STA t3_hi
 ```
 
-##### Subtraction (Int8)
+### Subtraction (Int8):
 
-*IR:*
+**IR:**
 ```text
 t3 = sub t1, t2
 ```
 
-*6502:*
+**6502:**
 ```assembly
 LDA t1      ; Load first operand
 SEC         ; Set carry (for borrow)
@@ -914,14 +926,14 @@ SBC t2      ; Subtract second operand
 STA t3      ; Store result
 ```
 
-##### Comparison (Int8)
+### Comparison (Int8):
 
-*IR:*
+**IR:**
 ```text
 t2 = lt t1, 10
 ```
 
-*6502:*
+**6502:**
 ```assembly
 LDA t1      ; Load operand
 CMP #10     ; Compare with 10
@@ -934,28 +946,28 @@ done:
 STA t2
 ```
 
-##### Conditional Branch
+### Conditional Branch:
 
-*IR:*
+**IR:**
 ```text
 br t1, L_then, L_else
 ```
 
-*6502:*
+**6502:**
 ```assembly
 LDA t1          ; Load condition
 BEQ L_else      ; Branch if zero (false)
 JMP L_then      ; Jump to then
 ```
 
-##### Function Call
+### Function Call:
 
-*IR:*
+**IR:**
 ```text
 t3 = call func, t1, t2
 ```
 
-*6502:*
+**6502:**
 ```assembly
 ; Pass arguments
 LDA t1
@@ -972,21 +984,21 @@ STA t3      ; Result in A
 
 
 
-#### 8.5 Complete Example
+## 8.5 Complete Example
 
-*Source:*
+**Source:**
 ```text
 let x = 5 in x + 3
 ```
 
-*IR:*
+**IR:**
 ```text
 t1 = 5
 t2 = add t1, 3
 ret t2
 ```
 
-*6502 Assembly:*
+**6502 Assembly:**
 ```assembly
 ; t1 = 5
 LDA #5
@@ -1003,7 +1015,7 @@ LDA t2
 RTS
 ```
 
-*Memory layout:*
+**Memory layout:**
 ```text
 $10: t1 (zero page)
 $11: t2 (zero page)
@@ -1011,13 +1023,13 @@ $11: t2 (zero page)
 
 
 
-### 9. Optimization Opportunities
+# 9. Optimization Opportunities
 
-#### 9.1 Peephole Optimisation
+## 9.1 Peephole Optimization
 
 Replace instruction sequences with more efficient equivalents:
 
-*Constant Folding:*
+**Constant Folding:**
 ```text
 Before:
   LDA #2
@@ -1030,7 +1042,7 @@ After:
   STA t1
 ```
 
-*Dead Store Elimination:*
+**Dead Store Elimination:**
 ```text
 Before:
   LDA #5
@@ -1043,7 +1055,7 @@ After:
   STA t1
 ```
 
-*Redundant Load Elimination:*
+**Redundant Load Elimination:**
 ```text
 Before:
   LDA t1
@@ -1057,13 +1069,13 @@ After:
 
 
 
-#### 9.2 Register Allocation
+## 9.2 Register Allocation
 
-*Live range analysis:*
+**Live range analysis:**
 - Track where temporaries are live
 - Allocate registers to non-overlapping temporaries
 
-*Example:*
+**Example:**
 ```text
 t1 = 5       ; t1 live: [1-3]
 t2 = t1 + 3  ; t2 live: [2-4]
@@ -1075,11 +1087,11 @@ Both t1 and t3 can share the same register/memory location.
 
 
 
-#### 9.3 Strength Reduction
+## 9.3 Strength Reduction
 
 Replace expensive operations with cheaper equivalents:
 
-*Multiply by power of 2:*
+**Multiply by power of 2:**
 ```text
 Before:
   t2 = mul t1, 4
@@ -1088,7 +1100,7 @@ After:
   t2 = t1 << 2  ; Left shift by 2
 ```
 
-*6502:*
+**6502:**
 ```assembly
 ; Multiply by 4 using shifts
 LDA t1
@@ -1099,17 +1111,17 @@ STA t2
 
 
 
-### Part IV: Advanced Type System Features
+# Part IV: Advanced Type System Features
 
 
 
-### 10. Polymorphism
+# 10. Polymorphism
 
-#### 10.1 Parametric Polymorphism
+## 10.1 Parametric Polymorphism
 
 Allow functions to work with multiple types:
 
-*Example:*
+**Example:**
 ```text
 fn identity<T>(x: T) -> T {
   x
@@ -1119,38 +1131,38 @@ identity<Int16>(5)    -- Returns 5: Int16
 identity<Bool>(true)  -- Returns true: Bool
 ```
 
-*Type:*
+**Type:**
 ```text
-identity : ∀T. T -> T
+identity : ∀T. T → T
 ```
 
-*Implementation strategy:*
-- *Monomorphization*: Generate separate code for each type
-- *Boxing*: Uniform representation (pointer to value)
+**Implementation strategy:**
+- **Monomorphization**: Generate separate code for each type
+- **Boxing**: Uniform representation (pointer to value)
 
 For 6502 with limited resources, monomorphization is preferred.
 
 
 
-#### 10.2 Ad-hoc Polymorphism (Overloading)
+## 10.2 Ad-hoc Polymorphism (Overloading)
 
 Different implementations based on type:
 
-*Example:*
+**Example:**
 ```text
 fn print(x: Int16) { ... }  -- Print integer
 fn print(x: Bool) { ... }   -- Print boolean
 ```
 
-*Implementation:*
+**Implementation:**
 - Resolve at compile time based on argument types
 - Generate separate functions with mangled names
 
 
 
-### 11. Algebraic Data Types
+# 11. Algebraic Data Types
 
-#### 11.1 Sum Types (Tagged Unions)
+## 11.1 Sum Types (Tagged Unions)
 
 ```text
 type Option<T> = None | Some(T)
@@ -1158,7 +1170,7 @@ type Option<T> = None | Some(T)
 type Result<T, E> = Ok(T) | Err(E)
 ```
 
-*Memory layout for 6502:*
+**Memory layout for 6502:**
 ```text
 Option<Int16>:
   [tag: 1 byte][value: 2 bytes]
@@ -1169,7 +1181,7 @@ Option<Int16>:
 
 
 
-#### 11.2 Pattern Matching
+## 11.2 Pattern Matching
 
 ```text
 match opt:
@@ -1177,7 +1189,7 @@ match opt:
   Some(x) -> x + 1
 ```
 
-*Lowering to IR:*
+**Lowering to IR:**
 ```text
 t1 = load_tag opt
 br_eq t1, 0, L_none, L_some
@@ -1196,7 +1208,7 @@ L_end:
   ret t_result
 ```
 
-*6502 implementation:*
+**6502 implementation:**
 ```assembly
 ; Check tag
 LDA opt_tag
@@ -1217,9 +1229,9 @@ L_end:
 
 
 
-### 12. Dependent Types (Advanced)
+# 12. Dependent Types (Advanced)
 
-#### 12.1 Introduction
+## 12.1 Introduction
 
 Dependent types allow types to depend on values:
 
@@ -1227,7 +1239,7 @@ Dependent types allow types to depend on values:
 Vector<T, n>  -- Vector of type T with length n
 ```
 
-*Example:*
+**Example:**
 ```text
 fn concat<T, m, n>(v1: Vector<T, m>, v2: Vector<T, n>) 
   -> Vector<T, m + n>
@@ -1237,13 +1249,13 @@ The return type *depends on* the input lengths.
 
 
 
-#### 12.2 Benefits
+## 12.2 Benefits
 
 - Encode invariants in types
 - Prove correctness at compile time
 - Eliminate runtime checks
 
-*Example:* Array access without bounds checking:
+**Example:** Array access without bounds checking:
 ```text
 fn get<T, n>(arr: Vector<T, n>, i: Nat<i < n>) -> T
 ```
@@ -1252,71 +1264,71 @@ Type system guarantees `i < n`, so no runtime check needed!
 
 
 
-#### 12.3 Implementation Challenges
+## 12.3 Implementation Challenges
 
 For 6502 compilation:
 - Type checking more complex (may need SMT solvers)
 - Runtime representation may need size information
 - Monomorphization generates many code variants
 
-*Practical approach:*
+**Practical approach:**
 - Use dependent types for safety
 - Erase to simple types at runtime
 - Generate assertions for debugging builds
 
 
 
-### Part V: Practical Implementation
+# Part V: Practical Implementation
 
 
 
-### 13. Compiler Pipeline
+# 13. Compiler Pipeline
 
-#### 13.1 Complete Pipeline
+## 13.1 Complete Pipeline
 
 ```text
- Source Code
-     v
-┌---------┐
-│  Lexer  │ -- Tokenization
-└---------┘
-     v
-┌---------┐
-│  Parser │ -- Syntax analysis -> AST
-└---------┘
-     v
-┌---------------┐
-│  Type Checker │ -- Type inference & checking
-└---------------┘
-     v
-┌-----------┐
+Source Code
+    ↓
+┌───────────┐
+│  Lexer    │ -- Tokenization
+└───────────┘
+    ↓
+┌───────────┐
+│  Parser   │ -- Syntax analysis → AST
+└───────────┘
+    ↓
+┌────────────────┐
+│  Type Checker  │ -- Type inference & checking
+└────────────────┘
+    ↓
+┌───────────┐
 │ Desugarer │ -- Simplify syntax
-└-----------┘
-     v
-┌-----------┐
-│  Lowering │ -- AST -> IR
-└-----------┘
-     v
-┌-----------┐
-│ Optimiser │ -- IR transformations
-└-----------┘
-     v
-┌-----------┐
-│  Backend  │ -- IR -> 6502 assembly
-└-----------┘
-     v
-┌-----------┐
-│ Assembler │ -- Assembly -> Machine code
-└-----------┘
-     v
- Machine Code
+└───────────┘
+    ↓
+┌────────────┐
+│  Lowering  │ -- AST → IR
+└────────────┘
+    ↓
+┌────────────┐
+│ Optimizer  │ -- IR transformations
+└────────────┘
+    ↓
+┌────────────┐
+│  Backend   │ -- IR → 6502 assembly
+└────────────┘
+    ↓
+┌────────────┐
+│ Assembler  │ -- Assembly → Machine code
+└────────────┘
+    ↓
+Machine Code
 ```
 
 
 
-#### 13.2 Worked Example: Full Compilation
+## 13.2 Worked Example: Full Compilation
 
-##### Input Program:
+### Input Program:
 
 ```text
 fn factorial(n: Int16) -> Int16 {
@@ -1329,10 +1341,10 @@ fn factorial(n: Int16) -> Int16 {
 factorial(5)
 ```
 
-##### Step 1: Type Checking
+### Step 1: Type Checking
 
 ```text
-factorial: Int16 -> Int16
+factorial: Int16 → Int16
 
 Type checking factorial:
   Γ = {n: Int16}
@@ -1356,7 +1368,7 @@ Type checking factorial:
 Result: Well-typed ✓
 ```
 
-##### Step 2: Lowering to IR
+### Step 2: Lowering to IR
 
 ```text
 factorial:
@@ -1380,7 +1392,7 @@ main:
   ret t11
 ```
 
-##### Step 3: 6502 Code Generation
+### Step 3: 6502 Code Generation
 
 ```assembly
 ; factorial function
@@ -1409,11 +1421,11 @@ recursive:
     ; Multiply n * result
     STA $11         ; Save factorial(n-1)
     LDA $10         ; Load n
-    JSR multiply    ; n * $11 -> A
+    JSR multiply    ; n * $11 → A
     
     RTS
 
-; Multiply routine (A * $11 -> A)
+; Multiply routine (A * $11 → A)
 multiply:
     LDX #8          ; 8-bit multiply
     LDY #0          ; Result accumulator
@@ -1440,9 +1452,9 @@ main:
 
 
 
-#### 13.3 Testing the Compiler
+## 13.3 Testing the Compiler
 
-##### Unit Tests
+### Unit Tests:
 
 ```text
 Test Type Inference:
@@ -1457,7 +1469,7 @@ Test Lowering:
     L2: ret 2
 ```
 
-##### Integration Tests
+### Integration Tests:
 
 ```text
 Test Complete Compilation:
@@ -1470,7 +1482,7 @@ Test Complete Compilation:
     3. Check result
 ```
 
-##### Property-Based Tests
+### Property-Based Tests:
 
 ```text
 Property: Type Preservation
@@ -1485,18 +1497,18 @@ Property: Optimization Correctness
 
 
 
-### 14. Error Handling
+# 14. Error Handling
 
-#### 14.1 Type Errors
+## 14.1 Type Errors
 
 Clear error messages are crucial:
 
-*Bad:*
+**Bad:**
 ```text
 Error: Type mismatch
 ```
 
-*Good:*
+**Good:**
 ```text
 Error: Type mismatch in conditional
   at line 3, column 5:
@@ -1510,7 +1522,7 @@ Error: Type mismatch in conditional
 
 
 
-#### 14.2 Error Recovery
+## 14.2 Error Recovery
 
 Continue type checking after errors to find more issues:
 
@@ -1528,13 +1540,13 @@ Example:
 
 
 
-### Part VI: Extensions and Future Directions
+# Part VI: Extensions and Future Directions
 
 
 
-### 15. Memory Management
+# 15. Memory Management
 
-#### 15.1 Stack Allocation
+## 15.1 Stack Allocation
 
 Simple but limited:
 
@@ -1546,7 +1558,7 @@ fn example() -> Int16 {
 }
 ```
 
-*6502 implementation:*
+**6502 implementation:**
 ```assembly
 ; Allocate stack space
 TSX
@@ -1564,25 +1576,25 @@ INX
 
 
 
-#### 15.2 Region-Based Memory Management
+## 15.2 Region-Based Memory Management
 
 Group allocations by lifetime:
 
 ```text
 region r {
   let x = allocate_in_region<Int16>(r)
-  ..
+  ...
 }  -- All allocations in r freed here
 ```
 
-*Advantages:*
+**Advantages:**
 - Predictable performance
 - No garbage collection overhead
 - Suitable for embedded systems (6502)
 
 
 
-#### 15.3 Linear Types
+## 15.3 Linear Types
 
 Enforce single ownership:
 
@@ -1595,25 +1607,26 @@ fn use_buffer(b: Buffer) {
 }
 ```
 
-*Implementation:*
+**Implementation:**
 - Track usage at compile time
 - Ensure no aliasing
 - No runtime overhead
 
 
 
-### 16. Concurrency
+# 16. Concurrency
 
-#### 16.1 Cooperative Multitasking
+## 16.1 Cooperative Multitasking
 
 For 6502 without OS:
+
 ```text
 type Task = () -> Bool  -- Returns true if done
 
 scheduler : [Task] -> ()
 ```
 
-*Implementation:*
+**Implementation:**
 ```assembly
 scheduler:
     LDX #0              ; Task index
@@ -1632,64 +1645,64 @@ task_done:
 
 
 
-### 17. Conclusion
+# 17. Conclusion
 
-#### 17.1 What We've Built
+## 17.1 What We've Built
 
 A complete language design including:
 
-1. *Formal semantics*: Big-step and small-step
-2. *Type system*: With inference and soundness
-3. *Compilation pipeline*: From source to 6502
-4. *IR*: Three-address code for optimization
-5. *Backend*: Efficient 6502 code generation
+1. **Formal semantics**: Big-step and small-step
+2. **Type system**: With inference and soundness
+3. **Compilation pipeline**: From source to 6502
+4. **IR**: Three-address code for optimization
+5. **Backend**: Efficient 6502 code generation
 
-#### 17.2 Key Lessons
+## 17.2 Key Lessons
 
-*Type systems:*
+**Type systems:**
 - Catch errors early
 - Guide compilation
 - Enable optimization
 
-*IRs:*
+**IRs:**
 - Separate concerns
 - Enable multiple backends
 - Facilitate optimization
 
-*6502 target:*
+**6502 target:**
 - Forces understanding of constraints
 - Shows compilation challenges
 - Excellent teaching platform
 
-#### 17.3 Further Reading
+## 17.3 Further Reading
 
-*Type theory:*
+**Type theory:**
 - Pierce, B. C. (2002). *Types and Programming Languages*
 - Harper, R. (2016). *Practical Foundations for Programming Languages*
 
-*Compilation:*
+**Compilation:**
 - Appel, A. W. (1998). *Modern Compiler Implementation in ML*
 - Cooper, K. D., & Torczon, L. (2011). *Engineering a Compiler*
 
-*6502:*
+**6502:**
 - Leventhal, L. A. (1979). *6502 Assembly Language Programming*
 - The MOS 6502 Manual
 
-#### 17.4 Next Steps
+## 17.4 Next Steps
 
 To extend this language:
 
-1. *Add features*: Arrays, structs, strings
-2. *Improve types*: Polymorphism, type classes
-3. *Optimize*: Better register allocation, inlining
-4. *Target more architectures*: x86, ARM, RISC-V
-5. *Add tools*: Debugger, profiler, IDE integration
+1. **Add features**: Arrays, structs, strings
+2. **Improve types**: Polymorphism, type classes
+3. **Optimize**: Better register allocation, inlining
+4. **Target more architectures**: x86, ARM, RISC-V
+5. **Add tools**: Debugger, profiler, IDE integration
 
 
 
-### Appendix A: Quick Reference
+# Appendix A: Quick Reference
 
-#### A.1 Type Rules Cheat Sheet
+## A.1 Type Rules Cheat Sheet
 
 ```text
 Literals:
@@ -1699,41 +1712,41 @@ Literals:
 
 Variables:
   x: τ ∈ Γ
-  ----------
+  ──────────
   Γ ⊢ x : τ
 
 Arithmetic:
   Γ ⊢ e₁ : Int16    Γ ⊢ e₂ : Int16
-  ---------------------------------
+  ─────────────────────────────────
   Γ ⊢ e₁ ⊕ e₂ : Int16               (⊕ ∈ {+, -, *})
 
 Comparison:
   Γ ⊢ e₁ : Int16    Γ ⊢ e₂ : Int16
-  ---------------------------------
+  ─────────────────────────────────
   Γ ⊢ e₁ ⊙ e₂ : Bool                (⊙ ∈ {<, <=, ==})
 
 Conditional:
   Γ ⊢ c : Bool    Γ ⊢ t : τ    Γ ⊢ f : τ
-  ---------------------------------------
+  ────────────────────────────────────────
   Γ ⊢ if c then t else f : τ
 
 Let:
   Γ ⊢ e₁ : τ₁    Γ, x: τ₁ ⊢ e₂ : τ₂
-  ----------------------------------
+  ────────────────────────────────────
   Γ ⊢ let x = e₁ in e₂ : τ₂
 
 Function:
   Γ, x: τ₁ ⊢ e : τ₂
-  ------------------------------------
-  Γ ⊢ fn(x: τ₁) -> τ₂ { e } : τ₁ -> τ₂
+  ─────────────────────────────────
+  Γ ⊢ fn(x: τ₁) -> τ₂ { e } : τ₁ → τ₂
 
 Application:
-  Γ ⊢ f : τ₁ -> τ₂    Γ ⊢ e : τ₁
-  ------------------------------
+  Γ ⊢ f : τ₁ → τ₂    Γ ⊢ e : τ₁
+  ──────────────────────────────
   Γ ⊢ f(e) : τ₂
 ```
 
-#### A.2 6502 Instruction Reference
+## A.2 6502 Instruction Reference
 
 ```text
 Load/Store:
@@ -1780,9 +1793,9 @@ Shifts:
   ROR A       Rotate right through carry
 ```
 
-#### A.3 Common Patterns
+## A.3 Common Patterns
 
-##### 16-bit Addition
+### 16-bit Addition:
 ```assembly
 ; Add (addr1) + (addr2) -> (result)
 LDA addr1_lo
@@ -1795,7 +1808,7 @@ ADC addr2_hi
 STA result_hi
 ```
 
-##### 16-bit Comparison
+### 16-bit Comparison:
 ```assembly
 ; Compare (addr1) < (addr2)
 LDA addr1_hi
@@ -1816,7 +1829,7 @@ less_than:
 ; addr1 < addr2
 ```
 
-##### Loop
+### Loop:
 ```assembly
 ; for i = 0 to n-1
 LDX #0
@@ -1830,9 +1843,9 @@ BNE loop
 
 
 
-### Appendix B: Complete Example Program
+# Appendix B: Complete Example Program
 
-#### B.1 Source Code
+## B.1 Source Code
 
 ```text
 fn sum_to_n(n: Int16) -> Int16 {
@@ -1848,11 +1861,11 @@ fn sum_to_n(n: Int16) -> Int16 {
 sum_to_n(10)  -- Should return 55
 ```
 
-#### B.2 Type-Checked AST
+## B.2 Type-Checked AST
 
 ```text
-fn sum_to_n : Int16 -> Int16
-  fn loop : Int16 -> Int16 -> Int16
+fn sum_to_n : Int16 → Int16
+  fn loop : Int16 → Int16 → Int16
     if (>) : Bool
       then acc : Int16
       else loop
@@ -1861,7 +1874,7 @@ fn sum_to_n : Int16 -> Int16
   loop(1, 0)
 ```
 
-#### B.3 IR
+## B.3 IR
 
 ```text
 sum_to_n:
@@ -1896,7 +1909,7 @@ main:
   ret t_result
 ```
 
-#### B.4 Optimized IR
+## B.4 Optimized IR
 
 After tail-call optimization:
 
@@ -1919,7 +1932,7 @@ L_continue:
   jmp loop
 ```
 
-#### B.5 6502 Assembly
+## B.5 6502 Assembly
 
 ```assembly
 ; sum_to_n(n) -> sum from 1 to n
@@ -1963,22 +1976,19 @@ main:
     ; Result (55) in A
 ```
 
-#### B.6 Execution Trace
+## B.6 Execution Trace
 
 ```text
-Iteration 1: i=1, acc=0  -> acc = 0+1 = 1
-Iteration 2: i=2, acc=1  -> acc = 1+2 = 3
-Iteration 3: i=3, acc=3  -> acc = 3+3 = 6
-Iteration 4: i=4, acc=6  -> acc = 6+4 = 10
-Iteration 5: i=5, acc=10 -> acc = 10+5 = 15
-Iteration 6: i=6, acc=15 -> acc = 15+6 = 21
-Iteration 7: i=7, acc=21 -> acc = 21+7 = 28
-Iteration 8: i=8, acc=28 -> acc = 28+8 = 36
-Iteration 9: i=9, acc=36 -> acc = 36+9 = 45
-Iteration 10: i=10, acc=45 -> acc = 45+10 = 55
-Done: i=11, n=10 -> return 55
+Iteration 1: i=1, acc=0  → acc = 0+1 = 1
+Iteration 2: i=2, acc=1  → acc = 1+2 = 3
+Iteration 3: i=3, acc=3  → acc = 3+3 = 6
+Iteration 4: i=4, acc=6  → acc = 6+4 = 10
+Iteration 5: i=5, acc=10 → acc = 10+5 = 15
+Iteration 6: i=6, acc=15 → acc = 15+6 = 21
+Iteration 7: i=7, acc=21 → acc = 21+7 = 28
+Iteration 8: i=8, acc=28 → acc = 28+8 = 36
+Iteration 9: i=9, acc=36 → acc = 36+9 = 45
+Iteration 10: i=10, acc=45 → acc = 45+10 = 55
+Done: i=11, n=10 → return 55
 ```
 
-
-
-*End of Document*
