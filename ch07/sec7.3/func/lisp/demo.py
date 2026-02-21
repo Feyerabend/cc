@@ -76,7 +76,7 @@ def demo():
     print(f"Result: {lisp.formatter.format(result)}")
     
     print_section("Demo Complete!")
-    print("This is a Lisp interpreter written in Lisp")
+    print("This is a Lisp interpreter written in Lisp ..")
     print("running inside a Lisp interpreter ..")
     print("written in Python.")
     print()
