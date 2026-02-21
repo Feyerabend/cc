@@ -57,7 +57,7 @@ where environments are passed as explicit association lists
 
 Functional languages rely on recursion rather than loops.
 To prevent the Python stack from exploding, `lisp.py` utilizes
-a *Trampoline* pattern (see low level constructs).
+a *Trampoline* pattern (see low level constructs .. MISSING NOW ..).
 This allows the Meta-Lisp layer to perform infinite recursion safely.
 
 #### 3. Homoiconicity (Code as Data)
