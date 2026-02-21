@@ -66,6 +66,6 @@ Lisp is *homoiconic*: its source code is structured as a
 native data type (the List). This allows the `mini-eval`
 function to treat a piece of code like a list that can be
 mapped, filtered, or restructured before execution.
-
+(On homoiconicity see [sec7.3.5](./../../sec7.3.5/)).
 
 
