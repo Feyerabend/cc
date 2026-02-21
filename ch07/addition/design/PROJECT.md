@@ -2089,7 +2089,7 @@ Recapitulation of [ch05](./../../../ch05/):
 
 2. *SSA Form* (Static Single Assignment)
    - Each variable assigned exactly once
-   - Makes optimization easier
+   - Makes optimisation easier
    - Used by LLVM and modern compilers
 
 3. *Graph Algorithms*
@@ -2135,36 +2135,6 @@ main           # stable, working code
    ├─ feature/parser
    └─ feature/typechecker
 ```
-
-#### Learning Resources
-
-*Books*:
-
-1. *Essentials* (read these):
-   - *Crafting Interpreters* by Bob Nystrom
-     - Best practical introduction
-     - Walks through complete implementation
-   
-   - *Engineering a Compiler* by Cooper & Torczon
-     - Comprehensive, modern approach
-     - Good balance of theory and practice
-
-2. *Advanced* (reference material):
-   - *Types and Programming Languages* by Benjamin Pierce
-     - The definitive type theory textbook
-     - Mathematical but accessible
-   
-   - *Modern Compiler Implementation in ML* by Andrew Appel
-     - Complete compiler in ML
-     - Available in C and Java versions too
-
-3. *Specific Topics*:
-   - *Compilers: Principles, Techniques, and Tools* (Dragon Book)
-     - Classic reference
-     - Comprehensive but dense
-   
-   - *Static Program Analysis* by Anders Møller & Michael Schwartzbach
-     - Deep dive into analysis techniques
 
 
 #### Debugging Strategies
@@ -2437,3 +2407,38 @@ Before submitting:
 
 *Remember*: Everyone gets stuck. The key is systematic debugging and patience.
 
+
+#### Learning Resources
+
+*Books*:
+
+1. *Essentials* (read these):
+   - *Crafting Interpreters* by Bob Nystrom
+     - Best practical introduction
+     - Walks through complete implementation
+   
+   - *Engineering a Compiler* by Cooper & Torczon
+     - Comprehensive, modern approach
+     - Good balance of theory and practice
+
+2. *Advanced* (reference material):
+   - *Types and Programming Languages* by Benjamin Pierce
+     - The definitive type theory textbook
+     - Mathematical but accessible
+   
+   - *Modern Compiler Implementation in Java* by Andrew Appel
+     - Complete compiler in ML
+     - Available in C and ML versions too
+
+3. *Specific Topics*:
+   - *Compilers: Principles, Techniques, and Tools* (Dragon Book)
+     - Classic reference
+     - Comprehensive but dense
+   
+   - *Static Program Analysis* by Anders Møller & Michael Schwartzbach
+     - Deep dive into analysis techniques
+
+![Interpreters](./../../assets/image/interpreters.png)
+![Compilers](./../../assets/image/compilers.png)
+![Compilers 2](./../../assets/image/compilers2.png)
+![Compilers 2](./../../assets/image/modern.png)
