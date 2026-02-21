@@ -236,8 +236,6 @@ my-language/
 
 #### Phase 2: Frontend Implementation (Weeks 4-6)
 
-This shoud be rather easy, as we have already studied this in the
-compiler chapter [ch05](./../../ch05/).
 
 ##### Week 4: Lexer (Tokenizer)
 
