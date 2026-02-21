@@ -37,6 +37,7 @@ The primary objectives are:
 - To connect theoretical concepts with executable artifacts
 - To provide a platform suitable for experimentation and extension
 
+#### Documents
 
 - *[DESIGN.md](./DESIGN.md)*
   Language design, semantics, type system, and compilation strategy  
