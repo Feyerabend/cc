@@ -39,11 +39,11 @@ The primary objectives are:
 
 #### Documents
 
-- *[DESIGN.md](./DESIGN.md)*
+- [DESIGN.md](./DESIGN.md):
   Language design, semantics, type system, and compilation strategy  
-- *[VM-SPECIFICATION.md](./VM-SPECIFICATION.md)*
+- [VM-SPECIFICATION.md](./VM-SPECIFICATION.md):
   Instruction set architecture and execution model  
-- *[PROJECT.md](./VM-SPECIFICATION.md)*
+- [PROJECT.md](./VM-SPECIFICATION.md):
   Development roadmap, implementation guidance, and evaluation criteria  
 
 
