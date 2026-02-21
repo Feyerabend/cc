@@ -48,7 +48,7 @@ is the real purpose. So we have to add some clarifications.
 
 ### Why This Decision Makes Sense (here)
 
-*Pros:*´
+*Pros:*
 1. *Clarity* - You can SEE the difference: "This is Python, this is bytecode"
 2. *Simplicity* - Don't need JNI, don't need to compile C code
 3. *Extensibility* - Add new stdlib in minutes, not hours
