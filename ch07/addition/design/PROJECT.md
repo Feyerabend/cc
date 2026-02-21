@@ -28,7 +28,7 @@ designed for 10-15 hours per week:
 - *Weeks 10-12*: Code generation and VM
 - *Weeks 13-15*: Testing, optimisation, and documentation
 
-Making the assumptions you have studied [ch05](./../../ch05/)
+Making the assumptions you have studied [ch05](./../../../ch05/)
 carefully, and done some exercises, some of this should/might
 go much faster than expected. For clarity though, we include
 the whole schedule.
