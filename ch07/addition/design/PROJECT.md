@@ -54,13 +54,13 @@ consists of two main components that work together:
     - VM : Output ..
 
 You've been provided with two key documents:
-1. *DESIGN.md* - *Designing Programming Languages: From Type Theory to Virtual Machine Code*
+1. *[DESIGN.md](./DESIGN.md)* - *Designing Programming Languages: From Type Theory to Virtual Machine Code*
    - Teaches language design principles
    - Explains type systems and formal semantics
    - Shows how to compile high-level code to VM instructions
    - Provides complete examples from source to bytecode
 
-2. *VM-SPECIFICATION.md* - *Educational Virtual Machine Specification*
+2. *[VM-SPECIFICATION.md](./VM-SPECIFICATION.md)* - *Educational Virtual Machine Specification*
    - Defines the exact instruction set your compiler targets
    - Specifies memory model and execution semantics
    - Documents bytecode format
