@@ -28,7 +28,7 @@ designed for 10-15 hours per week:
 - *Weeks 10-12*: Code generation and VM
 - *Weeks 13-15*: Testing, optimisation, and documentation
 
-Making the assumptions you have studied [ch05](./../../ch05/)
+Making the assumptions you have studied [ch05](./../../../ch05/)
 carefully, and done some exercises, some of this should/might
 go much faster than expected. For clarity though, we include
 the whole schedule.
@@ -54,13 +54,13 @@ consists of two main components that work together:
     - VM : Output ..
 
 You've been provided with two key documents:
-1. *DESIGN.md* - *Designing Programming Languages: From Type Theory to Virtual Machine Code*
+1. *[DESIGN.md](./DESIGN.md)* - *Designing Programming Languages: From Type Theory to Virtual Machine Code*
    - Teaches language design principles
    - Explains type systems and formal semantics
    - Shows how to compile high-level code to VM instructions
    - Provides complete examples from source to bytecode
 
-2. *VM-SPECIFICATION.md* - *Educational Virtual Machine Specification*
+2. *[VM-SPECIFICATION.md](./VM-SPECIFICATION.md)* - *Educational Virtual Machine Specification*
    - Defines the exact instruction set your compiler targets
    - Specifies memory model and execution semantics
    - Documents bytecode format
@@ -236,8 +236,6 @@ my-language/
 
 #### Phase 2: Frontend Implementation (Weeks 4-6)
 
-This shoud be rather easy, as we have already studied this in the
-compiler chapter [ch05](./../../ch05/).
 
 ##### Week 4: Lexer (Tokenizer)
 
