@@ -786,12 +786,12 @@ def allocate_locals(ir_function):
     locals_map = {}
     next_slot = 0
     
-    ## Parameters get first slots
+    # Parameters get first slots
     for i, param in enumerate(ir_function.params):
         locals_map[param] = i
         next_slot = i + 1
     
-    ## Then temporaries
+    # Then temporaries
     for temp in ir_function.temporaries:
         if temp not in locals_map:
             locals_map[temp] = next_slot
@@ -814,10 +814,10 @@ def compute_stack_depth(instructions):
             case 'PUSH' | 'LOAD_LOCAL' | 'LOAD_GLOBAL':
                 current_depth += 1
             case 'ADD' | 'SUB' | 'MUL' | 'LT' | 'EQ':
-                current_depth -= 1  ## Pops 2, pushes 1
+                current_depth -= 1  # Pops 2, pushes 1
             case 'CALL':
                 current_depth -= instr.arg_count
-                current_depth += 1  ## Return value
+                current_depth += 1  # Return value
             case 'RETURN':
                 current_depth -= 1
         
@@ -1163,32 +1163,32 @@ Literals:
 
 Variables:
   x: τ ∈ Γ
-  ──────────
+  ─────────
   Γ ⊢ x : τ
 
 Arithmetic:
   Γ ⊢ e₁ : Int32    Γ ⊢ e₂ : Int32
-  ─────────────────────────────────
+  ──────────────────────────────────────
   Γ ⊢ e₁ ⊕ e₂ : Int32    (⊕ ∈ {+, -, *})
 
 Comparison:
   Γ ⊢ e₁ : Int32    Γ ⊢ e₂ : Int32
-  ─────────────────────────────────
+  ───────────────────────────────────────
   Γ ⊢ e₁ ⊙ e₂ : Bool    (⊙ ∈ {<, <=, ==})
 
 Conditional:
   Γ ⊢ c : Bool    Γ ⊢ t : τ    Γ ⊢ f : τ
-  ────────────────────────────────────────
+  ───────────────────────────────────────
   Γ ⊢ if c then t else f : τ
 
 Let:
   Γ ⊢ e₁ : τ₁    Γ, x: τ₁ ⊢ e₂ : τ₂
-  ────────────────────────────────────
+  ──────────────────────────────────
   Γ ⊢ let x = e₁ in e₂ : τ₂
 
 Function:
   Γ, x: τ₁ ⊢ e : τ₂
-  ─────────────────────────────────
+  ───────────────────────────────────
   Γ ⊢ fn(x: τ₁) -> τ₂ { e } : τ₁ → τ₂
 
 Application:
@@ -1199,7 +1199,7 @@ Application:
 
 ### A.2 VM Instruction Reference
 
-See VM-SPECIFICATION.md for complete instruction set.
+See [VM-SPECIFICATION.md](./VM-SPECIFICATION.md) for complete instruction set.
 
 Common patterns:
 
