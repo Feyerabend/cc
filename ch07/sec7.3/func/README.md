@@ -69,3 +69,9 @@ mapped, filtered, or restructured before execution.
 (On homoiconicity see [sec7.3.5](./../../sec7.3.5/)).
 
 
+NOTE: For aspects on some more modern functional
+language constructions implemented,
+see [multi](./../multi/),
+or [con](./../../../ch08/addition/category/lang/con/)
+and [cool](./../../../ch08/addition/category/lang/cool/).
+
