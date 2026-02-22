@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "pico/stdlib.h"
+#include "pico/multicore.h"
 #include "display.h"
 #include "fake6502.h"
 
@@ -30,9 +31,9 @@
 // Memory
 static uint8_t memory[65536];
 
-// VIC registers
-static uint8_t vic_border_color = 0x06;  // Blue
-static uint8_t vic_bg_color = 0x0E;      // Light blue
+// VIC registers (volatile: written by Core 0, read by Core 1)
+static volatile uint8_t vic_border_color = 0x06;  // Blue
+static volatile uint8_t vic_bg_color = 0x0E;      // Light blue
 
 // C64 color palette (RGB565)
 static const uint16_t c64_colors[16] = {
@@ -250,6 +251,14 @@ void render_screen(void) {
 }
 
 
+// Core 1: handles display rendering and button polling
+void core1_entry(void) {
+    while (1) {
+        buttons_update();
+        render_screen();
+    }
+}
+
 int main() {
     // Init stdio
     stdio_init_all();
@@ -306,31 +315,22 @@ int main() {
     uint32_t last_fps_print = to_ms_since_boot(get_absolute_time());
     
     printf("Starting emulation...\n");
-    
-    // Main loop
+
+    // Launch Core 1 to handle display rendering and button polling
+    multicore_launch_core1(core1_entry);
+
+    // Main loop - Core 0 runs the 6502 flat out
     while (1) {
-        // Update buttons
-        buttons_update();
-        
-        // Run ~16666 cycles per frame (~1MHz at 60Hz)
-        for (int i = 0; i < 16666; i++) {
-            step6502();
-            cycle_count++;
-        }
-        
-        // Render screen
-        render_screen();
-        
+        step6502();
+        cycle_count++;
+
         // Print stats every 5 seconds
         uint32_t now = to_ms_since_boot(get_absolute_time());
         if (now - last_fps_print > 5000) {
-            printf("Cycles: %lu, PC=$%04X, A=$%02X, X=$%02X, Y=$%02X\n", 
+            printf("Cycles: %lu, PC=$%04X, A=$%02X, X=$%02X, Y=$%02X\n",
                    cycle_count, PC, A, X, Y);
             last_fps_print = now;
         }
-        
-        // Throttle to ~60 FPS
-        sleep_ms(16);
     }
     
     return 0;
