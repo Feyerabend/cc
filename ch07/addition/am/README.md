@@ -200,6 +200,8 @@ The design draws on several lines of work:
 - *Abramsky & Coecke (2004)* - categorical quantum mechanics, dagger compact categories
 - *Atkey et al. (2009–2013)* - parametricity and effect systems in categorical terms
 
+* Lambek, J. (1958). The mathematics of sentence structure. The American Mathematical Monthly, 65(3), 154–170. https://doi.org/10.2307/2310058
+* Lawvere, F. W. (1963). Functorial Semantics of Algebraic Theories (Doctoral dissertation, Columbia University). (Republished in Reprints in Theory and Applications of Categories, No. 5 (2004) pp. 1–121).
 
 
 ### Further Extensions
@@ -211,4 +213,5 @@ morphism table for reversible/quantum computation, building a small REPL that
 parses concatenative syntax into `Program` objects at runtime, and connecting
 the Kleisli layer to a genuine side-effect system (IO, state, exceptions) rather
 than just tracing.
+
 
