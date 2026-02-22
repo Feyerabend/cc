@@ -137,4 +137,4 @@ branches to create loops.
 Study further `demo.asm`, or below `gfxtest.asm`:
 
 
-![Pico 6502 RC gfx](./../../../assets/image/game/pico6502rpx.png)
+![Pico 6502 RC gfx](./../../../assets/image/game/pico6502rpx.jpeg)
