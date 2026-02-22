@@ -45,7 +45,8 @@ static const uint8_t button_pins[BUTTON_COUNT] = {
     BUTTON_A_PIN, BUTTON_B_PIN, BUTTON_X_PIN, BUTTON_Y_PIN
 };
 
-// Fixed 5x8 font (same as before but with bounds checking)
+// Extended 5x8 font (space 0x20 through 'z' 0x7A, 91 entries)
+// Same table used by both the direct-draw API and the framebuffer helpers.
 static const uint8_t font5x8[][5] = {
     {0x00, 0x00, 0x00, 0x00, 0x00}, // Space
     {0x00, 0x00, 0x5F, 0x00, 0x00}, // !
@@ -106,6 +107,38 @@ static const uint8_t font5x8[][5] = {
     {0x63, 0x14, 0x08, 0x14, 0x63}, // X
     {0x07, 0x08, 0x70, 0x08, 0x07}, // Y
     {0x43, 0x45, 0x49, 0x51, 0x61}, // Z
+    {0x00, 0x41, 0x41, 0x7F, 0x00}, // [
+    {0x20, 0x10, 0x08, 0x04, 0x02}, // backslash
+    {0x00, 0x7F, 0x41, 0x41, 0x00}, // ]
+    {0x04, 0x02, 0x01, 0x02, 0x04}, // ^
+    {0x40, 0x40, 0x40, 0x40, 0x40}, // _
+    {0x00, 0x04, 0x02, 0x01, 0x00}, // `
+    {0x78, 0x54, 0x54, 0x54, 0x20}, // a
+    {0x38, 0x44, 0x44, 0x48, 0x7F}, // b
+    {0x28, 0x44, 0x44, 0x44, 0x38}, // c
+    {0x7F, 0x48, 0x44, 0x44, 0x38}, // d
+    {0x18, 0x54, 0x54, 0x54, 0x38}, // e
+    {0x02, 0x01, 0x09, 0x7E, 0x08}, // f
+    {0x4C, 0x92, 0x92, 0x92, 0x7C}, // g
+    {0x78, 0x04, 0x04, 0x08, 0x7F}, // h
+    {0x00, 0x44, 0x7D, 0x40, 0x00}, // i
+    {0x02, 0x7D, 0x82, 0x80, 0x40}, // j
+    {0x44, 0x28, 0x10, 0x08, 0x7F}, // k
+    {0x00, 0x40, 0x7F, 0x41, 0x00}, // l
+    {0x7C, 0x04, 0x18, 0x04, 0x7C}, // m
+    {0x78, 0x04, 0x04, 0x08, 0x7C}, // n
+    {0x38, 0x44, 0x44, 0x44, 0x38}, // o
+    {0x18, 0x24, 0x24, 0x24, 0xFC}, // p
+    {0xFC, 0x24, 0x24, 0x24, 0x18}, // q
+    {0x08, 0x04, 0x04, 0x08, 0x7C}, // r
+    {0x48, 0x54, 0x54, 0x54, 0x24}, // s
+    {0x20, 0x40, 0x44, 0x3F, 0x04}, // t
+    {0x3C, 0x40, 0x40, 0x20, 0x7C}, // u
+    {0x1C, 0x20, 0x40, 0x20, 0x1C}, // v
+    {0x3C, 0x40, 0x30, 0x40, 0x3C}, // w
+    {0x44, 0x28, 0x10, 0x28, 0x44}, // x
+    {0x4C, 0x90, 0x90, 0x90, 0x7C}, // y
+    {0x44, 0x64, 0x54, 0x4C, 0x44}, // z
 };
 
 // Error message strings
@@ -122,6 +155,16 @@ static inline uint32_t get_time_ms(void) {
     return to_ms_since_boot(get_absolute_time());
 }
 
+// Wait for SPI to finish transmitting (FIFO drain)
+static inline void spi_wait_idle(void) {
+    // Wait for TX FIFO to empty and SPI to become idle
+    while (spi_is_busy(spi0)) {
+        tight_loop_contents();
+    }
+    // Small delay to ensure last byte is fully clocked out
+    sleep_us(1);
+}
+
 // DMA interrupt handler with safety checks
 void __isr dma_handler() {
     // Check if this is our channel and clear the interrupt
@@ -131,7 +174,7 @@ void __isr dma_handler() {
     }
 }
 
-// Initialize DMA with error checking
+// Init DMA with error checking
 static display_error_t dma_init(void) {
     if (dma_initialized) return DISPLAY_OK;
     
@@ -159,7 +202,7 @@ static bool dma_wait_for_finish_timeout(uint32_t timeout_ms) {
     return true;
 }
 
-// Safe DMA wait
+// DMA wait with SPI sync
 static void dma_wait_for_finish(void) {
     if (!dma_wait_for_finish_timeout(1000)) { // 1 second timeout
         // Force stop the DMA channel if timeout occurs
@@ -169,19 +212,25 @@ static void dma_wait_for_finish(void) {
         }
         dma_busy = false;
     }
+    // Wait for SPI FIFO to drain after DMA completes
+    spi_wait_idle();
 }
 
-// DMA-based SPI write for buffer data with error checking
+// Fixed DMA SPI write with proper sync
 static display_error_t dma_spi_write_buffer(uint8_t* data, size_t len) {
     if (!data || len == 0) return DISPLAY_ERROR_INVALID_PARAM;
     
     if (!dma_initialized && dma_init() != DISPLAY_OK) {
         // Fallback to regular SPI if DMA init fails
         spi_write_blocking(spi0, data, len);
+        spi_wait_idle();
         return DISPLAY_OK;
     }
     
+    // Ensure previous transfer is completely done
     dma_wait_for_finish();
+    
+    // Set busy flag before configuring to prevent race condition
     dma_busy = true;
     
     // Configure DMA channel
@@ -198,11 +247,9 @@ static display_error_t dma_spi_write_buffer(uint8_t* data, size_t len) {
         &spi_get_hw(spi0)->dr,
         data,
         len,
-        false
+        true  // Start immediately
     );
     
-    // Start the transfer
-    dma_channel_start(dma_channel);
     return DISPLAY_OK;
 }
 
@@ -214,6 +261,7 @@ static display_error_t display_write_command(uint8_t cmd) {
     gpio_put(DISPLAY_DC_PIN, 0);
     gpio_put(DISPLAY_CS_PIN, 0);
     spi_write_blocking(spi0, &cmd, 1);
+    spi_wait_idle();
     gpio_put(DISPLAY_CS_PIN, 1);
     return DISPLAY_OK;
 }
@@ -225,6 +273,7 @@ static display_error_t display_write_data(uint8_t data) {
     gpio_put(DISPLAY_DC_PIN, 1);
     gpio_put(DISPLAY_CS_PIN, 0);
     spi_write_blocking(spi0, &data, 1);
+    spi_wait_idle();
     gpio_put(DISPLAY_CS_PIN, 1);
     return DISPLAY_OK;
 }
@@ -240,9 +289,11 @@ static display_error_t display_write_data_buf(uint8_t *data, size_t len) {
     display_error_t result = DISPLAY_OK;
     if (len > 64) { // Use DMA for larger transfers
         result = dma_spi_write_buffer(data, len);
+        // Must wait for DMA to complete before raising CS
         dma_wait_for_finish();
     } else {
         spi_write_blocking(spi0, data, len);
+        spi_wait_idle();
     }
     
     gpio_put(DISPLAY_CS_PIN, 1);
@@ -413,15 +464,14 @@ display_error_t display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16
     if (y + height > DISPLAY_HEIGHT) height = DISPLAY_HEIGHT - y;
     if (width == 0 || height == 0) return DISPLAY_OK;
     
-    uint32_t pixel_count = width * height;
+    uint32_t pixel_count = (uint32_t)width * (uint32_t)height;
     
+    // Set window with inclusive end coordinates
     display_error_t result = display_set_window(x, y, x + width - 1, y + height - 1);
     if (result != DISPLAY_OK) return result;
     
     // Prepare color data
     uint8_t color_bytes[2] = {color >> 8, color & 0xFF};
-    dma_single_pixel[0] = color_bytes[0];
-    dma_single_pixel[1] = color_bytes[1];
     
     gpio_put(DISPLAY_DC_PIN, 1);
     gpio_put(DISPLAY_CS_PIN, 0);
@@ -429,6 +479,8 @@ display_error_t display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16
     if (pixel_count > 32 && dma_initialized) {
         // Use DMA for large fills
         size_t buffer_pixels = sizeof(dma_fill_buffer) / 2;
+        
+        // Fill the entire buffer with the color
         for (size_t i = 0; i < buffer_pixels; i++) {
             dma_fill_buffer[i * 2] = color_bytes[0];
             dma_fill_buffer[i * 2 + 1] = color_bytes[1];
@@ -439,6 +491,7 @@ display_error_t display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16
         for (uint32_t i = 0; i < full_chunks; i++) {
             result = dma_spi_write_buffer(dma_fill_buffer, sizeof(dma_fill_buffer));
             if (result != DISPLAY_OK) break;
+            // Wait for each chunk to complete before starting next
             dma_wait_for_finish();
         }
         
@@ -447,6 +500,7 @@ display_error_t display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16
             uint32_t remaining = pixel_count % buffer_pixels;
             if (remaining > 0) {
                 result = dma_spi_write_buffer(dma_fill_buffer, remaining * 2);
+                // Wait for final chunk to complete
                 dma_wait_for_finish();
             }
         }
@@ -455,9 +509,14 @@ display_error_t display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16
         for (uint32_t i = 0; i < pixel_count; i++) {
             spi_write_blocking(spi0, color_bytes, 2);
         }
+        // Ensure SPI is idle after blocking writes
+        spi_wait_idle();
     }
     
+    // Ensure all data is sent before raising CS
+    dma_wait_for_finish();
     gpio_put(DISPLAY_CS_PIN, 1);
+    
     return result;
 }
 
@@ -478,6 +537,8 @@ display_error_t display_blit_full(const uint16_t *pixels) {
     gpio_put(DISPLAY_CS_PIN, 0);
 
     result = dma_spi_write_buffer((uint8_t *)pixels, DISPLAY_WIDTH * DISPLAY_HEIGHT * 2);
+    
+    // Must wait for DMA to complete before raising CS
     dma_wait_for_finish();
 
     gpio_put(DISPLAY_CS_PIN, 1);
@@ -488,16 +549,17 @@ display_error_t display_draw_char(uint16_t x, uint16_t y, char c, uint16_t color
     if (!display_initialized) return DISPLAY_ERROR_NOT_INITIALIZED;
     if (x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) return DISPLAY_ERROR_INVALID_PARAM;
     
-    if (c < 32 || c > 90) c = 32; // Space for unsupported chars
+    int idx = (unsigned char)c - 32;
+    if (idx < 0 || idx >= (int)(sizeof(font5x8)/sizeof(font5x8[0]))) idx = 0; // default to space
     
-    const uint8_t *char_data = font5x8[c - 32];
+    const uint8_t *char_data = font5x8[idx];
     
-    // Draw character bitmap with bounds checking
-    for (int col = 0; col < 5 && (x + col) < DISPLAY_WIDTH; col++) {
-        uint8_t line = char_data[4 - col]; // Reverse column order
+    // Draw 5px glyph with 1px left pad; data[4-col] = left-to-right column order
+    for (int col = 0; col < 5 && (x + 1 + col) < DISPLAY_WIDTH; col++) {
+        uint8_t line = char_data[4 - col];
         for (int row = 0; row < 8 && (y + row) < DISPLAY_HEIGHT; row++) {
             uint16_t pixel_color = (line & (1 << row)) ? color : bg_color;
-            display_error_t result = display_draw_pixel(x + col, y + row, pixel_color);
+            display_error_t result = display_draw_pixel(x + 1 + col, y + row, pixel_color);
             if (result != DISPLAY_OK) return result;
         }
     }
@@ -651,6 +713,292 @@ void display_cleanup(void) {
     // Clear button callbacks
     for (int i = 0; i < BUTTON_COUNT; i++) {
         button_callbacks[i] = NULL;
+    }
+}
+
+// =============================================================================
+// Framebuffer rendering helpers
+// Inspired by the Flash renderer (Bitmap / ColorTransform / REdge) from the
+// reference zip, adapted for RGB565 and the Pico's memory layout.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
+static inline int clamp_i(int v, int lo, int hi) {
+    return v < lo ? lo : v > hi ? hi : v;
+}
+
+// Apply a single Flash-style channel transform: out = clamp(in * mul/256 + add)
+static inline uint8_t cx_apply_channel(uint8_t in, int mul, int add) {
+    int v = ((int)in * mul >> 8) + add;
+    if (v < 0) return 0;
+    if (v > 255) return 255;
+    return (uint8_t)v;
+}
+
+// Unpack RGB565 to 8-bit channels (r5→r8, g6→g8, b5→b8)
+static inline void unpack565(uint16_t c, uint8_t *r, uint8_t *g, uint8_t *b) {
+    *r = ((c >> 11) & 0x1F) << 3;
+    *g = ((c >>  5) & 0x3F) << 2;
+    *b =  (c        & 0x1F) << 3;
+}
+
+// Pack 8-bit RGB back to RGB565
+static inline uint16_t pack565(uint8_t r, uint8_t g, uint8_t b) {
+    return ((uint16_t)(r & 0xF8) << 8) |
+           ((uint16_t)(g & 0xFC) << 3) |
+           (b >> 3);
+}
+
+// Blend a pixel with given fractional weight (0–255) against the existing fb pixel
+static inline void wu_plot_fb(uint16_t *fb, int x, int y, uint8_t alpha, uint16_t color) {
+    if ((unsigned)x >= DISPLAY_WIDTH || (unsigned)y >= DISPLAY_HEIGHT) return;
+    uint16_t *dst = &fb[y * DISPLAY_WIDTH + x];
+
+    uint8_t sr, sg, sb, dr, dg, db;
+    unpack565(color, &sr, &sg, &sb);
+    unpack565(*dst,  &dr, &dg, &db);
+
+    uint8_t ia = 255 - alpha;
+    uint8_t r = (uint8_t)(((uint16_t)sr * alpha + (uint16_t)dr * ia) >> 8);
+    uint8_t g = (uint8_t)(((uint16_t)sg * alpha + (uint16_t)dg * ia) >> 8);
+    uint8_t b = (uint8_t)(((uint16_t)sb * alpha + (uint16_t)db * ia) >> 8);
+    *dst = pack565(r, g, b);
+}
+
+// ---------------------------------------------------------------------------
+// fb_clear
+// ---------------------------------------------------------------------------
+void fb_clear(uint16_t *fb, uint16_t color) {
+    int total = DISPLAY_WIDTH * DISPLAY_HEIGHT;
+    for (int i = 0; i < total; i++) fb[i] = color;
+}
+
+// ---------------------------------------------------------------------------
+// fb_draw_pixel
+// ---------------------------------------------------------------------------
+void fb_draw_pixel(uint16_t *fb, int x, int y, uint16_t color) {
+    if ((unsigned)x < DISPLAY_WIDTH && (unsigned)y < DISPLAY_HEIGHT)
+        fb[y * DISPLAY_WIDTH + x] = color;
+}
+
+// ---------------------------------------------------------------------------
+// fb_fill_rect
+// ---------------------------------------------------------------------------
+void fb_fill_rect(uint16_t *fb, int x, int y, int w, int h, uint16_t color) {
+    int x1 = clamp_i(x,     0, DISPLAY_WIDTH  - 1);
+    int y1 = clamp_i(y,     0, DISPLAY_HEIGHT - 1);
+    int x2 = clamp_i(x + w, 0, DISPLAY_WIDTH);
+    int y2 = clamp_i(y + h, 0, DISPLAY_HEIGHT);
+    for (int row = y1; row < y2; row++)
+        for (int col = x1; col < x2; col++)
+            fb[row * DISPLAY_WIDTH + col] = color;
+}
+
+// ---------------------------------------------------------------------------
+// fb_draw_char
+// Draws a 5×8 glyph centred (1px left pad) inside an 8×8 cell.
+// Font bytes are stored right-column-first: data[0]=rightmost col, data[4]=leftmost col.
+// Reading as data[4-col] gives left-to-right rendering (correct orientation).
+// bit 0 of each byte = topmost pixel row.
+// ---------------------------------------------------------------------------
+void fb_draw_char(uint16_t *fb, int x, int y, char c, uint16_t fg, uint16_t bg) {
+    if ((unsigned)x >= DISPLAY_WIDTH || (unsigned)y >= DISPLAY_HEIGHT) return;
+    int idx = (unsigned char)c - 32;
+    if (idx < 0 || idx >= (int)(sizeof(font5x8)/sizeof(font5x8[0]))) idx = 0;
+    const uint8_t *char_data = font5x8[idx];
+    // Fill full 8×8 cell with bg
+    for (int col = 0; col < 8 && (x + col) < (int)DISPLAY_WIDTH; col++)
+        for (int row = 0; row < 8 && (y + row) < (int)DISPLAY_HEIGHT; row++)
+            fb[(y + row) * DISPLAY_WIDTH + (x + col)] = bg;
+    // Draw 5px glyph at columns 1..5 (1px left pad), data[4-col] = left-to-right
+    for (int col = 0; col < 5 && (x + 1 + col) < (int)DISPLAY_WIDTH; col++) {
+        uint8_t line = char_data[4 - col];
+        for (int row = 0; row < 8 && (y + row) < (int)DISPLAY_HEIGHT; row++)
+            if (line & (1 << row))
+                fb[(y + row) * DISPLAY_WIDTH + (x + 1 + col)] = fg;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// fb_draw_string
+// ---------------------------------------------------------------------------
+void fb_draw_string(uint16_t *fb, int x, int y, const char *str, uint16_t fg, uint16_t bg) {
+    while (*str && x < (int)DISPLAY_WIDTH) {
+        fb_draw_char(fb, x, y, *str++, fg, bg);
+        x += 6;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// fb_draw_line_aa  – Xiaolin Wu anti-aliased line
+// Ported from the Flash REdge scanline walker concept: fractional pixel
+// coverage is accumulated and blended rather than snapped to integer coords.
+// ---------------------------------------------------------------------------
+void fb_draw_line_aa(uint16_t *fb, float x0, float y0, float x1, float y1, uint16_t color) {
+    bool steep = (y1 - y0 < 0 ? y0 - y1 : y1 - y0) >
+                 (x1 - x0 < 0 ? x0 - x1 : x1 - x0);
+    if (steep)   { float t; t=x0;x0=y0;y0=t; t=x1;x1=y1;y1=t; }
+    if (x0 > x1) { float t; t=x0;x0=x1;x1=t; t=y0;y0=y1;y1=t; }
+
+    float dx = x1 - x0, dy = y1 - y0;
+    float grad = (dx == 0.0f) ? 1.0f : dy / dx;
+
+    // First endpoint
+    int   xe = (int)(x0 + 0.5f);
+    float ye = y0 + grad * (xe - x0);
+    float xg = 1.0f - (x0 + 0.5f - xe);
+    int xp1 = xe, yp1 = (int)ye;
+    float frac = ye - yp1;
+    if (steep) {
+        wu_plot_fb(fb, yp1,   xp1, (uint8_t)(255 * (1-frac) * xg), color);
+        wu_plot_fb(fb, yp1+1, xp1, (uint8_t)(255 * frac     * xg), color);
+    } else {
+        wu_plot_fb(fb, xp1, yp1,   (uint8_t)(255 * (1-frac) * xg), color);
+        wu_plot_fb(fb, xp1, yp1+1, (uint8_t)(255 * frac     * xg), color);
+    }
+    float intery = ye + grad;
+
+    // Last endpoint
+    xe = (int)(x1 + 0.5f);
+    ye = y1 + grad * (xe - x1);
+    xg = x1 + 0.5f - (int)(x1 + 0.5f);
+    int xp2 = xe, yp2 = (int)ye;
+    frac = ye - yp2;
+    if (steep) {
+        wu_plot_fb(fb, yp2,   xp2, (uint8_t)(255 * (1-frac) * xg), color);
+        wu_plot_fb(fb, yp2+1, xp2, (uint8_t)(255 * frac     * xg), color);
+    } else {
+        wu_plot_fb(fb, xp2, yp2,   (uint8_t)(255 * (1-frac) * xg), color);
+        wu_plot_fb(fb, xp2, yp2+1, (uint8_t)(255 * frac     * xg), color);
+    }
+
+    // Interior pixels
+    for (int xi = xp1+1; xi < xp2; xi++) {
+        int yi = (int)intery;
+        uint8_t f = (uint8_t)(255 * (intery - yi));
+        if (steep) {
+            wu_plot_fb(fb, yi,   xi, 255-f, color);
+            wu_plot_fb(fb, yi+1, xi, f,     color);
+        } else {
+            wu_plot_fb(fb, xi, yi,   255-f, color);
+            wu_plot_fb(fb, xi, yi+1, f,     color);
+        }
+        intery += grad;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// fb_blit_scaled – bilinear scaled blit
+//
+// Ported from Flash Bitmap.GetSSRGBPixel() / Bitmap.Blt32to32().
+// That code uses 16.16 fixed-point; we do the same for the Pico to keep
+// it integer-friendly and fast.
+//
+// For each destination pixel (dx+px, dy+py) we find the corresponding source
+// pixel in fixed-point, then bilinearly interpolate the 2×2 neighbourhood.
+// ---------------------------------------------------------------------------
+void fb_blit_scaled(uint16_t *fb,
+                    const uint16_t *src, int sw, int sh,
+                    int dx, int dy, int dw, int dh)
+{
+    if (!src || sw <= 0 || sh <= 0 || dw <= 0 || dh <= 0) return;
+
+    // Step size in source image per destination pixel (16.16 fixed)
+    int step_x = (sw << 16) / dw;
+    int step_y = (sh << 16) / dh;
+
+    for (int py = 0; py < dh; py++) {
+        int oy = dy + py;
+        if (oy < 0 || oy >= (int)DISPLAY_HEIGHT) continue;
+
+        // Source Y in 16.16
+        int sy16 = (int)(((long long)py * step_y));
+        int sy   = sy16 >> 16;
+        int fy   = (sy16 >> 8) & 0xFF; // fractional part (0–255)
+
+        // Clamp row indices
+        int sy0 = clamp_i(sy,   0, sh-1);
+        int sy1 = clamp_i(sy+1, 0, sh-1);
+
+        int sx16 = 0;
+        for (int px = 0; px < dw; px++, sx16 += step_x) {
+            int ox = dx + px;
+            if (ox < 0 || ox >= (int)DISPLAY_WIDTH) continue;
+
+            int sx  = sx16 >> 16;
+            int fx  = (sx16 >> 8) & 0xFF; // fractional part (0–255)
+
+            // Clamp column indices
+            int sx0 = clamp_i(sx,   0, sw-1);
+            int sx1 = clamp_i(sx+1, 0, sw-1);
+
+            // Fetch the 2×2 neighbourhood
+            uint16_t c00 = src[sy0 * sw + sx0];
+            uint16_t c10 = src[sy0 * sw + sx1];
+            uint16_t c01 = src[sy1 * sw + sx0];
+            uint16_t c11 = src[sy1 * sw + sx1];
+
+            // Unpack all four to 8-bit
+            uint8_t r00,g00,b00, r10,g10,b10, r01,g01,b01, r11,g11,b11;
+            unpack565(c00,&r00,&g00,&b00);
+            unpack565(c10,&r10,&g10,&b10);
+            unpack565(c01,&r01,&g01,&b01);
+            unpack565(c11,&r11,&g11,&b11);
+
+            // Bilinear blend using Flash-style fixed-point weights
+            // w00=(255-fx)*(255-fy), etc., each 0–65025; divide by 255^2
+            int ifx = 255 - fx, ify = 255 - fy;
+            int w00 = ifx * ify, w10 = fx * ify;
+            int w01 = ifx * fy,  w11 = fx * fy;
+            int total = w00 + w10 + w01 + w11; // = 255*255 always
+            if (total == 0) total = 1;
+
+            uint8_t r = (uint8_t)((w00*r00 + w10*r10 + w01*r01 + w11*r11) / total);
+            uint8_t g = (uint8_t)((w00*g00 + w10*g10 + w01*g01 + w11*g11) / total);
+            uint8_t b = (uint8_t)((w00*b00 + w10*b10 + w01*b01 + w11*b11) / total);
+
+            fb[oy * DISPLAY_WIDTH + ox] = pack565(r, g, b);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// fb_apply_color_transform – Flash ColorTransform ported to RGB565 framebuffer
+//
+// Each channel: out = clamp(in * mul/256 + add, 0, 255)
+// This is exactly what Flash's ColorTransform.ApplyChannel() does.
+// ---------------------------------------------------------------------------
+void fb_apply_color_transform(uint16_t *fb, const fb_color_transform_t *cx) {
+    fb_apply_color_transform_rect(fb, cx, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+}
+
+void fb_apply_color_transform_rect(uint16_t *fb, const fb_color_transform_t *cx,
+                                   int x, int y, int w, int h)
+{
+    if (!cx) return;
+    int x1 = clamp_i(x,     0, (int)DISPLAY_WIDTH);
+    int y1 = clamp_i(y,     0, (int)DISPLAY_HEIGHT);
+    int x2 = clamp_i(x + w, 0, (int)DISPLAY_WIDTH);
+    int y2 = clamp_i(y + h, 0, (int)DISPLAY_HEIGHT);
+
+    // Fast path: identity transform
+    if (cx->r_mul == 256 && cx->r_add == 0 &&
+        cx->g_mul == 256 && cx->g_add == 0 &&
+        cx->b_mul == 256 && cx->b_add == 0) return;
+
+    for (int row = y1; row < y2; row++) {
+        uint16_t *line = &fb[row * DISPLAY_WIDTH + x1];
+        for (int col = x1; col < x2; col++, line++) {
+            uint8_t r, g, b;
+            unpack565(*line, &r, &g, &b);
+            r = cx_apply_channel(r, cx->r_mul, cx->r_add);
+            g = cx_apply_channel(g, cx->g_mul, cx->g_add);
+            b = cx_apply_channel(b, cx->b_mul, cx->b_add);
+            *line = pack565(r, g, b);
+        }
     }
 }
 
