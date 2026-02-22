@@ -69,20 +69,15 @@ static uint16_t framebuffer[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 static uint8_t vic_border_color = 0x06;   // Blue
 static uint8_t vic_bg_color     = 0x0E;   // Light blue
 
-// Layout:
-//   Display 320×240
-//   Border  8px on all four edges (drawn in vic_border_color)
-//   Text area: (320-16)×(240-16) = 304×224 → 38 cols × 28 rows at 8×8 px each
-//   Status bar: bottom 8px strip (y=232–239), always drawn over the border band
-//
-// The ROM uses a 40-col address layout ($0428 = row 1 col 0 on a 40-col grid).
-// We render only the 38×28 visible portion – the ROM never writes past col 29
-// or row 11, so no content is clipped.
-#define CHAR_W        8
-#define CHAR_H        8
-#define BORDER        8
-#define VIS_COLS      38   // (320 - 2*BORDER) / CHAR_W
-#define VIS_ROWS      28   // (240 - 2*BORDER) / CHAR_H  -- row 28/29 hidden behind bottom border/status
+// Standard C64-style layout: 40 cols × 30 rows, 8px border.
+// The border is purely visual — text starts at pixel (BORDER, BORDER).
+// Col 38/39 and row 28/29 extend past the display edge but the ROM never
+// writes content there, so nothing is lost.
+#define CHAR_W      8
+#define CHAR_H      8
+#define BORDER      8
+#define SCREEN_COLS 40
+#define SCREEN_ROWS 30
 
 // ---------------------------------------------------------------------------
 // 6502 memory interface
@@ -134,39 +129,42 @@ static void render_screen(void) {
     uint16_t bg  = c64_colors[vic_bg_color];
     uint16_t brd = c64_colors[vic_border_color];
 
-    // ---- 1. Border fills the entire screen first ----------------------------
-    // Then text area is painted over it, leaving the 8px frame visible.
+    // 1. Border colour fills everything, then bg overwrites the inner text area.
     fb_clear(framebuffer, brd);
-    fb_fill_rect(framebuffer, BORDER, BORDER,
-                 DISPLAY_WIDTH  - 2*BORDER,
-                 DISPLAY_HEIGHT - 2*BORDER - CHAR_H,  // leave bottom strip for status
+    fb_fill_rect(framebuffer,
+                 BORDER, BORDER,
+                 DISPLAY_WIDTH  - 2 * BORDER,
+                 DISPLAY_HEIGHT - 2 * BORDER,
                  bg);
 
-    // ---- 2. Character cells (38 cols × 28 rows, offset by BORDER) ----------
-    for (int row = 0; row < VIS_ROWS; row++) {
-        for (int col = 0; col < VIS_COLS; col++) {
-            int     idx = row * SCREEN_COLS + col;   // SCREEN_COLS=40, ROM layout
+    // 2. Characters – full 40×30 ROM layout, offset by BORDER pixels.
+    //    Cols 38/39 draw past the right edge and are clipped by fb_draw_char.
+    //    Row 29 draws past the bottom edge and is clipped similarly.
+    //    The ROM never writes content there so nothing visible is lost.
+    for (int row = 0; row < SCREEN_ROWS; row++) {
+        for (int col = 0; col < SCREEN_COLS; col++) {
+            int     idx = row * SCREEN_COLS + col;
             uint8_t ch  = memory[SCREEN_RAM_START + idx];
             uint8_t ci  = memory[COLOR_RAM_START  + idx] & 0x0F;
-
-            int px = BORDER + col * CHAR_W;
-            int py = BORDER + row * CHAR_H;
-
             if (ch > 0x20 && ch <= 0x7A)
-                fb_draw_char(framebuffer, px, py, (char)ch, c64_colors[ci], bg);
+                fb_draw_char(framebuffer,
+                             BORDER + col * CHAR_W,
+                             BORDER + row * CHAR_H,
+                             (char)ch, c64_colors[ci], bg);
         }
     }
 
-    // ---- 3. Status bar – bottom 8px strip, always navy/white ---------------
+    // 3. Status bar – sits in the bottom border strip (y = DISPLAY_HEIGHT-CHAR_H).
+    //    Drawn directly into the framebuffer, always navy/white regardless of
+    //    the current border or background colour.
     {
         char status[41];
         snprintf(status, sizeof(status),
                  "PC:%04X A:%02X X:%02X Y:%02X SP:%02X P:%02X",
                  PC, A, X, Y, SP, getP());
 
-        int sy = DISPLAY_HEIGHT - CHAR_H;  // y=232
-        fb_fill_rect(framebuffer, 0, sy, DISPLAY_WIDTH, CHAR_H, 0x000F); // navy bg
-
+        int sy = DISPLAY_HEIGHT - CHAR_H;          // y = 232
+        fb_fill_rect(framebuffer, 0, sy, DISPLAY_WIDTH, CHAR_H, 0x000F);
         for (int i = 0; status[i] && i < 40; i++) {
             char c = status[i];
             if (c > 0x20 && c <= 0x7A)
@@ -174,7 +172,7 @@ static void render_screen(void) {
         }
     }
 
-    // ---- 4. DMA blit --------------------------------------------------------
+    // 4. Single DMA blit – no tearing.
     display_blit_full(framebuffer);
 }
 
