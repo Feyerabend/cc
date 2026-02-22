@@ -1,4 +1,5 @@
 #include "display.h"
+#include "font.h"
 #include "hardware/spi.h"
 #include "hardware/sync.h"
 #include "hardware/gpio.h"
@@ -548,12 +549,27 @@ display_error_t display_blit_full(const uint16_t *pixels) {
 display_error_t display_draw_char(uint16_t x, uint16_t y, char c, uint16_t color, uint16_t bg_color) {
     if (!display_initialized) return DISPLAY_ERROR_NOT_INITIALIZED;
     if (x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) return DISPLAY_ERROR_INVALID_PARAM;
-    
-    int idx = (unsigned char)c - 32;
+
+    uint8_t code = (unsigned char)c;
+
+    if (code >= 128 && code <= 143) {
+        // Block character: 8×8, MSB = leftmost pixel, no left pad
+        for (int py = 0; py < 8 && (y + py) < DISPLAY_HEIGHT; py++) {
+            uint8_t row_bits = font_block[code - 128][py];
+            for (int px = 0; px < 8 && (x + px) < DISPLAY_WIDTH; px++) {
+                uint16_t pixel_color = (row_bits & (0x80 >> px)) ? color : bg_color;
+                display_error_t result = display_draw_pixel(x + px, y + py, pixel_color);
+                if (result != DISPLAY_OK) return result;
+            }
+        }
+        return DISPLAY_OK;
+    }
+
+    int idx = code - 32;
     if (idx < 0 || idx >= (int)(sizeof(font5x8)/sizeof(font5x8[0]))) idx = 0; // default to space
-    
+
     const uint8_t *char_data = font5x8[idx];
-    
+
     // Draw 5px glyph with 1px left pad; data[4-col] = left-to-right column order
     for (int col = 0; col < 5 && (x + 1 + col) < DISPLAY_WIDTH; col++) {
         uint8_t line = char_data[4 - col];
@@ -806,13 +822,28 @@ void fb_fill_rect(uint16_t *fb, int x, int y, int w, int h, uint16_t color) {
 // ---------------------------------------------------------------------------
 void fb_draw_char(uint16_t *fb, int x, int y, char c, uint16_t fg, uint16_t bg) {
     if ((unsigned)x >= DISPLAY_WIDTH || (unsigned)y >= DISPLAY_HEIGHT) return;
-    int idx = (unsigned char)c - 32;
-    if (idx < 0 || idx >= (int)(sizeof(font5x8)/sizeof(font5x8[0]))) idx = 0;
-    const uint8_t *char_data = font5x8[idx];
+
+    uint8_t code = (unsigned char)c;
+
     // Fill full 8×8 cell with bg
     for (int col = 0; col < 8 && (x + col) < (int)DISPLAY_WIDTH; col++)
         for (int row = 0; row < 8 && (y + row) < (int)DISPLAY_HEIGHT; row++)
             fb[(y + row) * DISPLAY_WIDTH + (x + col)] = bg;
+
+    if (code >= 128 && code <= 143) {
+        // Block character: 8×8, MSB = leftmost pixel, no left pad
+        for (int row = 0; row < 8 && (y + row) < (int)DISPLAY_HEIGHT; row++) {
+            uint8_t row_bits = font_block[code - 128][row];
+            for (int col = 0; col < 8 && (x + col) < (int)DISPLAY_WIDTH; col++)
+                if (row_bits & (0x80 >> col))
+                    fb[(y + row) * DISPLAY_WIDTH + (x + col)] = fg;
+        }
+        return;
+    }
+
+    int idx = code - 32;
+    if (idx < 0 || idx >= (int)(sizeof(font5x8)/sizeof(font5x8[0]))) idx = 0;
+    const uint8_t *char_data = font5x8[idx];
     // Draw 5px glyph at columns 1..5 (1px left pad), data[4-col] = left-to-right
     for (int col = 0; col < 5 && (x + 1 + col) < (int)DISPLAY_WIDTH; col++) {
         uint8_t line = char_data[4 - col];

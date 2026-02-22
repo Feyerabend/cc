@@ -284,6 +284,36 @@ class InNode(ASTNode):
 
 
 @dataclass
+class PlotNode(ASTNode):
+    x: ASTNode
+    y: ASTNode
+    color: ASTNode
+
+
+@dataclass
+class LineNode(ASTNode):
+    x1: ASTNode
+    y1: ASTNode
+    x2: ASTNode
+    y2: ASTNode
+    color: ASTNode
+
+
+@dataclass
+class RectNode(ASTNode):
+    x: ASTNode
+    y: ASTNode
+    w: ASTNode
+    h: ASTNode
+    color: ASTNode
+
+
+@dataclass
+class ClrGfxNode(ASTNode):
+    pass
+
+
+@dataclass
 class ProcedureNode(ASTNode):
     name: str
     block: 'BlockNode'
@@ -428,7 +458,51 @@ class PL0Parser:
         
         # IN statement: IN variable (input from buttons/keyboard)
         in_stmt = keyword('IN').then(ident).map(InNode)
-        
+
+        # PLOT statement: PLOT expr , expr , expr
+        plot_stmt = keyword('PLOT').then(
+            expression.bind(lambda x:
+                symbol(',').then(expression).bind(lambda y:
+                    symbol(',').then(expression).map(lambda color:
+                        PlotNode(x, y, color)
+                    )
+                )
+            )
+        )
+
+        # LINE statement: LINE expr , expr , expr , expr , expr
+        line_stmt = keyword('LINE').then(
+            expression.bind(lambda x1:
+                symbol(',').then(expression).bind(lambda y1:
+                    symbol(',').then(expression).bind(lambda x2:
+                        symbol(',').then(expression).bind(lambda y2:
+                            symbol(',').then(expression).map(lambda color:
+                                LineNode(x1, y1, x2, y2, color)
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
+        # RECT statement: RECT expr , expr , expr , expr , expr
+        rect_stmt = keyword('RECT').then(
+            expression.bind(lambda x:
+                symbol(',').then(expression).bind(lambda y:
+                    symbol(',').then(expression).bind(lambda w:
+                        symbol(',').then(expression).bind(lambda h:
+                            symbol(',').then(expression).map(lambda color:
+                                RectNode(x, y, w, h, color)
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
+        # CLRGFX statement
+        clrgfx_stmt = keyword('CLRGFX').map(lambda _: ClrGfxNode())
+
         # Begin: 'BEGIN' statement (';' statement)* 'END'
         def make_begin():
             return keyword('BEGIN').then(
@@ -458,11 +532,15 @@ class PL0Parser:
         # Empty statement
         empty_stmt = success(None)
         
-        # Statement: assignment | call | read | write | out | in | begin | if | while | empty
+        # Statement: assignment | call | read | write | plot | line | rect | clrgfx | out | in | begin | if | while | empty
         self.statement = (assignment
                          .or_else(call_stmt)
                          .or_else(read_stmt)
                          .or_else(write_stmt)
+                         .or_else(plot_stmt)
+                         .or_else(line_stmt)
+                         .or_else(rect_stmt)
+                         .or_else(clrgfx_stmt)
                          .or_else(out_stmt)
                          .or_else(in_stmt)
                          .or_else(begin_stmt)
@@ -552,6 +630,30 @@ class CodeGenerator:
             'CURSOR_X': 0xD002,
             'CURSOR_Y': 0xD003,
             'BUTTONS': 0xDC00,
+            # GFX registers
+            'GFX_X':     0xD010,
+            'GFX_Y':     0xD012,
+            'GFX_COLOR': 0xD013,
+            'GFX_CMD':   0xD014,
+            'GFX_X2':    0xD015,
+            'GFX_Y2':    0xD017,
+            # Block character codes
+            'BLOCK':     128,
+            'BLOCK_TOP': 129,
+            'BLOCK_BOT': 130,
+            'BLOCK_L':   131,
+            'BLOCK_R':   132,
+            'BLOCK_UL':  133,
+            'BLOCK_UR':  134,
+            'BLOCK_LL':  135,
+            'BLOCK_LR':  136,
+            'BLOCK_H':   137,
+            'BLOCK_V':   138,
+            'BLOCK_X':   139,
+            'BLOCK_BS':  140,
+            'BLOCK_FS':  141,
+            'BLOCK_CHK': 142,
+            'BLOCK_DOT': 143,
         }
     
     def new_label(self, prefix='L') -> str:
@@ -577,7 +679,13 @@ class CodeGenerator:
         for name, addr in self.hw_constants.items():
             self.emit(f"{name}    = ${addr:04X}")
         self.emit("")
-        
+
+        # Jump over any procedure bodies to the main program entry point.
+        # Procedures are emitted first by compile_block; without this JMP the
+        # CPU would fall into the first procedure on reset instead of main.
+        self.emit("        JMP main_start  ; Skip procedures, jump to main code")
+        self.emit("")
+
         # Compile main block
         self.compile_block(ast.block, is_main=True)
         
@@ -628,6 +736,8 @@ class CodeGenerator:
         
         # Compile main statement
         if block.statement:
+            if is_main:
+                self.emit("main_start:")
             self.compile_statement(block.statement)
         
         # Restore context if not main
@@ -693,6 +803,53 @@ class CodeGenerator:
             self.emit(f"        STA ${addr:02X}       ; Store to {stmt.variable}")
             self.emit(f"        STX ${addr+1:02X}")
         
+        elif isinstance(stmt, PlotNode):
+            self.compile_expression(stmt.x)
+            self.emit("        STA $D010       ; GFX_X low")
+            self.emit("        STX $D011       ; GFX_X high")
+            self.compile_expression(stmt.y)
+            self.emit("        STA $D012       ; GFX_Y")
+            self.compile_expression(stmt.color)
+            self.emit("        STA $D013       ; GFX_COLOR")
+            self.emit("        LDA #$01")
+            self.emit("        STA $D014       ; CMD: PLOT")
+
+        elif isinstance(stmt, LineNode):
+            self.compile_expression(stmt.x1)
+            self.emit("        STA $D010       ; GFX_X low")
+            self.emit("        STX $D011       ; GFX_X high")
+            self.compile_expression(stmt.y1)
+            self.emit("        STA $D012       ; GFX_Y")
+            self.compile_expression(stmt.color)
+            self.emit("        STA $D013       ; GFX_COLOR")
+            self.compile_expression(stmt.x2)
+            self.emit("        STA $D015       ; GFX_X2 low")
+            self.emit("        STX $D016       ; GFX_X2 high")
+            self.compile_expression(stmt.y2)
+            self.emit("        STA $D017       ; GFX_Y2")
+            self.emit("        LDA #$03")
+            self.emit("        STA $D014       ; CMD: LINE")
+
+        elif isinstance(stmt, RectNode):
+            self.compile_expression(stmt.x)
+            self.emit("        STA $D010       ; GFX_X low")
+            self.emit("        STX $D011       ; GFX_X high")
+            self.compile_expression(stmt.y)
+            self.emit("        STA $D012       ; GFX_Y")
+            self.compile_expression(stmt.color)
+            self.emit("        STA $D013       ; GFX_COLOR")
+            self.compile_expression(stmt.w)
+            self.emit("        STA $D015       ; GFX_X2 (width) low")
+            self.emit("        STX $D016       ; GFX_X2 (width) high")
+            self.compile_expression(stmt.h)
+            self.emit("        STA $D017       ; GFX_Y2 (height)")
+            self.emit("        LDA #$04")
+            self.emit("        STA $D014       ; CMD: RECT")
+
+        elif isinstance(stmt, ClrGfxNode):
+            self.emit("        LDA #$02")
+            self.emit("        STA $D014       ; CMD: CLRGFX")
+
         elif isinstance(stmt, BeginNode):
             for s in stmt.statements:
                 if s is not None:
