@@ -1,5 +1,5 @@
 
-## Programming Language Constructions
+## Programming Language Constructs
 
 Programming languages are not neutral tools; they reflect underlying theories of computation and
 design philosophies. The constructions that a language emphasises--such as recursion, monads,
