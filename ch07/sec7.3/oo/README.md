@@ -102,7 +102,8 @@ architecture abstractly.
 
 On the desktop, the 90s saw "Rapid Application Development" (RAD). Languages like
 Delphi (Object Pascal) and Visual Basic 4.0 made "dragging and dropping" objects
-onto a form a standard way to build software.
+onto a form a standard way to build software. The visuals of objects here came
+very close to the conceptual, even though it might not always hold as a parallel.
 
 
 
