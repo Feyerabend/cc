@@ -319,10 +319,22 @@ int main() {
     // Launch Core 1 to handle display rendering and button polling
     multicore_launch_core1(core1_entry);
 
-    // Main loop - Core 0 runs the 6502 flat out
+    // Main loop - Core 0 runs the 6502 at ~1MHz using time-based pacing
+    // This ensures ROM software delay loops and timing-dependent code behave correctly.
+    // Core 1 handles display independently, so pacing here doesn't affect frame rate.
     while (1) {
-        step6502();
-        cycle_count++;
+        uint32_t batch_start = time_us_32();
+
+        // Run 1000 cycles per ms = ~1MHz
+        for (int i = 0; i < 1000; i++) {
+            step6502();
+            cycle_count++;
+        }
+
+        // Busy-wait out the remainder of 1ms
+        while (time_us_32() - batch_start < 1000) {
+            tight_loop_contents();
+        }
 
         // Print stats every 5 seconds
         uint32_t now = to_ms_since_boot(get_absolute_time());
