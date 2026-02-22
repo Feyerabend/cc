@@ -134,5 +134,7 @@ That is essentially 6502 assembly in its smallest form:
 load values, modify registers, store results, and use
 branches to create loops.
 
-Study further `demo.asm`.
+Study further `demo.asm`, or below `gfxtest.asm`:
 
+
+![Pico 6502 RC gfx](./../../../assets/image/game/pico6502rpx.png)
