@@ -241,20 +241,20 @@ class Parser:
     
     def _build_grammar(self):
         """Build pyparsing grammar"""
-        pp.ParserElement.setDefaultWhitespaceChars(' \t')
+        pp.ParserElement.set_default_whitespace_chars(' \t')
         
         # Numbers: $FF, 0xFF, %1010, 123, -5
         hex_num = pp.Combine(pp.Literal('$') + pp.Word(pp.hexnums))
-        hex_num.setParseAction(lambda t: int(t[0][1:], 16))
+        hex_num.set_parse_action(lambda t: int(t[0][1:], 16))
         
         hex_num2 = pp.Combine(pp.Literal('0x') + pp.Word(pp.hexnums))
-        hex_num2.setParseAction(lambda t: int(t[0][2:], 16))
+        hex_num2.set_parse_action(lambda t: int(t[0][2:], 16))
         
         bin_num = pp.Combine(pp.Literal('%') + pp.Word('01'))
-        bin_num.setParseAction(lambda t: int(t[0][1:], 2))
+        bin_num.set_parse_action(lambda t: int(t[0][1:], 2))
         
         dec_num = pp.Combine(pp.Optional(pp.Literal('-')) + pp.Word(pp.nums))
-        dec_num.setParseAction(lambda t: int(t[0]))
+        dec_num.set_parse_action(lambda t: int(t[0]))
         
         number = hex_num | hex_num2 | bin_num | dec_num
         
@@ -265,9 +265,9 @@ class Parser:
         expr = pp.Forward()
         atom = number | symbol | pp.Literal('*') | pp.Group('(' + expr + ')')
         
-        expr <<= pp.infixNotation(atom, [
-            (pp.oneOf('* / %'), 2, pp.opAssoc.LEFT),
-            (pp.oneOf('+ -'), 2, pp.opAssoc.LEFT),
+        expr <<= pp.infix_notation(atom, [
+            (pp.one_of('* / %'), 2, pp.opAssoc.LEFT),
+            (pp.one_of('+ -'), 2, pp.opAssoc.LEFT),
         ])
         
         # Operands
@@ -293,20 +293,20 @@ class Parser:
         operand = imm | indx | indy | ind | commax | commay | acc_op | plain
         
         # Instruction
-        mnem = pp.oneOf(list(OPCODES.keys()), caseless=True)
+        mnem = pp.one_of(list(OPCODES.keys()), caseless=True)
         instruction = pp.Group(mnem('mnem') + pp.Optional(operand))('instr')
         
         # Directives
         dir_org = pp.Suppress('.') + pp.Suppress(pp.CaselessLiteral('org')) + expr
         dir_org = dir_org('org')
         
-        dir_byte = pp.Suppress('.') + pp.Suppress(pp.CaselessLiteral('byte')) + pp.delimitedList(expr)
+        dir_byte = pp.Suppress('.') + pp.Suppress(pp.CaselessLiteral('byte')) + pp.DelimitedList(expr)
         dir_byte = dir_byte('byte')
         
-        dir_word = pp.Suppress('.') + pp.Suppress(pp.CaselessLiteral('word')) + pp.delimitedList(expr)
+        dir_word = pp.Suppress('.') + pp.Suppress(pp.CaselessLiteral('word')) + pp.DelimitedList(expr)
         dir_word = dir_word('word')
         
-        dir_asc = pp.Suppress('.') + pp.Suppress(pp.CaselessLiteral('asc')) + pp.quotedString.setParseAction(pp.removeQuotes)
+        dir_asc = pp.Suppress('.') + pp.Suppress(pp.CaselessLiteral('asc')) + pp.quotedString.set_parse_action(pp.removeQuotes)
         dir_asc = dir_asc('asc')
         
         # Label and EQU
@@ -333,7 +333,7 @@ class Parser:
             return Line(None, None, line_num, source)
         
         try:
-            result = self.line_parser.parseString(source, parseAll=True)
+            result = self.line_parser.parse_string(source, parse_all=True)
         except pp.ParseException as e:
             raise ValueError(f"Line {line_num}: Parse error: {e}")
         
@@ -465,7 +465,11 @@ class Assembler:
             elif stmt.name == 'word':
                 return len(stmt.args) * 2
             elif stmt.name == 'asc':
-                return len(stmt.args[0])
+                # args[0] may be a ParseResults wrapping the string — unwrap it
+                text = stmt.args[0]
+                if hasattr(text, '__iter__') and not isinstance(text, str):
+                    text = text[0] if len(text) > 0 else ""
+                return len(str(text))
             elif stmt.name == 'equ':
                 return 0
         

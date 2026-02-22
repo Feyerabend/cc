@@ -200,7 +200,14 @@ The design draws on several lines of work:
 - *Abramsky & Coecke (2004)* - categorical quantum mechanics, dagger compact categories
 - *Atkey et al. (2009–2013)* - parametricity and effect systems in categorical terms
 
-
+* Lambek, J. (1958). The mathematics of sentence structure. The American Mathematical Monthly, 65(3), 154–170. https://doi.org/10.2307/2310058
+* Lawvere, F. W. (1963). Functorial Semantics of Algebraic Theories (Doctoral dissertation, Columbia University). (Republished in Reprints in Theory and Applications of Categories, No. 5 (2004) pp. 1–121).
+* Girard, J.-Y. (1987). Linear logic. Theoretical Computer Science, 50(1), 1–101. https://doi.org/10.1016/0304-3975(87)90045-4
+* Mac Lane, S. (1971). Categories for the working mathematician. Springer-Verlag. https://doi.org/10.1007/978-1-4757-4721-8
+* von Thun, M. (2001). The Joy of stack programming. La Trobe University.
+* Joyal, A., & Street, R. (1991). The geometry of tensor calculus, I. Advances in Mathematics, 88(1), 55–112.
+* Atkey, R. (2009). Amortised analysis via flow-limited subtypes. In Proceedings of the 18th European Symposium on Programming (ESOP 2009).
+* Abramsky, S., & Coecke, B. (2004). A categorical semantics of quantum protocols. Proceedings of the 19th Annual IEEE Symposium on Logic in Computer Science (LICS'04), 415–425.
 
 ### Further Extensions
 
@@ -211,4 +218,5 @@ morphism table for reversible/quantum computation, building a small REPL that
 parses concatenative syntax into `Program` objects at runtime, and connecting
 the Kleisli layer to a genuine side-effect system (IO, state, exceptions) rather
 than just tracing.
+
 
