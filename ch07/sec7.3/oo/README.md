@@ -1,15 +1,29 @@
 
 ## Object-Oriented Languages
 
-As Java is quite easy to follow in code, we look into the application
-of the language, rather than the implementation. But you can also find
-a simple approach to implementation of a [JVM](./../../sec7.5/jvm/).
+We will use Java to illustrate key object-oriented (OO) principles.
+Java exemplifies a class-based approach to OO design, in contrast
+to prototype-based systems such as JavaScript. The example presented
+here is not intended to demonstrate how expression parsing should be
+implemented (in Java or any other language). Rather, it highlights
+foundational OO concepts, including inheritance, polymorphism, and
+object instantiation. For comparison, a more modern yet conceptually
+equivalent implementation is also provided in Python.
 
-The transition from the procedural dominance of the mid-20th century
-to the "Object-Oriented (OO) Big Bang" of the 1990s is one of the most
-significant shifts in computing history. It represents a move from
-viewing programs as *sequences of instructions* to viewing them as
-*simulations of interacting entities*.
+Because Java code is generally explicit and structured, our emphasis
+will be on how the language is applied rather than how it is internally
+implemented. Readers interested in lower-level mechanics may consult
+the accompanying section outlining a simplified approach to
+[JVM](./../../sec7.5/jvm/) construction.
+
+The historical transition from the procedural dominance of the mid-20th
+century to the widespread adoption of object-oriented programming in 
+he 1990s marks one of the most influential paradigm shifts in computing.
+This evolution reflects a change in perspective: from viewing programs
+primarily as *sequences of instructions* to understanding them as *models
+of interacting entities*. Object orientation encourages developers to 
+structure systems around behaviour, state, and collaboration, providing
+abstractions that better align with how complex domains are conceptualised.
 
 
 ### The Genesis: Simula 67 (1967)
@@ -106,6 +120,6 @@ By the late 90s, OO became so dominant that it bordered on dogma. This led to:
 This saturation paved the way for the *Functional Programming* resurgence we see today,
 where "Composition over Inheritance" has become the new guiding light.
 
-*Would you like me to create a comparison table between the "Message Passing"
-style of Smalltalk and the "Method Invocation" style of C++/Java?*
+
+![](./../../assets/image/)
 
