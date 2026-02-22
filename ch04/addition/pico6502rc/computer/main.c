@@ -1,264 +1,349 @@
-/*
- * main.c – PICO 6502 Retro Computer Emulator
- *
- * Uses the improved display.h framebuffer API throughout:
- *   - fb_clear / fb_fill_rect  for screen layout
- *   - fb_draw_string / fb_draw_char  for text (full ASCII, extended font)
- *   - fb_apply_color_transform_rect  for the animated colour-bar effect
- *   - display_blit_full  for a single tear-free DMA push each frame
- *
- * No local font tables or pixel-writing loops – everything goes through
- * display.h so there is one canonical implementation.
- */
 
 #include <stdio.h>
 #include <string.h>
 #include "pico/stdlib.h"
+#include "pico/multicore.h"
 #include "display.h"
 #include "fake6502.h"
+
+// Include the ROM data
 #include "rom.h"
 
-// ---------------------------------------------------------------------------
-// Memory map (C64-inspired)
-// ---------------------------------------------------------------------------
+// Memory layout (C64-inspired)
 #define SCREEN_RAM_START  0x0400
+#define SCREEN_RAM_END    0x07AF
+#define SCREEN_CHARS      1200
 #define SCREEN_COLS       40
 #define SCREEN_ROWS       30
-#define SCREEN_CHARS      (SCREEN_COLS * SCREEN_ROWS)   // 1200
 
 #define COLOR_RAM_START   0xD800
+#define COLOR_RAM_END     0xDBAF
 
 #define VIC_BASE          0xD000
-#define VIC_BORDER_COLOR  0xD000   // $D000 – border colour index (nibble)
-#define VIC_BG_COLOR      0xD001   // $D001 – background colour index (nibble)
+#define VIC_BORDER_COLOR  0xD000
+#define VIC_BG_COLOR      0xD001
 
-#define CIA_BUTTONS       0xDC00   // Button state (bit clear = pressed)
+#define CIA_BUTTONS       0xDC00  // Button state register
 
 #define ROM_START         0x8000
 #define VECTOR_RESET      0xFFFC
 
-// ---------------------------------------------------------------------------
-// C64 colour palette (RGB565).  Index 0-15 matches the standard C64 palette.
-// ---------------------------------------------------------------------------
+// Memory
+static uint8_t memory[65536];
+
+// VIC registers (volatile: written by Core 0, read by Core 1)
+static volatile uint8_t vic_border_color = 0x06;  // Blue
+static volatile uint8_t vic_bg_color = 0x0E;      // Light blue
+
+// C64 color palette (RGB565)
 static const uint16_t c64_colors[16] = {
-    0x0000,  // 0  Black
-    0xFFFF,  // 1  White
-    0xF800,  // 2  Red
-    0x07FF,  // 3  Cyan
-    0xF81F,  // 4  Purple
-    0x07E0,  // 5  Green
-    0x001F,  // 6  Blue
-    0xFFE0,  // 7  Yellow
-    0xFD20,  // 8  Orange
-    0x8410,  // 9  Brown
-    0xFC10,  // A  Light red
-    0x4208,  // B  Dark grey
-    0x8410,  // C  Grey
-    0x87F0,  // D  Light green
-    0x841F,  // E  Light blue
-    0xC618,  // F  Light grey
+    0x0000,  // 0: Black
+    0xFFFF,  // 1: White
+    0xF800,  // 2: Red
+    0x07FF,  // 3: Cyan
+    0xF81F,  // 4: Purple
+    0x07E0,  // 5: Green
+    0x001F,  // 6: Blue
+    0xFFE0,  // 7: Yellow
+    0xFD20,  // 8: Orange
+    0x8410,  // 9: Brown
+    0xFC10,  // A: Light red
+    0x4208,  // B: Dark grey
+    0x8410,  // C: Grey
+    0x87F0,  // D: Light green
+    0x841F,  // E: Light blue
+    0xC618,  // F: Light grey
 };
 
-// ---------------------------------------------------------------------------
-// Global state
-// ---------------------------------------------------------------------------
-static uint8_t  memory[65536];
+// Copied and adapted font from display.c
+// (5x8 font, will pad to 8x8 in rendering)
+static const uint8_t font5x8[][5] = {
+    {0x00, 0x00, 0x00, 0x00, 0x00}, // Space
+    {0x00, 0x00, 0x5F, 0x00, 0x00}, // !
+    {0x00, 0x07, 0x00, 0x07, 0x00}, // "
+    {0x14, 0x7F, 0x14, 0x7F, 0x14}, // #
+    {0x12, 0x2A, 0x7F, 0x2A, 0x24}, // $
+    {0x62, 0x64, 0x08, 0x13, 0x23}, // %
+    {0x50, 0x22, 0x55, 0x49, 0x36}, // &
+    {0x00, 0x00, 0x07, 0x00, 0x00}, // '
+    {0x00, 0x41, 0x22, 0x1C, 0x00}, // (
+    {0x00, 0x1C, 0x22, 0x41, 0x00}, // )
+    {0x14, 0x08, 0x3E, 0x08, 0x14}, // *
+    {0x08, 0x08, 0x3E, 0x08, 0x08}, // +
+    {0x00, 0x30, 0x50, 0x00, 0x00}, // ,
+    {0x08, 0x08, 0x08, 0x08, 0x08}, // -
+    {0x00, 0x60, 0x60, 0x00, 0x00}, // .
+    {0x02, 0x04, 0x08, 0x10, 0x20}, // /
+    {0x3E, 0x45, 0x49, 0x51, 0x3E}, // 0
+    {0x00, 0x40, 0x7F, 0x42, 0x00}, // 1
+    {0x46, 0x49, 0x51, 0x61, 0x42}, // 2
+    {0x31, 0x4B, 0x45, 0x41, 0x21}, // 3
+    {0x10, 0x7F, 0x12, 0x14, 0x18}, // 4
+    {0x39, 0x49, 0x49, 0x49, 0x2F}, // 5
+    {0x30, 0x49, 0x49, 0x4A, 0x3C}, // 6
+    {0x07, 0x0D, 0x09, 0x71, 0x01}, // 7
+    {0x36, 0x49, 0x49, 0x49, 0x36}, // 8
+    {0x1E, 0x29, 0x49, 0x49, 0x0E}, // 9
+    {0x00, 0x36, 0x36, 0x00, 0x00}, // :
+    {0x00, 0x36, 0x76, 0x00, 0x00}, // ;
+    {0x00, 0x41, 0x22, 0x14, 0x08}, // <
+    {0x14, 0x14, 0x14, 0x14, 0x14}, // =
+    {0x08, 0x14, 0x22, 0x41, 0x00}, // >
+    {0x06, 0x09, 0x51, 0x01, 0x06}, // ?
+    {0x3E, 0x41, 0x79, 0x49, 0x32}, // @
+    {0x7E, 0x11, 0x11, 0x11, 0x7E}, // A
+    {0x36, 0x49, 0x49, 0x49, 0x7F}, // B
+    {0x22, 0x41, 0x41, 0x41, 0x3E}, // C
+    {0x1C, 0x22, 0x41, 0x41, 0x7F}, // D
+    {0x41, 0x49, 0x49, 0x49, 0x7F}, // E
+    {0x01, 0x09, 0x09, 0x09, 0x7F}, // F
+    {0x7A, 0x49, 0x49, 0x41, 0x3E}, // G
+    {0x7F, 0x08, 0x08, 0x08, 0x7F}, // H
+    {0x00, 0x41, 0x7F, 0x41, 0x00}, // I
+    {0x01, 0x3F, 0x41, 0x40, 0x20}, // J
+    {0x41, 0x22, 0x14, 0x08, 0x7F}, // K
+    {0x40, 0x40, 0x40, 0x40, 0x7F}, // L
+    {0x7F, 0x02, 0x0C, 0x02, 0x7F}, // M
+    {0x7F, 0x10, 0x0C, 0x02, 0x7F}, // N
+    {0x3E, 0x41, 0x41, 0x41, 0x3E}, // O
+    {0x06, 0x09, 0x09, 0x09, 0x7F}, // P
+    {0x5E, 0x21, 0x51, 0x41, 0x3E}, // Q
+    {0x46, 0x29, 0x19, 0x09, 0x7F}, // R
+    {0x31, 0x49, 0x49, 0x49, 0x46}, // S
+    {0x01, 0x01, 0x7F, 0x01, 0x01}, // T
+    {0x3F, 0x40, 0x40, 0x40, 0x3F}, // U
+    {0x1F, 0x20, 0x40, 0x20, 0x1F}, // V
+    {0x3F, 0x40, 0x38, 0x40, 0x3F}, // W
+    {0x63, 0x14, 0x08, 0x14, 0x63}, // X
+    {0x07, 0x08, 0x70, 0x08, 0x07}, // Y
+    {0x43, 0x45, 0x49, 0x51, 0x61}, // Z
+};
+
+// Framebuffer for off-screen rendering
 static uint16_t framebuffer[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 
-// VIC shadow registers (written by 6502 ROM)
-static uint8_t vic_border_color = 0x06;   // Blue
-static uint8_t vic_bg_color     = 0x0E;   // Light blue
-
-// Standard C64-style layout: 40 cols × 30 rows, 8px border.
-// The border is purely visual — text starts at pixel (BORDER, BORDER).
-// Col 38/39 and row 28/29 extend past the display edge but the ROM never
-// writes content there, so nothing is lost.
-#define CHAR_W      8
-#define CHAR_H      8
-#define BORDER      8
-#define SCREEN_COLS 40
-#define SCREEN_ROWS 30
-
-// ---------------------------------------------------------------------------
 // 6502 memory interface
-// ---------------------------------------------------------------------------
 uint8_t read6502(uint16_t address) {
+    // Handle special reads
     if (address == CIA_BUTTONS) {
-        uint8_t b = 0xFF;
-        if (button_pressed(BUTTON_A)) b &= ~0x01;
-        if (button_pressed(BUTTON_B)) b &= ~0x02;
-        if (button_pressed(BUTTON_X)) b &= ~0x04;
-        if (button_pressed(BUTTON_Y)) b &= ~0x08;
-        return b;
+        // Return button state (inverted - pressed = 0)
+        uint8_t buttons = 0xFF;
+        if (button_pressed(BUTTON_A)) buttons &= ~0x01;
+        if (button_pressed(BUTTON_B)) buttons &= ~0x02;
+        if (button_pressed(BUTTON_X)) buttons &= ~0x04;
+        if (button_pressed(BUTTON_Y)) buttons &= ~0x08;
+        return buttons;
     }
+    
     return memory[address];
 }
 
 void write6502(uint16_t address, uint8_t value) {
-    // VIC registers
-    if (address >= VIC_BASE && address < VIC_BASE + 0x40) {
+    // Handle VIC registers
+    if (address >= VIC_BASE && address < VIC_BASE + 0x20) {
         switch (address) {
-            case VIC_BORDER_COLOR: vic_border_color = value & 0x0F; break;
-            case VIC_BG_COLOR:     vic_bg_color     = value & 0x0F; break;
+            case VIC_BORDER_COLOR:
+                vic_border_color = value & 0x0F;
+                break;
+            case VIC_BG_COLOR:
+                vic_bg_color = value & 0x0F;
+                break;
+            // Add more VIC registers as needed
         }
         memory[address] = value;
         return;
     }
+    
     // ROM is read-only
-    if (address >= ROM_START && address < (uint16_t)(ROM_START + ROM_DATA_SIZE))
-        return;
-
+    if (address >= ROM_START && address < ROM_START + ROM_DATA_SIZE) {
+        return;  // Ignore writes to ROM
+    }
+    
     memory[address] = value;
 }
 
-// ---------------------------------------------------------------------------
-// render_screen()
-//
-// Called once per frame.  Builds the entire scene into `framebuffer` then
-// does a single display_blit_full() DMA push.
-//
-// Layout used by the ROM:
-//   $0400–$07E7  screen RAM  (40×30 = 1200 chars, PETSCII)
-//   $D800–$DBAF  colour RAM  (one nibble per cell, C64 palette index)
-//   $D000        border colour
-//   $D001        background colour
-//   $05E0        animated colour-bar row   (char code, written each frame)
-//   $D9E0        colour-bar colour index
-// ---------------------------------------------------------------------------
-static void render_screen(void) {
-    uint16_t bg  = c64_colors[vic_bg_color];
-    uint16_t brd = c64_colors[vic_border_color];
-
-    // 1. Border colour fills everything, then bg overwrites the inner text area.
-    fb_clear(framebuffer, brd);
-    fb_fill_rect(framebuffer,
-                 BORDER, BORDER,
-                 DISPLAY_WIDTH  - 2 * BORDER,
-                 DISPLAY_HEIGHT - 2 * BORDER,
-                 bg);
-
-    // 2. Characters – full 40×30 ROM layout, offset by BORDER pixels.
-    //    Cols 38/39 draw past the right edge and are clipped by fb_draw_char.
-    //    Row 29 draws past the bottom edge and is clipped similarly.
-    //    The ROM never writes content there so nothing visible is lost.
+// Render the character screen to framebuffer, then blit
+void render_screen(void) {
+    static uint32_t last_render = 0;
+    uint32_t now = to_ms_since_boot(get_absolute_time());
+    
+    // Limit to ~30 FPS to avoid over-rendering
+    if (now - last_render < 33) return;
+    last_render = now;
+    
+    // Clear framebuffer to background color
+    uint16_t bg_color = c64_colors[vic_bg_color];
+    for (int i = 0; i < DISPLAY_WIDTH * DISPLAY_HEIGHT; i++) {
+        framebuffer[i] = bg_color;
+    }
+    
+    // Render border (simple 8-pixel border)
+    uint16_t border_color = c64_colors[vic_border_color];
+    
+    // Top border
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < DISPLAY_WIDTH; x++) {
+            framebuffer[y * DISPLAY_WIDTH + x] = border_color;
+        }
+    }
+    
+    // Bottom border
+    for (int y = DISPLAY_HEIGHT - 8; y < DISPLAY_HEIGHT; y++) {
+        for (int x = 0; x < DISPLAY_WIDTH; x++) {
+            framebuffer[y * DISPLAY_WIDTH + x] = border_color;
+        }
+    }
+    
+    // Left border
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < DISPLAY_HEIGHT; y++) {
+            framebuffer[y * DISPLAY_WIDTH + x] = border_color;
+        }
+    }
+    
+    // Right border
+    for (int x = DISPLAY_WIDTH - 8; x < DISPLAY_WIDTH; x++) {
+        for (int y = 0; y < DISPLAY_HEIGHT; y++) {
+            framebuffer[y * DISPLAY_WIDTH + x] = border_color;
+        }
+    }
+    
+    // Character size (8x8)
+    const int char_w = 8;
+    const int char_h = 8;
+    
+    // Render characters (with font padding: left 1, right 2)
     for (int row = 0; row < SCREEN_ROWS; row++) {
         for (int col = 0; col < SCREEN_COLS; col++) {
-            int     idx = row * SCREEN_COLS + col;
-            uint8_t ch  = memory[SCREEN_RAM_START + idx];
-            uint8_t ci  = memory[COLOR_RAM_START  + idx] & 0x0F;
-            if (ch > 0x20 && ch <= 0x7A)
-                fb_draw_char(framebuffer,
-                             BORDER + col * CHAR_W,
-                             BORDER + row * CHAR_H,
-                             (char)ch, c64_colors[ci], bg);
+            int idx = row * SCREEN_COLS + col;
+            uint8_t ch = memory[SCREEN_RAM_START + idx];
+            uint8_t color_byte = memory[COLOR_RAM_START + idx];
+            uint16_t fg_color = c64_colors[color_byte & 0x0F];
+            
+            // Screen position (with border offset)
+            int base_x = 8 + col * char_w;
+            int base_y = 8 + row * char_h;
+            
+            // Skip invalid chars
+            if (ch < 32 || ch > 90) continue;
+            
+            const uint8_t *char_data = font5x8[ch - 32];
+            
+            // Draw character (5 columns, padded)
+            for (int px = 0; px < 5; px++) {
+                uint8_t line = char_data[4 - px];  // Reverse as in original
+                for (int py = 0; py < 8; py++) {
+                    if (line & (1 << py)) {
+                        int draw_x = base_x + px + 1;  // Left pad 1
+                        int draw_y = base_y + py;
+                        // Bounds check
+                        if (draw_x >= 0 && draw_x < DISPLAY_WIDTH && draw_y >= 0 && draw_y < DISPLAY_HEIGHT) {
+                            framebuffer[draw_y * DISPLAY_WIDTH + draw_x] = fg_color;
+                        }
+                    }
+                }
+            }
         }
     }
-
-    // 3. Status bar – sits in the bottom border strip (y = DISPLAY_HEIGHT-CHAR_H).
-    //    Drawn directly into the framebuffer, always navy/white regardless of
-    //    the current border or background colour.
-    {
-        char status[41];
-        snprintf(status, sizeof(status),
-                 "PC:%04X A:%02X X:%02X Y:%02X SP:%02X P:%02X",
-                 PC, A, X, Y, SP, getP());
-
-        int sy = DISPLAY_HEIGHT - CHAR_H;          // y = 232
-        fb_fill_rect(framebuffer, 0, sy, DISPLAY_WIDTH, CHAR_H, 0x000F);
-        for (int i = 0; status[i] && i < 40; i++) {
-            char c = status[i];
-            if (c > 0x20 && c <= 0x7A)
-                fb_draw_char(framebuffer, i * CHAR_W, sy, c, COLOR_WHITE, 0x000F);
-        }
-    }
-
-    // 4. Single DMA blit – no tearing.
+    
+    // Blit the framebuffer to display
     display_blit_full(framebuffer);
 }
 
-// ---------------------------------------------------------------------------
-// main
-// ---------------------------------------------------------------------------
-int main(void) {
-    stdio_init_all();
-    sleep_ms(500);
 
-    printf("\n=== PICO 6502 Retro Computer ===\n");
-
-    // Init display
-    if (display_pack_init() != DISPLAY_OK) {
-        printf("Display init failed\n");
-        while (1) tight_loop_contents();
-    }
-    display_set_backlight(true);
-
-    // Init buttons
-    if (buttons_init() != DISPLAY_OK)
-        printf("Warning: buttons init failed\n");
-
-    printf("Display OK  %dx%d\n", DISPLAY_WIDTH, DISPLAY_HEIGHT);
-
-    // ---- Memory setup --------------------------------------------------------
-    memset(memory, 0, sizeof(memory));
-
-    // Load ROM at $8000
-    memcpy(memory + ROM_START, rom_data, ROM_DATA_SIZE);
-    printf("ROM: %d bytes at $%04X\n", ROM_DATA_SIZE, ROM_START);
-
-    // Reset vector → ROM start
-    memory[VECTOR_RESET]     = ROM_START & 0xFF;
-    memory[VECTOR_RESET + 1] = ROM_START >> 8;
-
-    // Pre-fill screen RAM with spaces, colour RAM with light-blue
-    memset(memory + SCREEN_RAM_START, 0x20, SCREEN_CHARS);
-    memset(memory + COLOR_RAM_START,  0x0E, SCREEN_CHARS);
-
-    // ---- Reset CPU -----------------------------------------------------------
-    reset6502();
-    printf("6502 reset.  PC=$%04X\n", PC);
-
-    // Splash onto the character screen so there's something visible before the
-    // ROM's init loop finishes.  fb_draw_string writes to the framebuffer; for
-    // the character RAM we write PETSCII directly.
-    {
-        const char *title = "** PICO 6502 RETRO COMPUTER **";
-        int tlen  = (int)strlen(title);
-        int tstart = (SCREEN_COLS - tlen) / 2;
-        for (int i = 0; i < tlen && (tstart + i) < SCREEN_COLS; i++) {
-            memory[SCREEN_RAM_START + SCREEN_COLS * 0 + tstart + i] = (uint8_t)title[i];
-            memory[COLOR_RAM_START  + SCREEN_COLS * 0 + tstart + i] = 0x01; // white
-        }
-    }
-
-    // ---- Main loop -----------------------------------------------------------
-    uint32_t cycle_count   = 0;
-    uint32_t last_stat     = to_ms_since_boot(get_absolute_time());
-
-    printf("Emulation started.\n");
-
+// Core 1: handles display rendering and button polling
+void core1_entry(void) {
     while (1) {
         buttons_update();
+        render_screen();
+    }
+}
 
-        // Run approximately 1 MHz worth of cycles per 16 ms frame (~16 666 cy)
-        for (int i = 0; i < 16666; i++) {
+int main() {
+    // Init stdio
+    stdio_init_all();
+    sleep_ms(1000);  // Wait for USB serial
+    
+    printf("\n=== 6502 Emulator - C64 Style ===\n");
+    
+    // Init display
+    display_error_t err = display_pack_init();
+    if (err != DISPLAY_OK) {
+        printf("Display init failed: %s\n", display_error_string(err));
+        while(1) tight_loop_contents();
+    }
+    
+    // Init buttons
+    err = buttons_init();
+    if (err != DISPLAY_OK) {
+        printf("Button init failed: %s\n", display_error_string(err));
+    }
+    
+    printf("Display initialized: %dx%d\n", DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    
+    // Init memory
+    memset(memory, 0, sizeof(memory));
+    
+    // Load ROM
+    memcpy(memory + ROM_START, rom_data, ROM_DATA_SIZE);
+    printf("Loaded %d bytes to ROM at $%04X\n", ROM_DATA_SIZE, ROM_START);
+    
+    // Set reset vector to point to ROM start
+    memory[VECTOR_RESET] = ROM_START & 0xFF;
+    memory[VECTOR_RESET + 1] = ROM_START >> 8;
+    
+    // Init screen RAM with spaces
+    for (int i = 0; i < SCREEN_CHARS; i++) {
+        memory[SCREEN_RAM_START + i] = ' ';
+        memory[COLOR_RAM_START + i] = 0x0E;  // Light blue
+    }
+    
+    // Welcome message
+    const char *msg = "6502 EMULATOR - C64 STYLE";
+    int msg_len = strlen(msg);
+    int start_pos = (SCREEN_COLS - msg_len) / 2 + SCREEN_COLS * (SCREEN_ROWS / 2);  // Center vertically too
+    for (int i = 0; i < msg_len; i++) {
+        memory[SCREEN_RAM_START + start_pos + i] = msg[i];
+        memory[COLOR_RAM_START + start_pos + i] = 0x01;  // White
+    }
+    
+    // Reset 6502
+    reset6502();
+    printf("6502 reset. PC=$%04X\n", PC);
+    
+    uint32_t cycle_count = 0;
+    uint32_t last_fps_print = to_ms_since_boot(get_absolute_time());
+    
+    printf("Starting emulation...\n");
+
+    // Launch Core 1 to handle display rendering and button polling
+    multicore_launch_core1(core1_entry);
+
+    // Main loop - Core 0 runs the 6502 at ~1MHz using time-based pacing
+    // This ensures ROM software delay loops and timing-dependent code behave correctly.
+    // Core 1 handles display independently, so pacing here doesn't affect frame rate.
+    while (1) {
+        uint32_t batch_start = time_us_32();
+
+        // Run 1000 cycles per ms = ~1MHz
+        for (int i = 0; i < 1000; i++) {
             step6502();
             cycle_count++;
         }
 
-        // Render and blit
-        render_screen();
-
-        // Periodic stats to UART
-        uint32_t now = to_ms_since_boot(get_absolute_time());
-        if (now - last_stat > 5000) {
-            printf("cycles=%lu  PC=$%04X  A=$%02X  X=$%02X  Y=$%02X  SP=$%02X\n",
-                   cycle_count, PC, A, X, Y, SP);
-            last_stat = now;
+        // Busy-wait out the remainder of 1ms
+        while (time_us_32() - batch_start < 1000) {
+            tight_loop_contents();
         }
 
-        sleep_ms(16);
+        // Print stats every 5 seconds
+        uint32_t now = to_ms_since_boot(get_absolute_time());
+        if (now - last_fps_print > 5000) {
+            printf("Cycles: %lu, PC=$%04X, A=$%02X, X=$%02X, Y=$%02X\n",
+                   cycle_count, PC, A, X, Y);
+            last_fps_print = now;
+        }
     }
-
+    
     return 0;
 }
-
