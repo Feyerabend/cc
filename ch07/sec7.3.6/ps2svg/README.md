@@ -1,5 +1,5 @@
 
-## DSL Exmple: `ps2svg`
+## Domain Specific Language Example: `ps2svg`
 
 These files collectively implement a lightweight transpiler (compiler/translator).
 It converts PostScript (PS) source code--a stack-based, domain-specific language
