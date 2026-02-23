@@ -560,21 +560,21 @@ class SessionTypesVM:
         if env is None:
             env = {}
         
-        print("\n" + "="*60)
+        print()
         print("EXECUTING PROCESS")
-        print("="*60)
+        print()
         
         try:
             process.run(env)
-            print("\n" + "="*60)
+            print()
             print("EXECUTION COMPLETE")
-            print("="*60)
+            print()
             
             # Check linearity
             # self.channel_manager.check_linearity()
             
         except Exception as e:
-            print(f"\n❌ ERROR: {e}")
+            print(f"\n ERROR: {e}")
             raise
 
 
