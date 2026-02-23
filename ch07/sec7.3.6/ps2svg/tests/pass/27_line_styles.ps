@@ -1,0 +1,45 @@
+%!PS
+% Line cap and join styles, dash patterns
+
+gsave
+  20 setlinewidth
+
+  % Butt cap (default)
+  0 setlinecap
+  50 750 moveto  150 750 lineto  stroke
+
+  % Round cap
+  1 setlinecap
+  50 700 moveto  150 700 lineto  stroke
+
+  % Projecting (square) cap
+  2 setlinecap
+  50 650 moveto  150 650 lineto  stroke
+
+  % Miter join
+  5 setlinewidth
+  0 setlinejoin
+  200 750 moveto  250 700 lineto  300 750 lineto  stroke
+
+  % Round join
+  1 setlinejoin
+  200 680 moveto  250 630 lineto  300 680 lineto  stroke
+
+  % Bevel join
+  2 setlinejoin
+  200 610 moveto  250 560 lineto  300 610 lineto  stroke
+grestore
+
+% Dash patterns
+gsave
+  3 setlinewidth
+  [10 5] 0 setdash
+  50 580 moveto 300 580 lineto stroke
+
+  [10 5 2 5] 0 setdash
+  50 560 moveto 300 560 lineto stroke
+
+  [20 10] 5 setdash
+  50 540 moveto 300 540 lineto stroke
+grestore
+showpage

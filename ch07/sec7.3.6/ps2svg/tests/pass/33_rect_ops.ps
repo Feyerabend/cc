@@ -1,0 +1,19 @@
+%!PS
+gsave
+  % Filled rectangles with different colours
+  1 0 0 setrgbcolor  50  600 100 80 rectfill
+  0 1 0 setrgbcolor  200 600 100 80 rectfill
+  0 0 1 setrgbcolor  350 600 100 80 rectfill
+
+  % Stroked rectangles
+  0 setgray
+  4 setlinewidth
+  50  480 100 80 rectstroke
+  200 480 100 80 rectstroke
+  350 480 100 80 rectstroke
+
+  % Overlapping with transparency-like layering
+  1 0.5 0 setrgbcolor  80  350 120 100 rectfill
+  0 0.5 1 setrgbcolor  140 350 120 100 rectfill
+grestore
+showpage

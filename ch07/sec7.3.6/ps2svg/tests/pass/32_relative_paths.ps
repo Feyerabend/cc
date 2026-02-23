@@ -1,0 +1,25 @@
+%!PS
+gsave
+  2 setlinewidth
+  0 0 0 setrgbcolor
+
+  % Draw a zigzag using rlineto
+  newpath
+  50 400 moveto
+  50 50 rlineto
+  50 -50 rlineto
+  50 50 rlineto
+  50 -50 rlineto
+  50 50 rlineto
+  stroke
+
+  % Draw a wave using rcurveto
+  0.8 0.2 0.2 setrgbcolor
+  newpath
+  50 300 moveto
+  20 40  40 40  60 0 rcurveto
+  20 -40  40 -40  60 0 rcurveto
+  20 40  40 40  60 0 rcurveto
+  stroke
+grestore
+showpage

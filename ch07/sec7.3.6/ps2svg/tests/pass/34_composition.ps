@@ -1,0 +1,87 @@
+%!PS-Adobe-3.0
+%%Title: Composition
+
+/cm { 28.35 mul } def
+
+gsave
+
+  % Background
+  0.95 0.95 0.95 setrgbcolor
+  0 0 595 842 rectfill
+
+  % Title bar
+  0.2 0.3 0.6 setrgbcolor
+  0 780 595 62 rectfill
+
+  % Title text
+  1 1 1 setrgbcolor
+  /Helvetica-Bold 28 setfont
+  30 800 moveto
+  (PostScript Transpiler) show
+
+  % Sub-title
+  0.8 0.9 1.0 setrgbcolor
+  /Helvetica 14 setfont
+  30 785 moveto
+  (ps_parser + ps_codegen demo) show
+
+  % Divider line
+  0.5 0.5 0.5 setrgbcolor
+  1 setlinewidth
+  20 770 moveto  575 770 lineto  stroke
+
+  % Three coloured circles
+  gsave
+    0.9 0.2 0.2 setrgbcolor
+    newpath  120 620 60 0 360 arc  fill
+    1 1 1 setrgbcolor
+    /Helvetica-Bold 16 setfont
+    96 615 moveto  (Fill) show
+  grestore
+
+  gsave
+    0.2 0.7 0.3 setrgbcolor
+    newpath  297 620 60 0 360 arc  fill
+    1 1 1 setrgbcolor
+    /Helvetica-Bold 16 setfont
+    268 615 moveto  (Stroke) show
+  grestore
+
+  gsave
+    0.2 0.4 0.9 setrgbcolor
+    newpath  475 620 60 0 360 arc  fill
+    1 1 1 setrgbcolor
+    /Helvetica-Bold 16 setfont
+    452 615 moveto  (Bezier) show
+  grestore
+
+  % Bézier wave across the middle of the page
+  0.1 0.3 0.7 setrgbcolor
+  3 setlinewidth
+  newpath
+  30 450 moveto
+  100 510  160 390  230 450 curveto
+  300 510  360 390  430 450 curveto
+  500 510  560 390  565 450 curveto
+  stroke
+
+  % Dashed border
+  0.4 0.4 0.4 setrgbcolor
+  [8 4] 0 setdash
+  2 setlinewidth
+  newpath
+  10 10 moveto
+  585 10 lineto
+  585 832 lineto
+  10 832 lineto
+  closepath  stroke
+
+  % Body text
+  0 setgray
+  /Times-Roman 12 setfont
+  30 380 moveto  (Coordinate system: PostScript origin is bottom-left.) show
+  30 360 moveto  (SVG origin is top-left. A root transform handles the flip.) show
+  30 340 moveto  (All paths, arcs, curves and text render correctly.) show
+
+grestore
+showpage

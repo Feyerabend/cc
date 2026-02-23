@@ -1,0 +1,10 @@
+%!PS
+% Even-odd fill rule creates a "hole" in overlapping shapes
+gsave
+  0.2 0.4 0.8 setrgbcolor
+  newpath
+  200 400 100 0 360 arc    % outer circle
+  200 400  50 0 360 arc    % inner circle — should be empty with eofill
+  eofill
+grestore
+showpage

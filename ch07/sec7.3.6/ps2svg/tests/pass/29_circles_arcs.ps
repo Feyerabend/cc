@@ -1,0 +1,39 @@
+%!PS
+gsave
+  % Full circle — stroke
+  2 setlinewidth
+  0 setgray
+  newpath
+  200 500 80 0 360 arc
+  stroke
+
+  % Filled circle
+  0.2 0.6 1.0 setrgbcolor
+  newpath
+  400 500 60 0 360 arc
+  fill
+
+  % Semi-circle (top half)
+  1 0 0 setrgbcolor
+  3 setlinewidth
+  newpath
+  200 300 70 0 180 arc
+  closepath
+  stroke
+
+  % Arc segment — pie slice
+  0 0.7 0.3 setrgbcolor
+  newpath
+  400 300 moveto
+  400 300 70 30 150 arc
+  closepath
+  fill
+
+  % Clockwise arc (arcn)
+  0.8 0.4 0 setrgbcolor
+  2 setlinewidth
+  newpath
+  300 150 50 270 90 arcn
+  stroke
+grestore
+showpage

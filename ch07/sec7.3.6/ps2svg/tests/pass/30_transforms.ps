@@ -1,0 +1,34 @@
+%!PS
+% Nested transforms — translate, rotate, scale
+
+gsave
+  250 420 translate    % centre of page
+
+  % Outer ring — 8 rectangles rotated around origin
+  0 1 0 setrgbcolor
+  1 setlinewidth
+  0 1 7 {
+    gsave
+      45 mul rotate
+      10 0 translate
+      newpath
+      0 -5 moveto  40 -5 lineto  40 5 lineto  0 5 lineto
+      closepath  fill
+    grestore
+  } for
+grestore
+
+gsave
+  100 200 translate
+  30 rotate
+  2 2 scale
+  newpath
+  0 0 moveto 50 0 lineto 50 30 lineto 0 30 lineto closepath
+  0.5 0.1 0.9 setrgbcolor
+  fill
+  0 0 0 setrgbcolor
+  1 setlinewidth
+  0 0 moveto 50 0 lineto 50 30 lineto 0 30 lineto closepath
+  stroke
+grestore
+showpage

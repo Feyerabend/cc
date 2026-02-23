@@ -1,0 +1,16 @@
+%!PS-Adobe-3.0
+% Mixed token types in one file
+gsave
+  50 50 translate
+  2 setlinewidth
+  0.5 setgray
+  50 50 100 100 rectfill
+  /Helvetica 12 setfont
+  (Hello, PostScript!) show
+  [1 2 3.14 -7] { dup mul } forall
+  <48656c6c6f> cvs
+  1e3 setmiterlimit
+  0 0 moveto 200 200 lineto stroke
+  { 1 add } 5 repeat
+grestore
+showpage

@@ -1,0 +1,39 @@
+%!PS
+gsave
+  % Times / serif
+  /Times-Roman 24 setfont
+  0 0 0 setrgbcolor
+  72 700 moveto
+  (The quick brown fox) show
+
+  % Helvetica / sans-serif
+  /Helvetica 18 setfont
+  0.2 0.4 0.8 setrgbcolor
+  72 660 moveto
+  (Jumps over the lazy dog.) show
+
+  % Courier / monospace
+  /Courier 14 setfont
+  0 0.5 0 setrgbcolor
+  72 620 moveto
+  (0123456789 !"#$%&) show
+
+  % Large bold-style heading
+  /Helvetica-Bold 36 setfont
+  0.8 0.1 0.1 setrgbcolor
+  72 560 moveto
+  (PostScript) show
+
+  % Smaller sub-heading
+  /Times-Italic 20 setfont
+  0.3 0.3 0.3 setrgbcolor
+  72 510 moveto
+  (to SVG transpiler) show
+
+  % Escaped characters in SVG output
+  /Courier 12 setfont
+  0 setgray
+  72 460 moveto
+  (a < b && b > c "quoted") show
+grestore
+showpage
