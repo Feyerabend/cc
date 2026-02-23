@@ -1,4 +1,7 @@
 
+> [!NOTE]
+> Also see [session types](./../../../addition/sessions/).
+
 ## π-calculus
 
 The π-calculus is a foundational framework in theoretical computer science, designed to model and analyse
