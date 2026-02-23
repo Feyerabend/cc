@@ -734,8 +734,8 @@ void display_cleanup(void) {
 
 // =============================================================================
 // Framebuffer rendering helpers
-// Inspired by the Flash renderer (Bitmap / ColorTransform / REdge) from the
-// reference zip, adapted for RGB565 and the Pico's memory layout.
+// Inspired by the Flash renderer (Bitmap / ColorTransform / REdge)
+// adapted for RGB565 and the Pico's memory layout.
 // =============================================================================
 
 // ---------------------------------------------------------------------------
@@ -817,7 +817,7 @@ void fb_fill_rect(uint16_t *fb, int x, int y, int w, int h, uint16_t color) {
 // fb_draw_char
 // Draws a 5×8 glyph centred (1px left pad) inside an 8×8 cell.
 // Font bytes are stored right-column-first: data[0]=rightmost col, data[4]=leftmost col.
-// Reading as data[4-col] gives left-to-right rendering (correct orientation).
+// Reading as data[4-col] gives left-to-right rendering.
 // bit 0 of each byte = topmost pixel row.
 // ---------------------------------------------------------------------------
 void fb_draw_char(uint16_t *fb, int x, int y, char c, uint16_t fg, uint16_t bg) {
