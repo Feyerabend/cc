@@ -8,7 +8,14 @@ These examples demonstrate:
 4. Protocol violations (commented out)
 """
 
-from session_vm import *
+# for exmples 8, and for the recursive unfolding helper
+from session_vm import (
+    SessionTypesVM,
+    Send_, Recv_, Choice_, Offer_, End_,
+    SendChan_, RecvChan_, Rec_, Var_,
+    SendProcess, ReceiveProcess, SelectProcess, OfferProcess, CloseProcess,
+    _unfold_if_rec,
+)
 
 
 def example1_simple_communication():
@@ -287,11 +294,162 @@ def example6_producer_consumer():
     t2.join()
 
 
+def example7_channel_mobility():
+    """Example 7: Channel mobility - delegating a channel endpoint"""
+    print()
+    print("EXAMPLE 7: Channel Mobility (Delegation Chain)")
+    print()
+
+    # A Forwarder sits between Sender and Receiver.
+    # Sender creates a data channel, passes the remote endpoint to Forwarder,
+    # who passes it on to Receiver.  Receiver then uses it to send 99 back to Sender.
+    #
+    # Session types involved:
+    #   data_ch   :  ?int.end          (Sender's end — it will receive the int)
+    #   setup_ch  :  !(?int.end).end   — wait, the *remote* end is !int.end, so:
+    #               SendChan(!int.end, end)
+    #   forward_ch:  SendChan(!int.end, end)  (same shape, Forwarder→Receiver)
+
+    import threading
+
+    vm = SessionTypesVM()
+
+    # data channel: Sender holds the receiving end, remote end sends
+    data_ep_sender, data_ep_remote = vm.create_channel(Recv_(int, End_()))
+
+    # setup channel: Sender will delegate data_ep_remote to Forwarder
+    setup_ep_sender, setup_ep_forwarder = vm.create_channel(
+        SendChan_(data_ep_remote.session_type, End_())
+    )
+
+    # forward channel: Forwarder will delegate data_ep_remote onward to Receiver
+    forward_ep_forwarder, forward_ep_receiver = vm.create_channel(
+        SendChan_(data_ep_remote.session_type, End_())
+    )
+
+    def run_sender():
+        print("\nSENDER:")
+        env = {
+            'setup':  setup_ep_sender,
+            'data':   data_ep_sender,
+            'ep_remote': data_ep_remote,   # the endpoint we're giving away
+        }
+        SendProcess(
+            'setup', 'ep_remote',           # delegate data_ep_remote to Forwarder
+            ReceiveProcess(
+                'data', 'result',           # wait for Receiver to send back 99
+                CloseProcess('data')
+            )
+        ).run(env)
+        print(f"\n  Sender received back: {env['result']}")
+
+    def run_forwarder():
+        print("\nFORWARDER:")
+        env = {'setup': setup_ep_forwarder, 'fwd': forward_ep_forwarder}
+        ReceiveProcess(
+            'setup', 'delegated',           # receive the endpoint from Sender
+            SendProcess(
+                'fwd', 'delegated',         # forward it straight to Receiver
+                CloseProcess('setup')
+            )
+        ).run(env)
+
+    def run_receiver():
+        print("\nRECEIVER:")
+        env = {'fwd': forward_ep_receiver}
+        ReceiveProcess(
+            'fwd', 'data_remote',           # receive the delegated endpoint
+            SendProcess(
+                'data_remote', 99,          # use it to send 99 back to Sender
+                CloseProcess('data_remote')
+            )
+        ).run(env)
+
+    threads = [
+        threading.Thread(target=run_sender),
+        threading.Thread(target=run_forwarder),
+        threading.Thread(target=run_receiver),
+    ]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    print()
+    print("Mobility works! Endpoint traveled: Sender → Forwarder → Receiver.")
+    print()
+
+
+def example8_recursive_server():
+    """Example 8: Recursive session type - an increment server"""
+    print()
+    print("EXAMPLE 8: Recursive Session Type (Increment Server)")
+    print()
+
+    # Server repeatedly receives an int and sends back int+1.
+    # Session type (server's end):  μX. ?int.!int.X
+    # The Rec type unfolds transparently on each iteration.
+
+    import threading
+
+    vm = SessionTypesVM()
+
+    server_type = Rec_('X', Recv_(int, Send_(int, Var_('X'))))
+    ep_server, ep_client = vm.create_channel(server_type)
+
+    print(f"  Server type: {ep_server.session_type}")
+    print(f"  Client type: {ep_client.session_type}")
+    print()
+
+    results = []
+    num_requests = 3
+
+    def run_server():
+        print("\nSERVER:")
+        env = {'ch': ep_server}
+        for _ in range(num_requests):
+            ep_server.session_type = _unfold_if_rec(ep_server.session_type)
+            ep_server.used = False
+            ReceiveProcess('ch', 'n', None).run(env)
+            n = env['n']
+            ep_server.session_type = _unfold_if_rec(ep_server.session_type)
+            ep_server.used = False
+            SendProcess('ch', n + 1, None).run(env)
+            ep_server.session_type = _unfold_if_rec(ep_server.session_type)
+
+    def run_client():
+        print("\nCLIENT:")
+        env = {'ch': ep_client}
+        for val in [10, 20, 30]:
+            ep_client.session_type = _unfold_if_rec(ep_client.session_type)
+            ep_client.used = False
+            SendProcess('ch', val, None).run(env)
+            ep_client.session_type = _unfold_if_rec(ep_client.session_type)
+            ep_client.used = False
+            ReceiveProcess('ch', 'resp', None).run(env)
+            results.append(env['resp'])
+            print(f"  Sent {val}, got back {env['resp']}")
+            ep_client.session_type = _unfold_if_rec(ep_client.session_type)
+
+    t1 = threading.Thread(target=run_server)
+    t2 = threading.Thread(target=run_client)
+
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+
+    assert results == [11, 21, 31], f"Unexpected results: {results}"
+    print()
+    print(f"Recursive protocol completed! Results: {results}")
+    print()
+
+
 if __name__ == "__main__":
     print()
     print("SESSION TYPES ..")
     print()
-    
+
     # Run examples
     example1_simple_communication()
     example2_calculator_service()
@@ -299,7 +457,9 @@ if __name__ == "__main__":
     example4_linearity_violation()
     example5_protocol_mismatch()
     example6_producer_consumer()
-    
+    example7_channel_mobility()
+    example8_recursive_server()
+
     print()
     print("Done.")
     print()

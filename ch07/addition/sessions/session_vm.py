@@ -3,6 +3,8 @@ Session Types VM - A minimal implementation of session-typed processes
 
 This VM implements:
 - Session types (!, ?, ⊕, &, end)
+- Channel mobility: sending/receiving channel endpoints as values (!S.T, ?S.T)
+- Recursive session types (μX.S) for servers and loops
 - Linear channel usage checking
 - Dual channel endpoints
 - Process execution with communication
@@ -99,6 +101,102 @@ class End(SessionType):
         return hash("end")
 
 
+@dataclass
+class SendChan(SessionType):
+    """!S.T  —  Send a channel endpoint with session type S, then continue with T.
+
+    This is the *mobility* constructor. The sent channel's session type (chan_type)
+    travels with the endpoint so the receiver knows what protocol to follow.
+    Example:  SendChan(?int.end, end)  means "send a channel that will receive an
+    int, then this session ends."
+    """
+    chan_type: SessionType      # session type of the channel being sent
+    continuation: SessionType   # what to do after sending it
+
+    def dual(self) -> SessionType:
+        # Dual of sending a channel is receiving a channel.
+        # The channel's own type is sent as-is--the receiver gets the *same* type
+        # description (both sides need to agree on what the delegated channel does).
+        return RecvChan(self.chan_type, self.continuation.dual())
+
+    def __str__(self) -> str:
+        return f"!({self.chan_type}).{self.continuation}"
+
+
+@dataclass
+class RecvChan(SessionType):
+    """?S.T  —  Receive a channel endpoint with session type S, then continue with T."""
+    chan_type: SessionType
+    continuation: SessionType
+
+    def dual(self) -> SessionType:
+        return SendChan(self.chan_type, self.continuation.dual())
+
+    def __str__(self) -> str:
+        return f"?({self.chan_type}).{self.continuation}"
+
+
+@dataclass
+class Rec(SessionType):
+    """μX.S  —  Recursive session type.
+
+    Allows typing servers and loops. The variable X can appear inside S and
+    unfolds to the whole Rec type again.  Example:
+        μX. ?int.!int.X   — a server that repeatedly receives and sends an int.
+    """
+    var: str
+    body: SessionType
+
+    def dual(self) -> SessionType:
+        return Rec(self.var, self.body.dual())
+
+    def unfold(self) -> SessionType:
+        """Replace free occurrences of self.var in body with self."""
+        return _subst(self.body, self.var, self)
+
+    def __str__(self) -> str:
+        return f"μ{self.var}.{self.body}"
+
+
+@dataclass
+class TypeVar(SessionType):
+    """A type variable used inside a Rec body."""
+    name: str
+
+    def dual(self) -> SessionType:
+        # Duality is pushed through by Rec.dual(); leave var as-is here.
+        return TypeVar(self.name)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+def _subst(st: SessionType, var: str, replacement: SessionType) -> SessionType:
+    """Substitute TypeVar(var) with replacement inside st (one level deep)."""
+    if isinstance(st, TypeVar):
+        return replacement if st.name == var else st
+    elif isinstance(st, Send):
+        return Send(st.value_type, _subst(st.continuation, var, replacement))
+    elif isinstance(st, Receive):
+        return Receive(st.value_type, _subst(st.continuation, var, replacement))
+    elif isinstance(st, SendChan):
+        return SendChan(_subst(st.chan_type, var, replacement),
+                        _subst(st.continuation, var, replacement))
+    elif isinstance(st, RecvChan):
+        return RecvChan(_subst(st.chan_type, var, replacement),
+                        _subst(st.continuation, var, replacement))
+    elif isinstance(st, Choice):
+        return Choice({l: _subst(s, var, replacement) for l, s in st.branches.items()})
+    elif isinstance(st, Offer):
+        return Offer({l: _subst(s, var, replacement) for l, s in st.branches.items()})
+    elif isinstance(st, Rec):
+        if st.var == var:   # shadowed — don't substitute inside
+            return st
+        return Rec(st.var, _subst(st.body, var, replacement))
+    else:
+        return st  # End, unknown leaf
+
+
 # CHANNELS
 
 @dataclass
@@ -161,6 +259,41 @@ class ChannelManager:
             raise RuntimeError("Linearity violations:\n" + "\n".join(violations))
 
 
+# HELPERS FOR MOBILITY & RECURSIVE TYPES
+
+def _unfold_if_rec(st: SessionType) -> SessionType:
+    """If st is a Rec type, unfold it one level. Otherwise return as-is."""
+    if isinstance(st, Rec):
+        return st.unfold()
+    return st
+
+
+def _session_types_equal(a: SessionType, b: SessionType) -> bool:
+    """Structural equality check for session types, handling Rec unfolding."""
+    # Unfold one level of recursion before comparing
+    a = _unfold_if_rec(a)
+    b = _unfold_if_rec(b)
+
+    if type(a) != type(b):
+        return False
+    if isinstance(a, End):
+        return True
+    if isinstance(a, (Send, Receive)):
+        return a.value_type == b.value_type and _session_types_equal(a.continuation, b.continuation)
+    if isinstance(a, (SendChan, RecvChan)):
+        return (_session_types_equal(a.chan_type, b.chan_type) and
+                _session_types_equal(a.continuation, b.continuation))
+    if isinstance(a, (Choice, Offer)):
+        return (set(a.branches.keys()) == set(b.branches.keys()) and
+                all(_session_types_equal(a.branches[l], b.branches[l]) for l in a.branches))
+    if isinstance(a, Rec):
+        # Same variable and structurally equal bodies
+        return a.var == b.var and _session_types_equal(a.body, b.body)
+    if isinstance(a, TypeVar):
+        return a.name == b.name
+    return False
+
+
 # PROCESSES
 
 class Process(ABC):
@@ -173,70 +306,134 @@ class Process(ABC):
 
 @dataclass
 class SendProcess(Process):
-    """Send a value on a channel"""
-    channel_var: str  # Variable name holding channel
-    value: Any
+    """Send a value (or channel endpoint) on a channel.
+
+    When the channel's session type is Send(T, S): sends a plain value of type T.
+    When the channel's session type is SendChan(S', S): sends a channel endpoint
+    whose remaining session type must match S'.  This is *channel mobility* —
+    the endpoint leaves the sender's scope (lineariy: it is removed from env).
+    """
+    channel_var: str   # variable holding the *carrier* channel
+    value: Any         # literal value  OR  variable name (str) of endpoint to delegate
     continuation: Process
-    
+
     def run(self, env: Dict[str, Any]):
         channel: ChannelEndpoint = env[self.channel_var]
-        
-        # Type check
-        if not isinstance(channel.session_type, Send):
-            raise TypeError(f"Expected Send type, got {channel.session_type}")
-        
-        expected_type = channel.session_type.value_type
-        if not isinstance(self.value, expected_type):
-            raise TypeError(f"Expected {expected_type.__name__}, got {type(self.value).__name__}")
-        
-        # Mark channel as used (linearity)
-        channel.mark_used()
-        
-        # Send message
-        channel.send_queue.put(self.value)
-        print(f"  → Sent {self.value} on {channel.channel_id}")
-        
-        # Update channel type to continuation
-        channel.session_type = channel.session_type.continuation
-        channel.used = False  # Can use continuation
-        
-        # Run continuation
+
+        # Unfold recursive types transparently
+        st = _unfold_if_rec(channel.session_type)
+
+        if isinstance(st, SendChan):
+            # MOBILITY PATH 
+            # Resolve the endpoint to send (must be a variable name)
+            if not isinstance(self.value, str) or self.value not in env:
+                raise ValueError(f"SendChan: expected a variable name in env, got {self.value!r}")
+
+            delegated: ChannelEndpoint = env[self.value]
+            if not isinstance(delegated, ChannelEndpoint):
+                raise TypeError(f"SendChan: variable '{self.value}' is not a ChannelEndpoint")
+
+            # Check the delegated endpoint's session type matches what the type says
+            if not _session_types_equal(delegated.session_type, st.chan_type):
+                raise TypeError(
+                    f"SendChan type mismatch: expected {st.chan_type}, "
+                    f"got {delegated.session_type} on {delegated.channel_id}"
+                )
+
+            # Linearity: remove the delegated endpoint from *this* process's scope
+            del env[self.value]
+
+            # Mark carrier as used, send the endpoint object itself
+            channel.mark_used()
+            channel.send_queue.put(delegated)
+            print(f"  → Delegated channel {delegated.channel_id} "
+                  f"(type: {delegated.session_type}) via {channel.channel_id}")
+
+            channel.session_type = st.continuation
+            channel.used = False
+
+        elif isinstance(st, Send):
+            # PLAIN VALUE PATH
+            val = env[self.value] if isinstance(self.value, str) and self.value in env else self.value
+            expected_type = st.value_type
+            if not isinstance(val, expected_type):
+                raise TypeError(f"Expected {expected_type.__name__}, got {type(val).__name__}")
+
+            channel.mark_used()
+            channel.send_queue.put(val)
+            print(f"  → Sent {val} on {channel.channel_id}")
+
+            channel.session_type = st.continuation
+            channel.used = False
+
+        else:
+            raise TypeError(f"SendProcess: expected Send or SendChan type, got {channel.session_type}")
+
         if self.continuation:
             self.continuation.run(env)
 
 
 @dataclass
 class ReceiveProcess(Process):
-    """Receive a value on a channel"""
+    """Receive a value (or channel endpoint) on a channel.
+
+    When the channel's session type is Receive(T, S): binds a plain value.
+    When the channel's session type is RecvChan(S', S): binds a received
+    ChannelEndpoint into env[bind_var].  The received endpoint's session type
+    is checked against S' and can then be used by the continuation.
+    """
     channel_var: str
-    bind_var: str  # Variable to bind received value to
+    bind_var: str
     continuation: Process
-    
+
     def run(self, env: Dict[str, Any]):
         channel: ChannelEndpoint = env[self.channel_var]
-        
-        # Type check
-        if not isinstance(channel.session_type, Receive):
-            raise TypeError(f"Expected Receive type, got {channel.session_type}")
-        
-        # Mark channel as used (linearity)
-        channel.mark_used()
-        
-        # Receive message (blocking)
-        value = channel.recv_queue.get()
-        print(f"  ← Received {value} on {channel.channel_id}")
-        
-        # Type check received value
-        expected_type = channel.session_type.value_type
-        if not isinstance(value, expected_type):
-            raise TypeError(f"Expected {expected_type.__name__}, got {type(value).__name__}")
-        
-        # Update channel type to continuation
-        channel.session_type = channel.session_type.continuation
-        channel.used = False  # Can use continuation
-        
-        # Bind value and run continuation
-        env[self.bind_var] = value
+
+        # Unfold recursive types transparently
+        st = _unfold_if_rec(channel.session_type)
+
+        if isinstance(st, RecvChan):
+            # MOBILITY PATH
+            channel.mark_used()
+
+            # Block until the delegated endpoint arrives
+            delegated: ChannelEndpoint = channel.recv_queue.get()
+            if not isinstance(delegated, ChannelEndpoint):
+                raise TypeError(f"RecvChan: expected a ChannelEndpoint, got {type(delegated)}")
+
+            # Verify the received endpoint matches the promised type
+            if not _session_types_equal(delegated.session_type, st.chan_type):
+                raise TypeError(
+                    f"RecvChan type mismatch: expected {st.chan_type}, "
+                    f"got {delegated.session_type} on {delegated.channel_id}"
+                )
+
+            print(f"  ← Received channel {delegated.channel_id} "
+                  f"(type: {delegated.session_type}) via {channel.channel_id}")
+
+            channel.session_type = st.continuation
+            channel.used = False
+
+            # Bring the delegated endpoint into scope
+            env[self.bind_var] = delegated
+
+        elif isinstance(st, Receive):
+            # PLAIN VALUE PATH
+            channel.mark_used()
+            value = channel.recv_queue.get()
+            print(f"  ← Received {value} on {channel.channel_id}")
+
+            expected_type = st.value_type
+            if not isinstance(value, expected_type):
+                raise TypeError(f"Expected {expected_type.__name__}, got {type(value).__name__}")
+
+            channel.session_type = st.continuation
+            channel.used = False
+            env[self.bind_var] = value
+
+        else:
+            raise TypeError(f"ReceiveProcess: expected Receive or RecvChan type, got {channel.session_type}")
+
         if self.continuation:
             self.continuation.run(env)
 
@@ -402,3 +599,23 @@ def Choice_(branches: Dict[str, SessionType]) -> Choice:
 def Offer_(branches: Dict[str, SessionType]) -> Offer:
     """Helper to create Offer type"""
     return Offer(branches)
+
+def SendChan_(chan_type: SessionType, continuation: SessionType) -> SendChan:
+    """Helper to create SendChan (mobility send) type"""
+    return SendChan(chan_type, continuation)
+
+def RecvChan_(chan_type: SessionType, continuation: SessionType) -> RecvChan:
+    """Helper to create RecvChan (mobility receive) type"""
+    return RecvChan(chan_type, continuation)
+
+def Rec_(var: str, body: SessionType) -> Rec:
+    """Helper to create recursive session type μvar.body"""
+    return Rec(var, body)
+
+def Var_(name: str) -> TypeVar:
+    """Helper to create a type variable (for use inside Rec bodies)"""
+    return TypeVar(name)
+
+
+if __name__ == "__main__":
+    print("session_vm: import this module and see examples.py for usage.")

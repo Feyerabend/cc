@@ -1,6 +1,10 @@
 
 > [!NOTE]
 > Also see [session types](./../../../addition/sessions/).
+> Session types were invented to type the pi-calculus.
+> Kohei Honda's original 1993 session types paper was explicitly
+> a typing discipline for pi-calc channels. So what is presented on session types
+> is essentially a typed layer over what the simple vm here implements untyped.
 
 ## π-calculus
 
