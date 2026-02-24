@@ -1,7 +1,7 @@
 
 ## Concurrency in Operating Systems
 
-It cn be interesting to illustrate some common functions of typical operating systems.
+It can be interesting to illustrate some common functions of typical operating systems.
 The ToyVM we use in illustrating concepts of concurrency can be translted into some of
 wht occurs in a kernel. Let's compare the simulation we have with wht a real OS
 is doing: xv6.
