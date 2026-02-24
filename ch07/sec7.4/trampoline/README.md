@@ -74,7 +74,7 @@ def factorial_trampoline(n):
     return result
 ```
 
-*Key Insight*: Instead of `return step(n-1, ...)` which builds stack depth,
+*Insight*: Instead of `return step(n-1, ...)` which builds stack depth,
 we use `return lambda: step(n-1, ...)` which creates a thunk for the
 trampoline loop to execute.
 
@@ -102,7 +102,7 @@ if (trampoline.next != NULL) {
 }
 ```
 
-Insight*: Operations are dispatched through `trampoline.next` rather
+*Insight*: Operations are dispatched through `trampoline.next` rather
 than direct calls, separating control flow from operation execution.
 
 #### 3. Recursive Expression VM (C)
