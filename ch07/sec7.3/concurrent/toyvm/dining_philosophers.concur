@@ -1,0 +1,73 @@
+# ============================================================
+# dining_philosophers.concur
+#
+# The Dining Philosophers problem — a classic concurrency puzzle.
+# Five philosophers sit at a table. Each needs two forks to eat.
+# Forks are shared between neighbours. Without coordination,
+# deadlock occurs. We solve it by always acquiring the lower-
+# numbered fork first (lock ordering).
+#
+# This demo uses 3 philosophers to keep output readable.
+# ============================================================
+
+# Shared state
+global eaten = 0
+atomic meal_count = 0
+
+# Three forks (locks)
+lock fork0
+lock fork1
+lock fork2
+
+# Philosopher 0: needs fork0 and fork1
+thread phil0 {
+    print("Philosopher 0 is thinking")
+    sleep 100
+    print("Philosopher 0 is hungry — acquiring fork0 then fork1")
+    lock fork0 {
+        lock fork1 {
+            print("Philosopher 0 is EATING")
+            sleep 200
+            increment meal_count
+        }
+    }
+    print("Philosopher 0 finished eating")
+}
+
+# Philosopher 1: needs fork1 and fork2
+thread phil1 {
+    print("Philosopher 1 is thinking")
+    sleep 150
+    print("Philosopher 1 is hungry — acquiring fork1 then fork2")
+    lock fork1 {
+        lock fork2 {
+            print("Philosopher 1 is EATING")
+            sleep 200
+            increment meal_count
+        }
+    }
+    print("Philosopher 1 finished eating")
+}
+
+# Philosopher 2: needs fork0 and fork2 — acquires fork0 first (ordering prevents deadlock)
+thread phil2 {
+    print("Philosopher 2 is thinking")
+    sleep 50
+    print("Philosopher 2 is hungry — acquiring fork0 then fork2")
+    lock fork0 {
+        lock fork2 {
+            print("Philosopher 2 is EATING")
+            sleep 200
+            increment meal_count
+        }
+    }
+    print("Philosopher 2 finished eating")
+}
+
+# Wait for all philosophers to finish
+join phil0
+join phil1
+join phil2
+
+# Report
+print("All philosophers done. Total meals eaten: ", get meal_count)
