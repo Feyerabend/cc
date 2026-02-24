@@ -2,6 +2,7 @@
 ## Domain Specific Language Example: `ps2svg`
 
 These files collectively implement a lightweight transpiler (compiler/translator).
+Not a great example, admittedly, but it does demonstrate the PostScript language.
 It converts PostScript (PS) source code--a stack-based, domain-specific language
 (DSL) for describing vector graphics and page layouts--into Scalable Vector Graphics
 (SVG), an XML-based format for web-compatible vector images. PostScript, originally
