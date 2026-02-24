@@ -3,16 +3,22 @@
 
 These files collectively implement a lightweight transpiler (compiler/translator).
 Not a great example, admittedly, but it does demonstrate the PostScript language.
-It converts PostScript (PS) source code--a stack-based, domain-specific language
-(DSL) for describing vector graphics and page layouts--into Scalable Vector Graphics
+PostScript is a classic example of a domain-specific language because it is tailored
+specifically for page description and graphics rendering rather than general-purpose
+programming. Its primitives directly represent imaging concepts such as paths,
+transformations, fonts, and rasterisation. This design enables concise, expressive
+descriptions of complex visual layouts. Additionally, its device-independent
+execution model allows the same program to produce consistent output across
+different printers and display systems.
+
+This program suite converts PostScript (PS) source code into Scalable Vector Graphics
 (SVG), an XML-based format for web-compatible vector images. PostScript, originally
 designed by Adobe for printers (e.g., in PDF internals), is a classic DSL example,
 focusing on concise, programmatic drawing commands like paths, strokes, and transforms.
 
-The project is written in C for efficiency and portability. It supports a subset of PS
-(e.g., paths, strokes/fills, colors, text, and basic transforms) but not full PS (e.g.,
-no arbitrary procedures or fonts beyond basics). Here's a breakdown of the files:
-
+The project is written in C for efficiency and portability. It supports a very narrow
+subset of PS (e.g., paths, strokes/fills, colors, text, and basic transforms)
+but not full PS (e.g., no arbitrary procedures or fonts beyond basics).
 
 - *ps_ast.h*: Defines the Abstract Syntax Tree (AST) structure. This is the intermediate
   representation of parsed PS code, with node types like integers, strings, operators
