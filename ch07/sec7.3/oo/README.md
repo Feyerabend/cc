@@ -122,14 +122,14 @@ This saturation paved the way for the *Functional Programming* resurgence we see
 where "Composition over Inheritance" has become the new guiding light.
 
 
+![Gang 4](./../../assets/image/gang4.png)
 ![Budd](./../../assets/image/budd.jpeg)
 ![Budd](./../../assets/image/budd1.jpeg)
 ![Budd](./../../assets/image/budd2.jpeg)
 ![Effective](./../../assets/image/effective.jpeg)
 ![Patterns 1](./../../assets/image/patterns1.jpeg)
 ![Patterns 2](./../../assets/image/patterns2.jpeg)
+![Thinking](./../../assets/image/thinking.jpeg)
 ![Hooked](./../../assets/image/hooked.jpeg)
 ![](./../../assets/image/)
-![](./../../assets/image/)
-![Gang 4](./../../assets/image/gang4.png)
 
