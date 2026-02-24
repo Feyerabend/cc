@@ -74,7 +74,7 @@ def factorial_trampoline(n):
     return result
 ```
 
-*Key Insight*: Instead of `return step(n-1, ...)` which builds stack depth,
+*Insight*: Instead of `return step(n-1, ...)` which builds stack depth,
 we use `return lambda: step(n-1, ...)` which creates a thunk for the
 trampoline loop to execute.
 
@@ -102,7 +102,7 @@ if (trampoline.next != NULL) {
 }
 ```
 
-*Key Insight*: Operations are dispatched through `trampoline.next` rather
+*Insight*: Operations are dispatched through `trampoline.next` rather
 than direct calls, separating control flow from operation execution.
 
 #### 3. Recursive Expression VM (C)
@@ -147,11 +147,11 @@ int eval(Expr* expr) {
 
 *Example*: Evaluating `fib(5)` creates many bounces:
 ```
-BOUNCE(fib(5)) → BOUNCE(fib(4) + fib(3)) → BOUNCE(fib(4)) → ...
-... → DONE(3) + DONE(2) → DONE(5)
+BOUNCE(fib(5)) -> BOUNCE(fib(4) + fib(3)) -> BOUNCE(fib(4)) -> ..
+.. -> DONE(3) + DONE(2) → DONE(5)
 ```
 
-The Ackermann function `A(3,3)` creates thousands of recursive calls but
+The Ackermann function `A(3,3)` creates thousands(!) of recursive calls but
 completes successfully without stack overflow thanks to trampolining.
 
 #### 4. Advanced Python Examples
@@ -216,7 +216,7 @@ def parse_balanced_parens(state: ParseState) -> Trampoline:
         new_stack = state.stack + ['(']
         new_state = ParseState(state.input, state.position + 1, new_stack)
         return Bounce(lambda: parse_balanced_parens(new_state))
-    ## ... handle other cases
+    # ... handle other cases
 ```
 
 ##### 4.5 Ackermann Function
@@ -256,22 +256,22 @@ graph TD
 *Problem*: Deep recursion causes stack overflow.
 
 ```python
-## Traditional recursion - FAILS for large n
+# Traditional recursion - FAILS for large n
 def fib(n):
     if n <= 1:
         return n
-    return fib(n-1) + fib(n-2)  ## Stack overflow for large n!
+    return fib(n-1) + fib(n-2)  # Stack overflow for large n!
 ```
 
 *Solution*: Trampolining keeps stack depth constant.
 
 ```python
-## Trampolined - handles arbitrarily large n
+# Trampolined - handles arbitrarily large n
 def fib_trampoline(n):
-    ## Base case
+    # Base case
     if n <= 1:
         return Done(n)
-    ## Recursive case - return continuation
+    # Recursive case - return continuation
     return Bounce(lambda: add(fib(n-1), fib(n-2)))
 ```
 
@@ -331,7 +331,7 @@ collection behavior matters.
 - *Mutual recursion*: Even/odd checkers, state machines with multiple
   mutually recursive states.
 
-- *Languages without TCO*: JavaScript, Python, Java, C## (without special
+- *Languages without TCO*: JavaScript, Python, Java, C# (without special
   compiler flags).
 
 - *Interpreters and VMs*: Natural fit for dispatch mechanisms and
@@ -365,11 +365,11 @@ Ackermann Trampolined:
 #### C Examples
 
 ```bash
-## Fixed-point arithmetic interpreter
+# Fixed-point arithmetic interpreter
 gcc -o tramp tramp.c -Wall
 ./tramp
 
-## Recursive expression VM
+# Recursive expression VM
 gcc -o recursive_vm recursive_vm.c -Wall
 ./recursive_vm
 ```
@@ -377,10 +377,10 @@ gcc -o recursive_vm recursive_vm.c -Wall
 #### Python Examples
 
 ```bash
-## Simple factorial
+# Simple factorial
 python3 fact.py
 
-## Advanced examples
+# Advanced examples
 python3 advanced_trampoline.py
 ```
 
@@ -411,4 +411,4 @@ Also search for:
 - Virtual machine design and bytecode interpreters
 
 
-![SICP](./../../assets/image/SICP.png)
+![SICP](./../../assets/image/sicp.png)
