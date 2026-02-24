@@ -13,7 +13,7 @@ structure of recursive algorithms.
 The trampoline pattern can be thought of as a "control flow" pattern that
 replaces recursive function calls with an iterative loop. Instead of functions
 calling themselves directly (which builds up the call stack), they return
-"[continuations](./../cps/)"--descriptions of what to do next. A trampoline
+"[continuations](./../continue/)"--descriptions of what to do next. A trampoline
 loop then executes these continuations iteratively.
 
 
