@@ -3,7 +3,7 @@
 
 It is often helpful to illustrate key concepts by relating them to the familiar
 behaviour of real operating systems. The ToyVM used in our exploration of
-concurrency concepts ([sec7.3](./../../sec7.3/)) serves also as a simplified model
+concurrency concepts ([sec7.3](./../../../sec7.3/)) serves also as a simplified model
 of mechanisms that exist within an operating system kernel. By examining this
 simulation alongside the behavior of a real OS--specifically xv6--we can better
 understand how abstract ideas such as process scheduling, context switching,
