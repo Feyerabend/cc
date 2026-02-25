@@ -25,8 +25,7 @@ def demo_without_mutex():
     vm = ToyVM()
     vm.debug = False
     
-    # Create a global counter (simulated via atomic counter used incorrectly)
-    # We'll use regular LOAD/STORE operations to create race conditions
+    # Create a global counter
     vm.globals['counter'] = 0
     
     # Each thread will:
@@ -38,27 +37,25 @@ def demo_without_mutex():
         ("PUSH", 100),           # Loop counter
         ("STORE", "loop_count"),
         
-        # Loop start
-        ("LOAD", "loop_count"),
-        ("PUSH", 0),
-        ("GT",),                 # Check if loop_count > 0
-        ("JUMPF", 14),           # Exit loop if false
-        
-        # Critical section WITHOUT mutex protection
-        ("LOAD_GLOBAL", "counter"),
-        ("PUSH", 1),
-        ("ADD",),
-        ("STORE_GLOBAL", "counter"),
-        
-        # Decrement loop counter
+        # Loop start (PC=2)
         ("LOAD", "loop_count"),
         ("PUSH", 1),
         ("SUB",),
+        ("DUP",),
         ("STORE", "loop_count"),
-        ("JUMP", 2),             # Back to loop condition
+        ("PUSH", -1),
+        ("JUMP_IF", 16),         # Exit loop if loop_count <= 0
         
-        # End - print final contribution
-        ("LOAD_GLOBAL", "counter"),
+        # Critical section WITHOUT mutex protection
+        ("LOAD", "counter"),     # Load from global
+        ("PUSH", 1),
+        ("ADD",),
+        ("GLOBAL_STORE", "counter"),
+        
+        ("JUMP", 2),             # Back to loop start
+        
+        # End - print final value
+        ("LOAD", "counter"),
         ("PRINT", "Thread finished, counter is now: {}"),
     ]
     
@@ -106,35 +103,33 @@ def demo_with_mutex():
         ("PUSH", 100),
         ("STORE", "loop_count"),
         
-        # Loop start
+        # Loop start (PC=2)
         ("LOAD", "loop_count"),
-        ("PUSH", 0),
-        ("GT",),
-        ("JUMPF", 19),           # Exit loop if false
+        ("PUSH", 1),
+        ("SUB",),
+        ("DUP",),
+        ("STORE", "loop_count"),
+        ("PUSH", -1),
+        ("JUMP_IF", 21),         # Exit loop if loop_count <= 0
         
         # Acquire mutex BEFORE critical section
         ("PUSH", lock_name),
         ("LOCK_ACQUIRE",),       # Blocks if lock is held by another thread
         
         # Critical section (now protected)
-        ("LOAD_GLOBAL", "counter"),
+        ("LOAD", "counter"),
         ("PUSH", 1),
         ("ADD",),
-        ("STORE_GLOBAL", "counter"),
+        ("GLOBAL_STORE", "counter"),
         
         # Release mutex AFTER critical section
         ("PUSH", lock_name),
         ("LOCK_RELEASE",),
         
-        # Decrement loop counter
-        ("LOAD", "loop_count"),
-        ("PUSH", 1),
-        ("SUB",),
-        ("STORE", "loop_count"),
         ("JUMP", 2),
         
         # End
-        ("LOAD_GLOBAL", "counter"),
+        ("LOAD", "counter"),
         ("PRINT", "Thread finished, counter is now: {}"),
     ]
     
