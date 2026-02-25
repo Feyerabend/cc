@@ -1,7 +1,7 @@
 
 ## ToyVM & ToyOS - Educational Operating System Simulator
 
-### The Kernel (toyvm.c)
+### [The Kernel](./kernel/) (toyvm.c)
 
 *What it does*: Manages concurrency at the lowest level.
 
@@ -23,7 +23,7 @@ Think of it as the *traffic controller*--it decides which thread runs
 next and handles the mechanics of switching between them.
 
 
-### The Operating System (toyos.c)
+### [The Operating System](./os/) (toyos.c)
 
 *What it does*: Adds the abstractions that programs actually use.
 
