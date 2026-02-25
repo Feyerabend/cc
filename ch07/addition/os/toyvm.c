@@ -1075,7 +1075,7 @@ static void demo_deadlock(void) {
 
 int main(void) {
     printf("\n\n");
-    printf(" / vm.c — Cooperative Kernel Simulator in C\n");
+    printf(" / toyvm.c — Cooperative Kernel Simulator in C\n");
     printf(" / Illustrating: TCBs, run queue, locks, semaphores\n");
     printf("\n\n");
 
