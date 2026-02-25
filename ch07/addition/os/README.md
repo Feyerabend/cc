@@ -40,7 +40,7 @@ its documentation and source code.
      single-threaded C program. It emulates a "kernel" with data structures
      like Thread Control Blocks (TCBs), run queues, and resource managers
      (locks, semaphores, message queues). There's no privilege separation,
-     no hardware access, and no real kernel mode—everything is simulated
+     no hardware access, and no real kernel mode--everything is simulated
      in one process. It's designed for readability, with a main loop acting
      as the scheduler. No file system, devices, or virtual memory hardware;
      globals and thread-local vars simulate shared/private state.
