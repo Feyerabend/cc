@@ -80,11 +80,12 @@ real-world concurrency patterns, such as those in message queues (e.g., Kafka) o
 ## Producer-Consumer in Practice
 
 To provide a hands-on exploration of the producer-consumer problem and demonstrate how the abstract
-concepts translate into working code, we offer `producer_consumer_demo.py`, a comprehensive demonstration
+concepts translate into working code, we offer `producer_consumer.py`, a comprehensive demonstration
 script built atop the ToyVM. This script presents three progressive scenarios that illustrate the evolution
 from naive and incorrect implementations to robust, production-ready solutions.
 
-**Demonstration 1: Without Synchronisation**  
+*Demonstration 1: Without Synchronisation*
+
 In this scenario, two producers and two consumers attempt to share a bounded buffer with no synchronisation
 mechanisms whatsoever. Each producer aims to generate five items, and each consumer aims to retrieve five
 items, for a total of ten items produced and ten consumed. However, because the threads read, modify, and
@@ -94,7 +95,8 @@ final counts rarely match expectations. This demonstration starkly reveals why s
 optional in concurrent systems--without it, even simple operations like incrementing a counter become
 unreliable.
 
-**Demonstration 2: With Semaphores (Proper Solution)**  
+*Demonstration 2: With Semaphores (Proper Solution)*
+
 This demonstration presents the canonical solution to the producer-consumer problem using counting semaphores.
 Two semaphores are employed: `empty_slots` (initialised to the buffer size) tracks the number of available
 slots, and `filled_slots` (initialised to zero) tracks the number of items ready for consumption. A mutex
@@ -108,7 +110,8 @@ generating eight items each and three consumers processing them, totalling sixte
 ensures that all items are correctly produced and consumed with no lost updates and no busy-waiting. This is
 the textbook solution, directly descended from Dijkstra's original formulation.
 
-**Demonstration 3: Multi-Stage Pipeline (Two Bounded Buffers)**  
+*Demonstration 3: Multi-Stage Pipeline (Two Bounded Buffers)*
+
 To illustrate how the producer-consumer pattern scales to more complex workflows, this demonstration implements
 a two-stage pipeline. In the first stage, a producer generates items and places them into Buffer A. A processor
 thread retrieves items from Buffer A, performs some transformation (simulated here as a simple pass-through),

@@ -63,7 +63,8 @@ threads compete for a shared resource and how a mutex enforces mutual exclusion 
 
 The `mutex.py` script showcases four key scenarios using the ToyVM:
 
-*Demonstration 1: Race Condition Without Mutex*  
+*Demonstration 1: Race Condition Without Mutex*
+
 Four threads each increment a shared counter one hundred times without any locking mechanism. The
 expected final value is 400, but due to race conditions--where threads read, modify, and write the
 counter without coordination--the actual result is typically much lower. This occurs because increments
@@ -71,14 +72,16 @@ can be lost when two threads read the same value simultaneously, increment it in
 back overlapping results. Running this demonstration vividly shows how fragile unsynchronised concurrent
 access can be.
 
-*Demonstration 2: Proper Synchronisation With Mutex*  
+*Demonstration 2: Proper Synchronisation With Mutex*
+
 The same workload as Demonstration 1, but now each thread acquires a mutex before entering the critical
 section (loading the counter, incrementing it, and storing it back) and releases the mutex afterward.
 With the mutex in place, only one thread at a time can modify the counter, ensuring that all four hundred
 increments are accounted for. The final value is reliably 400, demonstrating that mutual exclusion
 prevents lost updates and guarantees correctness.
 
-*Demonstration 3: Deadlock Scenario*  
+*Demonstration 3: Deadlock Scenario*
+
 This demonstration introduces two mutexes (lock1 and lock2) and two threads that each need to acquire
 both locks. However, Thread A acquires lock1 first and then lock2, while Thread B does the reverse:
 lock2 first and then lock1. If both threads acquire their first lock at nearly the same time, each will
@@ -87,7 +90,8 @@ proceed. The script detects this condition by using a timeout; if the threads do
 few seconds, the demonstration reports a deadlock. This illustrates one of the classic pitfalls of using
 multiple mutexes: acquiring locks in inconsistent orders can cause the entire system to freeze.
 
-*Demonstration 4: Deadlock Prevention Through Consistent Lock Ordering*  
+*Demonstration 4: Deadlock Prevention Through Consistent Lock Ordering*
+
 To resolve the deadlock issue, both threads are instructed to acquire the locks in the same order: lock1
 first, then lock2. Even though the threads are running concurrently and may interleave in various ways,
 they can never form a circular wait because there is a global ordering to lock acquisition. One thread
@@ -100,5 +104,4 @@ necessary, how they work, and the care one must take when using them--particular
 multiple locks. The ToyVM's explicit step-by-step execution makes the abstract concept of mutual exclusion
 tangible, revealing the interplay between thread scheduling and synchronisation primitives that underpins
 all concurrent programming.
-
 
