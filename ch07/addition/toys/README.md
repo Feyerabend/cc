@@ -111,6 +111,9 @@ Simulate a simple network:
 
 *Learning*: Network protocols, state machines, async I/O
 
+__This is now implemented as [toynet](./net/).__
+
+
 #### Toy 6: Debugging Tools
 Build developer tools:
 - `strace` - trace system calls
