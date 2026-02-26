@@ -9,7 +9,7 @@ A modular operating system built on top of the cooperative kernel from `toyvm.c`
   Applications Layer
   ? (Future: shell, user programs, utilities)
 
-<- System Calls ->
+        <- System Calls ->
 
   Operating System (toyos.c)
   - Process Management (fork, wait, exit) 
@@ -17,7 +17,7 @@ A modular operating system built on top of the cooperative kernel from `toyvm.c`
   - System Call Interface
   - Time-based Scheduling
 
-<- Uses ->
+           <- Uses ->
 
    Cooperative Kernel (toyvm.c)
    - Thread Scheduling (run queue)
@@ -64,7 +64,7 @@ A modular operating system built on top of the cooperative kernel from `toyvm.c`
 
 ### Next Steps
 
-### Phase 1: Enhanced Process Control DONE
+### Phase 1: Enhanced Process Control --> DONE
 - [x] Fork/exec model
 - [x] Process hierarchy
 - [x] Zombie processes and reaping
