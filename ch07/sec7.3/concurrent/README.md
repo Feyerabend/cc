@@ -2,7 +2,7 @@
 ## Concurrency
 
 > [!NOTE]
-> Also compare with low level constructs on [concurrency](.).
+> Also compare with low level constructs on [concurrency](./../../sec7.4/concurrency/).
 
 *Concurrency*, as a concept in computing, has evolved through a rich
 interplay between hardware capabilities, theoretical breakthroughs,
