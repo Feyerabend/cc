@@ -30,7 +30,7 @@ could view them as timeless instruments.
 
 ### Concurrency & Threading
 
-[Concurrency](./CONCURRENCY.md) and threading mechanisms manage safe and predictable execution when multiple
+[Concurrency](./concurrency/) and threading mechanisms manage safe and predictable execution when multiple
 tasks operate simultaneously, ensuring isolation, coordination, and ordering. Re-entrancy guarantees that
 functions behave correctly under concurrent calls; context switching enables multitasking by preserving and
 restoring task states; memory barriers enforce visibility and ordering of shared memory operations. Together,
