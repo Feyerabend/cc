@@ -422,19 +422,21 @@ python3 vm.py interpret.bin -t
 ### Reference
 
 #### RISC-V Specifications
+
 - [RISC-V ISA Specification](https://riscv.org/technical/specifications/)
 - [RISC-V ABI Specification](https://github.com/riscv-non-isa/riscv-elf-psabi-doc)
 
 #### Related Techniques
+
 - Threaded code interpretation
 - Direct threaded code
 - Computed goto (GCC extension)
 - Perfect hashing for dispatch
 
 #### Books
-- "Computer Organization and Design: RISC-V Edition" by Patterson & Hennessy
-- "The RISC-V Reader" by Patterson & Waterman
 
+- Patterson, D. A., & Hennessy, J. L. (2017). *Computer organization and design: RISC-V edition*. Morgan Kaufmann.
+- Patterson, D. A., & Waterman, A. (2017). *The RISC-V reader: An open architecture atlas*. Strawberry Canyon LLC.
 
-
+![RISCV Reader](./../../../assets/image/reader.png)
 
