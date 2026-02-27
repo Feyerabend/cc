@@ -29,7 +29,7 @@ void on_game_over(const Event *event, void *user_data) {
 void on_achievement(const Event *event, void *user_data) {
     (void)user_data;  // Unused
     if (event->data.type == EVENT_DATA_STRING) {
-        printf("🏆 Achievement unlocked: %s\n", event->data.value.s);
+        printf(" Achievement unlocked: %s\n", event->data.value.s);
     }
 }
 
@@ -64,7 +64,7 @@ int main(void) {
         return 1;
     }
     
-    printf("=== Event-Driven Language Demo ===\n\n");
+    printf("** Event-Driven Language Demo **\n\n");
     
     // Example 1: Simple event with callbacks
     printf("--- Example 1: User Login Events ---\n");
