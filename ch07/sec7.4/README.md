@@ -48,7 +48,7 @@ complex execution paths in functional and system-level programming.
 
 ### Memory & State Management
 
-[State management mechanisms](./MEMORY.md) control how a program preserves, restores, and navigates its
+[State management mechanisms](./memory/) control how a program preserves, restores, and navigates its
 execution history, especially in complex or failure-prone scenarios. Checkpoints capture program state
 for resumption or recovery, stack frames organise local data during nested or recursive calls, and backtracking
 systematically reverts to earlier states when encountering dead ends. These techniques are central to building
