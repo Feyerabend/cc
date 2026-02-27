@@ -5,7 +5,7 @@
 |-----------|-------------|-----------|--------------------|
 | [Callback](./callback/) | Function invoked at a later point, usually by a framework | Event handling, async operations, sorting hooks | Observer, Inversion of Control |
 | [Signal Handler](./signal/) | Async routine called in response to OS or hardware signals | Interrupt handling, Unix signals, exceptions | Observer, Interrupt Vector Table |
-| [Event Loop](./event/) | Central loop dispatching async events | GUIs, servers, JavaScript runtimes | Reactor, Proactor |
+| [Event Loop](./loop/) | Central loop dispatching async events | GUIs, servers, JavaScript runtimes | Reactor, Proactor |
 
 First, let’s consider the Callback mechanism. Imagine a bustling
 kitchen where a chef delegates tasks to assistants, not expecting
