@@ -69,7 +69,7 @@ embedded systems, and asynchronous programming environments.
 
 ### Computation Models
 
-[Coroutines](./COROUTINE.md) are generalised subroutines that allow suspension and resumption of
+[Coroutines](./coroutine/) are generalised subroutines that allow suspension and resumption of
 execution, enabling cooperative multitasking, generators, and simulations. They are often used
 in the Actor model and State Machine patterns to manage concurrency and control flow in a structured,
 non-preemptive way.
