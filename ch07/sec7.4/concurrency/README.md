@@ -4,6 +4,7 @@
 > [!NOTE]
 > Also compare with [concurrent](./../../sec7.3/concurrent/)
 > programming lanuages constructs.
+> You might also study some [concepts](./CONCEPTS.md) on concurrency.
 
 | Mechanism | Description | Use Cases | Related Pattern(s) |
 |-----------|-------------|-----------|--------------------|
