@@ -10,7 +10,7 @@
 Memory mechanisms like backtracking, checkpoints, and stack frames are fundamental
 concepts that help manage program execution flow and state.
 
-Backtracking is an algorithmic technique that builds solutions incrementally by trying
+*Backtracking* is an algorithmic technique that builds solutions incrementally by trying
 options, abandoning them ("backtracking") when they fail, and trying alternatives. When
 reaching a dead end in solving a problem, the algorithm undoes recent decisions and
 explores different paths. Its core principle is essentially "try, fail, undo, try something else."
@@ -18,7 +18,7 @@ From a memory perspective, this requires keeping track of decision points and un
 alternatives. You can see backtracking at work in solving puzzles like Sudoku, maze navigation,
 and constraint satisfaction problems.
 
-Checkpoints save a program's complete state at specific points in execution. They work by
+*Checkpoints* save a program's complete state at specific points in execution. They work by
 capturing all relevant state information, including variable values and execution position,
 at strategic points throughout program execution. The core purpose of checkpoints is to
 enable returning to a known good state if errors occur later in the program flow. The memory
@@ -26,7 +26,7 @@ aspect involves storing a snapshot of program state that can be restored when ne
 examples include database transactions, game save points, and system restore points in
 operating systems.
 
-Stack frames organise program execution in memory, particularly for function and procedure
+*Stack frames* organise program execution in memory, particularly for function and procedure
 calls. Each time a function is called, the system creates a dedicated memory region for that
 function call. This stack frame contains the function's local variables, the return address
 to jump back to when the function completes, parameter values passed to the function, and
