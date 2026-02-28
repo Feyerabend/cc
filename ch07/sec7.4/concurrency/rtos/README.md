@@ -296,3 +296,167 @@ half a second.
   this. A future fix would be to switch to 16-bit DMA with the `BSWAP`
   flag enabled.
 
+
+### Next Project: Adding Memory Protection
+
+#### A brief history of why memory protection matters
+
+In the early days of personal computing, every program trusted every
+other program implicitly, because there was only ever one program
+running at a time. DOS gave a program the entire machine. If it wrote
+to the wrong address--by bug, by accident, or by malice--it silently
+corrupted whatever happened to live there: another program's data, the
+OS itself, or the screen buffer. The result was typically a hard freeze
+requiring a reboot, with no indication of what went wrong or where.
+
+When Windows and Unix started running multiple programs concurrently,
+this became a serious problem. A single buggy application could bring
+down the whole system. The solution was hardware-enforced memory
+protection: the CPU itself would refuse any memory access that violated
+a configured policy, and trigger a fault before the damage was done.
+
+Early protected-mode x86 (the 286, used by Windows 3.x in standard
+mode from 1990) introduced *segments*--coarse memory regions with
+access rights. The 386 (1985) added *paging* and virtual memory,
+letting the OS give each process its own isolated address space enforced
+by the MMU. This is what Windows NT (1993) used, and it is what every
+modern desktop and server OS uses today. A crash in one process cannot
+touch another's memory, because from the CPU's perspective they live in
+entirely different address spaces.
+
+Embedded microcontrollers arrived at the same problem later, and solved
+it more modestly. Without the silicon budget for a full MMU, the ARM
+Cortex-M series introduced the *MPU*--Memory Protection Unit. It
+does not provide virtual address spaces or paging. Instead it enforces a
+set of configurable *regions*, each with its own access rules. The CPU
+checks every load and store against the active regions at hardware speed.
+If access is denied, a *MemFault* exception fires before the offending
+instruction completes--giving the OS a chance to catch, report, and
+recover from the violation rather than silently corrupting state.
+
+The RP2350's Cortex-M33 core includes an 8-region MPU. This project
+currently does not use it. All three tasks share one flat address space.
+A runaway pointer in any task can silently overwrite any other task's
+stack, corrupting its saved registers and causing it to branch to a
+random address on next context switch. There is no way to detect this
+until the system crashes--if it crashes visibly at all.
+
+
+
+#### Project: MPU-backed task isolation
+
+The goal is to bring the same protection guarantee to this RTOS that
+Windows NT brought to desktop computing in 1993: *a task's memory
+errors must be caught in hardware before they affect anyone else*.
+
+The RP2350 has everything needed to do this. The project has three
+progressive phases, each independently useful.
+
+__Phase 1. Stack overflow guard__
+
+The most common and dangerous failure mode for an embedded task is a
+stack overflow. The task pushes more frames than its stack can hold; the
+stack pointer walks off the bottom of the stack array and starts
+overwriting the next TCB in memory. The system continues running,
+silently corrupted, until something explodes unpredictably later.
+
+The fix: place a small *no-access guard region* at the bottom of every
+task's stack. When the stack pointer crosses the guard boundary the MPU
+fires a MemFault immediately, pointing exactly at the offending task.
+
+Implementation sketch:
+
+```c
+/* In task_create(), after task_stack_init(): */
+mpu_set_guard(tcb->stack, 32);   /* 32-byte no-access region at stack bottom */
+```
+
+The MPU has 8 regions. With `MAX_TASKS` = 8, one region per task is
+tight but workable if one region is reserved for a background "allow
+everything" rule and stack guards share the remaining seven.
+
+A simpler alternative for fewer regions: keep a single MPU region that
+always points to the *current* task's stack bottom, updated on every
+context switch in `pendsv_switch()`.
+
+__Phase 2.Per-task stack isolation__
+
+Once guard pages exist, the natural extension is to restrict each task
+so it can *only write to its own stack*, not to any other task's
+stack. This is the embedded equivalent of separate process address
+spaces.
+
+On context switch, reconfigure the MPU to grant read-write access to
+the incoming task's stack region and mark all other task stacks as
+read-only or no-access.
+
+```
+Task 0 running:
+  Region 0: tasks[0].stack  -> RW  (own stack)
+  Region 1: tasks[1].stack  -> RO  (can read but not corrupt)
+  Region 2: tasks[2].stack  -> RO
+  Region 7: everything else -> RW  (globals, flash, peripherals)
+```
+
+A write through a dangling pointer into another task's stack would now
+fault immediately, and the display could show which task triggered the
+violation and what address it tried to write.
+
+__Phase 3. MemFault handler and display integration__
+
+Neither phase above is useful without a fault handler that captures
+meaningful information before the system halts or recovers.
+
+The Cortex-M33 MemFault handler receives the faulting address in
+`SCB->MMFAR` and the faulting task's program counter in the hardware
+exception frame on the PSP. A handler can:
+
+1. Read the faulting PC and address from the stack frame.
+2. Identify which task was running (`current_task`).
+3. Mark that task SUSPENDED and optionally attempt to continue the others.
+4. Output a fault report to the display:
+
+```
++-----------------------------------+
+│  !! MEMFAULT                      │
+│  task:    Counter  (prio 1)       │
+│  fault:   stack overflow          │
+│  PC:      0x100034A8              │
+│  addr:    0x2003FF00              │
++-----------------------------------+
+```
+
+This turns a silent, undebuggable corruption into an immediate,
+actionable error message--exactly the journey from DOS to NT.
+
+
+#### What success looks like
+
+A complete implementation would let you deliberately overflow a task's
+stack (e.g., add a recursive function with no base case) and see, on
+the display within milliseconds, which task faulted, where, and what
+address it tried to reach — while the other tasks continue running
+unaffected.
+
+That is the core promise of memory protection: *errors are isolated,
+visible, and survivable*, rather than silent, contagious, and fatal.
+
+
+
+#### Relevant RP2350 registers
+
+| Register | Address | Purpose |
+|----------|---------|---------|
+| `MPU_TYPE` | `0xE000ED90` | Number of supported regions (read to verify = 8) |
+| `MPU_CTRL` | `0xE000ED94` | Enable MPU, enable default background region |
+| `MPU_RNR` | `0xE000ED98` | Select which region to configure (0–7) |
+| `MPU_RBAR` | `0xE000ED9C` | Region base address + access permissions |
+| `MPU_RLAR` | `0xE000EDA0` | Region limit address + enable |
+| `SCB->SHCSR` | `0xE000ED24` | Enable MemFault handler (bit 16) |
+| `SCB->MMFAR` | `0xE000ED34` | Address that caused the MemFault |
+| `SCB->CFSR` | `0xE000ED28` | Flags: which fault type, whether MMFAR is valid |
+
+Reference: *ARM Cortex-M33 Generic User Guide*, Chapter 4 (Memory
+Protection Unit) and Chapter 4.3 (Fault handling).
+
+
