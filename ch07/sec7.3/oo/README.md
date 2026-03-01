@@ -133,5 +133,6 @@ where "Composition over Inheritance" has become the new guiding light.
 ![Hooked](./../../assets/image/hooked.jpeg)
 ![Java 1](./../../assets/image/java1.jpeg)
 ![Java 2](./../../assets/image/java2.jpeg)
-
+![Object Models](./../../assets/image/obmodel.png)
+![Object Design](./../../assets/image/objdesign.png)
 
