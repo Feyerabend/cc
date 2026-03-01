@@ -58,3 +58,10 @@ These memory mechanisms form the backbone of how programs manage execution flow,
 gracefully, and explore complex solution spaces efficiently. While they serve different primary
 purposes, their underlying connection is the management of program state and execution context,
 allowing programs to navigate complex paths of execution while maintaining appropriate context.
+
+An example of implementation of all concepts can be seen in the [object database](./objdb/):
+- *Frame Stack*
+- *Checkpoints*
+- *Backtracking*
+- but also a *State Machine*
+
