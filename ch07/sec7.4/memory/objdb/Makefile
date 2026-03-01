@@ -1,6 +1,6 @@
-# =========================================================
+# =================
 # Makefile — objdb
-# =========================================================
+# =================
 
 CC      = gcc
 CFLAGS  = -Wall -Wextra -std=c99
@@ -8,7 +8,7 @@ DBGFLAGS= -g -fsanitize=address,undefined
 SRCS    = objdb.c
 HDRS    = objdb.h
 
-# ── targets ──────────────────────────────────────────────
+# targets
 
 .PHONY: all clean debug
 
