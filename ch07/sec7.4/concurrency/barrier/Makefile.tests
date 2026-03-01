@@ -1,0 +1,98 @@
+# Makefile for Memory Barrier Tests
+
+CC = gcc
+CFLAGS = -Wall -Wextra -Werror -std=c11 -O2 -g -pthread
+SANITIZE_FLAGS = -fsanitize=thread -fsanitize=undefined
+LDFLAGS = -pthread
+
+# Targets
+TEST_BIN = test_memory_barriers
+STRESS_TEST_BIN = stress_test
+
+.PHONY: all test clean help debug tsan valgrind benchmark
+
+# Default target
+all: $(TEST_BIN)
+
+# Build main test binary
+$(TEST_BIN): test_memory_barriers.c atomic.h arena_threadsafe.h
+	@echo "Building memory barrier tests..."
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_memory_barriers.c
+	@echo "✓ Build complete: $(TEST_BIN)"
+
+# Build with Thread Sanitizer
+tsan: CFLAGS += $(SANITIZE_FLAGS)
+tsan: LDFLAGS += $(SANITIZE_FLAGS)
+tsan: clean
+	@echo "Building with ThreadSanitizer..."
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TEST_BIN) test_memory_barriers.c
+	@echo "✓ Build complete with ThreadSanitizer"
+
+# Debug build
+debug: CFLAGS += -DDEBUG -O0
+debug: clean all
+
+# Run tests
+test: $(TEST_BIN)
+	@echo ""
+	@echo "Running memory barrier tests..."
+	@echo ""
+	@./$(TEST_BIN)
+
+# Run with ThreadSanitizer
+test-tsan: tsan
+	@echo ""
+	@echo "Running tests with ThreadSanitizer..."
+	@echo ""
+	@./$(TEST_BIN)
+
+# Run with Valgrind (if available)
+valgrind: $(TEST_BIN)
+	@if command -v valgrind >/dev/null 2>&1; then \
+		echo "Running with Valgrind..."; \
+		valgrind --tool=helgrind --read-var-info=yes ./$(TEST_BIN); \
+	else \
+		echo "Valgrind not found"; \
+		exit 1; \
+	fi
+
+# Quick smoke test
+smoke: $(TEST_BIN)
+	@echo "Running quick smoke test..."
+	@./$(TEST_BIN) 2>&1 | grep -E "(PASS|FAIL|Summary)" || true
+
+# Benchmark
+benchmark: CFLAGS = -Wall -Wextra -std=c11 -O3 -DNDEBUG -pthread
+benchmark: clean $(TEST_BIN)
+	@echo ""
+	@echo "Running benchmark (optimized build)..."
+	@echo ""
+	@./$(TEST_BIN) 2>&1 | grep -E "(Time elapsed|ops/sec)" || true
+
+# Clean
+clean:
+	@echo "Cleaning..."
+	@rm -f $(TEST_BIN) $(STRESS_TEST_BIN) *.o *.out
+	@echo "✓ Clean complete"
+
+# Help
+help:
+	@echo "Memory Barrier Test Suite - Makefile"
+	@echo ""
+	@echo "Targets:"
+	@echo "  all         - Build test binary (default)"
+	@echo "  test        - Build and run all tests"
+	@echo "  tsan        - Build with ThreadSanitizer"
+	@echo "  test-tsan   - Run tests with ThreadSanitizer"
+	@echo "  debug       - Build with debug symbols"
+	@echo "  valgrind    - Run with Valgrind/Helgrind"
+	@echo "  benchmark   - Run optimized benchmark"
+	@echo "  smoke       - Quick smoke test"
+	@echo "  clean       - Remove build artifacts"
+	@echo "  help        - Show this help"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make test           # Build and run tests"
+	@echo "  make test-tsan      # Run with thread sanitizer"
+	@echo "  make benchmark      # Run performance benchmark"
+	@echo ""
