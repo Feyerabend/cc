@@ -200,9 +200,20 @@ objdb ∅ > get score:alice
 ### Projects extending it
 
 Some natural next steps if you want to take this further:
-- *Persistence* - `fwrite` the object array to disk on commit, `fread` on startup
-- *Hash table* - replace the linear scan in `find_slot()` with an open-addressed hash map for O(1) lookup
-- *Dispatch table* - add a vtable pointer to `Object` for polymorphic behaviour per type
-- *Context switching* - run multiple independent query cursors concurrently using `setjmp`/`longjmp` or `ucontext`
-- *Memory barriers* - add `_Atomic` fields and `atomic_thread_fence` if you introduce a second writer thread
+
+- *Persistence*: `fwrite` the object array to disk on commit, `fread` on startup
+
+- *Hash table*: replace the linear scan in `find_slot()` with an open-addressed
+  hash map for O(1) lookup
+
+- *Dispatch table*: add a vtable pointer to `Object` for polymorphic behaviour
+  per type (also see [vtable](./../../../../ch05/addition/vtable/)).
+
+- *Context switching*: run multiple independent query cursors
+  concurrently using `setjmp`/`longjmp` or `ucontext`
+  (see [context](./../../concurrency/context/)).
+
+- *Memory barriers*: add `_Atomic` fields and `atomic_thread_fence`
+  if you introduce a second writer thread
+  (see [atomic](./../../../sec7.3/concurrent/atomic/)).
 
