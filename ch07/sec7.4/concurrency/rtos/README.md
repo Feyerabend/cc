@@ -39,8 +39,8 @@ A *Real-Time Operating System* gives the illusion — and sometimes the
 reality — of multiple things running simultaneously on a single CPU by
 switching between them fast enough that each appears continuous.
 
-The key properties this demo illustrates:
 
+The key properties this demo illustrates:
 
 #### Priority-based preemption
 
@@ -48,7 +48,6 @@ Each task has a numeric priority. When a higher-priority task becomes
 ready to run, it immediately displaces whatever is currently running.
 You can watch this on the timeline: the LED row pushes the Counter row
 dark the moment the LED task wakes up.
-
 
 #### Context switching
 
@@ -63,14 +62,12 @@ Call) is used for this. The CPU automatically saves `R0–R3`, `R12`,
 handler manually saves and restores `R4–R11`, the remaining
 callee-saved registers.
 
-
 #### SysTick — the heartbeat
 
 The *SysTick* peripheral fires an interrupt every 1 ms. This is the
 RTOS's heartbeat: it increments the tick counter, checks whether any
 sleeping task's wake-up time has arrived, and then pends PendSV to
 trigger a possible context switch.
-
 
 #### Task states
 
