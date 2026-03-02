@@ -16,7 +16,7 @@ Dispatch is central to many programming paradigms:
 * *Command processing* dispatches operations based on tokens or opcodes.
 * *Embedded control systems* dispatch interrupts, sensor data, and state transitions.
 
-The criteria for dispatch can vary widely — types, values, patterns, runtime metadata,
+The criteria for dispatch can vary widely--types, values, patterns, runtime metadata,
 external configuration, or even probabilistic selection.
 
 We first encounter simple dispatch in virtual machines or interpreters, typically
@@ -108,14 +108,13 @@ to constrained environments such as microcontroller-based sensor hubs.
 #### Concept
 
 Instead of directly invoking a function, CPS dispatch passes control
-to a continuation — a function representing “what happens next.”
-This makes control flow explicit and enables asynchronous,
-non-blocking execution.
+to a [continuation](./../continue/)--a function representing
+"what happens next." This makes control flow explicit and enables
+asynchronous, non-blocking execution.
 
 #### Embedded Context
 
 In embedded systems:
-
 * Interrupt service routines must be short.
 * Blocking is unacceptable in hard real-time systems.
 * Processing is often deferred to later stages.
@@ -171,7 +170,6 @@ void dispatch_sensor(SensorData data, Continuation cont) {
 #### Concept
 
 Dispatch is driven by declarative rules consisting of:
-
 * A condition
 * An action
 
@@ -180,7 +178,6 @@ Rules are evaluated sequentially until a match is found.
 #### Embedded Context
 
 Useful for:
-
 * Configurable firmware behaviour
 * Safety thresholds
 * Field-upgradable rule sets
@@ -236,7 +233,6 @@ void dispatch_by_rules(SensorData data) {
 #### Concept
 
 Dispatch is augmented with cross-cutting concerns such as:
-
 * Logging
 * Validation
 * Power monitoring
@@ -313,7 +309,6 @@ Selection is stochastic rather than deterministic.
 #### Embedded Context
 
 Used for:
-
 * Redundant sensor balancing
 * Reliability testing
 * Load distribution
@@ -368,7 +363,6 @@ In C, it is approximated using configuration tables.
 #### Embedded Context
 
 Useful for:
-
 * EEPROM-based configuration
 * Hardware-variant detection
 * Firmware feature toggles
@@ -432,7 +426,6 @@ random selection, and runtime adaptation.
 ## Embedded System Considerations
 
 When applying dispatch in embedded systems, constraints dominate design:
-
 * *Memory*: Static tables preferred over dynamic allocation.
 * *Real-Time Guarantees*: Deterministic execution paths are critical.
 * *Power Consumption*: Minimise unnecessary function calls.
