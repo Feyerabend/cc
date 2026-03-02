@@ -1,5 +1,5 @@
 
-## `objdb`
+## Object Database: `objdb`
 
 A small but complete *object database written in C* that demonstrates
 four foundational systems-programming concepts working together in one coherent codebase:
@@ -144,7 +144,8 @@ IDLE --> SCAN --> FILTER --> PROJECT --> DONE
 
 `db_query_run()` loops on a `switch` until it reaches `DONE` or `ERROR`.
 Each state does its work and sets the next state--adding a new phase
-(e.g. `SORT`, `LIMIT`, `AGGREGATE`) is just a matter of adding an enum value and a `case`.
+(e.g. `SORT`, `LIMIT`, `AGGREGATE`) is just a matter of adding an enum
+value and a `case`.
 
 ```c
 typedef enum {
