@@ -430,7 +430,7 @@ python3 vm.py interpret.bin -t
 
 - Threaded code interpretation
 - Direct threaded code
-- Computed goto (GCC extension)
+- Computed [goto](.//../../dispatch/) (GCC extension)
 - Perfect hashing for dispatch
 
 #### Books
