@@ -4,9 +4,8 @@
 #include <setjmp.h>
 #include <stdint.h>
 
-// ============================================================================
+
 // SECTION 1: Base Coroutine Infrastructure
-// ============================================================================
 
 typedef struct {
     jmp_buf context;
@@ -36,9 +35,8 @@ typedef struct {
 #define CO_RESUME(co) \
     (setjmp((co)->context) == 0 ? longjmp((co)->context, 1) : 0)
 
-// ============================================================================
+
 // SECTION 2: Shape Hierarchy - Demonstrating Inheritance & Polymorphism
-// ============================================================================
 
 // Virtual method table for shapes
 typedef struct Shape Shape;
@@ -152,9 +150,8 @@ Rectangle* rectangle_create(const char* name, double x, double y, double width, 
     return rect;
 }
 
-// ============================================================================
+
 // SECTION 3: Iterator Pattern with Coroutines
-// ============================================================================
 
 typedef struct {
     CoroutineBase coroutine;
@@ -186,9 +183,8 @@ int shape_iterator_next(ShapeIterator* self) {
     CO_END(&self->coroutine);
 }
 
-// ============================================================================
+
 // SECTION 4: State Machine - Animation Controller
-// ============================================================================
 
 typedef enum {
     ANIM_IDLE,
@@ -286,9 +282,8 @@ int animation_controller_update(AnimationController* self) {
     CO_END(&self->coroutine);
 }
 
-// ============================================================================
+
 // SECTION 5: Generator Pattern - Fibonacci Sequence
-// ============================================================================
 
 typedef struct {
     CoroutineBase coroutine;
@@ -331,9 +326,8 @@ int fibonacci_next(FibonacciGenerator* self) {
     CO_END(&self->coroutine);
 }
 
-// ============================================================================
+
 // SECTION 6: Producer-Consumer Pattern
-// ============================================================================
 
 #define BUFFER_SIZE 8
 
@@ -404,9 +398,8 @@ int consumer_consume(Consumer* self) {
     CO_END(&self->coroutine);
 }
 
-// ============================================================================
+
 // SECTION 7: Task Scheduler with Priorities
-// ============================================================================
 
 typedef struct Task Task;
 
@@ -559,19 +552,14 @@ void scheduler_cleanup(Scheduler* self) {
     }
 }
 
-// ============================================================================
+
 // MAIN - Demonstration
-// ============================================================================
 
 int main() {
-    printf("╔══════════════════════════════════════════════════════════════╗\n");
-    printf("║  Object-Oriented Programming in C with Coroutines Demo      ║\n");
-    printf("╚══════════════════════════════════════════════════════════════╝\n\n");
+    printf("Object-Oriented Programming in C with Coroutines Demo\n\n");
     
-    // ========================================================================
     // Demo 1: Polymorphism with Shape Hierarchy
-    // ========================================================================
-    printf("┌─ DEMO 1: Polymorphism & Inheritance ─────────────────────────┐\n\n");
+    printf(" > DEMO 1: Polymorphism & Inheritance\n\n");
     
     Shape* shapes[5];
     shapes[0] = (Shape*)circle_create("Sun", 100, 100, 50);
@@ -588,12 +576,11 @@ int main() {
                shapes[i]->vtable->perimeter(shapes[i]));
     }
     
-    printf("\n└───────────────────────────────────────────────────────────────┘\n\n");
+    printf("\n\n\n");
     
-    // ========================================================================
+
     // Demo 2: Iterator Pattern
-    // ========================================================================
-    printf("┌─ DEMO 2: Coroutine-Based Iterator Pattern ───────────────────┐\n\n");
+    printf(" > DEMO 2: Coroutine-Based Iterator Pattern\n\n");
     
     ShapeIterator iterator;
     shape_iterator_init(&iterator, shapes, 5);
@@ -606,12 +593,11 @@ int main() {
                ++index, shape->name, shape->x, shape->y);
     }
     
-    printf("\n└───────────────────────────────────────────────────────────────┘\n\n");
+    printf("\n\n\n");
     
-    // ========================================================================
+
     // Demo 3: State Machine - Animation Controller
-    // ========================================================================
-    printf("┌─ DEMO 3: State Machine with Coroutines ──────────────────────┐\n\n");
+    printf(" > DEMO 3: State Machine with Coroutines\n\n");
     
     AnimationController animator;
     animation_controller_init(&animator, shapes, 5, 10);
@@ -634,12 +620,11 @@ int main() {
         animation_controller_update(&animator);
     }
     
-    printf("\n└───────────────────────────────────────────────────────────────┘\n\n");
+    printf("\n\n\n");
     
-    // ========================================================================
+
     // Demo 4: Generator Pattern - Fibonacci
-    // ========================================================================
-    printf("┌─ DEMO 4: Generator Pattern (Fibonacci) ──────────────────────┐\n\n");
+    printf(" > DEMO 4: Generator Pattern (Fibonacci)\n\n");
     
     FibonacciGenerator fib;
     fibonacci_init(&fib, 10);
@@ -650,12 +635,11 @@ int main() {
     }
     printf("\n");
     
-    printf("\n└───────────────────────────────────────────────────────────────┘\n\n");
+    printf("\n\n\n");
     
-    // ========================================================================
+
     // Demo 5: Producer-Consumer Pattern
-    // ========================================================================
-    printf("┌─ DEMO 5: Producer-Consumer Pattern ──────────────────────────┐\n\n");
+    printf(" > DEMO 5: Producer-Consumer Pattern\n\n");
     
     Producer producer;
     producer_init(&producer, 100, 5);
@@ -670,12 +654,11 @@ int main() {
         consumer_consume(&consumer);
     }
     
-    printf("\n└───────────────────────────────────────────────────────────────┘\n\n");
+    printf("\n\n\n");
     
-    // ========================================================================
+
     // Demo 6: Task Scheduler with Priorities
-    // ========================================================================
-    printf("┌─ DEMO 6: Task Scheduler (Priority-Based) ────────────────────┐\n\n");
+    printf(" > DEMO 6: Task Scheduler (Priority-Based)\n\n");
     
     Scheduler scheduler;
     scheduler_init(&scheduler);
@@ -691,16 +674,14 @@ int main() {
     printf("All tasks completed!\n");
     scheduler_cleanup(&scheduler);
     
-    printf("\n└───────────────────────────────────────────────────────────────┘\n\n");
+    printf("\n\n\n");
     
     // Cleanup shapes
     for (int i = 0; i < 5; i++) {
         shapes[i]->vtable->destroy(shapes[i]);
     }
     
-    printf("╔══════════════════════════════════════════════════════════════╗\n");
-    printf("║  Demo Complete - All Patterns Successfully Demonstrated     ║\n");
-    printf("╚══════════════════════════════════════════════════════════════╝\n");
+    printf("Done.\n\n");
     
     return 0;
 }
