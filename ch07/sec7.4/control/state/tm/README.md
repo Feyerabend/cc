@@ -13,7 +13,7 @@ This analysis focuses on:
 
 State machines are the *foundation of all computation*. Every computer,
 from the simplest calculator to the most advanced supercomputer,
-is fundamentally a state machine—a system that:
+is fundamentally a state machine--a system that:
 1. Exists in one of a finite (or conceptually infinite) number of *states*
 2. Reads *input* from some source
 3. *Transitions* to a new state based on current state and input
@@ -70,7 +70,7 @@ The theoretical work directly influenced early computer designers:
   but essentially a hardwired state machine
 
 - *Von Neumann Architecture* (1945): Introduced the
-  *stored-program concept*—instructions as data,
+  *stored-program concept*--instructions as data,
   enabling programmable state machines
 
 - *Manchester Baby* (1948): First stored-program computer,
@@ -198,7 +198,7 @@ Output: 101, 100, 11, 10, 1, 0  (5, 4, 3, 2, 1, 0)
 #### 1. State Representation
 
 *In the ALU*:
-States are *implicit*—embedded in the program counter,
+States are *implicit*--embedded in the program counter,
 position on tape, and local variables:
 
 ```c
@@ -218,7 +218,7 @@ The "state" includes:
 - Intermediate computation values (`carry`, `bit_a`, `bit_b`)
 
 *In the VM*:
-States are *explicit*—represented by the combination of:
+States are *explicit*--represented by the combination of:
 
 ```c
 typedef struct {
@@ -303,7 +303,7 @@ void vm_step(VM *vm) {
 }
 ```
 
-This demonstrates *conditional transitions*—the next state
+This demonstrates *conditional transitions*--the next state
 depends on data (register values), not just the current instruction.
 
 #### 3. Determinism vs Non-Determinism
@@ -443,7 +443,7 @@ graph TD
 
 #### State Machine for AND Operation
 
-AND is simpler—no carry state needed:
+AND is simpler--no carry state needed:
 
 ```c
 void tm_and(TuringMachine *tm, bool verbose) {
@@ -516,7 +516,7 @@ After:    ADD|1011|110|10001
           op  a    b   result (written backwards, then reversed)
 ```
 
-The tape is *unbounded* (in theory)—we can always add more bits.
+The tape is *unbounded* (in theory)--we can always add more bits.
 This is what makes it a *Turing machine* rather than just a finite state machine.
 
 
@@ -878,7 +878,7 @@ Our VM implements this:
 
 #### 1. Real-World State Machines
 
-State machines aren't just theoretical—they're in practice *everywhere*:
+State machines aren't just theoretical--they're in practice *everywhere*:
 
 *Embedded Systems*:
 - Traffic light controllers (you know!)
@@ -965,7 +965,7 @@ LOOP:
 HALT            // return 0
 ```
 
-This is what compilers do—translate
+This is what compilers do--translate
 high-level languages to low-level
 instructions, as we hae already observed.
 
@@ -985,7 +985,7 @@ Our VM is a *simple version* of real VMs:
 
 *Python VM*:
 - Interprets Python bytecode
-- Dynamic typing (our VM is untyped—all binary strings)
+- Dynamic typing (our VM is untyped--all binary strings)
 
 *Difference*: Real VMs have:
 - Larger instruction sets (hundreds of opcodes)
