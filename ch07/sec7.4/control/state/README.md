@@ -12,8 +12,8 @@ strings, operators, delimiters, and comments.
 At a low-level, a lexical analyser operates as a *finite state machine (FSM)*, which is a
 computational model that processes input character by character, transitioning between
 discrete states based on the current input. This is a fundamental concept in compiler
-design and parsing as we have seen, where the FSM acts as a recogniser for patterns
-in the input stream.
+design and parsing as we have seen ([ch05](./../../../../ch05/sec5.5/token/)),
+where the FSM acts as a recogniser for patterns in the input stream.
 
 
 #### Concepts
