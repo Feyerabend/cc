@@ -65,3 +65,77 @@ An example of implementation of all concepts can be seen in the [object database
 - *Backtracking*
 - but also a *State Machine*
 
+
+
+### Memory Reclamation
+
+| Mechanism | Description | Use Cases | Related Pattern(s) |
+|-----------|-------------|-----------|--------------------|
+| [Garbage Collection](./gc/) | Automatic reclamation of unreachable memory | Managed runtimes, functional languages, object systems | Tracing GC, Reference Counting |
+
+Memory reclamation complements mechanisms such as stack frames, checkpoints, and
+backtracking by defining when state ceases to exist. While stack frames organise active
+execution contexts, checkpoints preserve snapshots of state, and backtracking prunes
+failed execution paths, garbage collection determines which parts of memory are no
+longer reachable from the current computation. Liveness is defined in terms of
+reachability from a set of *roots*--typically the call stack, global bindings,
+and machine registers.
+
+When execution unwinds a stack frame, abandons a backtracking branch, or discards
+a checkpoint, parts of the object graph may become unreachable. Garbage collection
+formalises this transition by reclaiming memory that can no longer be reached from
+active roots. In this sense, stack frames define scope, backtracking defines
+reversibility, checkpoints define restoration, and garbage collection defines
+finality. Together, they describe the full lifecycle of program state.
+
+
+#### Conceptual Model: State as a Graph
+
+```
+     [ Roots ]
+  (stack, globals)
+        |
+        v
+   +---------+
+   |  Frame  |
+   +---------+
+        |     \
+        v      v
+   +------+   +------+
+   | ObjA |-->| ObjB |
+   +------+   +------+
+      |
+      v
+   +------+
+   | ObjC |
+   +------+
+```
+
+(After backtracking / unwinding)
+
+```
+     [ Roots ]
+  (stack, globals)
+        |
+        v
+   +---------+
+   |  Frame  |
+   +---------+
+        |
+        v
+    +------+
+    | ObjA |
+    +------+
+```
+
+ObjB and ObjC become unreachable → eligible for reclamation
+
+
+### Summary
+
+All mechanisms described in this section operate over a graph of program state.
+Backtracking prunes subgraphs, checkpoints duplicate subgraphs, stack frames
+introduce and remove roots, and garbage collection computes reachability over
+that graph. Execution can thus be understood as *controlled graph transformation*,
+with reclamation ensuring that discarded substructures do not persist indefinitely.
+
