@@ -438,5 +438,5 @@ python3 vm.py interpret.bin -t
 - Patterson, D. A., & Hennessy, J. L. (2017). *Computer organization and design: RISC-V edition*. Morgan Kaufmann.
 - Patterson, D. A., & Waterman, A. (2017). *The RISC-V reader: An open architecture atlas*. Strawberry Canyon LLC.
 
-![RISCV Reader](./../../../assets/image/reader.png)
+![RISCV Reader](./../../../../assets/image/reader.png)
 
