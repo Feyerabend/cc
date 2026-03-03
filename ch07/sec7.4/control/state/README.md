@@ -1,18 +1,19 @@
 
 ## Lexer State Machine
 
-This repository provides an implementation and visualization of a lexical analyzer (lexer)
+This repository provides an implementation and visualisation of a lexical analyser (lexer)
 using a finite state machine (FSM) approach. The lexer is designed to tokenise input source
-code in a C-like language, recognizing tokens such as keywords, identifiers, numbers,
+code in a C-like language, recognising tokens such as keywords, identifiers, numbers,
 strings, operators, delimiters, and comments.
 
 
 ### State Machines in Lexical Analysis
 
-At a low-level, a lexical analyzer operates as a *finite state machine (FSM)*, which is a
+At a low-level, a lexical analyser operates as a *finite state machine (FSM)*, which is a
 computational model that processes input character by character, transitioning between
 discrete states based on the current input. This is a fundamental concept in compiler
-design and parsing, where the FSM acts as a recognizer for patterns in the input stream.
+design and parsing as we have seen, where the FSM acts as a recogniser for patterns
+in the input stream.
 
 
 #### Concepts
@@ -22,7 +23,7 @@ design and parsing, where the FSM acts as a recognizer for patterns in the input
   to another based on the input character class (e.g., digit, letter, operator).
 - *Actions*: Performed during transitions, such as accumulating characters
   into a token buffer or emitting a completed token.
-- *Terminal States*: Points where a token is recognized and emitted
+- *Terminal States*: Points where a token is recognised and emitted
   (e.g., end of an identifier) or an error is detected.
 
 The FSM is "finite" because it has a limited number of states, making it efficient
