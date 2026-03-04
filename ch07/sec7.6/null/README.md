@@ -211,7 +211,7 @@ This is absence-as-behaviour.
 
 
 
-### Structural Changes
+#### Structural Changes
 
 1. Extend `BlockHeader` with `is_null_object`
 2. Introduce a global singleton null block
@@ -230,7 +230,7 @@ This avoids leaking implementation details.
 
 
 
-### Behavioral Changes
+#### Behavioral Changes
 
 * `mem_malloc` returns null object instead of `NULL`
 * `mem_free` becomes a no-op for null object
@@ -256,7 +256,7 @@ This is not inherently wrong--but it is a deliberate loss of semantic precision.
 
 
 
-### When This Pattern Makes Sense
+#### When This Pattern Makes Sense
 
 Appropriate:
 * Logging subsystems
@@ -277,7 +277,7 @@ That trade is sometimes elegant, sometimes reckless.
 
 
 
-### Sentinel vs NULL vs Null Object
+#### Sentinel vs NULL vs Null Object
 
 C already uses related techniques:
 * Sentinel nodes in linked lists
@@ -293,7 +293,7 @@ The Null Object generalises the sentinel idea to an entire abstraction boundary.
 
 
 
-### Alternative: Explicit Error Propagation in C
+#### Alternative: Explicit Error Propagation in C
 
 Another approach is to return error codes alongside pointers:
 
