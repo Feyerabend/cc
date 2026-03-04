@@ -1,5 +1,5 @@
 
-## The Null Pattern
+## The Null Pattern or All About Nothing
 
 __The Core Problem__
 
