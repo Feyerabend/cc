@@ -470,3 +470,37 @@ Takeaways:
 - C can implement OOP concepts through structs and function pointers
 - Clean architecture improves maintainability and extensibility
 
+Although it is technically feasible to construct an AST in C using the builder
+pattern, the practical value of doing so is questionable. The builder pattern
+is primarily motivated by object-oriented concerns: managing complex object
+construction, enforcing invariants through controlled interfaces, and enabling
+fluent, incremental configuration. In C, however, the absence of native language
+features such as constructors, method chaining, and automatic memory management
+makes such implementations inherently verbose.
+
+Each "builder" abstraction must be simulated manually through structs,
+function pointers, and explicit allocation routines.
+This typically results in:
+* A proliferation of small helper functions
+* Increased boilerplate for memory management
+* Indirection via opaque structs and manual ownership tracking
+* Reduced transparency of the resulting data structure
+
+The cost is not merely aesthetic. The added abstraction layer can obscure the
+simplicity of what is often a straightforward structural task: assembling nodes
+into a tree. In many C-based compilers or interpreters, AST construction is
+performed directly through explicit node allocation and initialisation functions.
+This approach, while less abstract, is usually clearer, easier to debug,
+and more aligned with C's idioms.
+
+Moreover, the builder pattern does not necessarily provide the same safety or
+expressiveness benefits in C as it does in languages with richer type systems.
+Without enforced immutability or compile-time guarantees about construction order,
+much of the conceptual advantage of the pattern is lost.
+
+Therefore, the question is not whether it can be done, but whether it should be
+done. In a language like C, where simplicity, explicitness, and control are primary
+virtues, introducing a builder abstraction for AST construction may introduce
+more complexity than it removes. A simpler factory-style or direct-construction
+approach is often more appropriate and more maintainable.
+
