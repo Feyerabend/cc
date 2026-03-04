@@ -1,6 +1,171 @@
 
-## Null Object
+## The Null Pattern
 
+__The Core Problem__
+
+Every type system faces an uncomfortable question:
+*what value does a variable hold when it holds "nothing"?*
+Tony Hoare, who invented the null reference in 1965,
+later called it his "billion-dollar mistake".
+Not because the concept is wrong,
+but because most languages implement it in a way that silently infects every type.
+
+The fundamental issue is *implicit nullability*. When a `String` in Java might secretly
+be `null`, you don't have a `String`--you have a `String | null` with no compiler enforcement
+telling you which one you're dealing with at any given moment.
+
+
+### The Conceptual Idea
+
+The *good* version of the null pattern is a *typed container for optionality*--you
+force the programmer to explicitly acknowledge that a value might be absent before
+they can use it. The absence of a value becomes part of the type signature,
+not a hidden landmine.
+
+The pattern goes by many names: `Option`, `Maybe`, `Optional`, `Nullable<T>`.
+They all say the same thing: *this value is either Something or Nothing, and you must handle both cases.*
+
+
+
+### Language by Language
+
+*Haskell — the gold standard*
+
+```haskell
+data Maybe a = Nothing | Just a
+
+safeDivide :: Int -> Int -> Maybe Int
+safeDivide _ 0 = Nothing
+safeDivide x y = Just (x `div` y)
+
+-- You're forced to pattern match
+case safeDivide 10 2 of
+  Nothing -> "Can't divide"
+  Just n  -> "Result: " ++ show n
+```
+
+`Maybe` is baked into the type system. There's no way to get the inner value without
+acknowledging `Nothing`. Chaining is clean via `>>=` (bind), so `Nothing` propagates
+automatically through a chain of operations without any explicit checks.
+
+
+
+*Rust — null doesn't exist*
+
+```rust
+fn find_user(id: u32) -> Option<User> {
+    // ...
+}
+
+// The compiler won't let you use the value without unwrapping
+match find_user(42) {
+    Some(user) => println!("{}", user.name),
+    None       => println!("Not found"),
+}
+
+// Or ergonomically with ? in functions that return Option
+let user = find_user(42)?; // returns None early if absent
+```
+
+Rust has *no null at all*. `Option<T>` is the only way to express absence.
+The `?` operator makes propagation terse without hiding it.
+
+
+
+*Java — a retrofit*
+
+```java
+Optional<String> name = Optional.ofNullable(getName());
+
+name.map(String::toUpperCase)
+    .ifPresent(System.out::println);
+```
+
+Java's `Optional` (added in Java 8) is well-intentioned but opt-in.
+The underlying `null` still exists everywhere. You can call `.get()` on an
+empty `Optional` and get a runtime exception. It's a convention,
+not a guarantee--which limits its power .. significantly.
+
+
+
+*Kotlin — nullable types in the type system*
+
+```kotlin
+var name: String? = null   // nullable — must be checked
+var name: String  = "hi"   // non-nullable — compiler guaranteed
+
+name?.length        // safe call — returns null if name is null
+name ?: "default"   // elvis operator — fallback if null
+name!!.length       // force unwrap — crashes if null (use sparingly)
+```
+
+Kotlin takes a different, very pragmatic approach: nullability is encoded directly
+in the type (`String` vs `String?`) rather than in a wrapper type. The compiler
+enforces checks. It's not as pure as Haskell but it closes most of the holes Java has,
+and it interoperates with Java's null world gracefully.
+
+
+
+*TypeScript — structural but leaky*
+
+```typescript
+function find(id: number): User | undefined { ... }
+
+const user = find(42);
+user.name; // TS error — must check first
+
+if (user) {
+  user.name; // fine — narrowed to User
+}
+```
+
+TypeScript's `strictNullChecks` mode makes `null` and `undefined` their own types,
+forcing explicit handling. This is genuinely good. But it's a type layer over JavaScript's
+runtime, so the safety disappears at the boundary--anything coming from an
+API, `JSON.parse`, or a library without good typings is a potential hole.
+
+
+
+### JavaScript — the confusion
+
+JavaScript is arguably the most confusing because it has *two* nothings: `null` and `undefined`.
+They're semantically distinct (intentional absence vs. uninitialised/missing) but in practice
+used interchangeably and inconsistently across codebases and APIs.
+
+```javascript
+typeof null        // "object" — a famous bug, never fixed
+typeof undefined   // "undefined"
+
+null == undefined  // true  (loose equality)
+null === undefined // false (strict equality)
+
+// These all do different things:
+obj.missing        // undefined
+JSON.parse('null') // null
+arr[99]            // undefined
+```
+
+There's no `Option` type in the language itself. The ecosystem has workarounds--some
+libraries use `null`, some use `undefined`, some use sentinel values like `false` or `-1`.
+Without TypeScript's strict mode, you're entirely on your own.
+
+
+
+### The Deeper Lesson
+
+The null pattern teaches something broader: *making illegal states unrepresentable*.
+A type that says `Maybe<User>` is honest--it contracts with the caller about what
+__might__ come back. A type that says `User` but sometimes returns `null` is lying.
+
+The best implementations (Haskell, Rust, Kotlin) make the *happy path* easy while
+making it *impossible to ignore* the sad path. The worst ones (plain Java, plain JavaScript)
+make the happy path easy while making the sad path a runtime surprise.
+That asymmetry is where the billion dollars went.
+
+
+### Null Object in C
+
+Now can we make it better for a languge like C?
 The code from chapter 2 ([sec2.4](./../../../ch02/sec2.4/mem/)) implements
 a simple memory management system in C with the following components:
 
@@ -40,14 +205,14 @@ This approach follows standard C programming practices but introduces several is
 - Error handling becomes scattered throughout the codebase
 
 
-## Null Object Pattern Implementation
+### Null Object Pattern Implementation
 
 The refactored code implements the `Null Object` pattern to address these issues.
 Despite C *not* being an object-oriented language, the pattern can be adapted effectively.
 That is, the pattern is *usually* used in object-orientation.
 
 
-### New Structural Changes
+#### New Structural Changes
 
 1. *Extended Block Header*
    - Added an `is_null_object` flag to the `BlockHeader` structure to identify null objects
@@ -63,7 +228,7 @@ That is, the pattern is *usually* used in object-orientation.
    - This function handles both the null object and regular pointers correctly
 
 
-### Behavioral Changes
+#### Behavioral Changes
 
 1. *Memory Allocation*
    - Modified `mem_malloc` to return the null object instead of `NULL` when allocation fails
@@ -80,7 +245,7 @@ That is, the pattern is *usually* used in object-orientation.
    - This provides clearer feedback about failed allocations
 
 
-### Test Cases
+#### Test Cases
 
 The implementation adds specific test cases demonstrating the null object's behaviour:
 - Attempting allocations beyond memory capacity
@@ -89,7 +254,7 @@ The implementation adds specific test cases demonstrating the null object's beha
 - Freeing a null object
 
 
-### Pros
+#### Pros
 
 1. *Robustness*
    - Eliminates null pointer dereferences
@@ -111,7 +276,7 @@ The implementation adds specific test cases demonstrating the null object's beha
    - Shows how structural changes can improve code quality even in procedural languages
 
 
-### Cons
+#### Cons
 
 1. *Memory Overhead*
    - The null object consumes a small amount of memory
@@ -130,7 +295,7 @@ The implementation adds specific test cases demonstrating the null object's beha
    - Pattern must be explicitly maintained rather than enforced by language
 
 
-### In Practice
+#### In Practice
 
 This output demonstrates how the Null Object pattern works in practice:
 
