@@ -1,8 +1,8 @@
 
 ## Null Object
 
-The code from chapter 2 implements a simple memory management
-system in C with the following components:
+The code from chapter 2 ([sec2.4](./../../../ch02/sec2.4/mem/)) implements
+a simple memory management system in C with the following components:
 
 1. *Memory Pool*: A fixed-size array (`memory_pool`) that serves as the memory resource.
 
