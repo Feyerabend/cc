@@ -565,3 +565,159 @@ This is intentional and safe. Compile with `-Wno-switch` to
 suppress these warnings, or see the code comments for alternative
 dispatch strategies (computed goto, function pointers).
 
+
+
+
+
+### A note on Duff's Device: The Clever Hack
+
+#### What It Is
+
+Duff's Device is a loop unrolling optimization discovered by Tom Duff in
+1983 while working at Lucasfilm. It exploits an obscure feature of C:
+you can put `case` labels anywhere inside a `switch` statement,
+even inside nested loops. The original looked like this:
+
+```c
+send(short *to, short *from, int count) {
+    int n = (count + 7) / 8;
+    switch (count % 8) {
+        case 0: do { *to = *from++;
+        case 7:      *to = *from++;
+        case 6:      *to = *from++;
+        case 5:      *to = *from++;
+        case 4:      *to = *from++;
+        case 3:      *to = *from++;
+        case 2:      *to = *from++;
+        case 1:      *to = *from++;
+               } while (--n > 0);
+    }
+}
+```
+
+Most programmers seeing this for the first time think
+it's a typo. It's not. It's perfectly legal C.
+
+
+#### The Reasoning Behind It
+
+*The Problem:* Copying data one element at a time is slow.
+Each iteration has overhead: increment the counter,
+check the condition, jump back to the top of the loop.
+
+*The Solution:* Unroll the loop—write out 8 copies of the
+operation so you do 8 at once. But what if you have, say,
+13 elements to copy? You need to handle the remainder.
+
+*Duff's Insight:* The `switch` statement lets you jump
+into the middle of the loop at exactly the right point.
+If `count % 8 == 3`, jump to `case 3`, execute 3 iterations,
+then loop around doing 8 at a time.
+
+The brilliance is realising that `switch` and loops are both
+just computed gotos under the hood. The C standard says
+`case` labels can appear anywhere in a `switch`,
+even inside a loop body. Duff combined them.
+
+#### Why It Works for Coroutines
+
+For coroutines, we exploit the same principle differently.
+Instead of loop unrolling, we use it for *multiple entry points*:
+
+```c
+int coroutine(Coroutine* co) {
+    switch (co->state) {
+        case 0:  // First entry - start here
+            printf("Step 1\n");
+            co->state = 1;
+            return 1;  // Suspend
+        
+        case 1:  // Resume here on second call
+            printf("Step 2\n");
+            co->state = 2;
+            return 1;  // Suspend
+        
+        case 2:  // Resume here on third call
+            printf("Step 3\n");
+            return 0;  // Done
+    }
+}
+```
+
+Each call jumps to the right `case` based on `co->state`.
+The function has multiple entry points.
+
+#### The Macro Trick
+
+We can make this automatic with macros:
+
+```c
+#define CO_BEGIN(co) \
+    switch ((co)->state) { case 0:
+
+#define CO_YIELD(co) \
+    do { \
+        (co)->state = __LINE__; \
+        return 1; \
+        case __LINE__:; \
+    } while(0)
+
+#define CO_END(co) \
+    } \
+    (co)->state = -1; \
+    return 0;
+```
+
+Now you write:
+
+```c
+int coroutine(Coroutine* co) {
+    CO_BEGIN(co);
+    
+    printf("Step 1\n");
+    CO_YIELD(co);
+    
+    printf("Step 2\n");
+    CO_YIELD(co);
+    
+    printf("Step 3\n");
+    
+    CO_END(co);
+}
+```
+
+*The magic:* `CO_YIELD` expands to set `state = __LINE__`
+(the current line number), return, and create a `case __LINE__:`
+label at that exact spot. On the next call, the `switch`
+in `CO_BEGIN` jumps straight there.
+
+#### Why It's Useful
+
+1. *Completely portable* - No compiler extensions, works on any C compiler
+2. *Zero overhead* - Just a single computed goto (switch) per resume
+3. *Type safe* - Compiler checks everything
+4. *Simple* - ~10 lines of macros, no runtime library needed
+
+The limitation: local variables don't persist across yields
+(they're on the stack, which gets unwound when you return).
+So you must store persistent state in the coroutine struct.
+
+#### The Philosophy
+
+Duff's Device represents a certain mindset:
+*the C standard is a specification, not a suggestion*.
+If the spec says you can do something, you can do it,
+even if it looks weird. The compiler doesn't care about aesthetics.
+
+This makes some people uncomfortable.
+"Just because you can doesn't mean you should."
+But for coroutines, it's the perfect tool: portable,
+efficient, and surprisingly elegant once you understand what's happening.
+
+The preprocessor transforms your linear-looking code into a state machine.
+The switch statement dispatches to the right state. And you get cooperative
+multitasking without platform-specific hacks.
+
+That's the beauty of Duff's Device: it's not really about loop unrolling
+or coroutines. It's about recognizing that C gives you low-level control,
+and if you understand the primitives, you can build surprisingly powerful abstractions.
