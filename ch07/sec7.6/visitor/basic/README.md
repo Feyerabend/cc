@@ -323,3 +323,20 @@ print(tree.accept(PrettyPrintVisitor()))
 The equivalent in C is equally mechanical: define five new functions, fill a new
 `ExprVisitor` struct, and pass it to `evaluate()`.
 
+
+### Verdict
+
+The C implementation demonstrates that the Visitor Pattern is ultimately a matter
+of structure rather than language features. It can be reproduced faithfully using
+disciplined composition of structs and function pointers, without relying on native
+object-oriented support. At the same time, the manual assembly of double dispatch
+makes its mechanics explicit and significantly more verbose than in languages
+with built-in dynamic dispatch.
+
+This example therefore illustrates both the portability and the cost of the pattern.
+While it preserves architectural separation and extensibility, it also introduces
+additional indirection and boilerplate that may be disproportionate for a small
+interpreter. In C, the pattern is defensible when the set of node types is stable
+and new operations are expected to grow; otherwise, a simpler direct-evaluation
+design may be more appropriate.
+
