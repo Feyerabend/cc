@@ -1,5 +1,5 @@
 
-## Foundtions ..
+## Foundations ..
 
 A single-file C program illustrating the four low-level primitives that underpin
 actor-model frameworks like *Akka*. No libraries beyond POSIX.
