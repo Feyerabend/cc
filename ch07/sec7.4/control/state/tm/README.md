@@ -4,6 +4,8 @@
 *An exploration through Turing Machine implementations*
 
 We connect back to the beginning of this book/repository.
+But we also connect to the next chapter, where we will return to Turing machines
+more abstractly.
 
 This analysis focuses on:
 - The fundamental nature of state machines as computational models
