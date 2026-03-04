@@ -1,8 +1,8 @@
-# probably ok to implement in C
+#  ok to implement in C
 
 - Strategy (function pointer based)
 - State machine pattern
 - Module/opaque struct pattern
 - Callback-based Observer
-- Manual vtable pattern (struct + function table) -- already have a lot
+
 
