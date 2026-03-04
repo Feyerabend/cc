@@ -171,6 +171,7 @@ typedef struct {
     TokenIterator* iterator;
 } ASTBuilder;
 
+
 /* Function declarations */
 
 /* Lexer functions */

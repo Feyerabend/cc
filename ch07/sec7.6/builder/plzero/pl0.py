@@ -57,7 +57,7 @@ class PL0Lexer:
         self.code = code + ";"  # force termination
         self.token_strategy = RegexTokenMatchStrategy()
         self.iterator = TokenIterator(self)
-        self.next_token(self.iterator)  # initialize
+        self.next_token(self.iterator)  # initialise first token
     
     def next_token(self, iterator: TokenIterator) -> bool:
         success, token, kind, remaining_code = self.token_strategy.match(self.code)
@@ -308,6 +308,9 @@ class Scope:
         elif self.parent:
             return self.parent.find_procedure(name)
         raise NameError(f"Procedure '{name}' not found")
+
+
+
 
 class Visitor(ABC):
     @abstractmethod
