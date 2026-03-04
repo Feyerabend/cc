@@ -81,7 +81,7 @@ Interpreter (Execution via Visitor Pattern)
 2. ASTBuilder
    - Parses token stream using recursive descent
    - Constructs Abstract Syntax Tree incrementally
-   - Implements the Builder Pattern
+   - Implements the __Builder Pattern__
 
 3. AST Nodes
    - BlockNode: Variable/procedure declarations and main statement
