@@ -4,8 +4,11 @@
 The document *"[Algorithms: The Complete Series](./algorithms_series.pdf)"* is
 designed to provide a structured overview of selected developments in algorithms,
 presented from the perspective of a large language model (Claude). Its purpose
-is not to serve as an exhaustive or authoritative reference, but rather to map
-out important themes, methods, and directions within the field.
+is not to serve as an exhaustive or authoritative reference, but rather to
+outline key themes, methods, and directions within the field. When you encounter
+something that interests you, you are encouraged to explore it further. By first
+becoming familiar with the broader landscape of algorithms, you can then study
+individual topics in greater depth.
 
 Although the title suggests completeness, the series is deliberately selective
 in scope. Some of the algorithms discussed here are treated in greater detail
@@ -25,9 +28,9 @@ early 2026), including their generative scope and confidence calibration
 shaped by reinforcement learning processes.
 
 The PDF is intended for flexible use: individual study, group discussion,
-or even classroom settings. Its primary aim is to stimulate curiosity, suggest
-avenues for deeper exploration, and provide a coherent entry point into
-the broad and evolving landscape of algorithmic theory and practice.
+or even classroom settings. Its primary aim is to stimulate curiosity,
+suggest avenues for deeper exploration, and provide a coherent entry point
+into the broad and evolving landscape of algorithmic theory and practice.
 Rather than closing the subject, it is meant to open it.
 
 
