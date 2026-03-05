@@ -2,262 +2,110 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct Node Node;
-typedef struct NodeVisitor NodeVisitor;
+typedef struct Node {
+    char* data;
+    struct Node* next;
+} Node;
 
-typedef enum {
-    EMPTY_NODE,
-    NEXT_NODE
-} NodeType;
-
-struct Node {
-    NodeType type;
-    void* data;
-    Node* next;
-
-    void* (*accept)(Node*, NodeVisitor*);
-};
-
-struct NodeVisitor {
-    void* (*for_empty_node)(NodeVisitor*, Node*);
-    void* (*for_next_node)(NodeVisitor*, Node*);
-    void* context; // holding visitor-specific data
-};
-
-void* empty_node_accept(Node* node, NodeVisitor* visitor) {
-    return visitor->for_empty_node(visitor, node);
-}
-
-void* next_node_accept(Node* node, NodeVisitor* visitor) {
-    return visitor->for_next_node(visitor, node);
-}
-
-Node* create_empty_node() {
-    Node* node = malloc(sizeof(Node));
-    node->type = EMPTY_NODE;
-    node->data = NULL;
-    node->next = NULL;
-    node->accept = empty_node_accept;
-    return node;
-}
-
-Node* create_next_node(void* data, Node* next) {
-    Node* node = malloc(sizeof(Node));
-    node->type = NEXT_NODE;
-    node->data = data;
-    node->next = next;
-    node->accept = next_node_accept;
-    return node;
-}
-
-// remove visitor
 typedef struct {
-    void* o; // object to remove
-} RemoveContext;
-
-void* remove_for_empty_node(NodeVisitor* visitor, Node* node) {
-    return create_empty_node();
-}
-
-void* remove_for_next_node(NodeVisitor* visitor, Node* node) {
-    RemoveContext* ctx = (RemoveContext*)visitor->context;
-    
-    if (strcmp((char*)ctx->o, (char*)node->data) == 0) {
-        void* result = node->next->accept(node->next, visitor);
-        free(node);
-        return result;
-    } else {
-        Node* next_result = node->next->accept(node->next, visitor);
-        node->next = next_result;
-        return node;
-    }
-}
-
-NodeVisitor* create_remove_visitor(void* o) {
-    NodeVisitor* visitor = malloc(sizeof(NodeVisitor));
-    RemoveContext* ctx = malloc(sizeof(RemoveContext));
-    ctx->o = o;
-    visitor->for_empty_node = remove_for_empty_node;
-    visitor->for_next_node = remove_for_next_node;
-    visitor->context = ctx;
-    return visitor;
-}
-
-// insert visitor
-typedef struct {
-    void* o; // object to insert
-} InsertContext;
-
-void* insert_for_empty_node(NodeVisitor* visitor, Node* node) {
-    InsertContext* ctx = (InsertContext*)visitor->context;
-    return create_next_node(ctx->o, create_empty_node());
-}
-
-void* insert_for_next_node(NodeVisitor* visitor, Node* node) {
-    Node* next_result = node->next->accept(node->next, visitor);
-    node->next = next_result;
-    return node;
-}
-
-NodeVisitor* create_insert_visitor(void* o) {
-    NodeVisitor* visitor = malloc(sizeof(NodeVisitor));
-    InsertContext* ctx = malloc(sizeof(InsertContext));
-    ctx->o = o;
-    visitor->for_empty_node = insert_for_empty_node;
-    visitor->for_next_node = insert_for_next_node;
-    visitor->context = ctx;
-    return visitor;
-}
-
-// replace visitor
-typedef struct {
-    void* r; // replacement object
-    void* o; // object to replace
-} ReplaceContext;
-
-void* replace_for_empty_node(NodeVisitor* visitor, Node* node) {
-    return create_empty_node();
-}
-
-void* replace_for_next_node(NodeVisitor* visitor, Node* node) {
-    ReplaceContext* ctx = (ReplaceContext*)visitor->context;
-    
-    if (strcmp((char*)ctx->o, (char*)node->data) == 0) {
-        Node* next_result = node->next->accept(node->next, visitor);
-        node->data = ctx->r;
-        node->next = next_result;
-        return node;
-    } else {
-        Node* next_result = node->next->accept(node->next, visitor);
-        node->next = next_result;
-        return node;
-    }
-}
-
-NodeVisitor* create_replace_visitor(void* r, void* o) {
-    NodeVisitor* visitor = malloc(sizeof(NodeVisitor));
-    ReplaceContext* ctx = malloc(sizeof(ReplaceContext));
-    ctx->r = r;
-    ctx->o = o;
-    visitor->for_empty_node = replace_for_empty_node;
-    visitor->for_next_node = replace_for_next_node;
-    visitor->context = ctx;
-    return visitor;
-}
-
-void* print_for_empty_node(NodeVisitor* visitor, Node* node) {
-    printf("\n");
-    return NULL;
-}
-
-void* print_for_next_node(NodeVisitor* visitor, Node* node) {
-    printf("%s\n", (char*)node->data);
-    node->next->accept(node->next, visitor);
-    return node->data;
-}
-
-NodeVisitor* create_print_visitor() {
-    NodeVisitor* visitor = malloc(sizeof(NodeVisitor));
-    visitor->for_empty_node = print_for_empty_node;
-    visitor->for_next_node = print_for_next_node;
-    visitor->context = NULL;
-    return visitor;
-}
-
-// free visitor to clean up memory
-void* free_for_empty_node(NodeVisitor* visitor, Node* node) {
-    free(node);
-    return NULL;
-}
-
-void* free_for_next_node(NodeVisitor* visitor, Node* node) {
-    node->next->accept(node->next, visitor);
-    free(node);
-    return NULL;
-}
-
-NodeVisitor* create_free_visitor() {
-    NodeVisitor* visitor = malloc(sizeof(NodeVisitor));
-    visitor->for_empty_node = free_for_empty_node;
-    visitor->for_next_node = free_for_next_node;
-    visitor->context = NULL;
-    return visitor;
-}
-
-// gardener impl
-typedef struct {
-    Node* t;
+    Node* head;
 } Gardener;
+
+Node* create_node(const char* data, Node* next) {
+    Node* node = malloc(sizeof(Node));
+    node->data = strdup(data);  // duplicate string to avoid modifying original
+    node->next = next;
+    return node;
+}
 
 Gardener* create_gardener() {
     Gardener* g = malloc(sizeof(Gardener));
-    g->t = create_empty_node();
+    g->head = NULL;
     return g;
 }
 
-void gardener_add(Gardener* g, void* o) {
-    g->t = create_next_node(o, g->t);
+// add at the front (push)
+void gardener_add(Gardener* g, const char* data) {
+    g->head = create_node(data, g->head);
 }
 
-void gardener_insert(Gardener* g, void* o) {
-    NodeVisitor* visitor = create_insert_visitor(o);
-    g->t = g->t->accept(g->t, visitor);
-    free(visitor->context);
-    free(visitor);
+// insert at the end
+void gardener_insert(Gardener* g, const char* data) {
+    Node** current = &g->head;
+    while (*current) {
+        current = &((*current)->next);
+    }
+    *current = create_node(data, NULL);
 }
 
-void gardener_remove(Gardener* g, void* o) {
-    NodeVisitor* visitor = create_remove_visitor(o);
-    g->t = g->t->accept(g->t, visitor);
-    free(visitor->context);
-    free(visitor);
+// remove a node by value
+void gardener_remove(Gardener* g, const char* data) {
+    Node** current = &g->head;
+    while (*current) {
+        if (strcmp((*current)->data, data) == 0) {
+            Node* temp = *current;
+            *current = temp->next;
+            free(temp->data);
+            free(temp);
+            return;
+        }
+        current = &((*current)->next);
+    }
 }
 
-void gardener_replace(Gardener* g, void* o, void* p) {
-    NodeVisitor* visitor = create_replace_visitor(o, p);
-    g->t = g->t->accept(g->t, visitor);
-    free(visitor->context);
-    free(visitor);
+// replace a node's value
+void gardener_replace(Gardener* g, const char* old_data, const char* new_data) {
+    Node* current = g->head;
+    while (current) {
+        if (strcmp(current->data, old_data) == 0) {
+            free(current->data);
+            current->data = strdup(new_data);
+            return;
+        }
+        current = current->next;
+    }
 }
 
-void* gardener_print_all_elements(Gardener* g) {
-    NodeVisitor* visitor = create_print_visitor();
-    void* result = g->t->accept(g->t, visitor);
-    free(visitor);
-    return result;
+void gardener_print_all_elements(Gardener* g) {
+    Node* current = g->head;
+    while (current) {
+        printf("%s\n", current->data);
+        current = current->next;
+    }
 }
 
 void gardener_free(Gardener* g) {
-    NodeVisitor* visitor = create_free_visitor();
-    g->t->accept(g->t, visitor);
-    free(visitor);
+    Node* current = g->head;
+    while (current) {
+        Node* temp = current;
+        current = current->next;
+        free(temp->data);
+        free(temp);
+    }
     free(g);
 }
 
-// string duplication helper (strdup may not be available on all systems)
-char* string_dup(const char* s) {
-    char* d = malloc(strlen(s) + 1);
-    if (d) {
-        strcpy(d, s);
-    }
-    return d;
-}
 
 int main() {
     Gardener* g = create_gardener();
-    gardener_add(g, string_dup("1"));
-    gardener_add(g, string_dup("2"));
-    gardener_add(g, string_dup("3"));
-    gardener_add(g, string_dup("4"));
-    gardener_add(g, string_dup("5"));
-    gardener_add(g, string_dup("6"));
-    gardener_insert(g, string_dup("7"));
-    gardener_insert(g, string_dup("8"));
-    gardener_add(g, string_dup("9"));
+    gardener_add(g, "1");
+    gardener_add(g, "2");
+    gardener_add(g, "3");
+    gardener_add(g, "4");
+    gardener_add(g, "5");
+    gardener_add(g, "6");
+    gardener_insert(g, "7");
+    gardener_insert(g, "8");
+    gardener_add(g, "9");
+    
+    printf("List after adding and inserting:\n");
     gardener_print_all_elements(g);
-    gardener_replace(g, string_dup("0"), string_dup("1"));
+
+    gardener_replace(g, "1", "0");
+    printf("\nList after replacing '1' with '0':\n");
     gardener_print_all_elements(g);
-    gardener_replace(g, string_dup("0"), string_dup("1"));
+
+    gardener_replace(g, "1", "0");
     gardener_free(g); // free memory
     return 0;
 }
