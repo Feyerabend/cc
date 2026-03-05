@@ -216,14 +216,14 @@ MemError machine_load(void* addr, int offset, int* out_value) {
 // This is the explicit policy decision the Null Object pattern
 // hides: if allocation failure is catastrophic, say so loudly.
 
-#define REQUIRE_OK(expr)                                            \
-    do {                                                            \
-        MemError _e = (expr);                                       \
-        if (_e != ERR_OK) {                                         \
-            fprintf(stderr, "Fatal: %s failed: %s\n",              \
-                    #expr, mem_error_str(_e));                      \
-            exit(1);                                                \
-        }                                                           \
+#define REQUIRE_OK(expr)                                 \
+    do {                                                 \
+        MemError _e = (expr);                            \
+        if (_e != ERR_OK) {                              \
+            fprintf(stderr, "Fatal: %s failed: %s\n",    \
+                    #expr, mem_error_str(_e));           \
+            exit(1);                                     \
+        }                                                \
     } while (0)
 
 
