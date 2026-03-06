@@ -50,7 +50,6 @@ style and concurrency.
 ### What Breaks Referential Transparency
 
 A function is *not* referentially transparent if it:
-
 - reads or writes a global variable,
 - reads from a mutable object that may have changed since the last call,
 - reads from external state (time, random numbers, environment variables),
