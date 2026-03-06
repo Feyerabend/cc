@@ -189,4 +189,5 @@ nothing writes after construction. Under those conditions, concurrent
 execution is safe by construction.
 
 
-![The Art of Functional Progrmming](./../../assets/image/)
+![The Art of Functional Progrmming](./../../assets/image/art.png)
+
