@@ -32,11 +32,11 @@ runnable code, and honestly costed.
 A functional pattern is a recurring structural solution to a recurring
 problem in programs that emphasise:
 
-- *Immutability* -- data is not changed after construction.
-- *Pure functions* -- output depends only on input; no hidden reads or writes.
-- *Explicit effects* -- side effects (I/O, state, errors) are made
+- *Immutability*: data is not changed after construction.
+- *Pure functions*: output depends only on input; no hidden reads or writes.
+- *Explicit effects*: side effects (I/O, state, errors) are made
   visible in types or structure, not hidden in global state.
-- *Composition* -- large programs are built from small, independently
+- *Composition*: large programs are built from small, independently
   testable pieces that combine without interfering.
 
 These are not rules that must always be followed. They are tools that solve
@@ -52,7 +52,7 @@ and when the tools fit.
 Shared mutable state is the root cause of data races. A race requires three
 conditions: shared memory, at least one write, and concurrent access. Pure
 functions and immutable data eliminate the "at least one write" condition
-and remove the race by construction -- not by careful locking. This
+and remove the race by construction--not by careful locking. This
 connection runs through every section of the series.
 
 #### Data transformation pipelines
@@ -149,17 +149,17 @@ most concrete (C).
 
 ### The Twelve Sections
 
-| # | Pattern | Core idea |
-|---|---------|-----------|
-| 1 | [First-Class Functions](./firstclass/README.md) | Functions as values; pass behaviour, not data |
-| 2 | [Closures](./closure/README.md) | Functions that capture their environment |
-| 3 | [Immutability](./immutability/README.md) | Data that never changes after construction |
-| 4 | [Higher-Order Functions](./higher/README.md) | Functions that accept or return functions |
-| 5 | [Function Composition](./composition/README.md) | Chaining small functions into larger ones |
-| 6 | [Lazy Evaluation](./lazy/README.md) | Deferred computation; infinite sequences |
-| 7 | [Functors](./functors/README.md) | Mapping over values inside a context |
-| 8 | [Monads](./monads/README.md) | Composing computations with explicit effects |
-| 9 | [Referential Transparency](./transparency/README.md) | Same input, same output -- always |
+| #  | Pattern | Core idea |
+|----|---------|-----------|
+|  1 | [First-Class Functions](./firstclass/README.md) | Functions as values; pass behaviour, not data |
+|  2 | [Closures](./closure/README.md) | Functions that capture their environment |
+|  3 | [Immutability](./immutability/README.md) | Data that never changes after construction |
+|  4 | [Higher-Order Functions](./higher/README.md) | Functions that accept or return functions |
+|  5 | [Function Composition](./composition/README.md) | Chaining small functions into larger ones |
+|  6 | [Lazy Evaluation](./lazy/README.md) | Deferred computation; infinite sequences |
+|  7 | [Functors](./functors/README.md) | Mapping over values inside a context |
+|  8 | [Monads](./monads/README.md) | Composing computations with explicit effects |
+|  9 | [Referential Transparency](./transparency/README.md) | Same input, same output--always |
 | 10 | [Persistent Data Structures](./persistent/README.md) | Structural sharing instead of mutation |
 | 11 | [Cost Model](./cost/README.md) | What abstraction actually costs |
 | 12 | [Functional Style as Concurrency Discipline](./integrative/README.md) | How every pattern contributes to concurrent safety |
