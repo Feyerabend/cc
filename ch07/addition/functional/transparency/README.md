@@ -80,7 +80,7 @@ import random, time
 
 counter = 0
 def next_id():      global counter; counter += 1; return counter   # global state
-def now():          return time.time()                              # clock
+def now():          return time.time()                             # clock
 def roll():         return random.randint(1, 6)                    # random
 def read_file(p):   return open(p).read()                          # I/O
 ```
