@@ -34,7 +34,7 @@ reading the full execution history.
 
 *Safe caching.* If `f(x)` always returns the same value for a given `x`, you
 can cache the result and never compute it again for that input. The cached
-value is guaranteed to be correct -- not just probably correct. This is
+value is guaranteed to be correct--not just probably correct. This is
 memoisation, and it is only sound when the function is referentially
 transparent.
 
@@ -214,7 +214,7 @@ int next_id(void) {
 ```
 
 `next_id()` is called with no arguments and returns a different value each
-time. A static local variable is global state with a narrower scope -- the
+time. A static local variable is global state with a narrower scope--the
 referential transparency violation is the same.
 
 #### Global Mutation
@@ -264,7 +264,7 @@ property the compiler needs to perform these transformations safely.
 A data race is a situation where two threads access the same memory location
 and at least one access is a write, without synchronisation. A function that
 participates in a data race is, by definition, not referentially transparent:
-its result depends on which thread writes what and when -- invisible to the
+its result depends on which thread writes what and when--invisible to the
 function signature.
 
 ```c
@@ -277,7 +277,7 @@ int increment_shared(void) {
 
 Two threads calling `increment_shared()` concurrently will produce results
 that depend on the interleaving. The output is not determined by the arguments
-(there are none) -- it is determined by the scheduler.
+(there are none)--it is determined by the scheduler.
 
 This is the direct link between referential transparency and concurrency: a
 function that is referentially transparent cannot participate in a data race,
@@ -288,7 +288,7 @@ mutable state, which is exactly what referential transparency forbids.
 
 C's undefined behaviour (UB) is closely related. A function that invokes UB
 (signed integer overflow, out-of-bounds access, use-after-free) produces a
-result that is not determined by its arguments -- it is determined by the
+result that is not determined by its arguments--it is determined by the
 compiler's optimisation choices and the memory layout at runtime. UB is a
 referential transparency violation enforced by the hardware and the compiler
 rather than by program logic.
@@ -302,7 +302,6 @@ are off: the function no longer has a well-defined return value at all.
 
 This section sits at the boundary between functional patterns and low-level
 concurrency. The connection is:
-
 1. *Functional style* encourages referentially transparent functions.
 2. *Referentially transparent functions* share no mutable state.
 3. *No shared mutable state* means no data races.

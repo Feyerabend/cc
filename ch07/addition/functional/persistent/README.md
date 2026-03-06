@@ -4,7 +4,7 @@
 
 A *persistent* data structure is one where every update produces a new version
 while the old version remains intact and accessible. Neither version is
-mutated. This is immutability in action -- but implemented efficiently.
+mutated. This is immutability in action--but implemented efficiently.
 
 The key mechanism is *structural sharing*: when a new version is created,
 it does not copy the parts that did not change. It points to them. The old
@@ -27,7 +27,7 @@ is shared between them, occupying memory only once.
 
 ### Why It Exists
 
-Naive immutability -- copy the entire structure on every update -- costs O(n)
+Naive immutability--copy the entire structure on every update--costs O(n)
 time and space per operation. That is unacceptable for large structures used
 frequently.
 
@@ -63,7 +63,7 @@ list_c  ->  [9]   -> [1] -> [2] -> [3]   (shared)
 ```
 
 `list_a`, `list_b`, and `list_c` coexist. Three heads; one tail. No copying.
-The tail nodes are not owned by any single list -- they are shared by all three.
+The tail nodes are not owned by any single list--they are shared by all three.
 
 This is why functional languages (Haskell, Erlang, Clojure) use linked lists
 as their default list type: prepend and pattern-match are O(1), and sharing
@@ -87,8 +87,8 @@ Original tree:           After updating node B:
 ```
 
 `root'`, and `B'` are new nodes. `A`, `C`, `D`, `E`, `F` are shared between
-the old and new version. The update cost is O(depth) -- O(log n) for a
-balanced tree -- regardless of the total number of nodes.
+the old and new version. The update cost is O(depth)--O(log n) for a
+balanced tree--regardless of the total number of nodes.
 
 This is the basis of Clojure's persistent vectors and hash maps, which use
 wide-branching tries (32-way branching) to keep depths small in practice.
@@ -116,7 +116,7 @@ def is_empty(lst):          return lst is None
 ```
 
 ```python
-a = cons(1, cons(2, cons(3, None)))   # [1, 2, 3]
+a = cons(1, cons(2, cons(3, None)))    # [1, 2, 3]
 b = cons(0, a)                         # [0, 1, 2, 3] -- shares a
 c = cons(9, a)                         # [9, 1, 2, 3] -- shares a
 
@@ -220,9 +220,9 @@ node is freed.
 
 ```c
 typedef struct node {
-    int          value;
+    int value;
     struct node *next;
-    int          refcount;   /* how many live pointers to this node */
+    int refcount;   /* how many live pointers to this node */
 } node_t;
 
 node_t *node_retain(node_t *n) {
@@ -259,9 +259,9 @@ only.
 
 A simple integer refcount is not thread-safe: two threads calling
 `node_release` simultaneously on a node with refcount 2 may both read `2`,
-both decrement to `1`, and neither frees the node -- a memory leak. Or one
+both decrement to `1`, and neither frees the node--a memory leak. Or one
 reads `1` and the other reads the decremented `0` and frees the node while
-the first thread still holds a pointer -- use-after-free.
+the first thread still holds a pointer--use-after-free.
 
 Thread-safe reference counting requires atomic increment and decrement
 operations:
@@ -270,9 +270,9 @@ operations:
 #include <stdatomic.h>
 
 typedef struct node {
-    int              value;
-    struct node     *next;
-    atomic_int       refcount;
+    int value;
+    struct node *next;
+    atomic_int refcount;
 } node_t;
 
 void node_release(node_t *n) {
@@ -286,7 +286,7 @@ void node_release(node_t *n) {
 ```
 
 `atomic_fetch_sub` returns the *old* value before subtraction. If it returns
-`1`, the new value is `0` -- this thread is the last owner and should free.
+`1`, the new value is `0`--this thread is the last owner and should free.
 This is the correct idiom for lock-free reference counting in C11.
 
 #### Memory Allocator Concerns
@@ -315,7 +315,7 @@ implement correctly in C.
 ### Concurrency Link: Lock-Free Read Sharing
 
 The deepest value of persistent data structures for concurrent programs is
-that multiple readers can safely access any version -- old or new -- without
+that multiple readers can safely access any version--old or new--without
 any synchronisation, because no version is ever mutated.
 
 ```
@@ -325,7 +325,7 @@ Thread C: creating version 2   (does not invalidate version 1)
 ```
 
 The only synchronisation needed is for the pointer swap that makes version 2
-visible to threads that want the latest version -- a single atomic store. No
+visible to threads that want the latest version--a single atomic store. No
 mutex, no reader-writer lock, no copy-on-access.
 
 This is the lock-free read-sharing pattern used in databases (MVCC --
