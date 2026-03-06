@@ -4,8 +4,8 @@
 *The cost of abstraction is the question. The answer depends entirely on the language's object model.*
 
 Functional style in Python and functional style in C are written with the same
-vocabulary -- functions, closures, higher-order functions, immutable values --
-but the two runtimes charge very different prices for them. Understanding the
+vocabulary--functions, closures, higher-order functions, immutable values--but
+the two runtimes charge very different prices for them. Understanding the
 cost model is what separates principled use of functional patterns from
 cargo-cult adoption.
 
@@ -13,25 +13,24 @@ This section measures the concrete overheads of each pattern introduced in the
 series, compares Python and C on identical operations, and traces each cost
 back to a specific aspect of how the language is implemented.
 
+*The code has been tested on a MacBook with Pro Apple M5 in 2026.*
 
 
 ### The Python Object Model
 
 Every value in Python is a heap-allocated object. Every object carries:
-
 - A reference count (8 bytes)
 - A pointer to the type object (`ob_type`, 8 bytes)
 - For objects tracked by the cyclic GC: a GC header (16 bytes)
 - For objects with a `__dict__`: a further dictionary pointer (8 bytes)
 
 A Python integer `1` takes 28 bytes. A custom `Node` class with `__slots__`
-takes roughly 56 bytes. The equivalent C struct -- `int value`, `node_t *next`,
-`atomic_int refcount` -- takes 24 bytes on a 64-bit platform.
+takes roughly 56 bytes. The equivalent C struct--`int value`, `node_t *next`,
+`atomic_int refcount`--takes 24 bytes on a 64-bit platform.
 
 #### Allocation Cost
 
 Python allocation goes through:
-
 1. The type's `__new__` method
 2. CPython's small-object allocator (256-byte arenas, but still synchronised)
 3. Reference count initialisation
@@ -60,7 +59,7 @@ runtime lookup, no wrapper, no frame.
 CPython uses reference counting for immediate reclamation, plus a cyclic
 garbage collector for objects involved in reference cycles. The cyclic GC
 periodically pauses all threads to collect cycles; this adds unpredictable
-latency. In C with explicit `free`, there is no GC -- deallocation happens
+latency. In C with explicit `free`, there is no GC--deallocation happens
 exactly when the last reference is dropped.
 
 
@@ -74,7 +73,7 @@ you do use cost no more than the equivalent hand-written code.
 
 A small struct passed by value lives entirely in registers or on the call
 stack. No `malloc`, no `free`, no pointer indirection. A closure pair
-(`fn_ptr`, `void *ctx`) is two machine words -- two register loads.
+(`fn_ptr`, `void *ctx`) is two machine words--two register loads.
 
 Returning a struct by value is compiled to writing into caller-provided
 memory (return-value optimisation, RVO). In practice, small structs live in
@@ -87,7 +86,7 @@ call site. Call overhead (frame setup, argument marshalling, return address
 save) disappears. With `ATTR_CONST`, the compiler may additionally hoist the
 call out of loops or fold it at compile time.
 
-A chain of composed functions -- `f(g(h(x)))` -- where each is small and
+A chain of composed functions--`f(g(h(x)))`--where each is small and
 pure becomes a straight sequence of arithmetic operations after inlining.
 No function calls remain in the final binary.
 
@@ -100,7 +99,7 @@ In a tight inner loop calling the same function pointer repeatedly, the
 predictor hits and the overhead approaches zero.
 
 In Python, a call through a bound method involves attribute lookup, type
-checks, argument-tuple allocation, and frame creation -- roughly 100--500 ns.
+checks, argument-tuple allocation, and frame creation--roughly 100--500 ns.
 
 
 
@@ -126,7 +125,7 @@ equivalent Python. For allocation-heavy workloads the ratio can be larger,
 because Python's per-object overhead dominates over the actual work.
 
 For I/O-bound or logic-heavy code where Python spends most of its time in
-compiled C extensions -- NumPy, database drivers, parsers -- the ratio
+compiled C extensions--NumPy, database drivers, parsers--the ratio
 narrows toward zero. The Python "glue" is rarely the bottleneck.
 
 The functional patterns in this series were written in Python for clarity.
@@ -162,6 +161,5 @@ the abstraction.
 
 
 
-*Next: [12. Functional Style as Concurrency Discipline](../integrative/README.md) --
-the closing section showing how every pattern in this series contributes to
-safe concurrent programs.*
+*Next: [12. Functional Style as Concurrency Discipline](../integrative/README.md)--the
+closing section showing how every pattern in this series contributes to safe concurrent programs.*
