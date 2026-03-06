@@ -16,7 +16,7 @@ bind:  f : A -> M[B]     gives     M[A] -> M[B]
 ```
 
 Without `bind`, applying an `A -> M[B]` function through `map` would produce
-`M[M[B]]` -- a doubly-wrapped value. `bind` unwraps the outer layer and
+`M[M[B]]`--a doubly-wrapped value. `bind` unwraps the outer layer and
 returns a flat `M[B]`. This "unwrapping" is the operation that makes monads
 useful for chaining computations that each produce effects.
 
@@ -25,7 +25,6 @@ useful for chaining computations that each produce effects.
 ### Why It Exists
 
 Many real computations are not pure functions from A to B. They:
-
 - might fail (return an error instead of a value),
 - might produce no result (return absence),
 - carry state that must be threaded through,
@@ -102,7 +101,7 @@ result = Maybe.just(4).map(safe_reciprocal)
 ```
 
 `map` wraps the result of `safe_reciprocal` (which is already a `Maybe`)
-inside another `Maybe`. We get `Just(Just(0.25))` -- a `Maybe[Maybe[float]]`.
+inside another `Maybe`. We get `Just(Just(0.25))`--a `Maybe[Maybe[float]]`.
 That is not what we want.
 
 `bind` flattens it:
@@ -145,9 +144,9 @@ users = {1: {'name': 'Alice', 'address_id': 10}}
 addrs = {10: {'city': 'Berlin', 'zip_id': 20}}
 zips  = {20: '10115'}
 
-def get_user(uid):    return Maybe.just(users[uid])    if uid in users else Maybe.nothing()
-def get_address(u):   return Maybe.just(addrs[u['address_id']]) if u['address_id'] in addrs else Maybe.nothing()
-def get_zip(a):       return Maybe.just(zips[a['zip_id']])      if a['zip_id'] in zips  else Maybe.nothing()
+def get_user(uid):  return Maybe.just(users[uid]) if uid in users else Maybe.nothing()
+def get_address(u): return Maybe.just(addrs[u['address_id']]) if u['address_id'] in addrs else Maybe.nothing()
+def get_zip(a):     return Maybe.just(zips[a['zip_id']]) if a['zip_id'] in zips else Maybe.nothing()
 
 # Bind chain: each step only runs if the previous succeeded
 result = (Maybe.just(1)
@@ -406,14 +405,14 @@ approximates monadic sequencing as closely as C allows.
 #### The Comparison
 
 | C (manual) | Monad (Python) |
-|---|---|
+|------------|----------------|
 | `int err; err = f(); if (err) return err;` | `.bind(f)` |
 | `if (!ptr) { err = ERR; goto done; }` | `.bind(check_ptr)` |
 | `done: cleanup(); return err;` | error propagated by bind |
 | error-handling woven into business logic | separated by bind |
 | correctness enforced by discipline | correctness enforced by type |
 
-The monad does not add power -- C can express the same computations. It
+The monad does not add power--C can express the same computations. It
 adds *structure*: the effect-handling protocol is centralised in `bind` rather
 than duplicated at every call site.
 

@@ -3,7 +3,7 @@
 
 
 Lazy evaluation means computing a value only when it is actually needed, and
-not before. The opposite -- computing everything up front and storing it -- is
+not before. The opposite--computing everything up front and storing it--is
 *eager* evaluation.
 
 A Python generator is the clearest example: it produces one value at a time,
@@ -18,7 +18,7 @@ Three problems that laziness solves:
 
 *Memory efficiency.* A list of one million integers occupies memory for all one
 million integers at once. A generator that counts to one million occupies
-memory for one integer at a time -- the current one. The total work is the
+memory for one integer at a time--the current one. The total work is the
 same; the peak memory is not.
 
 *Pipeline streaming.* In an eager pipeline, each stage produces its entire
@@ -47,8 +47,8 @@ def count_up():
 ```
 
 `yield` is a suspension point. When the generator reaches `yield i`, it
-produces the value `i` and pauses. Its entire local state -- the value of `i`,
-the position in the code -- is preserved. The next call to `next()` resumes
+produces the value `i` and pauses. Its entire local state--the value of `i`,
+the position in the code--is preserved. The next call to `next()` resumes
 from exactly that point.
 
 ```python
@@ -170,13 +170,13 @@ Under the hood, a Python generator is compiled into a state machine. Each
 `yield` statement becomes a state transition:
 
 ```
-state 0: run until first yield, emit value, -> state 1
+state 0: run until first yield, emit value,  -> state 1
 state 1: run until second yield, emit value, -> state 2
 ...
 state N: run to end, raise StopIteration
 ```
 
-The "program counter" -- which state to resume in -- is stored in the
+The "program counter"--which state to resume in--is stored in the
 generator object alongside all local variables. This is the generator's
 *frame*: a snapshot of the execution context at the point of suspension.
 
@@ -192,7 +192,7 @@ stack for its frame, because the frame must survive across calls to `next()`.
 
 Python therefore allocates the generator's frame on the heap. The generator
 object holds a pointer to this heap frame. `next()` restores the interpreter
-to that frame, runs until the next `yield`, then suspends again -- leaving
+to that frame, runs until the next `yield`, then suspends again--leaving
 the frame intact on the heap.
 
 This is the same mechanism that closures use for captured variables (section
@@ -311,10 +311,10 @@ field:
 
 ```c
 typedef struct {
-    int   value;
-    int   done;
-    int   pc;     /* program counter: which yield to resume at */
-    int   x;
+    int value;
+    int done;
+    int pc;     /* program counter: which yield to resume at */
+    int x;
 } multi_gen;
 
 void multi_next(multi_gen *g) {
@@ -331,7 +331,7 @@ Each `case` corresponds to a yield point. `g->pc` stores where to resume.
 This is exactly what CPython stores in the generator frame as the bytecode
 instruction pointer.
 
-This technique -- a struct with a `pc` field and a `switch` -- is called a
+This technique--a struct with a `pc` field and a `switch`--is called a
 *Duff's device* or a *protothreads* pattern. Simon Tatham's essay on
 coroutines in C formalises it. It is also the basis of C++20 coroutines,
 which compile `co_yield` into a state machine with an explicit resume index.
@@ -340,8 +340,8 @@ which compile `co_yield` into a state machine with an explicit resume index.
 
 Python automates the frame allocation, the state machine compilation, and the
 program counter management. In C you write all of that by hand, for each
-generator, with no language support. This is not a fundamental limitation --
-the computation is the same -- but the boilerplate cost is high, and the risk
+generator, with no language support. This is not a fundamental limitation--the
+computation is the same--but the boilerplate cost is high, and the risk
 of frame-lifetime bugs (the same pointer hazard as in section 2) is real.
 
 
@@ -372,7 +372,7 @@ Generators connect to concurrency in two ways.
 *As lightweight coroutines.* A generator suspends cooperatively at `yield`,
 resuming only when the consumer calls `next()`. Multiple generators can
 interleave on a single thread without OS scheduling overhead, without locks,
-and without the memory cost of a full thread stack (typically 1--8 MB per
+and without the memory cost of a full thread stack (typically 1-8 MB per
 thread vs. a few hundred bytes per generator frame).
 
 Python's `asyncio` event loop is built on this: it holds a queue of
@@ -382,7 +382,7 @@ coroutine switch, no synchronisation needed between coroutines that share no
 mutable state.
 
 *As backpressure.* In a lazy pipeline, the consumer controls the rate. If the
-consumer slows down, the producer does not run ahead -- it simply is not
+consumer slows down, the producer does not run ahead--it simply is not
 called. This is *backpressure*: the downstream stage applies pressure upstream
 by not requesting the next value. In an eager pipeline there is no such
 mechanism; the producer runs at full speed and the consumer must buffer or
