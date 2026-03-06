@@ -187,3 +187,6 @@ reads what* and *who writes what*. When the discipline is applied
 consistently, the answers are: any function reads only its arguments, and
 nothing writes after construction. Under those conditions, concurrent
 execution is safe by construction.
+
+
+![The Art of Functional Progrmming](./../../assets/image/)
