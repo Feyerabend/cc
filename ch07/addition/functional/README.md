@@ -25,6 +25,9 @@ Swift, Kotlin, Scala, and modern C++.
 This series treats them as patterns: named, motivated, illustrated with
 runnable code, and honestly costed.
 
+We have already touched on many of these parts--some in a "deeper" sense.
+However learning these many useful concepts from functional programming
+have virtues of their own.
 
 
 ### What Is a Functional Pattern?
