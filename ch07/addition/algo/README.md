@@ -1,8 +1,9 @@
 
 ## Algorithms in General
 
-The document *"[Algorithms: The Complete Series](./algorithms_series.pdf)"* is
-designed to provide a structured overview of selected developments in algorithms,
+The document
+*"[Algorithms: The Complete Series](./../../assets/pdf/algorithms_series.pdf)"*
+is designed to provide a structured overview of selected developments in algorithms,
 presented from the perspective of a large language model (Claude). Its purpose
 is not to serve as an exhaustive or authoritative reference, but rather to
 outline key themes, methods, and directions within the field. When you encounter
