@@ -189,15 +189,15 @@ it returns the same output, and it has no side effects. Stateless
 transformations have a property that is critical for concurrency: each
 element can be processed independently, in any order, including in parallel.
 
-A stateful transformation -- one that reads or writes a shared variable --
-breaks this property. The elements must then be processed in a specific order,
+A stateful transformation--one that reads or writes a shared variable--breaks
+this property. The elements must then be processed in a specific order,
 or with locks, or not at all in parallel.
 
 #### No Lazy Evaluation by Default
 
 Python's `map` and `filter` return iterators, not lists. They are lazy: they
 produce elements on demand. This is a significant efficiency benefit for large
-or infinite sequences -- the transformation runs only when a value is actually
+or infinite sequences--the transformation runs only when a value is actually
 consumed. Converting to a list with `list(...)` forces evaluation of the
 entire sequence.
 
@@ -226,7 +226,7 @@ void map_int(const int *in, int *out, int n, transform_fn f) {
 
 The caller provides pre-allocated input and output arrays. `map_int` owns the
 loop; `f` owns the per-element logic. The signature matches the Python idea
-exactly -- the difference is that allocation, length, and lifetime are all
+exactly--the difference is that allocation, length, and lifetime are all
 explicit.
 
 #### filter in C
@@ -290,8 +290,8 @@ This is the closure pair from section 2 applied to higher-order functions. The
 
 ### Cost Model
 
-| | Python | C |
-|---|---|---|
+| Feature | Python | C |
+|---------|--------|---|
 | Iteration | inside `map` iterator | explicit loop |
 | Per-element call | dynamic dispatch + frame | indirect call (function ptr) |
 | Output allocation | lazy iterator (none until consumed) | caller-provided buffer |
@@ -306,7 +306,7 @@ directly on contiguous memory with vectorised CPU instructions.
 
 C's version is verbose but direct. The inner loop of `map_int` with a simple
 `transform_fn` may be inlined by the compiler if the function pointer target
-is visible at the call site -- though this is unusual for a runtime-passed
+is visible at the call site--though this is unusual for a runtime-passed
 pointer.
 
 
@@ -326,7 +326,7 @@ thread 3: map f over arr[3n/4 .. n-1]
 ```
 
 Each thread writes to its own slice of the output. As long as `f` is
-stateless -- no shared mutable data, no side effects -- this is correct by
+stateless--no shared mutable data, no side effects--this is correct by
 construction. No synchronisation needed during the map phase; a barrier at
 the end suffices.
 
@@ -337,7 +337,7 @@ applying the same operation to multiple data lanes simultaneously.
 `filter` and `reduce` are harder to parallelise. Filter changes the output
 length unpredictably; parallel filter typically uses a prefix-sum step to
 determine output positions. Reduce is associative for addition and
-multiplication, which allows a tree-structured parallel reduction -- but only
+multiplication, which allows a tree-structured parallel reduction--but only
 if the combining function is truly associative and the order of operations is
 acceptable.
 

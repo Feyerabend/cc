@@ -2,7 +2,7 @@
 ## 7. Functors (Mapped Contexts)
 
 
-A functor is any container -- any context -- that supports a `map` operation.
+A functor is any container--any context--that supports a `map` operation.
 `map` applies a function to the value *inside* the container and returns a new
 container of the same shape, with the transformed value inside.
 
@@ -19,7 +19,6 @@ The insight is that this pattern generalises far beyond lists.
 ### Why It Exists
 
 Different containers carry different semantics:
-
 - A list carries *zero or more* values.
 - A `Maybe` carries *zero or one* value (a value that might be absent).
 - A `Result` carries either a *success value* or an *error*.
@@ -60,7 +59,7 @@ class Box:
 ```python
 b = Box(5)
 print(b.map(lambda x: x * x))   # Box(25)
-print(b.map(str).map(len))       # Box(1) -- chained maps
+print(b.map(str).map(len))      # Box(1) -- chained maps
 ```
 
 `map` always returns a new `Box`. The original is untouched. Chaining maps
@@ -69,8 +68,8 @@ is natural because each result is also a `Box`.
 #### The Maybe Functor
 
 `Maybe` represents a value that might be absent. It has two states: `Just(value)`
-and `Nothing`. The crucial property: `map` on `Nothing` stays `Nothing` --
-the absent value propagates silently, without any `if` check in the caller.
+and `Nothing`. The crucial property: `map` on `Nothing` stays `Nothing`--the
+absent value propagates silently, without any `if` check in the caller.
 
 ```python
 class Maybe:
@@ -250,15 +249,15 @@ b = Box(5)
 assert b.map(f).map(g)._value == b.map(lambda x: g(f(x)))._value
 ```
 
-If your `map` satisfies both laws, it is a genuine functor. If it does not --
-for example if `map` has side effects or reorders elements -- the abstraction
+If your `map` satisfies both laws, it is a genuine functor. If it does not--for
+example if `map` has side effects or reorders elements--the abstraction
 breaks and callers cannot reason about its behaviour generically.
 
 
 
 ### Why Not in C
 
-C can represent the functor idea -- but at a painful cost.
+C can represent the functor idea--but at a painful cost.
 
 To write a single `map` function that works over a `Maybe` *and* a `Result`
 *and* a `Tree`, you need either:

@@ -10,6 +10,8 @@ concurrently, and no matter how many other references to the same value exist.
 This is a much stronger guarantee than "I happen not to change it". Immutability
 is enforced by the language or by design, not by convention.
 
+We early on mentioned immutability in relation to setting values to variables,
+but it cn be extended further.
 
 
 ### Why It Exists
@@ -236,7 +238,6 @@ equivalent of immutable-style programming for small values.
 
 For large structures, copying is expensive. The C programmer then chooses
 between:
-
 - Accepting the cost and making a full copy.
 - Using `const` pointers and trusting the contract.
 - Implementing structural sharing manually (copy-on-write, reference

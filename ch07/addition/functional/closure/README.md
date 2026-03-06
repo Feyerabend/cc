@@ -165,8 +165,8 @@ the variable's cell object, not a copy of its value at the moment of capture.
 That is why the loop gotcha happens: all lambdas share one cell, and the cell
 holds the last value the loop assigned to `i`.
 
-Understanding this distinction--reference to a cell vs. copy of a value --
-is essential when closures interact with mutation.
+Understanding this distinction--reference to a cell vs. copy of a value--is
+essential when closures interact with mutation.
 
 #### Lifetime Extension
 
@@ -227,9 +227,8 @@ require two separate context structs--they cannot share one.
 
 #### Heap Allocation and Lifetime
 
-In Python, the runtime allocates cell objects on the heap automatically. In C,
-you decide where the context lives:
-
+In Python, the runtime allocates cell objects on the heap automatically.
+In C, you decide where the context lives:
 - Stack: simple, but the closure must not outlive the enclosing function.
 - Heap (`malloc`): flexible, but you own the lifetime and must `free` it.
 
@@ -271,7 +270,6 @@ are possible, but their lifetime contract must be explicit and correct.
 ### Cost Model
 
 A C closure call goes through two levels of indirection:
-
 1. Load the context pointer from the struct.
 2. Load the function pointer from the struct, then call through it.
 
@@ -280,8 +278,8 @@ absolute terms but significant in tight loops. Python closures add further
 cost: cell-object lookup, reference counting, and frame allocation per call.
 
 The pattern is consistent with the rest of the series: each additional level
-of abstraction--from direct call, to function pointer, to closure pair --
-adds one more load and one more level of indirection.
+of abstraction--from direct call, to function pointer, to closure pair--adds
+one more load and one more level of indirection.
 
 
 

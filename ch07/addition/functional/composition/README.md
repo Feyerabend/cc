@@ -32,7 +32,6 @@ then `f ∘ g` is correct. *Local correctness implies global correctness.* This
 is the core argument for composition.
 
 The consequence is a different way of building programs:
-
 - Write small functions that each do one thing and are easy to verify.
 - Compose them into larger functions.
 - The composed functions are correct if the components are correct.
@@ -119,7 +118,7 @@ print(left(4))    # -25
 print(right(4))   # -25
 ```
 
-Associativity means the grouping of compositions does not matter -- only the
+Associativity means the grouping of compositions does not matter--only the
 order of application. This is not just a curiosity: it means you can
 restructure composed pipelines freely without changing semantics, which is
 what makes refactoring safe.
@@ -188,7 +187,7 @@ composition written with syntax.
 A function of five lines with one responsibility is easy to test and verify.
 A function of fifty lines with five responsibilities is not. Composition keeps
 the units small. The complexity of a composed system grows with the number of
-components, not with the product of their interactions -- as long as each
+components, not with the product of their interactions--as long as each
 component is truly independent.
 
 #### No inheritance needed
@@ -273,8 +272,8 @@ composition in C.
 
 A Python composition pays the same indirection cost plus Python's per-call
 overhead (frame allocation, reference counting, dictionary dispatch). The
-indirection cost of a function pointer call is small in absolute terms -- one
-extra memory load -- but it blocks the compiler from inlining and the CPU from
+indirection cost of a function pointer call is small in absolute terms--one
+extra memory load--but it blocks the compiler from inlining and the CPU from
 predicting the branch.
 
 If the composed functions are known at compile time (i.e., inlinable), a
@@ -289,14 +288,13 @@ optimiser at the point of the composed call.
 
 Composition and immutability together enable *deterministic pipelines*. Each
 stage of a composed pipeline:
-
 - receives its input (immutable, from the previous stage),
 - produces its output (a new value, passed to the next stage),
 - has no side effects, no shared state, no synchronisation requirements.
 
 A pipeline composed of pure functions is deterministic: the same input always
 produces the same output, regardless of scheduling, thread interleaving, or
-execution order of unrelated work. This is not a claim about speed -- it is a
+execution order of unrelated work. This is not a claim about speed--it is a
 claim about *correctness under concurrency*.
 
 Two independent composed pipelines can run on separate threads without any

@@ -94,12 +94,12 @@ No function calls remain in the final binary.
 
 A call through a function pointer is one indirect branch: the processor loads
 the target address from memory and jumps. On modern out-of-order processors
-this costs 1--3 cycles if the branch predictor has seen this address before.
+this costs 1-3 cycles if the branch predictor has seen this address before.
 In a tight inner loop calling the same function pointer repeatedly, the
 predictor hits and the overhead approaches zero.
 
 In Python, a call through a bound method involves attribute lookup, type
-checks, argument-tuple allocation, and frame creation--roughly 100--500 ns.
+checks, argument-tuple allocation, and frame creation--roughly 100-500 ns.
 
 
 
@@ -107,9 +107,9 @@ checks, argument-tuple allocation, and frame creation--roughly 100--500 ns.
 
 | Pattern | Python cost | C cost |
 |---------|-------------|--------|
-| Value | Object on heap (28--56 bytes) | Value in register or stack |
+| Value | Object on heap (28-56 bytes) | Value in register or stack |
 | Closure | Object + captured variables in cell objects | Two-word struct, stack |
-| HOF call | ~200 ns (frame + descriptor protocol) | ~1--3 ns (indirect branch) |
+| HOF call | ~200 ns (frame + descriptor protocol) | ~1-3 ns (indirect branch) |
 | Compose N layers | N × Python call overhead | N × 0 ns if inlined |
 | Lazy generator | Generator object (frame kept alive on heap) | Struct with explicit fields, stack |
 | Functor map | N object allocations for result | Zero if computed in-place |
@@ -120,7 +120,7 @@ checks, argument-tuple allocation, and frame creation--roughly 100--500 ns.
 
 ### The Speed Ratio in Practice
 
-For tight numeric loops, C at `-O2` is typically 50--200x faster than
+For tight numeric loops, C at `-O2` is typically 50-200x faster than
 equivalent Python. For allocation-heavy workloads the ratio can be larger,
 because Python's per-object overhead dominates over the actual work.
 
