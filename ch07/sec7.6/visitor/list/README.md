@@ -13,6 +13,23 @@ insert, etc.), making the code more extensible and adhering
 to the Open-Closed Principle (classes are open for extension
 but closed for modification).
 
+Besides illustrating the Visitor pattern through examples in
+several programming languages, extending its use to arbitrary
+algorithms can miss the intended purpose and may appear somewhat
+forced. How do you find the samples in this case? A bit stretched?
+Design patterns should not be applied for their own sake;
+they do not automatically improve software quality.
+Rather, they provide structured solutions to recurring design
+problems and should be used only when the situation genuinely
+matches the pattern’s intent. The Visitor pattern, in particular,
+is useful when operations on a stable object structure need to
+evolve independently from the objects themselves. In such cases
+it allows new behaviour to be introduced without modifying the
+underlying classes. However, if the object structure itself
+changes frequently, the pattern can introduce unnecessary
+complexity and maintenance overhead. Its value therefore lies
+not in demonstration alone, but in its careful and justified application.
+
 
 #### Elements
 
