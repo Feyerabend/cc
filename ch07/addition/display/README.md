@@ -1,7 +1,7 @@
 
 ![Set](./../../assets/image/set-pico.png)
 
-Photo: Pelle Kronstedt
+Photo: Pelle Kronstedt (cropped from Internetguiden, no. 9, 1995).
 
 ## Pico 2W VGTP Display Receiver
 
