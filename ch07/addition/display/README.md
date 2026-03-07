@@ -1,6 +1,8 @@
 
 ![Set](./../../assets/image/set-pico.png)
 
+Photo: Pelle Kronstedt
+
 ## Pico 2W VGTP Display Receiver
 
 This sample is intended to show a bit on how communication over UDP can work.
