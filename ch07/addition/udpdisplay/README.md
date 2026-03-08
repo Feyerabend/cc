@@ -9,7 +9,7 @@ This sample is intended to show a bit on how communication over UDP can work.
 
 A wireless vector graphics display terminal running on the Raspberry Pi Pico 2W.
 A Python script on any host machine sends drawing commands over UDP; the Pico
-renders them live on a 320×240 colour display at ~30 fps.
+renders them live on a 320x240 colour display at ~30 fps.
 
 The custom protocol--*VGTP* (Vector Graphics Transport Protocol)--is a compact
 binary UDP protocol designed for constrained embedded receivers. It supports
@@ -26,11 +26,16 @@ of any size.
 | Board | Raspberry Pi Pico 2W |
 | MCU | RP2350, dual Cortex-M33 @ 150 MHz, 512 KB SRAM |
 | Display | [Pimoroni Display Pack 2.0](https://shop.pimoroni.com/products/pico-display-pack-2-0) |
-| Display spec | 320×240 pixels, ST7789V2 controller, SPI0 |
+| Display spec | 320x240 pixels, ST7789V2 controller, SPI0 |
 | Network | CYW43439 WiFi (built-in to Pico 2W) |
 | Connection | Same WiFi network as the host running the Python script |
 
-The Display Pack 2.0 plugs directly onto the Pico 2W header pins — no wiring
+NOTE: The Infineon CYW43439 Wi-Fi/Bluetooth chip used in the Raspberry Pi
+Pico 2W is designed for low-bandwidth IoT communication rather than high-throughput
+networking (e.g., Wi-Fi 6 router). It should/can not be used for bandwidth-heavy
+applications such as streaming, large file transfers, or high-rate data feeds.
+
+The Display Pack 2.0 plugs directly onto the Pico 2W header pins--no wiring
 required. It also provides four buttons (A/B/X/Y) that the firmware reads.
 
 *WiFi credentials* are compiled into the firmware. Edit `wifi_config.h`
@@ -50,7 +55,7 @@ before building:
   ---------------------                     --------------------------------
   vgtp_send.py                              net_task  (Core 0, prio 3)
      │                                         │
-     │  UDP port 1234 — DATA channel           │
+     │  UDP port 1234 - DATA channel           │
      │ --------------------------------------> │ udp_recv_cb()
      │                                         │   copies raw bytes into
      │                                         │   pkt_ring[64]
@@ -62,10 +67,10 @@ before building:
      │                                         │   build_scene (or canvas_buf)
      │                                         │   on FRAME_END -> scene_swap()
      │                                         │
-     │  UDP port 1235 — CONTROL channel        │
+     │  UDP port 1235 - CONTROL channel        │
      │ <-------------------------------------- │ sends ACK after each frame
      │                                         │ sends HEARTBEAT every 500 ms
-     │                                      Core 1 — display loop
+     │                                      Core 1 - display loop
      │                                         │   reads render_scene
      │                                         │   copies canvas_buf background
      │                                         │   blits framebuffer to display
@@ -123,15 +128,15 @@ All multi-byte fields are *little-endian* (native to both RP2350 and e.g., x86).
 Each DRAW packet contains exactly one primitive, identified by the first payload byte:
 
 ```
-RECT:    prim=0x01  x(i16) y(i16) w(u16) h(u16) color(u16)           — 11 bytes
-TEXT:    prim=0x02  x(i16) y(i16) fg(u16) bg(u16) len(u8) text[len]  — 10+len bytes
-LINE:    prim=0x03  x0(i16) y0(i16) x1(i16) y1(i16) color(u16)       — 11 bytes
-BITMAP:  prim=0x04  x(i16) y(i16) w(u8) h(u8) dw(u16) dh(u16) px[]   — 11+w*h*2 bytes
-CIRCLE:  prim=0x05  cx(i16) cy(i16) r(u16) color(u16)                — 9 bytes
+RECT:    prim=0x01  x(i16) y(i16) w(u16) h(u16) color(u16)           - 11 bytes
+TEXT:    prim=0x02  x(i16) y(i16) fg(u16) bg(u16) len(u8) text[len]  - 10+len bytes
+LINE:    prim=0x03  x0(i16) y0(i16) x1(i16) y1(i16) color(u16)       - 11 bytes
+BITMAP:  prim=0x04  x(i16) y(i16) w(u8) h(u8) dw(u16) dh(u16) px[]   - 11+w*h*2 bytes
+CIRCLE:  prim=0x05  cx(i16) cy(i16) r(u16) color(u16)                - 9 bytes
 ```
 
 Colours are RGB565, 16-bit. Maximum 64 primitives per frame. Maximum bitmap
-tile size is 115 pixels (packet size budget: 256 bytes − 14 header − 11 prim header = 231 bytes ÷ 2).
+tile size is 115 pixels (packet size budget: 256 bytes - 14 header - 11 prim header = 231 bytes / 2).
 
 
 #### Frame Assembly
@@ -148,7 +153,7 @@ CLEAR  (frame_id=5)         -  build_scene: clear_color set
 DRAW RECT (frame_id=5)      -  build_scene: prim[0] = rect
 DRAW TEXT (frame_id=5)      -  build_scene: prim[1] = text
 DRAW LINE (frame_id=5)      -  build_scene: prim[2] = line
-FRAME_END (frame_id=5)      -  scene_swap() — Core 1 now renders frame 5
+FRAME_END (frame_id=5)      -  scene_swap() - Core 1 now renders frame 5
                                ACK sent back on port 1235
 ```
 
@@ -156,16 +161,16 @@ FRAME_END (frame_id=5)      -  scene_swap() — Core 1 now renders frame 5
 #### Canvas Mode (large images)
 
 The scene buffer holds at most 64 primitives per frame. For larger images, the
-*canvas buffer* is a persistent 320×240 framebuffer in RAM (~150 KB) that
-tiles write into directly — no frame boundary, no limit. Core 1 copies the
+*canvas buffer* is a persistent 320x240 framebuffer in RAM (~150 KB) that
+tiles write into directly - no frame boundary, no limit. Core 1 copies the
 canvas as the background every frame, with scene primitives rendered on top.
 
 ```
 host sends (any order, no FRAME_END needed):
 -----------------------------------------------------------------------------------
 CANVAS_CLEAR (black)         ->  canvas_buf filled with black
-CANVAS tile (0,0, 10×11)     ->  canvas_buf[0,0..10,11] updated -> appears on screen
-CANVAS tile (10,0, 10×11)    ->  canvas_buf[10,0..20,11] updated -> appears on screen
+CANVAS tile (0,0, 10x11)     ->  canvas_buf[0,0..10,11] updated -> appears on screen
+CANVAS tile (10,0, 10x11)    ->  canvas_buf[10,0..20,11] updated -> appears on screen
 ..                               tiles appear progressively as they arrive
 CANVAS tile (310,230, ..)    ->  last tile, image complete
 ```
@@ -231,13 +236,13 @@ python3 vgtp_send.py 10.0.1.44 image icon.vti
 #### Send a large image (canvas mode, any size)
 
 ```bash
-# Full 320×240 photo — builds progressively (~1.4 s at default 2 ms/tile)
+# Full 320x240 photo - builds progressively (~1.4 s at default 2 ms/tile)
 python3 vgtp_image.py photo.png 10.0.1.44 --canvas
 
 # With a black background cleared first
 python3 vgtp_image.py photo.png 10.0.1.44 --canvas --clear 0x000000
 
-# Scaled down to 160×120, centred
+# Scaled down to 160x120, centred
 python3 vgtp_image.py photo.png 10.0.1.44 --canvas --size 160 120 --center
 
 # Full-screen stretch in ~1 packet (bilinear scaled on Pico)
@@ -260,7 +265,7 @@ python3 vgtp_send.py <pico-ip> image <file.vti>
 | `connect(ip)` | Send HELLO handshake, start heartbeat and ACK listener |
 | `send_frame(pkts)` | Send a list of packets followed by FRAME_END |
 | `pkt_rect(fid, x, y, w, h, color)` | Filled rectangle |
-| `pkt_text(fid, x, y, text, fg, bg)` | Text string (5×8 font) |
+| `pkt_text(fid, x, y, text, fg, bg)` | Text string (5x8 font) |
 | `pkt_line(fid, x0, y0, x1, y1, color)` | Anti-aliased line |
 | `pkt_circle(fid, cx, cy, r, color)` | Anti-aliased circle outline |
 | `pkt_bitmap(fid, x, y, w, h, pixels, dw, dh)` | Scaled bitmap tile (max 115 px) |
@@ -276,14 +281,14 @@ python3 vgtp_image.py <image> [<pico-ip>] [options]
 | Option | Description |
 |--------|-------------|
 | `--canvas` | Use canvas mode (persistent buffer, any image size) |
-| `--size W H` | Scale source image to W×H pixels before tiling |
+| `--size W H` | Scale source image to WxH pixels before tiling |
 | `--display W H` | Destination area on display (tiles scale to fill it) |
 | `--tile TW TH` | Override tile dimensions (BITMAP max 115 px, canvas max 116 px) |
 | `--pos X Y` | Top-left corner on display (default: 0 0) |
 | `--center` | Centre the image on the display |
 | `--clear COLOR` | Send clear before image (hex RGB888, e.g. `0x000000`) |
 | `--delay MS` | Inter-packet delay in ms (default: 1 BITMAP, 2 canvas) |
-| `--preview` | Save and show a simulated 320×240 preview image |
+| `--preview` | Save and show a simulated 320x240 preview image |
 | `--save FILE` | Save packets to `.vti` file for later sending |
 
 
@@ -296,13 +301,13 @@ VGTP header   =  14 bytes
 -------------------------
 Payload room  = 242 bytes
 
-BITMAP prim header  = 11 bytes  -> 231 ÷ 2 = 115 pixels max
-CANVAS tile header  = 10 bytes  -> 232 ÷ 2 = 116 pixels max
+BITMAP prim header  = 11 bytes  -> 231 / 2 = 115 pixels max
+CANVAS tile header  = 10 bytes  -> 232 / 2 = 116 pixels max
 TEXT payload        = 10 bytes  -> 232 chars max (capped at 47 by scene buffer)
 
-PKT ring buffer: 64 slots × 258 bytes = ~16 KB  (safe for 64-tile image bursts)
+PKT ring buffer: 64 slots x 258 bytes = ~16 KB  (safe for 64-tile image bursts)
 Scene buffer:    64 primitives max per frame
-Canvas buffer:   320 × 240 × 2 = 150 KB persistent BSS
+Canvas buffer:   320 x 240 x 2 = 150 KB persistent BSS
 ```
 
 
@@ -336,7 +341,7 @@ associates, then shows the IP address and a packet counter in the status bar.
 ### Architecture
 
 ```
-Core 0 — RTOS                         Core 1 — display loop
+Core 0 - RTOS                         Core 1 - display loop
 ------------------------------        ------------------------------
 net_task (prio 3, 10 ms poll)         display_pack_init()
   CYW43/lwIP event loop               while (1):
@@ -351,7 +356,7 @@ protocol_task (prio 2)                  else:
                                         sleep_ms(33)   // ~30 fps
 idle_task (prio 0)
   // wait for interrupt ..
-  WFI — halts CPU until SysTick
+  WFI - halts CPU until SysTick
 ```
 
 The two scene buffers (`build_scene`, `render_scene`) are swapped with a DMB
@@ -366,18 +371,18 @@ SRAM for simple pixel writes).
 
 ```
 .
-├-- main.c          — Core entry, RTOS tasks, display render loop
-├-- protocol.c/h    — VGTP packet parser, frame assembler, canvas handler
-├-- net.c/h         — CYW43 WiFi init, lwIP UDP, control channel
-├-- scene.c/h       — Double-buffered scene + persistent canvas_buf
-├-- display.c/h     — ST7789V2 SPI driver + framebuffer rendering API
-├-- vgtp.h          — Wire protocol structs and constants
-├-- vgtp.c          — CRC16-CCITT implementation
-├-- rtos.c/h        — Custom preemptive RTOS (SysTick + PendSV)
-├-- font.h          — 5×8 ASCII bitmap font
-├-- wifi_config.h   — SSID / password (EDIT before building!)
-├-- vgtp_send.py    — Python demo client and drawing API
-├-- vgtp_image.py   — PNG -> VGTP converter / sender
+├-- main.c          - Core entry, RTOS tasks, display render loop
+├-- protocol.c/h    - VGTP packet parser, frame assembler, canvas handler
+├-- net.c/h         - CYW43 WiFi init, lwIP UDP, control channel
+├-- scene.c/h       - Double-buffered scene + persistent canvas_buf
+├-- display.c/h     - ST7789V2 SPI driver + framebuffer rendering API
+├-- vgtp.h          - Wire protocol structs and constants
+├-- vgtp.c          - CRC16-CCITT implementation
+├-- rtos.c/h        - Custom preemptive RTOS (SysTick + PendSV)
+├-- font.h          - 5x8 ASCII bitmap font
+├-- wifi_config.h   - SSID / password (EDIT before building!)
+├-- vgtp_send.py    - Python demo client and drawing API
+├-- vgtp_image.py   - PNG -> VGTP converter / sender
 └-- CMakeLists.txt
 ```
 
@@ -390,10 +395,10 @@ value. The DMA transfer sends bytes low-byte-first, but the ST7789V2 expects
 high-byte-first, so every colour in the framebuffer is byte-swapped:
 
 ```python
-# Python — send this colour value on the wire:
+# Python - send this colour value on the wire:
 RED = 0xF800   # RGB565 red
 
-# Pico — stored in framebuffer as:
+# Pico - stored in framebuffer as:
 RED_FB = 0x00F8   # byte-swapped for 8-bit DMA
 ```
 
