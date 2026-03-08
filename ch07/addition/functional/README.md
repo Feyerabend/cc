@@ -1,4 +1,14 @@
 
+> [!NOTE]
+> One of the key points in this example is to recognise that not every design
+> pattern or abstraction is appropriate for every situation. For instance,
+> forcing functional constructs like functors into C programs “willy-nilly”
+> can make the code harder to understand and maintain. Instead, it’s valuable
+> to learn the natural limits of a language and the situations where a pattern
+> genuinely adds clarity or safety. Understanding these limits helps you write
+> code that is both effective and idiomatic, rather than over-engineered.
+
+
 ## Functional Design Patterns
 
 > *Recurring solutions to recurring problems--applied to state, effects,
@@ -190,14 +200,5 @@ reads what* and *who writes what*. When the discipline is applied
 consistently, the answers are: any function reads only its arguments, and
 nothing writes after construction. Under those conditions, concurrent
 execution is safe by construction.
-
-> [!NOTE]
-> One of the key points in this example is to recognise that not every design
-> pattern or abstraction is appropriate for every situation. For instance,
-> forcing functional constructs like functors into C programs “willy-nilly”
-> can make the code harder to understand and maintain. Instead, it’s valuable
-> to learn the natural limits of a language and the situations where a pattern
-> genuinely adds clarity or safety. Understanding these limits helps you write
-> code that is both effective and idiomatic, rather than over-engineered.
 
 ![The Art of Functional Programming](./../../assets/image/art.png)
