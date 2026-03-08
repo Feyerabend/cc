@@ -191,15 +191,6 @@ The only headers used are `stdio.h`, `stdlib.h`, `string.h`, `stdarg.h`, and `as
 ### Theoretical Roots
 
 The design draws on several lines of work:
-- *Lambek (1958)*            - the original observation that syntactic calculi are categories
-- *Lawvere (1963)*           - functorial semantics, categories as algebraic theories
-- *Girard (1987)*            - linear logic, the `!`-modality, resource sensitivity
-- *Mac Lane (1971)*          - coherence for symmetric monoidal categories
-- *von Thun (1994–2003)*     - Joy language, quotations as first-class morphisms
-- *Joyal & Street (1991)*    - string diagrams as a sound and complete graphical calculus for monoidal categories
-- *Abramsky & Coecke (2004)* - categorical quantum mechanics, dagger compact categories
-- *Atkey et al. (2009–2013)* - parametricity and effect systems in categorical terms
-
 * Lambek, J. (1958). The mathematics of sentence structure. The American Mathematical Monthly, 65(3), 154–170. https://doi.org/10.2307/2310058
 * Lawvere, F. W. (1963). Functorial Semantics of Algebraic Theories (Doctoral dissertation, Columbia University). (Republished in Reprints in Theory and Applications of Categories, No. 5 (2004) pp. 1–121).
 * Girard, J.-Y. (1987). Linear logic. Theoretical Computer Science, 50(1), 1–101. https://doi.org/10.1016/0304-3975(87)90045-4
