@@ -180,7 +180,7 @@ CANVAS tile (310,230, ..)    ->  last tile, image complete
 ### Python Requirements
 
 ```bash
-pip install Pillow    ## only needed for vgtp_image.py
+pip install Pillow    # only needed for vgtp_image.py
 ```
 
 Python 3.8+ is sufficient. No other dependencies.
@@ -190,7 +190,7 @@ Python 3.8+ is sufficient. No other dependencies.
 ### Quick Start
 
 In the following the IP 10.0.1.44 serves as sample IP.
-Replace with your own address.
+Replace with your own address fro the Pico 2W.
 
 #### Animated demo
 
