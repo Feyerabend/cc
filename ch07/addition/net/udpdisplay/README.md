@@ -1,5 +1,5 @@
 
-![Set](./../../assets/image/set-pico.png)
+![Set](./../../../assets/image/set-pico.png)
 
 Photo: Pelle Kronstedt (cropped from Internetguiden, no. 9, 1995).
 
@@ -420,7 +420,7 @@ WHITE  = rgb(255, 255, 255)  # 0xFFFF
 
 You might reflect on how to get the colours right ..
 
-![Colours](./../../assets/image/colours-pico.png)
+![Colours](./../../../assets/image/colours-pico.png)
 
 > [!NOTE] 
 > As the effort to write and update code decreases--thanks to modern tools,
