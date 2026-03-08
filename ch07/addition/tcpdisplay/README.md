@@ -6,7 +6,6 @@ animated graphics from a Python server on a Mac/PC/Linux over WiFi and renders
 them on a 320 x 240 ST7789V2 display in real time.
 
 
-
 ### Overview
 
 ```
@@ -18,7 +17,6 @@ server.py                              Core 0 - preemptive RTOS
   port 8081                            Core 1 - display loop
                                          render_gfx() -> DMA blit -> ST7789V2
 ```
-
 
 
 ### Hardware
@@ -37,8 +35,8 @@ server.py                              Core 0 - preemptive RTOS
 #### Core 0 - RTOS
 
 A custom preemptive RTOS runs four tasks on Core 0, scheduled with a 1 ms
-SysTick interrupt and PendSV context switch (Cortex-M33 hardware-stacked frames,
-callee-saved R4-R11 saved manually).
+SysTick interrupt and PendSV context switch (Cortex-M33 hardware-stacked
+frames, callee-saved R4-R11 saved manually).
 
 | Task | Priority | Role |
 |------|----------|------|
@@ -53,7 +51,6 @@ get at least 1 ms per cycle, while still polling the network ~1000 times/second.
 #### Core 1 - display
 
 Core 1 runs independently of the RTOS. It loops continuously:
-
 1. If a new GFX frame is available -> call `render_gfx()` -> DMA blit.
 2. If no GFX data yet -> render the RTOS scheduler visualiser (task cards + scrolling timeline).
 
@@ -66,7 +63,8 @@ naturally rate-limits it to ~50 fps.
 
 Networking is the core of the project. The Pico connects to a regular home WiFi
 network type, and maintains a *persistent TCP stream* to a Mac/PC/Linux as server.
-The server pushes complete frames continuously; the Pico consumes the latest frame available.
+The server pushes complete frames continuously; the Pico consumes the latest
+frame available.
 
 #### Stack
 
@@ -212,7 +210,6 @@ with HSV colour cycling, a scrolling sine-wave, and a status line - roughly
 ```
 
 
-
 ### Build
 
 ```bash
@@ -236,7 +233,6 @@ Start the server:
 ```bash
 python3 server/server.py
 ```
-
 
 
 ### Lessons learned
@@ -266,4 +262,67 @@ python3 server/server.py
 
 
 ![TCP Stream Server](./../../assets/image/tcpdisplay.png)
+
+
+> [!NOTE]
+> In a complex system parts have to be carefully chosen when architecturing.
+> A UDP approach such as in the sample of the [UDP Display](./../udpdisplay/)
+> lets the server broadcast frames without caring whether any client is
+> listening--fire-and-forget. TCP, by contrast, is connection-oriented:
+> the Pico and the server must first complete a three-way handshake before
+> any data flows, and the transport layer guarantees ordered, reliable delivery.
+
+
+### TCP stream: client and server
+
+The architecture here is a classic *push-streaming* pattern over a single persistent TCP connection.
+
+#### The server side
+
+`server.py` opens a TCP listening socket on port 8081 and calls `accept()` in a loop.
+Each time a new client connects--typically the Pico rebooting and reconnecting--Python
+spawns a dedicated thread for that client. The thread owns the connection for its
+lifetime and does one thing: generate a frame, append the `\nFRAME\n` delimiter,
+and call `conn.sendall()`, then sleep just long enough to pace output at 30 fps.
+
+Because `sendall()` blocks until the OS has handed all bytes to the TCP stack, the
+server never gets ahead of a slow client--TCP's flow control automatically throttles
+the sender if the receiver's window fills up. The server does not wait for any
+acknowledgement at the application layer; it simply keeps pushing. It is the *stream*
+half of a producer–consumer pair.
+
+The HTTP listener on port 8080 is a fallback for a polling client that cannot maintain
+a persistent connection. A GET to `/next` returns a single frame and closes; the caller
+must reconnect to get the next one. That polling model incurs a full TCP handshake per
+frame (~several milliseconds over WiFi) and is far less efficient than the streaming port,
+which amortises the handshake cost over thousands of frames.
+
+#### The client side
+
+On the Pico, `net_task` is the consumer. After `net_stream_connect()` establishes the
+connection, the task calls `net_stream_poll()` on every scheduler tick. This function
+drives `cyw43_arch_poll()`, which lets the lwIP stack process incoming ACKs, retransmissions,
+and--most importantly--new data segments arriving from the server.
+
+When a segment arrives, lwIP fires `recv_cb` synchronously inside `cyw43_arch_poll()`.
+The callback appends the raw bytes to the 16 KB ring buffer and immediately calls `tcp_recved()`
+to advertise more receive-window space back to the server, keeping the flow running. The
+application never touches lwIP directly after that; it just scans the ring buffer for
+the newest complete frame.
+
+This separation of concerns--lwIP owns byte delivery, the ring buffer absorbs jitter,
+and the double-buffer decouples Core 0 reception from Core 1 rendering--is what makes
+the whole pipeline robust across the variable latency of a home WiFi network.
+
+#### Why TCP rather than UDP here
+
+UDP would reduce per-packet overhead and eliminate retransmissions, but it shifts all
+reliability concerns to the application. A dropped UDP datagram means a silent partial
+frame; the display would need its own sequence numbers, duplicate detection, and a strategy
+for missing frames. TCP handles all of that transparently. Since the Pico is connected
+one-to-one with a single server on a low-contention LAN, TCP's retransmission overhead
+is negligible in practice, and the guaranteed ordering means the frame delimiter search
+in the ring buffer always sees a clean, contiguous byte stream--no reassembly required.
+
+It still has its issues, but illustrates how simple streaming can be done through TCP.
 
