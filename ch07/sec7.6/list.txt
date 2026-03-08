@@ -6,3 +6,13 @@
 - Callback-based Observer
 
 
+
+# POINT: there are several excellent
+         books on design patterns (esp.
+         Gang-of-four) but here we
+         explore some limits, some concerns
+         on why you should NOT use them
+         (or enforce them through LLMs)
+         without some dicipline ..
+
+         And so on ..
