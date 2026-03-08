@@ -197,3 +197,10 @@ Perfect for:
 - Research into new scheduling/allocation algorithms
 
 Your choice!
+
+
+![Operating System Concepts](./../../assets/image/os2.png)
+![Applied OS](./../../assets/image/applied.png)
+![UNIX](./../../assets/image/unix.png)
+![Lions](./../../assets/image/lions.png)
+
