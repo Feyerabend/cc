@@ -422,3 +422,16 @@ You might reflect on how to get the colours right ..
 
 ![Colours](./../../assets/image/colours-pico.png)
 
+> [!NOTE] 
+> As the effort to write and update code decreases--thanks to modern tools,
+> automation, frameworks, and LLMs--the developer's focus increasingly shifts
+> from individual *code changes* to *system architecture*. In this context,
+> the real challenge is no longer churning out functions or modules, but
+> designing, evolving, and maintaining the structure of the system.
+> Poor architectural decisions have far-reaching consequences, so while code
+> becomes "cheap," the ongoing task becomes continuously shaping and adapting
+> the *architecture* to meet evolving requirements.
+> You could say that, in such projects, the work becomes more about testing,
+> evolving, and refining the architecture than about writing individual lines of code.
+> Please go ahead with a project that uses another architecture to solve the
+> same problem!
