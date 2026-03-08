@@ -191,9 +191,6 @@ consistently, the answers are: any function reads only its arguments, and
 nothing writes after construction. Under those conditions, concurrent
 execution is safe by construction.
 
-
-![The Art of Functional Progrmming](./../../assets/image/art.png)
-
 > [!NOTE]
 > One of the key points in this example is to recognise that not every design
 > pattern or abstraction is appropriate for every situation. For instance,
@@ -202,3 +199,5 @@ execution is safe by construction.
 > to learn the natural limits of a language and the situations where a pattern
 > genuinely adds clarity or safety. Understanding these limits helps you write
 > code that is both effective and idiomatic, rather than over-engineered.
+
+![The Art of Functional Programming](./../../assets/image/art.png)
