@@ -1,5 +1,5 @@
 
-## Pico 2W RTOS
+## Pico 2W RTOS w/API
 
 This is a resued project to show what an API could look like. But first some basics.
 This is a preemptive RTOS built from scratch for the Raspberry Pi Pico 2W (RP2350 / Cortex-M33),
