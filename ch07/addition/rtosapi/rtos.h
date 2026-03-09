@@ -51,14 +51,14 @@ typedef void (*task_function_t)(void *param);
  */
 typedef struct {
     uint32_t        *stack_ptr;              /* [offset 0] active stack pointer - MUST be first */
-    uint32_t         stack[TASK_STACK_SIZE]; /* [offset 4] per-task stack storage              */
+    uint32_t         stack[TASK_STACK_SIZE]; /* [offset 4] per-task stack storage               */
     task_state_t     state;
     task_priority_t  priority;
     uint8_t          _pad[2];               /* explicit padding for 4-byte alignment            */
     uint32_t         wake_time;             /* tick_count value at which to unblock             */
     const char      *name;                  /* human-readable label (display / debugging)       */
     uint32_t  run_ticks;    /* ticks (ms) spent in RUNNING state - written by isr_systick */
-    uint32_t  switch_count; /* times selected by select_next_task                         */
+    uint32_t  switch_count; /* times selected by select_next_task */
 } task_control_block_t;
 
 /* Mutex */
@@ -122,11 +122,11 @@ typedef struct {
     const char      *name;
     task_state_t     state;
     task_priority_t  priority;
-    uint32_t         run_ticks;         /* ms spent running since boot      */
-    uint32_t         switch_count;      /* scheduler selections since boot  */
-    uint8_t          cpu_percent;       /* lifetime CPU%                    */
+    uint32_t         run_ticks;         /* ms spent running since boot         */
+    uint32_t         switch_count;      /* scheduler selections since boot     */
+    uint8_t          cpu_percent;       /* lifetime CPU%                       */
     uint16_t         stack_peak_words;  /* max stack depth seen (32-bit words) */
-    uint16_t         stack_size_words;  /* total stack allocation           */
+    uint16_t         stack_size_words;  /* total stack allocation              */
 } rtos_task_stats_t;
 
 typedef struct {
