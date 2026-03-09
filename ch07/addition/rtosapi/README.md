@@ -86,13 +86,17 @@ stateDiagram-v2
 
     [*] --> READY : task_create()
 
-    READY --> RUNNING : PendSV selects task\n(highest priority wins;\nround-robin on tie)
+    READY --> RUNNING : PendSV selects task
+    note right of RUNNING
+        highest priority wins
+        round-robin on tie
+    end note
 
-    RUNNING --> READY : task_yield()\n- or preempted by\nhigher-priority task
+    RUNNING --> READY : task_yield() or preempted
 
-    RUNNING --> BLOCKED : task_delay(ms)\nmutex / semaphore contention
+    RUNNING --> BLOCKED : task_delay(ms) or contention
 
-    BLOCKED --> READY : SysTick: tick_count >= wake_time\nor semaphore signalled
+    BLOCKED --> READY : tick_count >= wake_time or semaphore signalled
 
     RUNNING --> SUSPENDED : future API
     SUSPENDED --> READY : future API
