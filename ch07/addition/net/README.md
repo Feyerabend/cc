@@ -163,5 +163,8 @@ CYW43439 over a home LAN, the difference in raw throughput is negligible. The di
 control--and in how much of the networking stack you end up writing yourself.
 
 
+### Reference
+
+- Arnett, M. F. (1995). *Inside TCP/IP* (2nd ed.). New Riders.
 
 ![TCP/IP](./../../assets/image/tcpip.png)
