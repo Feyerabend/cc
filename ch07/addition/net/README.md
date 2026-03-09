@@ -16,14 +16,6 @@
 ## Two Architectures
 
 
-> [!NOTE]
-> In a complex system parts have to be carefully chosen when architecturing.
-> A UDP approach such as in the sample of the [UDP Display](./../udpdisplay/)
-> lets the server broadcast frames without caring whether any client is
-> listening--fire-and-forget. TCP, by contrast, is connection-oriented:
-> the Pico and the server must first complete a three-way handshake before
-> any data flows, and the transport layer guarantees ordered, reliable delivery.
-
 
 ### TCP stream: client and server
 
