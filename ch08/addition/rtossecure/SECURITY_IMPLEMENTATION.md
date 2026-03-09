@@ -150,3 +150,6 @@ likely to occur in practice with no architectural disruption and
 | `rtos_shell.c` | `fault_test` command registered at `shell_init()` |
 
 
+![Before](./../../assets/image/test.png)
+
+![After](./../../assets/image/fault.png)
