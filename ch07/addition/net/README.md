@@ -14,7 +14,7 @@
 
 ## Two Architectures
 
-
+This code relies on understanding [RTOS](./../../sec7.4/concurrency/rtos/).
 
 ### TCP stream: client and server
 
