@@ -1,5 +1,5 @@
 
->* As the effort to write and update code decreases--thanks to modern tools,
+> *As the effort to write and update code decreases--thanks to modern tools,
 > automation, frameworks, and LLMs--the developer's focus increasingly shifts
 > from individual *code changes* to *system architecture*. In this context,
 > the real challenge is no longer churning out functions or modules, but
