@@ -71,7 +71,6 @@ graph TB
     Core0 -- "volatile reads\n(tick_count, rtos_timeline,\ng_count, g_led_on)" --> Core1
 ```
 
-![RTOS Architecture](./../../assets/image/rtos_diagram.svg)
 
 Core 0 runs the entire RTOS. Core 1 owns the SPI bus and DMA channel. It
 *never writes* to the task control blocks. The shared globals are declared
