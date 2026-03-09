@@ -162,3 +162,6 @@ policy that fits your problem, while TCP imposes a one-size-fits-all policy. On 
 CYW43439 over a home LAN, the difference in raw throughput is negligible. The difference is in
 control--and in how much of the networking stack you end up writing yourself.
 
+
+
+![TCP/IP](./../../assets/image/tcpip.png)
