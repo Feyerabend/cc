@@ -8,8 +8,8 @@ The basis for the implemention can be found at [RTOS](./../../../ch07/addition/r
 
 __Security Analysis: Pico 2W RTOS__
 
-Target: RP2350 / Cortex-M33, Raspberry Pi Pico 2W
-Scope: bare-metal preemptive RTOS with USB CDC shell
+- Target: RP2350 / Cortex-M33, Raspberry Pi Pico 2W
+- Scope: bare-metal preemptive RTOS with USB CDC shell
 
 
 ### Premise
