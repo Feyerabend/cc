@@ -186,8 +186,8 @@ Switching tasks requires saving the complete CPU register state of the outgoing 
 restoring the state of the incoming task, so each continues exactly where it left off on
 its own private stack.
 
-On Cortex-M33 the `PendSV` exception is used for this. The CPU auto-saves `{R0–R3, R12, LR, PC, xPSR}`
-on exception entry; PendSV manually handles `{R4–R11}`.
+On Cortex-M33 the `PendSV` exception is used for this. The CPU auto-saves `{R0-R3, R12, LR, PC, xPSR}`
+on exception entry; PendSV manually handles `{R4-R11}`.
 
 #### SysTick - the heartbeat
 
