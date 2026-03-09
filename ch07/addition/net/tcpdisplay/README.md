@@ -261,5 +261,5 @@ python3 server/server.py
   31.25 MHz to 62.5 MHz gave ~50 fps headroom, matching the 30 fps server rate.
 
 
-![TCP Stream Server](./../../../assets/image/tcpdisplay.png)
+![TCP Stream Server](./../../../assets/image/tcpdisplay2.png)
 
