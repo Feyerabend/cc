@@ -14,7 +14,7 @@ than inferred from blinking LEDs or serial logs). The codebase is also designed 
 
 ### Display
 
-![Pico display](./../../../assets/image/pico.jpeg)
+![Pico display](./../../assets/image/pico.jpeg)
 
 *Task cards (top half)* - one 96x110 card per task:
 - Name bar in the task's accent colour
