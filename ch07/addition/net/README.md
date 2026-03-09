@@ -73,7 +73,7 @@ It still has its issues, but illustrates how simple streaming can be done throug
 
 ### UDP display: sender and receiver
 
-The UDP Display is a deliberate architectural contrast to the [TCP stream](./../tcpdisplay/).
+The UDP Display is a deliberate architectural contrast to the TCP stream.
 Where the TCP version maintains one persistent connection and lets the transport layer handle
 reliability, the UDP version discards that safety net entirely and builds its own application-level
 protocol (VGTP) here on top of raw datagrams. This makes the networking code more complex,
