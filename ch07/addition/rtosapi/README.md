@@ -2,8 +2,9 @@
 ## Pico 2W RTOS w/API
 
 This is a reused project to show what an API could look like. But first some basics.
-This is a preemptive RTOS built from scratch for the Raspberry Pi Pico 2W (RP2350 / Cortex-M33),
-with a live visual display that makes the scheduler's decisions visible in real time.
+This is a preemptive [RTOS](./../../sec7.4/concurrency/rtos/) built from scratch for
+the Raspberry Pi Pico 2W (RP2350 / Cortex-M33), with a live visual display that makes
+the scheduler' decisions visible in real time.
 
 The primary goal is *educational*: every core concept: context switching, priority preemption,
 task blocking, round-robin tie-breaking. These can be watched happening on screen (rather
