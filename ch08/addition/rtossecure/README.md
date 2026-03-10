@@ -301,7 +301,9 @@ Steps 6-7 require significant effort and introduce real operational risk.
 
 Steps 1 and 2 could be done in an afternoon. Steps 3-5 represent a solid
 hardening sprint. Steps 6-7 are a separate project with their own design
-phase.
+phase. The last one is of also the highest importance: introduce relevant
+security concerns __before__ design/architecture. If you build a large system,
+it might be too late.
 
 
 
