@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Effect system definitions */
 typedef enum {
     EFF_RETURN,
     EFF_STATE_GET,
@@ -18,6 +19,7 @@ typedef enum {
 struct Effect;
 struct Continuation;
 
+// Resume function type
 typedef struct Effect (*ResumeFn)(struct Continuation* k, void* value);
 
 // Continuation structure
