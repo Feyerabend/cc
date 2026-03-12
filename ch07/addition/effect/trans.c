@@ -1,5 +1,5 @@
 
-// ADVANCED: Software Transactional Memory
+// Software Transactional Memory
 
 typedef struct {
     char* key;
@@ -11,6 +11,8 @@ typedef struct {
     int count;
     int capacity;
 } TransactionLog;
+
+// 
 
 Effect eff_read(char* key, Continuation* k) {
     Effect e = {.tag = EFF_STATE_GET};
@@ -79,3 +81,5 @@ void* handle_stm(Effect eff, STMHandler* handler) {
     
     return current.data.return_val;
 }
+
+
