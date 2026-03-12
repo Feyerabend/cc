@@ -1,4 +1,5 @@
-
+#ifndef EFFECT_H
+#define EFFECT_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,3 +52,4 @@ extern Effect eff_put(int value, Continuation* k);
 extern Effect eff_error(char* msg);
 
 extern Effect eff_choose(int* choices, int count, Continuation* k);
+#endif // EFFECT_H
