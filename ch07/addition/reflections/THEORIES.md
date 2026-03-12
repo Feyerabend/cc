@@ -169,3 +169,4 @@ distance between that physical substrate and the logical structures a programmer
 bridged by theoretical insight. The bridge is type theory, and once you see it clearly, it is
 difficult to see programming as anything other than mathematics/certain logic that happens to run.
 
+
