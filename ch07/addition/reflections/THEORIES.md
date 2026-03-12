@@ -123,9 +123,10 @@ This is behavioral typing: types that describe not what a value is but how a com
 which provides the formal semantics for these protocols, with each channel viewed
 as a resource that is consumed by communication.
 
-Effect systems add yet another dimension. A purely functional program, one that performs
-no I/O, modifies no state, throws no exceptions, is in a certain sense the cleanest kind
-of logical object: a deterministic mapping from inputs to outputs, with no hidden dependencies
+[Effect systems](./../../../ch08/addition/effect/) add yet another dimension.
+A purely functional program, one that performs no I/O, modifies no state,
+throws no exceptions, is in a certain sense the cleanest kind of logical object:
+a deterministic mapping from inputs to outputs, with no hidden dependencies
 on the world. But real programs *do* have effects, and effect systems track these explicitly
 in the type. A function's type declares not just what it returns but what it *does* to the
 world in doing so. This turns effects from an implicit background assumption into a
@@ -146,9 +147,10 @@ relationship between programmer and program than one built on intuitionistic log
 logic. The type system is, in this sense, the logical system made concrete and computational.
 
 None of this is actually purely theoretical. The most consequential software verification projects
-of recent decades all rest on this foundation. There is the CompCert, the formally verified C compiler,
-the seL4, microkernel whose correctness is machine-checked, or the cryptographic protocols verified
-in F*. They treat programs as proofs, compilers as proof transformers, and type checkers as formal
+of recent decades all rest on this foundation. There is the [CompCert](https://compcert.org/),
+the formally verified C compiler, the [seL4](https://sel4.systems/), microkernel whose correctness
+is machine-checked, or the cryptographic protocols verified in [F*](https://fstar-lang.org/).
+They treat programs as proofs, compilers as proof transformers, and type checkers as formal
 verifiers. The result is software whose correctness is not merely believed but *demonstrated*,
 in the same sense that a mathematical theorem is demonstrated: by construction of an explicit,
 checkable argument that no counterexample can exist.
