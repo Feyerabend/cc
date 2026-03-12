@@ -77,9 +77,10 @@ And this framing opens up a vast landscape of possibility.
 
 #### Types, types, types ..
 
-Dependent types push this logic furthest. In a dependently typed language, types are
-permitted to *depend on values*. A vector can carry its length in its type: `Vector(n)`.
-A function that concatenates two vectors can declare in its type that the result has
+[Dependent types](./../../../ch08/sec8.13.2) push this logic furthest.
+In a dependently typed language, types are permitted to *depend on values*.
+A vector can carry its length in its type: `Vector(n)`. A function that
+concatenates two vectors can declare in its type that the result has
 length `n + m`. The type becomes a specification, and the program becomes a proof that
 the specification can be fulfilled. Crucially, it becomes *impossible* to call a
 function expecting a nonempty list on an empty one, because the type system literally
@@ -88,36 +89,39 @@ not merely convention. This is what is meant by *correct-by-construction* softwa
 This is not that software has been tested, but software whose correctness is guaranteed
 by the same mechanism that guarantees the correctness of a mathematical proof.
 
-Refinement types occupy a more pragmatic position in this space. Rather than allowing
-full value-dependent types, they attach logical predicates to existing types: an integer
-greater than zero, a string of exactly sixteen characters, a list whose elements are sorted.
-These predicates are discharged not by type inference alone but by external solvers.
-The compiler passes the obligation to an SMT solver, which checks whether the predicate
-can be violated. The result is a powerful middle ground: far more expressive than simple
-type systems, far more tractable than full dependent types, and capable of catching a
-remarkable range of errors before any code runs.
+[Refinement types](./../../../ch05/addition/refinement/) occupy a more pragmatic
+position in this space. Rather than allowing full value-dependent types, they attach
+logical predicates to existing types: an integer greater than zero, a string of
+exactly sixteen characters, a list whose elements are sorted. These predicates are
+discharged not by type inference alone but by external solvers. The compiler passes
+the obligation to an SMT solver, which checks whether the predicate can be violated.
+The result is a powerful middle ground: far more expressive than simple type systems,
+far more tractable than full dependent types, and capable of catching a remarkable
+range of errors before any code runs.
 
-Linear and affine types pursue a different dimension of logical control. They do not ask
-*what* a value is, but *how many times* it is used. Linear logic, developed by Jean-Yves Girard,
-treats logical propositions as *resources* that are consumed by proof. It corresponds
-directly to the intuition that some values. File handles, network connections, allocated memory
-must be used exactly once: opened and closed, sent and acknowledged, allocated and freed.
+Linear and [affine types](./../../../ch05/addition/affine/) pursue a different
+dimension of logical control. They do not ask *what* a value is, but *how many times*
+it is used. Linear logic, developed by Jean-Yves Girard, treats logical propositions
+as *resources* that are consumed by proof. It corresponds directly to the intuition
+that some values: file handles, network connections, allocated memory must be used
+exactly once: opened and closed, sent and acknowledged, allocated and freed.
 Affine types relax this to *at most once*: a value may be used or discarded, but not duplicated.
 Rust's ownership system is, at its core, an affine type system implemented with practical
 engineering constraints, and its famous memory safety guarantees (no use-after-free,
 no double-free, no data races) follow directly from this logical foundation. The compiler is
 not performing heuristic analysis. It is enforcing the rules of a formal logic.
 
-Session types extend this resource-aware thinking into the domain of communication.
-A session type describes a protocol: not just the shape of messages but their *order* and
-*direction*. A type `!Int.?Bool.end` specifies a channel that first sends an integer,
-then receives a boolean, then terminates. Two processes communicating over such a channel
-can be checked at compile time for protocol conformance: the type system ensures they will
-never deadlock by disagreeing about who speaks next, never violate the protocol by sending
-a string when an integer was expected. This is behavioral typing: types that describe not
-what a value is but how a computation *evolves over time*. The logical foundation here
-loops back to linear logic, which provides the formal semantics for these protocols,
-with each channel viewed as a resource that is consumed by communication.
+[Session types](./../sessions/) extend this resource-aware thinking into the domain
+of communication. A session type describes a protocol: not just the shape of messages
+but their *order* and *direction*. A type `!Int.?Bool.end` specifies a channel that
+first sends an integer, then receives a boolean, then terminates. Two processes communicating
+over such a channel can be checked at compile time for protocol conformance:
+the type system ensures they will never deadlock by disagreeing about who speaks next,
+never violate the protocol by sending a string when an integer was expected.
+This is behavioral typing: types that describe not what a value is but how a computation
+*evolves over time*. The logical foundation here loops back to linear logic,
+which provides the formal semantics for these protocols, with each channel viewed
+as a resource that is consumed by communication.
 
 Effect systems add yet another dimension. A purely functional program, one that performs
 no I/O, modifies no state, throws no exceptions, is in a certain sense the cleanest kind
