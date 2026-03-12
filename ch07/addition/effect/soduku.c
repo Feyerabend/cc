@@ -1,3 +1,4 @@
+/* Sudoku solver using effect handlers */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,7 +90,7 @@ void handle_amb(Effect eff) {
     while (sp > 0) {
         Effect cur = stack[--sp].effect;
 
-        if (cur.tag==EFF_RETURN) {
+        if (cur.tag == EFF_RETURN) {
             int* grid = cur.data.return_val;
 
             printf("Solution:\n");
@@ -105,10 +106,10 @@ void handle_amb(Effect eff) {
             continue;
         }
 
-        if (cur.tag==EFF_ERROR)
+        if (cur.tag == EFF_ERROR)
             continue;
 
-        if (cur.tag==EFF_NONDETERMINISM) {
+        if (cur.tag == EFF_NONDETERMINISM) {
             for (int i = cur.data.choice.count-1; i >= 0; i--) {
                 Continuation* nk = malloc(sizeof(Continuation));
                 memcpy(nk,cur.continuation,sizeof(Continuation));
@@ -117,11 +118,8 @@ void handle_amb(Effect eff) {
                 memcpy(nctx,cur.continuation->context,sizeof(SudokuContext));
 
                 nk->context = nctx;
-
                 int choice = cur.data.choice.choices[i];
-
                 Effect next = nk->resume(nk,&choice);
-
                 stack[sp++] = (Frame){next};
             }
         }

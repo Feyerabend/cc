@@ -1,11 +1,8 @@
-
 #include <stdlib.h>
 #include <string.h>
 #include <setjmp.h>
 #include <stdio.h>
-
 #include "effect.h"
-
 
 /* basic constructors for effects */
 
@@ -35,18 +32,8 @@ Effect eff_error(char* msg) {
 
 /* eff_choose: Create a nondeterministic choice effect with the given choices and continuation. */
 Effect eff_choose(int* choices, int count, Continuation* k) {
-    Effect e = {
-        .tag = EFF_NONDETERMINISM,
-        .data.choice.choices = choices,
-        .data.choice.count = count,
-        .continuation = k
-    };
+    Effect e = { .tag = EFF_NONDETERMINISM, .data.choice.choices = choices, .data.choice.count = count, .continuation = k };
     return e;
 }
 
-/*
- * Note: The async effect constructor is not implemented here, as it would require
- * additional infrastructure for handling asynchronous computations, which is beyond
- * the scope of this basic effect system implementation.
-*/
-
+/* * Note: The async effect constructor is not implemented here, as it would require * additional infrastructure for handling asynchronous computations, which is beyond * the scope of this basic effect system implementation. */

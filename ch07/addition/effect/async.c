@@ -5,7 +5,9 @@
 #include "effect.h"
 
 
-// ASYNC: Cooperative multitasking
+// Cooperative multitasking
+// This is a very basic cooperative multitasking
+// runtime that can run multiple tasks that yield on async effects.
 
 typedef struct Task {
     Effect computation;
@@ -20,6 +22,7 @@ typedef struct {
     int next_id;
 } TaskQueue;
 
+// Init a new task queue
 void enqueue_task(TaskQueue* q, Effect eff) {
     Task* t = malloc(sizeof(Task));
     t->computation = eff;
@@ -35,6 +38,7 @@ void enqueue_task(TaskQueue* q, Effect eff) {
     }
 }
 
+// Dequeue a task from the queue
 Task* dequeue_task(TaskQueue* q) {
     if (!q->head) return NULL;
     Task* t = q->head;
@@ -48,7 +52,7 @@ void run_async(TaskQueue* queue) {
     
     while (queue->head) {
         Task* task = dequeue_task(queue);
-        printf("[Task %d] Running...\n", task->task_id);
+        printf("[Task %d] Running..\n", task->task_id);
         
         Effect current = task->computation;
         
