@@ -124,18 +124,17 @@ This is behavioral typing: types that describe not what a value is but how a com
 which provides the formal semantics for these protocols, with each channel viewed
 as a resource that is consumed by communication.
 
-[Effect systems](./../../../ch08/addition/effect/) add yet another dimension.
-A purely functional program, one that performs no I/O, modifies no state,
-throws no exceptions, is in a certain sense the cleanest kind of logical object:
-a deterministic mapping from inputs to outputs, with no hidden dependencies
-on the world. But real programs *do* have effects, and effect systems track these explicitly
-in the type. A function's type declares not just what it returns but what it *does* to the
-world in doing so. This turns effects from an implicit background assumption into a
-first-class part of the type-level specification. Algebraic effect systems go further,
-treating effects as abstract operations that can be handled (intercepted and given meaning)
-at any point in the call stack, separating the description of an effect from its interpretation
-in a way that makes programs modular and composable even when they interact with state,
-exceptions, or asynchrony.
+[Effect systems](./../effect/) add yet another dimension. A purely functional program,
+one that performs no I/O, modifies no state, throws no exceptions, is in a certain
+sense the cleanest kind of logical object: a deterministic mapping from inputs to outputs,
+with no hidden dependencies on the world. But real programs *do* have effects, 
+and effect systems track these explicitly in the type. A function's type declares
+not just what it returns but what it *does* to the world in doing so. This turns effects
+from an implicit background assumption into a first-class part of the type-level specification.
+Algebraic effect systems go further, treating effects as abstract operations that can
+be handled (intercepted and given meaning) at any point in the call stack,
+separating the description of an effect from its interpretation in a way that makes
+programs modular and composable even when they interact with state, exceptions, or asynchrony.
 
 ### Conclusion
 
