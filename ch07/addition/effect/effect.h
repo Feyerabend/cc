@@ -42,14 +42,11 @@ typedef struct Effect {
     Continuation* continuation;
 } Effect;
 
-
+/* Effect constructors */
 extern Effect eff_return(void* value);
-
 extern Effect eff_get(Continuation* k);
-
 extern Effect eff_put(int value, Continuation* k);
-
 extern Effect eff_error(char* msg);
-
 extern Effect eff_choose(int* choices, int count, Continuation* k);
+
 #endif // EFFECT_H
