@@ -156,12 +156,13 @@ verifiers. The result is software whose correctness is not merely believed but *
 in the same sense that a mathematical theorem is demonstrated: by construction of an explicit,
 checkable argument that no counterexample can exist.
 
-What emerges, looking across all of this, is a unified picture of what computation and code actually are.
-Code is a formal symbolic object, structured according to grammatical rules, inhabiting a world of types
-that are logical propositions about its behaviour. Computation is the normalisation of proofs:
-the reduction of complex derivations to their simplest direct form. And programming languages are
-logical frameworks: formal systems in which reasoning and calculation are the same activity,
-expressed in different notations depending on which level of the correspondence you happen to be looking at.
+What emerges, looking across all of this, is a unified picture of what computation and code
+actually are. Code is a formal symbolic object, structured according to grammatical rules,
+inhabiting a world of types that are logical propositions about its behaviour. Computation
+is the normalisation of proofs: the reduction of complex derivations to their simplest direct form.
+And programming languages are logical frameworks: formal systems in which reasoning and
+calculation are the same activity, expressed in different notations depending on which
+level of the correspondence you happen to be looking at.
 
 The machine, at the bottom of all this abstraction, does something much simpler and much more
 physical. Here transistors switch, memory changes state, signals propagate. But the conceptual
