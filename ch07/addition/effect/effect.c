@@ -7,7 +7,7 @@
 #include "effect.h"
 
 
-// constructors for effects
+/* basic constructors for effects */
 
 Effect eff_return(void* value) {
     Effect e = {.tag = EFF_RETURN, .data.return_val = value};
