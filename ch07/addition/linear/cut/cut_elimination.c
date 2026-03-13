@@ -463,8 +463,11 @@ void init_demo(void) {
     
     if (root) {
         layout_tree(root, DISPLAY_WIDTH / 2, 60, 60, 0);
+        if (root->dual) {
+            layout_tree(root->dual, DISPLAY_WIDTH / 2, 150, 60, 0);
+        }
     }
-    
+
     find_all_reductions();
 }
 
@@ -488,8 +491,11 @@ void update_demo(void) {
             }
             if (root) {
                 layout_tree(root, DISPLAY_WIDTH / 2, 60, 60, 0);
+                if (root->dual) {
+                    layout_tree(root->dual, DISPLAY_WIDTH / 2, 150, 60, 0);
+                }
             }
-            
+
             // Find new reductions
             find_all_reductions();
         }
@@ -512,8 +518,11 @@ void update_demo(void) {
         }
         if (root) {
             layout_tree(root, DISPLAY_WIDTH / 2, 60, 60, 0);
+            if (root->dual) {
+                layout_tree(root->dual, DISPLAY_WIDTH / 2, 150, 60, 0);
+            }
         }
-        
+
         find_all_reductions();
     }
 }

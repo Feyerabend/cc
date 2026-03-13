@@ -438,13 +438,13 @@ void draw_tensor_indicator(uint16_t *fb, int ts_idx) {
     
     // Draw tensor symbol between vendors
     int mid_x = (va->x + vb->x + 80) / 2;
-    int mid_y = (va->y + vb->y) / 2;
-    
-    fb_draw_char(fb, mid_x - 4, mid_y, 139, COLOR_GREEN, COLOR_BLACK); // cross/tensor
-    
-    // Draw completion status
+    int mid_y = va->y + 25;  // vertical center of the 50px-high boxes
+
+    fb_draw_char(fb, mid_x - 4, mid_y - 4, 139, COLOR_GREEN, COLOR_BLACK); // cross/tensor
+
+    // Draw completion status — "DONE" is 24px wide, fits the 40px gap
     if (ts->both_complete) {
-        fb_draw_string(fb, mid_x - 16, mid_y + 12, "COMPLETE", 
+        fb_draw_string(fb, mid_x - 12, mid_y + 8, "DONE",
                       COLOR_GREEN, COLOR_BLACK);
     }
 }

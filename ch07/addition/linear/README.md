@@ -176,3 +176,22 @@ Linear logic is famously difficult to learn initially because:
 But once it clicks, it provides incredibly precise control over resource
 usage and a beautiful unified framework for thinking about computation, concurrency, and proof.
 
+
+
+![Tensor Nets](./../../assets/image/tensor.png)
+
+### Example
+
+The program runs on a Raspberry Pi Pico 2 with a 320x240 display and shows two things at once.
+The top half has two vendor boxes: VendorA selling Apples and VendorB selling Bananas. Tha
+automatically step through a protocol every two seconds: receive a coin, deliver an item, complete.
+A cross symbol sits between them representing the tensor product (⊗), meaning both vendors must
+complete for the whole session to succeed. When they do, "DONE"appears between the boxes.
+
+The bottom half visualises the proof that justifies this protocol: a tree of circles and lines
+representing the formula (A⊗B) (B⊗A) commutativity of tensor. The root node "-o" (lollipop)
+branches into two "x" (tensor) nodes, each with two atom leaves A and B. Red dashed lines connect
+the matching atoms across the tree: left-A to right-A and left-B to right-B. These are the axiom
+links that make the proof valid, showing that the two sides are just the same resources in a different order.
+
+
