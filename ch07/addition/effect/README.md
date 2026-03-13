@@ -19,9 +19,9 @@ reify nondeterminism into a list, run state transactionally, or backtrack on fai
 In a typed language it might look like:
 
 ```
-fn read_line() -> String with IO      // describes IO, does nothing yet
-fn parse(s: String) -> Int with Error // can fail, but that's just a value
-fn pick(xs: List<Int>) -> Int with Amb // nondeterministic choice
+fn read_line() -> String with IO         // describes IO, does nothing yet
+fn parse(s: String) -> Int with Error    // can fail, but that's just a value
+fn pick(xs: List<Int>) -> Int with Amb   // nondeterministic choice
 ```
 
 The handler decides what `IO`, `Error`, and `Amb` mean. Swap the handler, change the semantics.
@@ -98,8 +98,16 @@ Defines the `Effect`, `Continuation`, and `EffectTag` types, plus constructors:
 | `eff_choose(choices, n, k)` | Nondeterministic choice |
 | `eff_async(fn, arg, k)` | Yield to scheduler (cooperative multitasking) |
 
-Two variants exist: `effect.h` (simple, keyless state) used by `counter/`, `amb/`, `nondet/`, `soduku/`, `coop/`;
-and `effects.h` (key-value state) used by `log/`, `trans/`, `plog/`.
+Two variants exist: `effect.h` (simple, keyless state) used by
+`counter/`,
+`amb/`,
+`nondet/`,
+`soduku/`,
+`coop/`;
+and `effects.h` (key-value state) used by
+`log/`,
+`trans/`,
+`plog/`.
 
 
 
@@ -204,7 +212,7 @@ and re-queues it behind any other tasks already waiting.
 
 ```
 Task 0: Starting
-Task 1: Starting          ← tasks interleave at yield points
+Task 1: Starting          <-- tasks interleave at yield points
 Task 2: Starting
 Task 0: Resumed after yield
 Task 1: Resumed after yield
@@ -259,3 +267,25 @@ No modification to the computation required. This is the power of effect handler
 - *Handlers of Algebraic Effects* - Gordon Plotkin & Matija Pretnar (2009)
 - Languages with native effect systems: *Koka*, *Effekt*, *OCaml 5* (effects), *Eff*
 
+
+
+### Aspects
+
+This repository also includes a small example of aspect-oriented programming in
+[`./aspects/`](./aspects/).
+
+Aspect-oriented programming addresses *cross-cutting concerns* such as logging,
+security checks, or instrumentation by allowing behavior to be injected at specific
+points in program execution. In a historical sense, it can be viewed as an early
+attempt to modularise computational effects.
+
+A rough historical trajectory of related ideas in programming language design is:
+- 1990s: aspect-oriented programming  
+- 2000s: monadic approaches to effect tracking  
+- 2010s: algebraic effects and effect handlers  
+- 2020s: structured and typed effect systems
+
+In modern programming language research, *effect handlers* are often seen as a
+more principled and compositional alternative to aspects. They provide a similar
+mechanism for separating concerns, but with explicit semantics and stronger
+support from the type system.
