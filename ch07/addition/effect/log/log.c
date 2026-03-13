@@ -150,17 +150,16 @@ void handle_logic(Effect eff) {
                     v = frame.tx.log[i].value;
                     break;
                 }
-
-                Effect next =
-                    cur.continuation->resume(
-                        cur.continuation,
-                        &v
-                    );
-
-                stack[sp++] = (Frame){next,frame.tx};
-
-                continue;
             }
+
+            Effect next =
+                cur.continuation->resume(
+                    cur.continuation,
+                    &v
+                );
+
+            stack[sp++] = (Frame){next,frame.tx};
+            continue;
         }
     }
 }

@@ -1,0 +1,27 @@
+// Sample 1: Simple Logging Aspect
+// Shows before/after advice on all functions
+
+aspect LoggingAspect {
+    pointcut: execution("*");
+    
+    before {
+        print "-> Entering function";
+    }
+    
+    after {
+        print "<- Exiting function";
+    }
+}
+
+function calculateTotal(price, quantity) {
+    return price * quantity;
+}
+
+function applyDiscount(total, discount) {
+    return total - (total * discount);
+}
+
+// Main execution
+var total = calculateTotal(100, 5);
+var final = applyDiscount(total, 0.1);
+print "Final price: " + final;

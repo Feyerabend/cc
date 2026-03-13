@@ -19,7 +19,8 @@ Effect choice_resume(Continuation* k, void* value) {
             printf("  Path %d: Chose %d at first branch\n", ctx->path, choice);
             ctx->first_choice = choice;  // Save it
             ctx->step = 1;
-            int choices[] = {10, 20};
+            int* choices = malloc(sizeof(int)*2);
+            choices[0] = 10; choices[1] = 20;
             return eff_choose(choices, 2, k);
         }
         
@@ -99,49 +100,10 @@ Effect start_nondeterministic(int path) {
     k->context = ctx;
     k->parent = NULL;
     
-    int choices[] = {1, 2, 3};
+    int* choices = malloc(sizeof(int)*3);
+    choices[0] = 1; choices[1] = 2; choices[2] = 3;
     return eff_choose(choices, 3, k);
 }
-
-// Handler that explores ALL paths
-void handle_nondeterminism(Effect eff) {
-    typedef struct {
-        Effect effect;
-        int choice_index;
-    } StackFrame;
-    
-    StackFrame stack[100];
-    int sp = 0;
-    
-    stack[sp++] = (StackFrame){eff, 0};
-    
-    int path_num = 0;
-    
-    while (sp > 0) {
-        StackFrame frame = stack[--sp];
-        Effect current = frame.effect;
-        
-        if (current.tag == EFF_RETURN) {
-            printf("Path %d completed with result: %d\n\n", 
-                   path_num++, *(int*)current.data.return_val);
-            continue;
-        }
-        
-        if (current.tag == EFF_NONDETERMINISM) {
-            // Push all choice branches onto stack
-            for (int i = current.data.choice.count - 1; i >= 0; i--) {
-                int choice = current.data.choice.choices[i];
-                Effect next = current.continuation->resume(
-                    current.continuation, 
-                    &choice
-                );
-                stack[sp++] = (StackFrame){next, i};
-            }
-        }
-    }
-}
-
-
 
 
 

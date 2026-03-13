@@ -1,0 +1,444 @@
+/*
+ * ASPECT-ORIENTED LANGUAGE - EXAMPLE PROGRAMS
+ * 
+ * This file demonstrates the syntax and capabilities of the aspect-oriented
+ * language, showing real-world cross-cutting concerns.
+ */
+
+/*
+ * EXAMPLE 1: TRANSACTION MANAGEMENT
+ * 
+ * Problem: Banking operations need transaction boundaries (begin/commit/rollback)
+ * Traditional approach: Add transaction code to every function
+ * AOP approach: Centralize transaction management in an aspect
+ */
+
+aspect TransactionAspect {
+    pointcut: execution(transfer*) | execution(withdraw*) | execution(deposit*);
+    
+    before {
+        print "  [TRANSACTION] Beginning transaction...";
+        // In real system: database.beginTransaction()
+    }
+    
+    after {
+        print "  [TRANSACTION] Committing transaction...";
+        // In real system: database.commit()
+    }
+    
+    around {
+        // Handle exceptions and rollback
+        proceed();  // Execute original function
+        let success = result;
+        if (!success) {
+            print "  [TRANSACTION] Rolling back transaction...";
+            // In real system: database.rollback()
+        }
+    }
+}
+
+function transferMoney(amount, from, to) {
+    print "💸 Transferring $" + amount + " from " + from + " to " + to;
+    
+    // Business logic here
+    let fromBalance = getBalance(from);
+    if (fromBalance < amount) {
+        print "   Insufficient funds!";
+        return false;
+    }
+    
+    setBalance(from, fromBalance - amount);
+    let toBalance = getBalance(to);
+    setBalance(to, toBalance + amount);
+    
+    return true;
+}
+
+function withdrawMoney(account, amount) {
+    print "  Withdrawing $" + amount + " from " + account;
+    return updateBalance(account, -amount);
+}
+
+/*
+ * EXAMPLE 2: LOGGING & AUDITING
+ * 
+ * Problem: Need to log all sensitive operations for compliance
+ * Traditional approach: Add logging statements everywhere
+ * AOP approach: Centralize logging in an aspect
+ */
+
+aspect AuditAspect {
+    pointcut: execution(transfer*) | execution(*Account);
+    
+    before {
+        let timestamp = getCurrentTime();
+        let user = getCurrentUser();
+        let functionName = thiscontext.name;
+        let params = args;
+        
+        print "  [AUDIT] " + timestamp;
+        print "   User: " + user;
+        print "   Action: " + functionName;
+        print "   Parameters: " + params;
+        
+        // In real system: auditLog.record(user, functionName, params)
+    }
+    
+    after {
+        let duration = getDuration();
+        print "  [AUDIT] Completed in " + duration + "ms";
+        print "   Result: " + result;
+    }
+}
+
+/*
+ * EXAMPLE 3: SECURITY & AUTHORIZATION
+ * 
+ * Problem: Sensitive operations require permission checks
+ * Traditional approach: Add if (hasPermission) checks everywhere
+ * AOP approach: Centralize security in an aspect
+ */
+
+aspect SecurityAspect {
+    pointcut: execution(delete*) | execution(admin*) | execution(modify*);
+    
+    before {
+        let user = getCurrentUser();
+        let requiredRole = getRoleForFunction(thiscontext.name);
+        
+        print "  [SECURITY] Checking permissions...";
+        print "   User: " + user;
+        print "   Required role: " + requiredRole;
+        
+        if (!hasRole(user, requiredRole)) {
+            print "  [SECURITY] Access denied!";
+            throw "UnauthorizedException";
+            // This would abort the function execution
+        }
+        
+        print "  [SECURITY] Access granted";
+    }
+}
+
+function deleteAccount(accountId) {
+    print "   Deleting account: " + accountId;
+    // Delete logic here
+}
+
+function adminResetPassword(userId) {
+    print "  Admin resetting password for user: " + userId;
+    // Reset logic here
+}
+
+/*
+ * EXAMPLE 4: CACHING
+ * 
+ * Problem: Expensive calculations should be cached
+ * Traditional approach: Add caching code in each function
+ * AOP approach: Transparent caching via aspect
+ */
+
+aspect CachingAspect {
+    pointcut: execution(calculate*) | execution(compute*);
+    
+    around {
+        let cacheKey = thiscontext.name + ":" + args;
+        
+        print "  [CACHE] Checking cache for: " + cacheKey;
+        
+        if (cache.has(cacheKey)) {
+            let cached = cache.get(cacheKey);
+            print "  [CACHE] Cache hit! Returning: " + cached;
+            return cached;  // Skip actual function
+        }
+        
+        print "  [CACHE] Cache miss, executing function...";
+        proceed();  // Execute original function
+        
+        print "  [CACHE] Storing result in cache";
+        cache.set(cacheKey, result);
+    }
+}
+
+function calculateMonthlyInterest(principal, rate, months) {
+    print "  Calculating interest...";
+    // Expensive calculation
+    return principal * (rate / 100) * (months / 12);
+}
+
+function computeRiskScore(account) {
+    print "  Computing risk score...";
+    // Complex risk analysis
+    let score = analyzeTransactionHistory(account);
+    score += analyzeBalance(account);
+    score += analyzeCreditHistory(account);
+    return score;
+}
+
+/*
+ * EXAMPLE 5: PERFORMANCE MONITORING
+ * 
+ * Problem: Need to measure execution time of all operations
+ * Traditional approach: Add timing code at start/end of functions
+ * AOP approach: Automatic timing via aspect
+ */
+
+aspect PerformanceAspect {
+    pointcut: execution(*);  // Monitor all functions
+    
+    before {
+        let startTime = getTime();
+        thiscontext.startTime = startTime;
+        print "   [PERF] Starting: " + thiscontext.name;
+    }
+    
+    after {
+        let endTime = getTime();
+        let duration = endTime - thiscontext.startTime;
+        
+        print "  [PERF] Finished: " + thiscontext.name;
+        print "   Duration: " + duration + "ms";
+        
+        if (duration > 1000) {
+            print "  [PERF] SLOW FUNCTION DETECTED!";
+            // In real system: alerting.sendSlowQueryAlert(thiscontext.name, duration)
+        }
+    }
+}
+
+/*
+ * EXAMPLE 6: RETRY LOGIC
+ * 
+ * Problem: Network operations should retry on failure
+ * Traditional approach: Wrap every network call in retry loop
+ * AOP approach: Transparent retry via aspect
+ */
+
+aspect RetryAspect {
+    pointcut: execution(fetch*) | execution(send*) | execution(api*);
+    
+    around {
+        let maxRetries = 3;
+        let attempt = 0;
+        
+        while (attempt < maxRetries) {
+            attempt++;
+            print "  [RETRY] Attempt " + attempt + " of " + maxRetries;
+            
+            proceed();
+            
+            if (result.success) {
+                print "  [RETRY] Success!";
+                return result;
+            }
+            
+            if (attempt < maxRetries) {
+                let delay = attempt * 1000;
+                print "  [RETRY] Waiting " + delay + "ms before retry...";
+                sleep(delay);
+            }
+        }
+        
+        print "  [RETRY] All attempts failed";
+        throw "RetryExhaustedException";
+    }
+}
+
+function fetchUserData(userId) {
+    print "  Fetching user data for: " + userId;
+    return apiCall("/users/" + userId);
+}
+
+function sendEmail(to, subject, body) {
+    print "  Sending email to: " + to;
+    return smtpServer.send(to, subject, body);
+}
+
+/*
+ * EXAMPLE 7: VALIDATION
+ * 
+ * Problem: Input validation needed for all public functions
+ * Traditional approach: Add validation at start of each function
+ * AOP approach: Centralized validation aspect
+ */
+
+aspect ValidationAspect {
+    pointcut: execution(*) && !execution(validate*);
+    
+    before {
+        print "  [VALIDATION] Validating inputs...";
+        
+        let params = args;
+        for (let i = 0; i < params.length; i++) {
+            let param = params[i];
+            
+            // Check for null/undefined
+            if (param == nil) {
+                print "  [VALIDATION] Parameter " + i + " is null!";
+                throw "ValidationException";
+            }
+            
+            // Type checking
+            if (typeof(param) == "string" && param.length == 0) {
+                print "  [VALIDATION] Parameter " + i + " is empty string!";
+                throw "ValidationException";
+            }
+            
+            // Range checking for numbers
+            if (typeof(param) == "number" && param < 0) {
+                print "   [VALIDATION] Warning: negative number at parameter " + i;
+            }
+        }
+        
+        print "  [VALIDATION] All inputs valid";
+    }
+}
+
+/*
+ * EXAMPLE 8: MULTIPLE ASPECTS ON ONE FUNCTION
+ * 
+ * Demonstrates how multiple aspects can weave into the same join point
+ */
+
+function processPayment(userId, amount, merchant) {
+    // This function will have ALL of these aspects applied:
+    // 1. TransactionAspect (transaction boundaries)
+    // 2. AuditAspect (logging)
+    // 3. SecurityAspect (authorization check)
+    // 4. PerformanceAspect (timing)
+    // 5. ValidationAspect (input validation)
+    // 6. RetryAspect (retry on failure)
+    
+    print "   Processing payment...";
+    print "   User: " + userId;
+    print "   Amount: $" + amount;
+    print "   Merchant: " + merchant;
+    
+    // Business logic
+    let account = getAccount(userId);
+    if (account.balance < amount) {
+        return { success: false, error: "Insufficient funds" };
+    }
+    
+    account.balance -= amount;
+    merchant.balance += amount;
+    
+    recordTransaction(userId, merchant, amount);
+    
+    return { success: true };
+}
+
+/*
+ * EXAMPLE 9: CONDITIONAL POINTCUTS
+ * 
+ * Advanced pointcut expressions
+ */
+
+aspect ConditionalAspect {
+    // Match functions within certain classes/modules
+    pointcut: within(UserService) && execution(get*);
+    
+    // Match based on control flow
+    pointcut: cflow(handleRequest) && execution(database*);
+    
+    // Complex boolean expressions
+    pointcut: (execution(save*) | execution(update*)) && within(Repository);
+    
+    before {
+        print "  [CONDITIONAL] Matched complex pointcut!";
+    }
+}
+
+/*
+ * EXAMPLE 10: ASPECT COMPOSITION
+ * 
+ * Aspects can build on other aspects
+ */
+
+aspect BaseLoggingAspect {
+    pointcut: execution(*);
+    
+    before {
+        log("Entering: " + thiscontext.name);
+    }
+}
+
+aspect ExtendedLoggingAspect extends BaseLoggingAspect {
+    after {
+        log("Exiting: " + thiscontext.name + " with result: " + result);
+    }
+    
+    around {
+        log("Parameters: " + args);
+        proceed();
+        log("Execution time: " + getDuration());
+    }
+}
+
+/*
+ * MAIN PROGRAM
+ */
+
+// Example execution showing all aspects in action
+function main() {    
+    print "Example 1: Transfer with Transaction, Audit, and Security aspects";
+    print "-----------------------------------------------------------------";
+    transferMoney(500, "Alice", "Bob");
+    print "";
+    
+    print "Example 2: Cached calculation";
+    print "-----------------------------------------------------------------";
+    calculateMonthlyInterest(10000, 5.5, 12);
+    calculateMonthlyInterest(10000, 5.5, 12);  // Should hit cache
+    print "";
+    
+    print "Example 3: Delete operation with security check";
+    print "-----------------------------------------------------------------";
+    deleteAccount("ACC123456");
+    print "";
+    
+    print "Example 4: Network operation with retry";
+    print "-----------------------------------------------------------------";
+    fetchUserData("user-789");
+    print "";
+    
+    print "Example 5: Payment with ALL aspects";
+    print "-----------------------------------------------------------------";
+    processPayment("USR-001", 299.99, "Amazon");
+    print "";
+}
+
+/*
+ * OUTPUT (What you would see when running):
+ *
+ * Example 1: Transfer with Transaction, Audit, and Security aspects
+ * 
+ *    [TRANSACTION] Beginning transaction...
+ *    [AUDIT] 2024-03-02 14:30:45
+ *    User: admin
+ *    Action: transferMoney
+ *    Parameters: [500, "Alice", "Bob"]
+ *    [SECURITY] Checking permissions...
+ *    User: admin
+ *    Required role: TRANSFER
+ *    [SECURITY] Access granted
+ *    [PERF] Starting: transferMoney
+ *    Transferring $500 from Alice to Bob
+ *    [PERF] Finished: transferMoney
+ *    Duration: 45ms
+ *    [AUDIT] Completed in 45ms
+ *    Result: true
+ *    [TRANSACTION] Committing transaction...
+ *
+ *
+ * Example 2: Cached calculation
+ *
+ *    [CACHE] Checking cache for: calculateMonthlyInterest:10000,5.5,12
+ *    [CACHE] Cache miss, executing function...
+ *    Calculating interest...
+ *    [CACHE] Storing result in cache
+ *    [CACHE] Checking cache for: calculateMonthlyInterest:10000,5.5,12
+ *    [CACHE] Cache hit! Returning: 550.00
+ *
+ * .. and so on
+ */

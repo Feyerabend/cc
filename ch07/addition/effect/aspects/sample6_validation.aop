@@ -1,0 +1,61 @@
+// Sample 6: Input Validation
+// Shows before advice for parameter validation
+
+aspect ValidationAspect {
+    pointcut: execution("*");
+    
+    before {
+        print "[VALID] Validating inputs for " + functionName;
+        
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            
+            if (arg == nil || arg == null || arg == undefined) {
+                print "[VALID] ERROR: Argument " + i + " is null/nil";
+                throw "ValidationError: Null argument at index " + i;
+            }
+            
+            if (typeof(arg) == "string" && arg.length == 0) {
+                print "[VALID] ERROR: Argument " + i + " is empty string";
+                throw "ValidationError: Empty string at index " + i;
+            }
+            
+            if (typeof(arg) == "number" && arg < 0) {
+                print "[VALID] WARNING: Negative number at index " + i;
+            }
+        }
+        
+        print "[VALID] All inputs valid";
+    }
+}
+
+aspect BusinessRuleAspect {
+    pointcut: execution("create*|update*|delete*");
+    
+    before {
+        print "[RULE] Checking business rules...";
+    }
+}
+
+function createUser(name, email, age) {
+    print "Creating user: " + name + ", " + email + ", age " + age;
+    return { id: 123, name: name, email: email, age: age };
+}
+
+function updateBalance(accountId, amount) {
+    print "Updating balance for account " + accountId + " by " + amount;
+    return true;
+}
+
+function deleteAccount(accountId) {
+    print "Deleting account " + accountId;
+    return true;
+}
+
+// Valid calls
+createUser("Alice", "alice@example.com", 25);
+updateBalance("ACC-001", 100);
+
+// This would fail validation if run
+// createUser("", "alice@example.com", 25);  // Empty name
+// updateBalance("ACC-001", nil);  // Nil amount

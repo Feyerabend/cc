@@ -1,221 +1,261 @@
 
-*EXPAND ON LATER*
+## Algebraic Effect Systems in C
 
-## What are Effect Systems?
+A practical demonstration of algebraic effect systems implemented from scratch in C.
+The core idea: *effects are values, handlers are interpreters*.
 
-Effect systems are type system extensions that track *side effects* in code.
-They answer the question: "What can this function do besides return a value?"
 
-Common effects include:
-- *IO*: Reading/writing files, network calls
-- *State*: Mutable state access
-- *Exceptions*: Can throw errors
-- *Async*: Non-blocking operations
-- *Random*: Non-deterministic behavior
 
-The idea is that functions are annotated with their effects,
-letting you statically verify that effectful operations are handled properly.
+### What Are Algebraic Effects?
 
-For example, in a hypothetical language:
+Most languages conflate _doing_ a side effect with _describing_ one.
+An algebraic effect system separates the two:
+- A *computation* yields an _effect description_ (a value) instead of performing the effect directly
+- A *handler* intercepts that description and decides what to actually do
+
+This gives you unprecedented control over side effects--you can swap handlers to mock IO,
+reify nondeterminism into a list, run state transactionally, or backtrack on failure.
+
+In a typed language it might look like:
+
 ```
-fn pure_math(x: Int) -> Int { x * 2 }          // No effects
-fn read_file(path: String) -> String with IO   // Has IO effect
-fn parse(s: String) -> Int with Error          // Can fail
+fn read_line() -> String with IO      // describes IO, does nothing yet
+fn parse(s: String) -> Int with Error // can fail, but that's just a value
+fn pick(xs: List<Int>) -> Int with Amb // nondeterministic choice
 ```
 
+The handler decides what `IO`, `Error`, and `Amb` mean. Swap the handler, change the semantics.
 
 
-### C impl.
 
-C doesn't have built-in effect tracking, but we can simulate it using:
-1. *Tagged unions* to represent effect types
-2. *Handler functions* to interpret effects
-3. *Continuation-passing style* for control flow
+### Implementation Architecture
 
-Here's a practical implementation:
+C has no built-in effect tracking, but we can encode the core machinery with three ingredients.
+
+#### 1. Effect as a tagged union
 
 ```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-
-// Effect types
-typedef enum {
-    EFFECT_RETURN,
-    EFFECT_READ,
-    EFFECT_WRITE,
-    EFFECT_ERROR
-} EffectType;
-
-// Effect data structure
 typedef struct Effect {
-    EffectType type;
-    union {
-        struct {
-            char* prompt;
-            char* buffer;
-            size_t buffer_size;
-        } read;
-        struct {
-            char* message;
-        } write;
-        struct {
-            char* message;
-        } error;
-        struct {
-            void* value;
-        } return_value;
-    } data;
+    EffectTag tag;              // what kind of effect
+    union { ... } data;         // payload
+    Continuation* continuation; // "what to do next"
 } Effect;
+```
 
-// Continuation type: function that resumes computation
-typedef Effect (*Continuation)(void* result, void* context);
+A computation returns an `Effect` instead of performing the side effect.
+`EFF_RETURN` signals normal completion; all other tags are suspended requests.
 
-// Effect handlers
-typedef struct {
-    Effect (*handle_read)(char* prompt, Continuation k, void* ctx);
-    Effect (*handle_write)(char* message, Continuation k, void* ctx);
-    Effect (*handle_error)(char* message, Continuation k, void* ctx);
-} EffectHandlers;
+#### 2. Continuation
 
-// Helper to create effects
-Effect make_return(void* value) {
-    Effect e;
-    e.type = EFFECT_RETURN;
-    e.data.return_value.value = value;
-    return e;
-}
+```c
+typedef struct Continuation {
+    ResumeFn resume;            // function pointer: (k, value) -> Effect
+    void*    context;           // the computation's local state
+    struct Continuation* parent;
+} Continuation;
+```
 
-Effect make_read(char* prompt, char* buffer, size_t size) {
-    Effect e;
-    e.type = EFFECT_READ;
-    e.data.read.prompt = prompt;
-    e.data.read.buffer = buffer;
-    e.data.read.buffer_size = size;
-    return e;
-}
+A continuation captures "the rest of the computation".
+Resuming it with a value is equivalent to answering the effect request and continuing execution.
 
-Effect make_write(char* message) {
-    Effect e;
-    e.type = EFFECT_WRITE;
-    e.data.write.message = message;
-    return e;
-}
+#### 3. Handler loop
 
-Effect make_error(char* message) {
-    Effect e;
-    e.type = EFFECT_ERROR;
-    e.data.error.message = message;
-    return e;
-}
-
-// Example: A computation that performs effects
-typedef struct {
-    int step;
-    char name_buffer[100];
-    int age;
-} GreetContext;
-
-Effect greet_continuation(void* result, void* context) {
-    GreetContext* ctx = (GreetContext*)context;
-    
-    switch(ctx->step) {
-        case 0: // After reading name
-            strcpy(ctx->name_buffer, (char*)result);
-            ctx->step = 1;
-            return make_write("How old are you?");
-            
-        case 1: // After writing age prompt
-            ctx->step = 2;
-            return make_read("Age: ", ctx->name_buffer, sizeof(ctx->name_buffer));
-            
-        case 2: // After reading age
-            ctx->age = atoi((char*)result);
-            if (ctx->age < 0 || ctx->age > 150) {
-                return make_error("Invalid age!");
-            }
-            ctx->step = 3;
-            
-            char greeting[200];
-            snprintf(greeting, sizeof(greeting), 
-                    "Hello %s! You are %d years old.", 
-                    ctx->name_buffer, ctx->age);
-            return make_write(greeting);
-            
-        case 3: // After final write
-            return make_return("Done");
-            
-        default:
-            return make_error("Invalid state");
+```c
+while (current.tag != EFF_RETURN) {
+    switch (current.tag) {
+        case EFF_STATE_GET:
+            current = current.continuation->resume(k, &state);
+            break;
+        case EFF_STATE_PUT:
+            state = current.data.put.value;
+            current = current.continuation->resume(k, NULL);
+            break;
+        case EFF_ERROR:
+            /* abort or recover */
     }
-}
-
-Effect start_greet_program(void* _) {
-    return make_write("What's your name?");
-}
-
-// Effect interpreter with handlers
-void* run_with_handlers(Effect initial, EffectHandlers* handlers, void* context) {
-    Effect current = initial;
-    
-    while (current.type != EFFECT_RETURN) {
-        switch(current.type) {
-            case EFFECT_READ: {
-                char buffer[256];
-                printf("%s", current.data.read.prompt);
-                fgets(buffer, sizeof(buffer), stdin);
-                buffer[strcspn(buffer, "\n")] = 0; // Remove newline
-                
-                current = greet_continuation(buffer, context);
-                break;
-            }
-            
-            case EFFECT_WRITE:
-                printf("%s\n", current.data.write.message);
-                current = greet_continuation(NULL, context);
-                break;
-                
-            case EFFECT_ERROR:
-                fprintf(stderr, "Error: %s\n", current.data.error.message);
-                return NULL;
-                
-            default:
-                fprintf(stderr, "Unknown effect type\n");
-                return NULL;
-        }
-    }
-    
-    return current.data.return_value.value;
-}
-
-int main() {
-    GreetContext ctx = {0};
-    EffectHandlers handlers = {0}; // Not used in this simple version
-    
-    Effect initial = start_greet_program(NULL);
-    void* result = run_with_handlers(initial, &handlers, &ctx);
-    
-    printf("\nProgram completed: %s\n", result ? (char*)result : "Failed");
-    
-    return 0;
 }
 ```
 
-*Key concepts here:*
+The handler is just a loop.
+It interprets each effect request and resumes the continuation with whatever answer it chooses.
+Different handlers give the same computation entirely different behaviour.
 
-1. *Effects as data*: Instead of performing side effects directly,
-   functions return `Effect` structures describing what they want to do
 
-2. *Handlers interpret effects*: The `run_with_handlers` function decides
-   how to actually perform each effect (could swap stdio with network, mock testing, etc.)
 
-3. *Continuations*: The `greet_continuation` function represents
-   "what to do next" after an effect completes
+### Files
 
-4. *Separation of description and execution*: The business logic (greeting user)
-   is separated from IO implementation
 
-This is a simplified algebraic effect system. Real systems provide better syntax
-and type safety, but the core idea is: *effects are values that get interpreted by handlers*.
+#### `effect.h` / `effect.c` — Core effect system
+
+Defines the `Effect`, `Continuation`, and `EffectTag` types, plus constructors:
+
+| Constructor | Effect |
+|-------------|--------|
+| `eff_return(val)` | Normal completion |
+| `eff_get(k)` | Read current state |
+| `eff_put(val, k)` | Write new state |
+| `eff_error(msg)` | Raise an error |
+| `eff_choose(choices, n, k)` | Nondeterministic choice |
+| `eff_async(fn, arg, k)` | Yield to scheduler (cooperative multitasking) |
+
+Two variants exist: `effect.h` (simple, keyless state) used by `counter/`, `amb/`, `nondet/`, `soduku/`, `coop/`;
+and `effects.h` (key-value state) used by `log/`, `trans/`, `plog/`.
+
+
+
+#### `counter.c` — State effects
+
+Demonstrates `EFF_STATE_GET` and `EFF_STATE_PUT` with a simple counter.
+
+*Key insight*: the computation never touches mutable memory directly.
+It yields a `GET` or `PUT` request; the handler owns the actual state variable.
+
+```
+computation: GET -> PUT(state+1) -> GET -> return
+handler:     provides state, applies writes, passes result back
+```
+
+Two handlers are shown:
+- `handle_state` — straightforward stateful interpreter
+- `handle_state_and_error` — composes state + error handling in one loop
+
+Because handler and computation are decoupled, you can run the same computation
+under a _logging_ handler, a _transactional_ handler, or a _mock_ handler in tests.
+
+
+
+#### `trans.c` — Transactional state (STM)
+
+Uses key-value `EFF_STATE_GET`/`EFF_STATE_PUT` effects (from `effects.h`)
+to implement software transactional memory.
+
+The `handle_stm` handler buffers all writes in a log. Nothing is committed until the
+computation returns successfully. On `EFF_ERROR`, the entire log is discarded--atomicity
+for free, just by changing the handler.
+
+```
+write "x"=10  ->  write "y"=20  ->  read "x"  ->  return 10
+          [buffered]        [buffered]    [from log]    [commit all]
+```
+
+
+
+#### `amb.c` — Nondeterminism as backtracking
+
+`EFF_NONDETERMINISM` lets a computation request a choice from a set of values.
+The `handle_amb` handler explores all branches via an explicit stack (depth-first search).
+
+*Demo*: finding Pythagorean triples by nondeterministically picking `a`, `b`, `c` from `{1..5}`
+and failing on constraint violations. Backtracking is implicit--failed branches just don't push further frames.
+
+```
+pick a ∈ {1,2,3,4,5}
+pick b ∈ {1,2,3,4,5}
+pick c ∈ {1,2,3,4,5}
+require a²+b²=c²   ->  EFF_ERROR  ->  handler silently backtracks
+require a<b<c       ->  EFF_ERROR  ->  handler silently backtracks
+return (a,b,c)      ->  print triple
+```
+
+The computation expresses _what_ to search; the handler decides _how_ (DFS, BFS, random, parallel).
+
+
+
+#### `log.c` — Nondeterminism + transactional state combined
+
+Combines `EFF_NONDETERMINISM` and `EFF_STATE_PUT`/`EFF_STATE_GET` in one handler.
+
+Each branch of the nondeterministic search gets its own isolated transaction log.
+On `EFF_ERROR` (constraint violation) the branch's writes are discarded--no explicit rollback needed.
+On `EFF_RETURN` the branch's writes are printed as committed.
+
+This is algebraic effects as a composition mechanism: two orthogonal
+effect kinds handled by the same loop, no framework required.
+
+
+
+#### `soduku.c` — Constraint solving via nondeterminism
+
+Solves 4×4 Sudoku by placing one digit at a time. At each cell it yields an `EFF_NONDETERMINISM`
+choice over `{1,2,3,4}`; the handler clones the continuation for each branch.
+Invalid placements return `EFF_ERROR`, pruning the search tree automatically.
+
+The solver contains zero backtracking code. All search logic lives in the handler.
+
+
+
+#### `nondet/` — Context isolation
+
+Shows that each branch of a nondeterministic search must receive its *own copy*
+of the computation's context. The handler clones both the `Continuation` struct
+and the application-specific context struct before resuming each branch,
+so mutations in one branch don't bleed into siblings.
+
+The computation makes two sequential choices (from `{1,2,3}` then `{10,20}`),
+producing 6 paths total. Each path accumulates its own chain of choices independently.
+
+
+
+#### `coop/` — Cooperative multitasking via `EFF_ASYNC`
+
+`EFF_ASYNC` is a yield point: the computation suspends itself and hands control
+back to the scheduler (handler). The handler advances the computation past the yield
+and re-queues it behind any other tasks already waiting.
+
+```
+Task 0: Starting
+Task 1: Starting          ← tasks interleave at yield points
+Task 2: Starting
+Task 0: Resumed after yield
+Task 1: Resumed after yield
+Task 2: Resumed after yield
+```
+
+The key distinction from state or nondeterminism: `EFF_ASYNC` doesn't need an
+answer from the handler — it's a pure yield. The continuation resumes with `NULL`.
+Swapping `run_async` for a thread-pool or event-loop handler requires zero changes
+to the task code.
+
+
+
+#### `plog/` — Logic programming engine
+
+A minuscle Prolog-style interpreter where the search procedure is itself an effect.
+- The computation yields `EFF_NONDETERMINISM` to choose which knowledge-base clause to try
+- Unification is performed inside the continuation
+- Backtracking on unification failure is handled entirely by the `handle_logic` loop
+
+The knowledge base, search strategy, and unification are cleanly separated--each
+a different layer in the effect stack.
+
+
+
+### Conclusion
+
+The same computation:
+
+```c
+Effect eff = k.resume(&k, NULL);
+```
+
+behaves completely differently depending on which handler processes it:
+
+| Handler        | Behaviour                                          |
+|----------------|----------------------------------------------------|
+| `handle_state` | Runs with mutable state                            |
+| `handle_stm`   | Runs transactionally, commits or aborts atomically |
+| `handle_amb`   | Explores all nondeterministic branches             |
+| `handle_logic` | Performs logic search with backtracking            |
+| `run_async`    | Cooperative scheduler - yields between tasks       |
+
+No modification to the computation required. This is the power of effect handlers:
+*the semantics of a computation are not fixed at definition time--they are supplied by the handler at call time*.
+
+
+
+### Readings
+
+- *Algebraic Effects for the Rest of Us* - Oleg Kiselyov
+- *Handlers of Algebraic Effects* - Gordon Plotkin & Matija Pretnar (2009)
+- Languages with native effect systems: *Koka*, *Effekt*, *OCaml 5* (effects), *Eff*
 

@@ -1,0 +1,79 @@
+// Sample 5: Retry Logic for Network Operations
+// Shows around advice for automatic retries
+
+aspect RetryAspect {
+    pointcut: execution("fetch*|send*|api*");
+    
+    around {
+        var maxRetries = 3;
+        var attempt = 0;
+        
+        while (attempt < maxRetries) {
+            attempt++;
+            print "[RETRY] Attempt " + attempt + " of " + maxRetries;
+            
+            proceed();
+            
+            if (result.success) {
+                print "[RETRY] Success on attempt " + attempt;
+                return result;
+            }
+            
+            if (attempt < maxRetries) {
+                print "[RETRY] Failed, retrying...";
+                sleep(1000 * attempt);
+            }
+        }
+        
+        print "[RETRY] All attempts exhausted";
+        throw "RetryException";
+    }
+}
+
+aspect NetworkLoggingAspect {
+    pointcut: execution("fetch*|send*|api*");
+    precedence: 90;
+    
+    before {
+        print "[NET] Starting network call: " + functionName;
+    }
+    
+    after {
+        print "[NET] Network call completed";
+    }
+}
+
+function fetchUserData(userId) {
+    print "Fetching user " + userId + " from API";
+    var random = Math.random();
+    return {
+        success: random > 0.5,
+        data: random > 0.5 ? "User data" : null
+    };
+}
+
+function sendEmail(to, subject, body) {
+    print "Sending email to " + to;
+    var random = Math.random();
+    return {
+        success: random > 0.7,
+        messageId: random > 0.7 ? "msg-123" : null
+    };
+}
+
+function apiRequest(endpoint, method) {
+    print "API " + method + " " + endpoint;
+    return {
+        success: true,
+        status: 200
+    };
+}
+
+// Usage
+try {
+    var userData = fetchUserData("user-123");
+    var emailResult = sendEmail("user@example.com", "Hello", "Test");
+    var apiResponse = apiRequest("/users", "GET");
+} catch (e) {
+    print "Error: " + e;
+}

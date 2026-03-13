@@ -5,13 +5,10 @@
 #include "effects.h"
 
 
-
 typedef struct {
     char* key;
     int value;
 } KVPair;
-
-
 
 typedef struct {
     KVPair* pairs;
@@ -19,20 +16,15 @@ typedef struct {
     int capacity;
 } TransactionLog;
 
-
-
 typedef struct {
     int step;
 } TxContext;
 
 
 
-/* -----------------------------
-   Effect constructors
------------------------------ */
+/* Effect constructors */
 
-Effect eff_read(char* key, Continuation* k)
-{
+Effect eff_read(char* key, Continuation* k) {
     Effect e = {
         .tag = EFF_STATE_GET,
         .data.get.key = key,
@@ -43,8 +35,7 @@ Effect eff_read(char* key, Continuation* k)
 
 
 
-Effect eff_write(char* key, int value, Continuation* k)
-{
+Effect eff_write(char* key, int value, Continuation* k) {
     Effect e = {
         .tag = EFF_STATE_PUT,
         .data.put.key = key,
@@ -56,16 +47,12 @@ Effect eff_write(char* key, int value, Continuation* k)
 
 
 
-/* -----------------------------
-   Transaction program
------------------------------ */
+/* Transaction program */
 
-Effect tx_resume(Continuation* k, void* value)
-{
+Effect tx_resume(Continuation* k, void* value) {
     TxContext* ctx = k->context;
 
-    switch(ctx->step)
-    {
+    switch (ctx->step) {
 
         case 0:
             ctx->step = 1;
@@ -79,15 +66,13 @@ Effect tx_resume(Continuation* k, void* value)
             ctx->step = 3;
             return eff_read("x",k);
 
-        case 3:
-        {
+        case 3: {
             int read_value = *(int*)value;
 
             printf("Program read x = %d\n",read_value);
 
             int* result = malloc(sizeof(int));
             *result = read_value;
-
             return eff_return(result);
         }
 
@@ -98,9 +83,7 @@ Effect tx_resume(Continuation* k, void* value)
 
 
 
-/* -----------------------------
-   STM Handler
------------------------------ */
+/* STM Handler */
 
 typedef struct {
     TransactionLog log;
@@ -109,10 +92,9 @@ typedef struct {
 
 
 
-int lookup(TransactionLog* log, char* key)
-{
-    for(int i=log->count-1;i>=0;i--)
-        if(strcmp(log->pairs[i].key,key)==0)
+int lookup(TransactionLog* log, char* key) {
+    for (int i = log->count-1; i >= 0; i--)
+        if(strcmp(log->pairs[i].key,key) == 0)
             return log->pairs[i].value;
 
     return 0;
@@ -120,8 +102,7 @@ int lookup(TransactionLog* log, char* key)
 
 
 
-void* handle_stm(Effect eff, STMHandler* handler)
-{
+void* handle_stm(Effect eff, STMHandler* handler) {
     Effect current = eff;
 
     handler->log.capacity = 100;
@@ -130,16 +111,12 @@ void* handle_stm(Effect eff, STMHandler* handler)
 
     handler->aborted = 0;
 
-    while(current.tag != EFF_RETURN && current.tag != EFF_ERROR)
-    {
+    while (current.tag != EFF_RETURN && current.tag != EFF_ERROR) {
 
-        switch(current.tag)
-        {
+        switch (current.tag) {
 
-            case EFF_STATE_GET:
-            {
+            case EFF_STATE_GET: {
                 char* key = current.data.get.key;
-
                 int value = lookup(&handler->log,key);
 
                 printf("[STM] read %s -> %d\n",key,value);
@@ -154,15 +131,13 @@ void* handle_stm(Effect eff, STMHandler* handler)
             }
 
 
-            case EFF_STATE_PUT:
-            {
+            case EFF_STATE_PUT: {
                 char* key = current.data.put.key;
                 int value = current.data.put.value;
 
-                printf("[STM] log write %s = %d\n",key,value);
+                printf("[STM] log write %s = %d\n", key, value);
 
-                if(handler->log.count < handler->log.capacity)
-                {
+                if (handler->log.count < handler->log.capacity) {
                     handler->log.pairs[handler->log.count++] =
                         (KVPair){key,value};
                 }
@@ -184,29 +159,23 @@ void* handle_stm(Effect eff, STMHandler* handler)
     }
 
 
-    if(current.tag == EFF_ERROR)
-    {
+    if (current.tag == EFF_ERROR) {
         printf("[STM] aborting transaction\n");
-
         handler->aborted = 1;
-
         free(handler->log.pairs);
-
         return NULL;
     }
 
 
-    printf("[STM] commit %d writes\n",handler->log.count);
+    printf("[STM] commit %d writes\n", handler->log.count);
 
-    for(int i=0;i<handler->log.count;i++)
-    {
+    for (int i = 0;i < handler->log.count; i++) {
         printf("  %s = %d\n",
             handler->log.pairs[i].key,
             handler->log.pairs[i].value);
     }
 
     void* result = current.data.return_val;
-
     free(handler->log.pairs);
 
     return result;
@@ -214,12 +183,8 @@ void* handle_stm(Effect eff, STMHandler* handler)
 
 
 
-/* -----------------------------
-   main
------------------------------ */
 
-int main()
-{
+int main() {
     STMHandler handler;
 
     TxContext* ctx = malloc(sizeof(TxContext));
@@ -231,13 +196,12 @@ int main()
         .parent = NULL
     };
 
-    Effect eff = k.resume(&k,NULL);
+    Effect eff = k.resume(&k, NULL);
 
-    int* result = handle_stm(eff,&handler);
+    int* result = handle_stm(eff, &handler);
 
-    if(result)
-    {
-        printf("Transaction returned %d\n",*result);
+    if (result) {
+        printf("Transaction returned %d\n", *result);
         free(result);
     }
 

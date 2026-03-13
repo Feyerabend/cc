@@ -1,0 +1,62 @@
+// Sample 3: Performance Caching
+// Shows around advice to cache expensive calculations
+
+aspect CachingAspect {
+    pointcut: execution("calculate*|compute*");
+    
+    around {
+        var cacheKey = functionName + ":" + args[0];
+        
+        if (cache.has(cacheKey)) {
+            print "[CACHE] Hit for " + cacheKey;
+            return cache.get(cacheKey);
+        }
+        
+        print "[CACHE] Miss, computing...";
+        proceed();
+        
+        cache.set(cacheKey, result);
+        return result;
+    }
+}
+
+aspect PerformanceAspect {
+    pointcut: execution("*");
+    
+    before {
+        startTime = getTime();
+    }
+    
+    after {
+        var duration = getTime() - startTime;
+        print "[PERF] " + functionName + " took " + duration + "ms";
+    }
+}
+
+function calculateFibonacci(n) {
+    if (n <= 1) return n;
+    return calculateFibonacci(n - 1) + calculateFibonacci(n - 2);
+}
+
+function computePrimes(n) {
+    var primes = [];
+    for (var i = 2; i <= n; i++) {
+        var isPrime = true;
+        for (var j = 2; j < i; j++) {
+            if (i % j == 0) {
+                isPrime = false;
+                break;
+            }
+        }
+        if (isPrime) primes.push(i);
+    }
+    return primes;
+}
+
+// First call - cache miss
+var fib1 = calculateFibonacci(10);
+
+// Second call - cache hit
+var fib2 = calculateFibonacci(10);
+
+var primes = computePrimes(20);

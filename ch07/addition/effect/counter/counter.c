@@ -31,7 +31,11 @@ Effect counter_resume(Continuation* k, void* value) {
                 return eff_error("Counter exceeded limit!");
             }
             ctx->step = 3;
-            return eff_return(&current_value);
+            {
+                int* result = malloc(sizeof(int));
+                *result = current_value;
+                return eff_return(result);
+            }
             
         default:
             return eff_return(NULL);

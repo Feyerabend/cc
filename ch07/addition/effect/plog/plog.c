@@ -94,6 +94,7 @@ Effect logic_resume(Continuation* k, void* value) {
 
     if (ctx->step == 1) {
         ctx->clause_index = *(int*)value;
+        c = &KB[ctx->clause_index];  // refresh after index update
 
         // unify head with query
         Term query = {ATOM,"a",0}; // example query

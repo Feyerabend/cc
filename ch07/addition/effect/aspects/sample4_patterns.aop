@@ -1,0 +1,75 @@
+// Sample 4: Advanced Pattern Matching
+// Shows wildcard, character classes, and ranges
+
+aspect GetterAspect {
+    pointcut: execution("get*");
+    
+    before {
+        print "[GETTER] Accessing property";
+    }
+}
+
+aspect SetterAspect {
+    pointcut: execution("set*");
+    
+    before {
+        print "[SETTER] Modifying property";
+    }
+}
+
+aspect ServiceAspect {
+    pointcut: execution("*Service");
+    
+    before {
+        print "[SERVICE] Service call detected";
+    }
+}
+
+aspect SingleCharAspect {
+    pointcut: execution("do?");
+    
+    before {
+        print "[SINGLE] Single char wildcard matched";
+    }
+}
+
+aspect CharClassAspect {
+    pointcut: execution("[gs]et*");
+    
+    before {
+        print "[CLASS] Character class matched";
+    }
+}
+
+aspect RangeAspect {
+    pointcut: execution("[a-c]*");
+    
+    before {
+        print "[RANGE] Range a-c matched";
+    }
+}
+
+function getName() { return "John"; }
+function getAge() { return 30; }
+function setName(name) { print "Name set to " + name; }
+function setAge(age) { print "Age set to " + age; }
+
+function UserService() { print "User service"; }
+function AuthService() { print "Auth service"; }
+
+function doA() { print "Action A"; }
+function doB() { print "Action B"; }
+function doSomething() { print "Does not match"; }
+
+function approve() { print "Approved"; }
+function authorize() { print "Authorized"; }
+function cancel() { print "Cancelled"; }
+function deny() { print "Denied"; }
+
+// Execute
+getName();
+setAge(31);
+UserService();
+doA();
+approve();
+deny();

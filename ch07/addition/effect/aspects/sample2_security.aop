@@ -1,0 +1,56 @@
+// Sample 2: Security and Transaction Management
+// Shows multiple aspects with different precedence
+
+aspect SecurityAspect {
+    pointcut: execution("transfer*|withdraw*|delete*");
+    precedence: 100;
+    
+    before {
+        print "[SECURITY] Checking permissions...";
+        var user = getCurrentUser();
+        if (!hasPermission(user)) {
+            throw "Access denied";
+        }
+        print "[SECURITY] Access granted";
+    }
+}
+
+aspect TransactionAspect {
+    pointcut: execution("transfer*|withdraw*");
+    precedence: 90;
+    
+    before {
+        print "[TX] Beginning transaction";
+    }
+    
+    after_returning {
+        print "[TX] Committing transaction";
+    }
+    
+    after_throwing {
+        print "[TX] Rolling back transaction";
+    }
+}
+
+aspect AuditAspect {
+    pointcut: execution("*");
+    precedence: 80;
+    
+    before {
+        print "[AUDIT] User: admin, Action: " + functionName;
+    }
+}
+
+function transferMoney(from, to, amount) {
+    print "Transferring $" + amount + " from " + from + " to " + to;
+    return true;
+}
+
+function withdrawMoney(account, amount) {
+    print "Withdrawing $" + amount + " from " + account;
+    return true;
+}
+
+// Usage
+transferMoney("Alice", "Bob", 500);
+withdrawMoney("Alice", 200);
