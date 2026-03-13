@@ -272,10 +272,10 @@ No modification to the computation required. This is the power of effect handler
 ### Aspects
 
 This repository also includes a small example of aspect-oriented programming in
-[`./aspects/`](./aspects/).
+[aspects](./aspects/).
 
 Aspect-oriented programming addresses *cross-cutting concerns* such as logging,
-security checks, or instrumentation by allowing behavior to be injected at specific
+security checks, or instrumentation by allowing behaviour to be injected at specific
 points in program execution. In a historical sense, it can be viewed as an early
 attempt to modularise computational effects.
 
