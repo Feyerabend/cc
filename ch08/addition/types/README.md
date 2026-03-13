@@ -836,12 +836,12 @@ homotopy type theory
 Many type systems correspond to *logical systems*.
 
 ```
-STLC              ↔ intuitionistic logic
-System F          ↔ second-order logic
-Linear types      ↔ linear logic
-Dependent types   ↔ higher-order logic
-Session types     ↔ linear logic + π-calculus
-HoTT              ↔ homotopy theory
+STLC              <--> intuitionistic logic
+System F          <--> second-order logic
+Linear types      <--> linear logic
+Dependent types   <--> higher-order logic
+Session types     <--> linear logic + π-calculus
+HoTT              <--> homotopy theory
 ```
 
 This is part of the *Curry–Howard–Lambek correspondence*.
