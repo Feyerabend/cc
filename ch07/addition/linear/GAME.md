@@ -8,11 +8,11 @@ as logic and epistemology, and its origins may in part be traced back to
 the Aristotelian separation of philosophical disciplines.*
 
 *In the end I chose theoretical philosophy, and my professor was Stig Kanger.
-I refer to him elsewhere in this repository. He read a preliminary paper
-of mine on Occam, Frege, and the notion of assertion, and he seemed to
-like it. He suggested that I should go and study to a close friend of his,
-Jaakko Hintikka, perhaps because he saw that direction as closer to my
-interests than to his own work.*
+I refer to him elsewhere in this repository. He read a preliminary paper,
+pre-doctoral thesis, of mine on Occam, Frege, and the notion of assertion,
+and he seemed to like it. He suggested that I should go and study to a
+close friend of his, Jaakko Hintikka, perhaps because he saw that direction
+as closer to my interests than to his own work.*
 
 *At the time I was rather shy and lacked the confidence to follow his
 suggestion, although he would certainly have helped me arrange the
