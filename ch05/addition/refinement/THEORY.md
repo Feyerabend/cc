@@ -1,4 +1,4 @@
-
+ 
 ## Theoretical Background on Refinement Types
 
 ### 1. Type Theory Foundations
