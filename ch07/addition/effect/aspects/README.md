@@ -26,7 +26,6 @@ These concerns tend to *cut across normal module boundaries*.
 
 This was the motivation behind *aspect-oriented programming (AOP)*,
 introduced by Gregor Kiczales and implemented in systems like AspectJ.
-Without special tools, the code becomes tangled.
 
 
 ### Introduction to Aspect-Oriented Programming (AOP)
