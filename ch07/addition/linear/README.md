@@ -178,8 +178,6 @@ usage and a beautiful unified framework for thinking about computation, concurre
 
 
 
-![Tensor Nets](./../../assets/image/tensor.png)
-
 ### Example
 
 The program runs on a Raspberry Pi Pico 2 with a 320x240 display and shows two things at once.
@@ -194,4 +192,6 @@ branches into two "x" (tensor) nodes, each with two atom leaves A and B. Red das
 the matching atoms across the tree: left-A to right-A and left-B to right-B. These are the axiom
 links that make the proof valid, showing that the two sides are just the same resources in a different order.
 
+
+![Tensor Nets](./../../assets/image/tensor.png)
 
