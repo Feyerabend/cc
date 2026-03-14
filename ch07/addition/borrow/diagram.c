@@ -208,7 +208,7 @@ static void print_borrow_wire(const Borrow *b, const char *tgt,
         printf("~~✗~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~►");
         c(o, C_RESET);
         c(o, C_RED);
-        printf(" [%s]  ⚡DANGLING", tgt);
+        printf(" [%s]  !DANGLING", tgt);
         c(o, C_RESET);
     } else if (b->state == BS_RESERVED) {
         c(o, C_BYLW);
