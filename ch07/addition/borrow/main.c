@@ -1,5 +1,5 @@
 /*
- * main.c  -  Scenario runner.
+ * main.c  -  Scenario runner for the full-featured borrow checker.
  *
  * Each scenario exercises a specific checker capability.
  * The checker (bc_*) and renderer (diag_*) are entirely separate;
@@ -7,24 +7,34 @@
  *
  * Scenarios
  *
- *  1.  Happy path: ownership, shared borrows, mutable borrow, assign
- *  2.  Double free
- *  3.  Use after move
- *  4.  Dangling borrow: borrow outlives owner via nested scope
- *  5.  Shared + mutable borrow conflict (with provenance)
- *  6.  Move while borrowed
- *  7.  Drop while borrowed --> dangling + use of dangling
- *  8.  Copy types: no move invalidation
- *  9.  Re-borrow chain
- * 10.  Assign to immutable / borrowed variable
- * 11.  Resource: acquire + explicit release (file handle)
- * 12.  Resource: leak detection (no release before scope exit)
- * 13.  Resource: double-release
- * 14.  Resource: borrow a resource handle, then try to release it
- * 15.  Defer: register cleanup, verify it is satisfied
- * 16.  Defer: unsatisfied defer (missing release)
- * 17.  Mixed: heap allocation leaked on error path
- * 18.  assert_consumed: enforce linear types
+ *   1.  Happy path: ownership, shared borrows, mutable borrow, assign
+ *   2.  Double free
+ *   3.  Use after move
+ *   4.  Dangling borrow: borrow outlives owner via nested scope
+ *   5.  Shared + mutable borrow conflict (with provenance)
+ *   6.  Move while borrowed
+ *   7.  Drop while borrowed --> dangling + use of dangling
+ *   8.  Copy types: no move invalidation
+ *   9.  Re-borrow chain
+ *  10.  Assign to immutable / borrowed variable
+ *  11.  Resource: acquire + explicit release (file handle)
+ *  12.  Resource: leak detection (no release before scope exit)
+ *  13.  Resource: double-release
+ *  14.  Resource: borrow a resource handle, then try to release it
+ *  15.  Defer: register cleanup, verify it is satisfied
+ *  16.  Defer: unsatisfied defer (missing release)
+ *  17.  Mixed: heap allocation leaked on error path
+ *  18.  assert_consumed: enforce linear types
+ *  19.  Use-kind: write through &T is an error
+ *  20.  Use-kind: write through &mut T is fine
+ *  21.  Interior mutability: write through &T of RefCell-like var (note)
+ *  22.  NLL: borrow ends at last-use, target re-borrowed in same scope
+ *  23.  Partial move: field moved out, container partially-moved
+ *  24.  Slice borrows: non-overlapping slices compatible, overlapping rejected
+ *  25.  Two-phase borrows: reserve then activate
+ *  26.  Lifetime regions: borrow in region, region ends, borrow dangling
+ *  27.  Region outlives: coerce borrow to shorter region (variance)
+ *  28.  Region outlives violation: borrow in shorter region used where longer needed
  */
 
  /* gcc -Wall -Wextra -std=c11 -o bc checker.c diagram.c main.c */
@@ -41,9 +51,20 @@ static void title(int n, const char *desc) {
     printf("\n");
 }
 
+/* -- helpers  */
+#define RUN(bc, opts, body) do {                   \
+    BC *bc = calloc(1, sizeof *bc); bc_init(bc);   \
+    body                                           \
+    diag_render_all(bc, opts);                     \
+    diag_render_summary(bc, opts);                 \
+    free(bc);                                      \
+} while (0)
+
+
+
 /* -- Scenario 1: Happy path  */
 static void s1(const DiagOpts *o) {
-    title(1, "Happy path — ownership, borrows, assign");
+    title(1, "Happy path - ownership, borrows, assign");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
     bc_scope_enter(bc);
       bc_declare    (bc, "x",  1);
@@ -89,7 +110,7 @@ static void s3(const DiagOpts *o) {
 
 /* -- Scenario 4: Dangling borrow  */
 static void s4(const DiagOpts *o) {
-    title(4, "Dangling borrow — borrow outlives owner across scopes");
+    title(4, "Dangling borrow - borrow outlives owner across scopes");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
     bc_scope_enter(bc);
       bc_scope_enter(bc);
@@ -129,7 +150,7 @@ static void s6(const DiagOpts *o) {
 
 /* -- Scenario 7: Drop while borrowed --> dangling use  */
 static void s7(const DiagOpts *o) {
-    title(7, "Drop while borrowed — dangling pointer + use");
+    title(7, "Drop while borrowed - dangling pointer + use");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
     bc_scope_enter(bc);
       bc_declare(bc, "data", 0);
@@ -142,7 +163,7 @@ static void s7(const DiagOpts *o) {
 
 /* -- Scenario 8: Copy types  */
 static void s8(const DiagOpts *o) {
-    title(8, "Copy types — no move invalidation");
+    title(8, "Copy types - no move invalidation");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
     bc_scope_enter(bc);
       bc_declare_copy(bc, "i");
@@ -213,7 +234,7 @@ static void s12(const DiagOpts *o) {
       bc_use             (bc, "fd");
       bc_use             (bc, "buf");
       bc_resource_release(bc, "buf"); /* buf released OK */
-      /* fd never released — ERROR at scope exit */
+      /* fd never released - ERROR at scope exit */
     bc_scope_exit(bc);
     diag_render_all(bc, o); diag_render_summary(bc, o); free(bc);
 }
@@ -264,7 +285,7 @@ static void s16(const DiagOpts *o) {
       bc_resource_acquire(bc, "conn", RK_SOCKET);
       bc_defer           (bc, "conn");
       bc_use             (bc, "conn");
-      /* no release — ERROR at scope exit */
+      /* no release - ERROR at scope exit */
     bc_scope_exit(bc);
     diag_render_all(bc, o); diag_render_summary(bc, o); free(bc);
 }
@@ -301,7 +322,7 @@ static void s17(const DiagOpts *o) {
 
 /* -- Scenario 18: assert_consumed linear types  */
 static void s18(const DiagOpts *o) {
-    title(18, "assert_consumed — linear type enforcement");
+    title(18, "assert_consumed - linear type enforcement");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
 
     /*
@@ -325,39 +346,208 @@ static void s18(const DiagOpts *o) {
     bc_scope_enter(bc2);
       bc_declare        (bc2, "ticket", 0);
       bc_use            (bc2, "ticket");
-      /* forgot to submit — just leaves the scope */
+      /* forgot to submit - just leaves the scope */
       bc_assert_consumed(bc2, "ticket");        /* ERROR: still alive */
     bc_scope_exit(bc2);
     diag_render_all(bc2, o); diag_render_summary(bc2, o); free(bc2);
 }
 
+/* 
+ * New scenarios
+ */
+
+/* -- Scenario 19: write through &T is an error  */
+static void s19(const DiagOpts *o) {
+    title(19, "USE-KIND: write through &T is rejected");
+    RUN(bc, o, {
+        bc_scope_enter(bc);
+          bc_declare    (bc, "data", 1);
+          bc_borrow     (bc, "r",    "data");    /* shared borrow */
+          bc_use        (bc, "r");               /* read: OK */
+          bc_use_write  (bc, "r");               /* write through &T: ERROR */
+          bc_release    (bc, "r");
+        bc_scope_exit(bc);
+    });
+}
+
+/* -- Scenario 20: write through &mut T is fine  */
+static void s20(const DiagOpts *o) {
+    title(20, "USE-KIND: write through &mut T is accepted");
+    RUN(bc, o, {
+        bc_scope_enter(bc);
+          bc_declare    (bc, "data", 1);
+          bc_borrow_mut (bc, "m",    "data");
+          bc_use        (bc, "m");               /* read */
+          bc_use_write  (bc, "m");               /* write through &mut: OK */
+          bc_release    (bc, "m");
+        bc_scope_exit(bc);
+    });
+}
+
+/* -- Scenario 21: interior mutability  */
+static void s21(const DiagOpts *o) {
+    title(21, "Interior mutability: write through &T of RefCell-like var (note)");
+    RUN(bc, o, {
+        bc_scope_enter(bc);
+          bc_declare_interior_mut(bc, "cell");  /* like RefCell<T> */
+          bc_borrow              (bc, "r", "cell");
+          bc_use                 (bc, "r");
+          bc_use_write           (bc, "r");     /* NOTE: runtime check applies */
+          bc_release             (bc, "r");
+        bc_scope_exit(bc);
+    });
+}
+
+/* -- Scenario 22: NLL - borrow ends at last use  */
+static void s22(const DiagOpts *o) {
+    title(22, "NLL: borrow ends at last-use, target re-borrowed in same scope");
+    RUN(bc, o, {
+        bc_scope_enter(bc);
+          bc_declare    (bc, "v",  1);
+          bc_borrow     (bc, "r1", "v");
+          bc_use        (bc, "r1");
+          bc_last_use   (bc, "r1");           /* NLL: r1 ends here */
+          /* v is now free to borrow mutably despite r1 not being lexically gone */
+          bc_borrow_mut (bc, "m",  "v");
+          bc_use_write  (bc, "m");
+          bc_release    (bc, "m");
+          bc_use        (bc, "r1");           /* ERROR: used after NLL end */
+        bc_scope_exit(bc);
+    });
+}
+
+/* -- Scenario 23: partial moves  */
+static void s23(const DiagOpts *o) {
+    title(23, "Partial move: field moved out, container partially-moved");
+    RUN(bc, o, {
+        bc_scope_enter(bc);
+          bc_declare    (bc, "pair",  0);        /* struct with fields */
+          bc_field_move (bc, "first", "pair", "fst");
+          bc_use        (bc, "first");           /* moved field: OK */
+          bc_use        (bc, "pair");            /* ERROR: partially moved */
+          bc_field_move (bc, "second","pair", "fst"); /* ERROR: fst already moved */
+        bc_scope_exit(bc);
+    });
+}
+
+/* -- Scenario 24: slice borrows  */
+static void s24(const DiagOpts *o) {
+    title(24, "Slice borrows: non-overlapping OK, overlapping rejected");
+    RUN(bc, o, {
+        bc_scope_enter(bc);
+          bc_declare        (bc, "arr",  1);
+          bc_borrow_slice   (bc, "s1",  "arr", 0, 4);   /* arr[0..4] */
+          bc_borrow_slice   (bc, "s2",  "arr", 4, 8);   /* arr[4..8]: OK */
+          bc_use            (bc, "s1");
+          bc_use            (bc, "s2");
+          bc_release        (bc, "s1");
+          bc_release        (bc, "s2");
+          /* now try overlapping mutable slices */
+          bc_borrow_mut_slice(bc, "m1", "arr", 0, 5);
+          bc_borrow_mut_slice(bc, "m2", "arr", 3, 7);   /* ERROR: overlaps m1 */
+        bc_scope_exit(bc);
+    });
+}
+
+/* -- Scenario 25: two-phase borrows  */
+static void s25(const DiagOpts *o) {
+    title(25, "Two-phase borrows: reserve allows shared borrows to coexist");
+    RUN(bc, o, {
+        bc_scope_enter(bc);
+          bc_declare           (bc, "v",   1);
+          bc_two_phase_reserve (bc, "m",   "v");  /* reserve &mut (not yet active) */
+          bc_borrow            (bc, "r",   "v");  /* shared borrow still allowed */
+          bc_use               (bc, "r");
+          bc_release           (bc, "r");
+          bc_two_phase_activate(bc, "m");          /* now activate: exclusive */
+          bc_use_write         (bc, "m");
+          bc_release           (bc, "m");
+        bc_scope_exit(bc);
+    });
+}
+
+/* -- Scenario 26: lifetime regions  */
+static void s26(const DiagOpts *o) {
+    title(26, "Lifetime regions: borrow outlives its region");
+    RUN(bc, o, {
+        bc_scope_enter(bc);
+          bc_declare           (bc, "data", 0);
+          bc_region_begin      (bc, "'a");
+            bc_borrow_in_region(bc, "r", "data", "'a");
+            bc_use             (bc, "r");
+          bc_region_end        (bc, "'a");   /* r's region ends - r dangling */
+          bc_use               (bc, "r");    /* ERROR */
+        bc_scope_exit(bc);
+    });
+}
+
+/* -- Scenario 27: region variance - valid coercion  */
+/* There is one legitimate error: the coercion itself succeeds
+ * (correct - 'long outlives 'short), but the borrow is still
+ * active when 'short ends. That's actually the right behaviour:
+ * the coercion doesn't extend the borrow's end-of-life obligation,
+ * it only restricts which region it's tagged to.
+ * A language front-end would need to release the borrow before
+ * calling bc_region_end on 'short.
+ */
+static void s27(const DiagOpts *o) {
+    title(27, "Region variance: coerce borrow from longer to shorter region");
+    RUN(bc, o, {
+        bc_scope_enter(bc);
+          bc_declare        (bc, "data", 0);
+          bc_region_begin   (bc, "'long");
+          bc_region_begin   (bc, "'short");
+          bc_region_outlives (bc, "'long", "'short"); /* 'long outlives 'short */
+
+          bc_borrow_in_region(bc, "r", "data", "'long");
+          bc_coerce_region   (bc, "r", "'short"); /* valid: 'long outlives 'short */
+          bc_use             (bc, "r");
+
+          bc_region_end      (bc, "'short");
+          bc_region_end      (bc, "'long");
+        bc_scope_exit(bc);
+    });
+}
+
+/* -- Scenario 28: region outlives violation  */
+static void s28(const DiagOpts *o) {
+    title(28, "Region outlives violation: coerce to longer region rejected");
+    RUN(bc, o, {
+        bc_scope_enter(bc);
+          bc_declare        (bc, "data", 0);
+          bc_region_begin   (bc, "'short");
+          bc_region_begin   (bc, "'long");
+          /* no outlives constraint recorded - 'short does NOT outlive 'long */
+
+          bc_borrow_in_region(bc, "r", "data", "'short");
+          bc_coerce_region   (bc, "r", "'long"); /* ERROR: 'short !outlives 'long */
+
+          bc_region_end      (bc, "'long");
+          bc_region_end      (bc, "'short");
+        bc_scope_exit(bc);
+    });
+}
+
 /* -- Entry point  */
 int main(void) {
     DiagOpts opts = diag_default_opts();
-    opts.colour           = 1;
-    opts.show_scope_depth = 1;
-    opts.show_generations = 1;
-    opts.show_provenance  = 1;
-    opts.show_resources   = 1;
 
-    s1 (&opts);
-    s2 (&opts);
-    s3 (&opts);
-    s4 (&opts);
-    s5 (&opts);
-    s6 (&opts);
-    s7 (&opts);
-    s8 (&opts);
-    s9 (&opts);
-    s10(&opts);
-    s11(&opts);
-    s12(&opts);
-    s13(&opts);
-    s14(&opts);
-    s15(&opts);
-    s16(&opts);
-    s17(&opts);
-    s18(&opts);
+    s1 (&opts); s2 (&opts); s3 (&opts); s4 (&opts); s5 (&opts);
+    s6 (&opts); s7 (&opts); s8 (&opts); s9 (&opts); s10(&opts);
+
+    s11(&opts); s12(&opts); s13(&opts); s14(&opts); s15(&opts);
+    s16(&opts); s17(&opts); s18(&opts);
+
+    s19(&opts); s20(&opts); s21(&opts); s22(&opts); s23(&opts);
+    s24(&opts); s25(&opts); s26(&opts); s27(&opts); s28(&opts);
 
     return 0;
 }
+
+/*
+ * The main things outside this checkers scope would be type-level
+ * variance (contravariance in function argument positions),
+ * trait object lifetime elision, and anything requiring unification
+ * across call sites. These belong in a type checker above this layer,
+ * and not here.
+*/
