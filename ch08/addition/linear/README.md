@@ -2,7 +2,7 @@
 ## Linear Logic
 
 Linear logic is a *resource-sensitive* logical system developed
-by Jean-Yves Girard in 1987. Unlike classical or intuitionional
+by Jean-Yves Girard in 1987. Unlike classical or intuitionistic
 logic where propositions can be used arbitrarily many times,
 linear logic treats propositions as *resources* that must be used
 exactly once. This fundamental shift makes it particularly well-suited
@@ -27,11 +27,12 @@ logic is *timeless*--truths are eternal, unchanging, infinitely
 reusable. Linear logic is *temporal*--it tracks what you have *now*,
 what gets consumed, what gets produced. It's the difference between
 mathematics (eternal truths) and physics (actual stuff that moves around).
+This will be more practical in the code/computational context.
 
 
 ### The Exponentials: Controlled Reuse
 
-Linear logic doesn't completely forbid reuse—instead,
+Linear logic doesn't completely forbid reuse--instead,
 it makes it explicit through *exponential modalities*:
 
 - *!A* ("of course A" or "bang A"): A resource you can use as many
@@ -61,8 +62,9 @@ everything; linear logic makes you earn it.
 
 ### The Connectives: Multiplicative vs. Additive
 
-Linear logic has *eight main connectives*, organized in dual pairs.
-This richness comes from distinguishing between different ways resources can combine.
+Linear logic has *eight main connectives*, organised in dual pairs.
+This richness comes from distinguishing between different ways
+resources can combine.
 
 Why so many? Because linear logic is *finer-grained* than classical logic.
 In classical logic, we have one "and" (∧) and one "or" (∨). But when
@@ -218,36 +220,252 @@ the conclusion is a disjunction (classical). In linear logic, the conclusion
 can be a genuine *multiset* of resources--you can produce many independent
 things.
 
-Key rules include:
+Here are the key inference rules in standard sequent calculus notation:
 
-*Identity*: A ⊢ A (a resource can be passed through unchanged)
+#### Structural Rules
 
-This is the "wire" rule--the simplest proof is just connecting input to output.
+*Identity (Axiom)*:
+```
+─────────
+  A ⊢ A
+```
+A resource can be passed through unchanged.
 
-*Cut*: If Γ ⊢ A, Δ and A, Σ ⊢ Π, Θ then Γ, Σ ⊢ Δ, Π, Θ (compose transformations)
-
-Cut is composition. If you can produce A from Γ, and consume A to get Θ,
-then you can go directly from Γ to Θ by "cutting out the middleman" A.
+*Cut*:
+```
+Γ ⊢ A, Δ    A, Σ ⊢ Π
+─────────────────────
+   Γ, Σ ⊢ Δ, Π
+```
+Compose transformations. If you can produce A from Γ, and consume A to get Π,
+then you can go directly from Γ to Π by "cutting out the middleman" A.
 
 Cut elimination--the theorem that all cuts can be removed from proofs--is
 fundamental. It says that any indirect proof can be made direct, any
 detour can be removed. In computational terms, it's normalization:
 programs can be reduced to simpler forms.
 
-*Tensor right*: If Γ ⊢ A and Δ ⊢ B, then Γ, Δ ⊢ A ⊗ B (combine independent productions)
+*Exchange* (often implicit):
+```
+Γ, A, B, Δ ⊢ Σ
+───────────────
+Γ, B, A, Δ ⊢ Σ
+```
+Order of resources doesn't matter (in most variants of linear logic).
 
-If you can independently produce A from Γ and B from Δ, then you can
-produce both simultaneously. The contexts Γ and Δ are *split* and used
+Note: Linear logic does NOT have weakening or contraction as structural rules.
+These are only available through the exponentials (!, ?).
+
+#### Multiplicative Connectives
+
+*Tensor Right (⊗R)*:
+```
+Γ ⊢ A, Δ      Σ ⊢ B, Π
+──────────────────────
+  Γ, Σ ⊢ A ⊗ B, Δ, Π
+```
+If you can independently produce A from Γ and B from Σ, then you can
+produce both simultaneously. The contexts Γ and Σ are *split* and used
 separately--this is linear logic's way of tracking resource usage.
 
-*With right*: If Γ ⊢ A and Γ ⊢ B, then Γ ⊢ A & B (offer both alternatives from same resources)
+*Tensor Left (⊗L)*:
+```
+Γ, A, B ⊢ Δ
+─────────────
+Γ, A ⊗ B ⊢ Δ
+```
+To use a tensor, decompose it into its components.
 
+*Par Right (⅋R)*:
+```
+Γ ⊢ A, B, Δ
+─────────────
+Γ ⊢ A ⅋ B, Δ
+```
+Par combines resources in the conclusion.
+
+*Par Left (⅋L)*:
+```
+Γ, A ⊢ Δ    Σ, B ⊢ Π
+──────────────────────
+  Γ, Σ, A ⅋ B ⊢ Δ, Π
+```
+To use a par, split the context.
+
+*Multiplicative Units*:
+```
+────────     (1R)
+ Γ ⊢ 1, Δ
+```
+When Γ is empty, this produces 1 from nothing.
+
+```
+  Γ ⊢ Δ
+─────────     (1L)
+ Γ, 1 ⊢ Δ
+```
+The unit 1 can be discarded (when used).
+
+```
+────────     (⊥R)
+ Γ ⊢ ⊥, Δ
+```
+
+```
+  Γ ⊢ Δ
+─────────     (⊥L)
+ Γ, ⊥ ⊢ Δ
+```
+
+#### Additive Connectives
+
+*With Right (&R)*:
+```
+Γ ⊢ A, Δ     Γ ⊢ B, Δ
+──────────────────────
+    Γ ⊢ A & B, Δ
+```
 With the additive &, you use the *same* resources Γ for both branches.
 You're not splitting resources--you're offering alternative *uses* of
 the same pile of stuff.
 
+*With Left (&L₁)* and *(&L₂)*:
+```
+Γ, A ⊢ Δ              Γ, B ⊢ Δ
+─────────             ─────────
+Γ, A & B ⊢ Δ         Γ, A & B ⊢ Δ
+```
+To use a with, choose one side (external choice).
+
+*Plus Right (⊕R₁)* and *(⊕R₂)*:
+```
+Γ ⊢ A, Δ              Γ ⊢ B, Δ
+─────────             ─────────
+Γ ⊢ A ⊕ B, Δ          Γ ⊢ A ⊕ B, Δ
+```
+To prove a plus, choose one side (internal choice).
+
+*Plus Left (⊕L)*:
+```
+Γ, A ⊢ Δ      Γ, B ⊢ Δ
+──────────────────────
+   Γ, A ⊕ B ⊢ Δ
+```
+To use a plus, be ready for either case.
+
+*Additive Units*:
+```
+────────     (⊤R)
+Γ ⊢ ⊤, Δ
+```
+Top can always be proven (no left rule--you can't use ⊤).
+
+```
+           (0L)
+─────────
+Γ, 0 ⊢ Δ
+```
+Zero proves anything (no right rule--you can't prove 0).
+
+#### Linear Implication
+
+*Implication Right (⊸R)*:
+```
+Γ, A ⊢ B, Δ
+────────────
+Γ ⊢ A ⊸ B, Δ
+```
+To prove A ⊸ B, assume A and prove B.
+
+*Implication Left (⊸L)*:
+```
+Γ ⊢ A, Δ      Σ, B ⊢ Π
+──────────────────────
+  Γ, Σ, A ⊸ B ⊢ Δ, Π
+```
+To use A ⊸ B, provide an A to get a B.
+
+#### Exponentials
+
+*Bang Right (!R)*:
+```
+  Γ ⊢ A
+─────────
+!Γ ⊢ !A
+```
+Where !Γ means every formula in Γ is wrapped in !.
+To prove !A, prove A using only unlimited resources.
+
+*Bang Left (!L)*:
+```
+Γ, A ⊢ Δ
+─────────
+Γ, !A ⊢ Δ
+```
+You can extract one copy from unlimited copies (dereliction).
+
+*Weakening (!W)*:
+```
+  Γ ⊢ Δ
+─────────
+Γ, !A ⊢ Δ
+```
+Unlimited resources can be discarded.
+
+*Contraction (!C)*:
+```
+ Γ, !A, !A ⊢ Δ
+───────────────
+   Γ, !A ⊢ Δ
+```
+Unlimited resources can be duplicated.
+
+*Question Mark (Dual to !)*:
+The rules for ?A are dual to those for !A (swap left/right, premises/conclusions).
+
+#### Negation
+
+*Negation Right (¬R)*:
+```
+A, Γ ⊢ Δ
+─────────
+Γ ⊢ A⊥, Δ
+```
+
+*Negation Left (¬L)*:
+```
+Γ ⊢ A, Δ
+─────────
+Γ, A⊥ ⊢ Δ
+```
+
+Linear negation satisfies (A⊥)⊥ = A (involution).
+
+#### Example Derivation
+
+Let's prove (A ⊗ B) ⊸ (B ⊗ A) (tensor is commutative):
+
+```
+─────────      ─────────
+  B ⊢ B         A ⊢ A         (Identity)
+─────────────────────────     (⊗R)
+      A, B ⊢ B ⊗ A
+      ─────────────           (⊗L)
+      A ⊗ B ⊢ B ⊗ A
+      ─────────────           (⊸R)
+      ⊢ (A ⊗ B) ⊸ (B ⊗ A)
+```
+
+Reading bottom-to-top:
+1. Start with the goal: ⊢ (A ⊗ B) ⊸ (B ⊗ A)
+2. Apply ⊸R: assume A ⊗ B, prove B ⊗ A
+3. Apply ⊗L on the left: decompose A ⊗ B into A, B
+4. Apply ⊗R: split the context to prove B and A independently
+5. Apply Identity twice: B ⊢ B and A ⊢ A
+
 The beauty is that each connective's meaning emerges from its inference rules.
 The rules aren't arbitrary--they encode the exact resource behavior we want.
+
 
 
 ### Phase Semantics and Models
