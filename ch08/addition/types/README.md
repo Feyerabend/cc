@@ -1,4 +1,9 @@
 
+Point of this: summarise all of the types, include HOTT and linear logic here ..
+
+Into to the future!
+
+
 ## 1. Basic Type Systems
 
 These define the basic typed computation model.
