@@ -1,4 +1,9 @@
 
+Point of this: summarise all of the types, include HOTT and linear logic here ..
+
+Into to the future!
+
+
 ## 1. Basic Type Systems
 
 These define the basic typed computation model.
@@ -836,12 +841,12 @@ homotopy type theory
 Many type systems correspond to *logical systems*.
 
 ```
-STLC              ↔ intuitionistic logic
-System F          ↔ second-order logic
-Linear types      ↔ linear logic
-Dependent types   ↔ higher-order logic
-Session types     ↔ linear logic + π-calculus
-HoTT              ↔ homotopy theory
+STLC              <--> intuitionistic logic
+System F          <--> second-order logic
+Linear types      <--> linear logic
+Dependent types   <--> higher-order logic
+Session types     <--> linear logic + π-calculus
+HoTT              <--> homotopy theory
 ```
 
 This is part of the *Curry–Howard–Lambek correspondence*.
