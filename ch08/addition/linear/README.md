@@ -520,9 +520,9 @@ graph--it shows how resources flow through a computation.
 
 Linear logic has a beautiful computational interpretation
 through the Curry-Howard correspondence:
-- *Propositions* <-> *Types*
-- *Proofs* <-> *Programs*  
-- *Proof normalization* <-> *Computation*
+- *Propositions* <--> *Types*
+- *Proofs* <--> *Programs*  
+- *Proof normalization* <--> *Computation*
 
 In this correspondence:
 - A ⊸ B corresponds to linear functions (consuming their argument exactly once)
@@ -662,6 +662,9 @@ linear types say "too bad, use it exactly once or the code doesn't compile."
 *at most once* (they can be discarded). This is more
 practical--sometimes you want to ignore a return value or abandon a resource.
 
+We have already introduced [affine types](./../../../ch05/addition/affine/)
+earlier in connection to memory handling.
+
 Rust uses affine types (disguised as "ownership"):
 
 ```rust
@@ -705,7 +708,8 @@ a book--they can read it, but it's still your book.
 #### Relevant Types: At Least Once
 
 *Relevant types* ensure variables are used *at least once*
-(can be duplicated). This prevents resource leaks—you can't forget to close a file:
+(can be duplicated). This prevents resource leaks--you
+can't forget to close a file:
 
 ```rust
 // Conceptual relevant type system
@@ -762,7 +766,6 @@ fn usage() {
 ```
 
 Key features:
-
 1. *Move semantics*: By default, assignment/passing moves ownership
 2. *Borrowing*: `&T` (shared) and `&mut T` (exclusive)
    allow temporary access without consuming
@@ -882,8 +885,10 @@ means "linear multiplicity"--this argument must be used exactly once.
 
 #### Session Types: Linear Logic for Communication
 
-Session types are a beautiful application of linear logic to concurrent
-programming. The idea: a communication protocol is a linear logic proposition.
+[Session types](./../../../ch07/addition/sessions/)
+are a beautiful application of linear logic to concurrent
+programming. The idea: a communication protocol
+is a linear logic proposition.
 
 Imagine a protocol: "send a number, receive a string, then close the channel."
 In session types, this is:
@@ -904,7 +909,6 @@ The correspondence is perfect.
 #### Practical Benefits
 
 Linear/affine types catch bugs at compile time:
-
 1. *Memory safety without GC*: Rust prevents use-after-free, double-free,
    and leaks through affine types
 2. *Resource management*: Files, sockets, locks automatically handled correctly
@@ -962,7 +966,7 @@ logic is realistic. It's logic for a world where memory is finite, time
 is real, and actions matter.
 
 
-### Conclusion: Logic Meets Reality
+### Conclusion
 
 Linear logic represents a fundamental shift in how we think about logic.
 Classical logic is the logic of eternal truths--mathematical facts that
