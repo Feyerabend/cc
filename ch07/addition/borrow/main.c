@@ -66,7 +66,7 @@ static void title(int n, const char *desc) {
 static void s1(const DiagOpts *o) {
     title(1, "Happy path - ownership, borrows, assign");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
-    bc_scope_enter(bc);
+    bc_scope_enter (bc);
       bc_declare    (bc, "x",  1);
       bc_borrow     (bc, "r1", "x");
       bc_borrow     (bc, "r2", "x");
@@ -79,19 +79,19 @@ static void s1(const DiagOpts *o) {
       bc_release    (bc, "m");
       bc_assign     (bc, "x");
       bc_use        (bc, "x");
-    bc_scope_exit(bc);
-    diag_render_all(bc, o); diag_render_summary(bc, o); free(bc);
+    bc_scope_exit   (bc);
+    diag_render_all (bc, o); diag_render_summary(bc, o); free(bc);
 }
 
 /* -- Scenario 2: Double free  */
 static void s2(const DiagOpts *o) {
     title(2, "Double free");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
-    bc_scope_enter(bc);
-      bc_declare(bc, "p", 0);
-      bc_drop   (bc, "p");
-      bc_drop   (bc, "p");   /* ERROR: double free */
-    bc_scope_exit(bc);
+    bc_scope_enter (bc);
+      bc_declare   (bc, "p", 0);
+      bc_drop      (bc, "p");
+      bc_drop      (bc, "p");   /* ERROR: double free */
+    bc_scope_exit  (bc);
     diag_render_all(bc, o); diag_render_summary(bc, o); free(bc);
 }
 
@@ -99,12 +99,12 @@ static void s2(const DiagOpts *o) {
 static void s3(const DiagOpts *o) {
     title(3, "Use after move");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
-    bc_scope_enter(bc);
-      bc_declare(bc, "a", 0);
-      bc_move   (bc, "b", "a");
-      bc_use    (bc, "a");      /* ERROR: moved */
-      bc_use    (bc, "b");      /* OK */
-    bc_scope_exit(bc);
+    bc_scope_enter (bc);
+      bc_declare   (bc, "a", 0);
+      bc_move      (bc, "b", "a");
+      bc_use       (bc, "a");      /* ERROR: moved */
+      bc_use       (bc, "b");      /* OK */
+    bc_scope_exit  (bc);
     diag_render_all(bc, o); diag_render_summary(bc, o); free(bc);
 }
 
@@ -112,27 +112,27 @@ static void s3(const DiagOpts *o) {
 static void s4(const DiagOpts *o) {
     title(4, "Dangling borrow - borrow outlives owner across scopes");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
-    bc_scope_enter(bc);
+    bc_scope_enter  (bc);
       bc_scope_enter(bc);
-        bc_declare(bc, "tmp",    0);
-        bc_borrow (bc, "dangle", "tmp");
-        bc_use    (bc, "dangle");
-      bc_scope_exit(bc);   /* tmp + dangle released */
-      bc_use(bc, "dangle"); /* ERROR: released */
-    bc_scope_exit(bc);
-    diag_render_all(bc, o); diag_render_summary(bc, o); free(bc);
+        bc_declare  (bc, "tmp",    0);
+        bc_borrow   (bc, "dangle", "tmp");
+        bc_use      (bc, "dangle");
+      bc_scope_exit (bc);   /* tmp + dangle released */
+      bc_use        (bc, "dangle"); /* ERROR: released */
+    bc_scope_exit   (bc);
+    diag_render_all (bc, o); diag_render_summary(bc, o); free(bc);
 }
 
 /* -- Scenario 5: Borrow conflict with provenance  */
 static void s5(const DiagOpts *o) {
     title(5, "Shared + mutable borrow conflict (provenance shown)");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
-    bc_scope_enter(bc);
+    bc_scope_enter (bc);
       bc_declare   (bc, "v",  1);
       bc_borrow    (bc, "r1", "v");   /* shared borrow created here */
       bc_borrow    (bc, "r2", "v");   /* second shared borrow */
       bc_borrow_mut(bc, "mr", "v");   /* ERROR: shared borrows exist */
-    bc_scope_exit(bc);
+    bc_scope_exit  (bc);
     diag_render_all(bc, o); diag_render_summary(bc, o); free(bc);
 }
 
@@ -141,10 +141,10 @@ static void s6(const DiagOpts *o) {
     title(6, "Move while borrowed");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
     bc_scope_enter(bc);
-      bc_declare(bc, "src",  0);
-      bc_borrow (bc, "ref1", "src");
-      bc_move   (bc, "dst",  "src"); /* ERROR: borrowed */
-    bc_scope_exit(bc);
+      bc_declare  (bc, "src",  0);
+      bc_borrow   (bc, "ref1", "src");
+      bc_move     (bc, "dst",  "src"); /* ERROR: borrowed */
+    bc_scope_exit (bc);
     diag_render_all(bc, o); diag_render_summary(bc, o); free(bc);
 }
 
@@ -197,15 +197,15 @@ static void s9(const DiagOpts *o) {
 static void s10(const DiagOpts *o) {
     title(10, "Assign to immutable / borrowed variable");
     BC *bc = calloc(1, sizeof *bc); bc_init(bc);
-    bc_scope_enter(bc);
-      bc_declare (bc, "imm",   0);
-      bc_declare (bc, "mut_v", 1);
-      bc_assign  (bc, "imm");           /* ERROR: immutable */
-      bc_borrow  (bc, "r", "mut_v");
-      bc_assign  (bc, "mut_v");         /* ERROR: borrowed */
-      bc_release (bc, "r");
-      bc_assign  (bc, "mut_v");         /* OK */
-    bc_scope_exit(bc);
+    bc_scope_enter (bc);
+      bc_declare   (bc, "imm",   0);
+      bc_declare   (bc, "mut_v", 1);
+      bc_assign    (bc, "imm");           /* ERROR: immutable */
+      bc_borrow    (bc, "r", "mut_v");
+      bc_assign    (bc, "mut_v");         /* ERROR: borrowed */
+      bc_release   (bc, "r");
+      bc_assign    (bc, "mut_v");         /* OK */
+    bc_scope_exit  (bc);
     diag_render_all(bc, o); diag_render_summary(bc, o); free(bc);
 }
 
@@ -494,9 +494,9 @@ static void s27(const DiagOpts *o) {
     title(27, "Region variance: coerce borrow from longer to shorter region");
     RUN(bc, o, {
         bc_scope_enter(bc);
-          bc_declare        (bc, "data", 0);
-          bc_region_begin   (bc, "'long");
-          bc_region_begin   (bc, "'short");
+          bc_declare         (bc, "data", 0);
+          bc_region_begin    (bc, "'long");
+          bc_region_begin    (bc, "'short");
           bc_region_outlives (bc, "'long", "'short"); /* 'long outlives 'short */
 
           bc_borrow_in_region(bc, "r", "data", "'long");
