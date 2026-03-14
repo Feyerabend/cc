@@ -101,10 +101,11 @@ range of errors before any code runs.
 
 Linear and affine types pursue a different dimension of logical control.
 They do not ask *what* a value is, but *how many times* it is used.
-[Linear logic](./../linear/), developed by Jean-Yves Girard, treats logical propositions
-as *resources* that are consumed by proof. It corresponds directly to the intuition
-that some values: file handles, network connections, allocated memory must be used
-exactly once: opened and closed, sent and acknowledged, allocated and freed.
+[Linear logic](./../../../ch08/addition/), developed by Jean-Yves Girard,
+treats logical propositions as *resources* that are consumed by proof.
+It corresponds directly to the intuition that some values: file handles,
+network connections, allocated memory must be used exactly once:
+opened and closed, sent and acknowledged, allocated and freed.
 [Affine types](./../../../ch05/addition/affine/) relax this to *at most once*:
 a value may be used or discarded, but not duplicated.
 Rust's ownership system is, at its core, an affine type system implemented with practical
