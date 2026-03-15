@@ -356,7 +356,7 @@ int main(void) {
     task_create(counter_task, "Counter", 1, NULL);
     task_create(idle_task,    "Idle",    0, NULL);
     task_create(shell_task,   "Shell",   1, NULL);
-    task_create(display_task, "Display", 1, NULL);
+    task_create(display_task, "Display", 0, NULL);
 
     shell_init();
 
