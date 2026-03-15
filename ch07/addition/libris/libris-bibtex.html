@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIBRIS Xsearch with Recommendations</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        input, select, button { padding: 10px; border-radius: 4px; border: 1px solid #ddd; }
+        input { flex-grow: 1; min-width: 200px; }
+        #results { margin-top: 20px; }
+        .hidden { display: none; }
+        
+        /* Buttons */
+        button {
+            background-color: #005A9C;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: #003D6B; }
+        button.secondary {
+            background-color: #6c757d;
+        }
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        /* Recommendation panels */
+        .recommendation-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 25px 0;
+        }
+        .recommendation-panel h3 {
+            color: #2d3748;
+            margin-top: 0;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        .recommendation-card {
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        .recommendation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .recommendation-title {
+            font-weight: bold;
+            color: #2b6cb0;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .recommendation-type {
+            font-size: 0.8em;
+            color: #718096;
+            display: inline-block;
+            background: #ebf4ff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-right: 8px;
+        }
+        
+        /* History list */
+        #history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .history-item {
+            padding: 8px;
+            margin: 5px 0;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .history-item:hover {
+            background-color: #f0f7ff;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>LIBRIS Xsearch</h1>
+    
+    <div class="search-box">
+        <input type="text" id="query" placeholder="Search for books, articles...">
+        <button onclick="searchLibris(true)">Search</button>
+        <button id="showHistoryBtn" class="secondary" onclick="showSearchHistory()">Show History</button>
+    </div>
+
+    <!-- Active recommendations panel -->
+    <div id="recommendations" class="hidden recommendation-panel">
+        <h3>Recommended Related Works</h3>
+        <div id="recommendation-list"></div>
+    </div>
+
+    <!-- Search history panel -->
+    <div id="history-panel" class="hidden recommendation-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>Your Search History</h3>
+            <button onclick="clearHistory()" class="secondary" style="padding: 5px 10px; font-size: 0.8em;">Clear</button>
+        </div>
+        <div id="history-list"></div>
+    </div>
+
+    <div id="results"></div>
+    <div>
+        <button id="prevBtn" class="hidden" onclick="changePage(-10)">← Previous</button>
+        <button id="nextBtn" class="hidden" onclick="changePage(10)">Next →</button>
+    </div>
+
+    <script>
+        // Configuration
+        let start = 1;
+        const pageSize = 10;
+        let totalRecords = 0;
+        let currentResults = [];
+        
+        // Initialize storage
+        if (!localStorage.getItem('searchHistory')) {
+            localStorage.setItem('searchHistory', JSON.stringify([]));
+        }
+        
+        // Recommendation engine
+        const recommendationEngine = {
+            knowledgeBase: [],
+            
+            addResults: function(results) {
+                // Extract key information from results
+                const newKnowledge = results.map(item => ({
+                    id: item.identifier || Math.random().toString(36).substr(2, 9),
+                    title: item.title || "Untitled",
+                    type: item.type || "Unknown",
+                    keywords: this.extractKeywords(item),
+                    authors: item.creator ? (Array.isArray(item.creator) ? item.creator : [item.creator]) : []
+                }));
+                
+                this.knowledgeBase = [...this.knowledgeBase, ...newKnowledge].slice(-50); // Keep last 50 items
+            },
+            
+            extractKeywords: function(item) {
+                // Simple keyword extraction from title and subjects
+                const text = [item.title, item.subject?.join(' ')].filter(Boolean).join(' ');
+                return [...new Set(
+                    text.toLowerCase()
+                        .split(/\W+/)
+                        .filter(word => word.length > 3 && !['and', 'the', 'for'].includes(word))
+                )];
+            },
+            
+            getRecommendations: function(currentItem) {
+                if (this.knowledgeBase.length < 3) return [];
+                
+                // Simple content-based filtering
+                const currentKeywords = this.extractKeywords(currentItem);
+                
+                return this.knowledgeBase
+                    .filter(item => item.id !== currentItem.identifier)
+                    .map(item => {
+                        const commonKeywords = item.keywords.filter(kw => 
+                            currentKeywords.includes(kw)
+                        ).length;
+                        return { ...item, score: commonKeywords };
+                    })
+                    .filter(item => item.score > 0)
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 3); // Return top 3
+            }
+        };
+
+        function searchLibris(reset = false) {
+            const query = document.getElementById("query").value.trim();
+            const format = "json";
+
+            if (!query) {
+                alert("Please enter a search term");
+                return;
+            }
+
+            if (reset) start = 1;
+
+            // Add to search history
+            addToHistory(query);
+
+            fetch(`https://libris.kb.se/xsearch?query=${encodeURIComponent(query)}&format=${format}&start=${start}&n=${pageSize}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Network error");
+                    return response.text();
+                })
+                .then(data => {
+                    try {
+                        const jsonData = JSON.parse(data);
+                        if (jsonData.xsearch?.list) {
+                            currentResults = jsonData.xsearch.list;
+                            totalRecords = jsonData.xsearch.records;
+                            displayResults(currentResults);
+                            updatePagination();
+                            
+                            // Show recommendations from *previous* searches before adding current results
+                            if (currentResults.length > 0) {
+                                showRecommendations(currentResults[0]);
+                            }
+
+                            // Add current results to engine after recommendations are computed
+                            recommendationEngine.addResults(currentResults);
+                        } else {
+                            showNoResults();
+                        }
+                    } catch (e) {
+                        showError("Failed to parse results");
+                    }
+                })
+                .catch(err => showError(err.message));
+        }
+
+        function addToHistory(query) {
+            const history = JSON.parse(localStorage.getItem('searchHistory'));
+            // Case-insensitive duplicate check against stored entries
+            if (!history.some(h => h.toLowerCase() === query.toLowerCase())) {
+                history.unshift(query);
+                // Keep only last 20 searches
+                if (history.length > 20) history.pop();
+                localStorage.setItem('searchHistory', JSON.stringify(history));
+            }
+        }
+
+        function showSearchHistory() {
+            const historyPanel = document.getElementById("history-panel");
+            const historyList = document.getElementById("history-list");
+            
+            // Toggle visibility
+            if (historyPanel.classList.contains("hidden")) {
+                const history = JSON.parse(localStorage.getItem('searchHistory'));
+                historyList.innerHTML = "";
+                
+                if (history.length === 0) {
+                    historyList.innerHTML = "<p>No search history yet</p>";
+                } else {
+                    history.forEach(query => {
+                        const item = document.createElement("div");
+                        item.className = "history-item";
+                        item.textContent = query;
+                        item.onclick = () => {
+                            document.getElementById("query").value = query;
+                            searchLibris(true);
+                            historyPanel.classList.add("hidden");
+                        };
+                        historyList.appendChild(item);
+                    });
+                }
+                
+                historyPanel.classList.remove("hidden");
+                document.getElementById("recommendations").classList.add("hidden");
+            } else {
+                historyPanel.classList.add("hidden");
+            }
+        }
+
+        function clearHistory() {
+            localStorage.setItem('searchHistory', JSON.stringify([]));
+            document.getElementById("history-list").innerHTML = "<p>No search history yet</p>";
+        }
+
+        function showRecommendations(baseItem) {
+            const recommendations = recommendationEngine.getRecommendations(baseItem);
+            const container = document.getElementById("recommendations");
+            const list = document.getElementById("recommendation-list");
+            
+            list.innerHTML = "";
+            
+            if (recommendations.length === 0) {
+                container.classList.add("hidden");
+                return;
+            }
+            
+            recommendations.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "recommendation-card";
+                card.innerHTML = `
+                    <div class="recommendation-type">${item.type}</div>
+                    <div class="recommendation-title" onclick="searchRecommended('${item.title.replace(/'/g, "\\'")}')">${item.title}</div>
+                    ${item.authors.length ? `<div>By ${item.authors.join(', ')}</div>` : ''}
+                `;
+                list.appendChild(card);
+            });
+            
+            container.classList.remove("hidden");
+            document.getElementById("history-panel").classList.add("hidden");
+        }
+
+        function searchRecommended(title) {
+            document.getElementById("query").value = title;
+            searchLibris(true);
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById("results");
+            container.innerHTML = "";
+            
+            results.forEach(item => {
+                const div = document.createElement("div");
+                div.style.margin = "15px 0";
+                div.style.padding = "10px";
+                div.style.borderBottom = "1px solid #eee";
+                div.innerHTML = `
+                    <h3 style="margin:0">${item.title || "Untitled"}</h3>
+                    ${item.creator ? `<p>By ${Array.isArray(item.creator) ? item.creator.join(', ') : item.creator}</p>` : ''}
+                    ${item.date ? `<small>Published: ${item.date}</small>` : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updatePagination() {
+            document.getElementById("prevBtn").classList.toggle("hidden", start === 1);
+            document.getElementById("nextBtn").classList.toggle("hidden", start + pageSize > totalRecords);
+        }
+
+        function changePage(offset) {
+            start += offset;
+            searchLibris();
+        }
+
+        function showNoResults() {
+            document.getElementById("results").innerHTML = "<p>No results found</p>";
+            totalRecords = 0;
+            updatePagination();
+        }
+
+        function showError(message) {
+            document.getElementById("results").innerHTML = `<p style="color:red">Error: ${message}</p>`;
+        }
+    </script>
+</body>
+</html>

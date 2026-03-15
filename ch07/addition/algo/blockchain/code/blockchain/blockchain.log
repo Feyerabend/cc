@@ -1,0 +1,44 @@
+2025-06-15 15:53:39,717 - PersistenceManager - INFO - No blockchain file found at refined_blockchain.json
+2025-06-15 15:53:39,717 - Blockchain - INFO - Created genesis block
+2025-06-15 15:53:39,720 - main - INFO - Starting blockchain node on port 5000
+2025-06-15 15:53:39,720 - main - INFO - Configuration: difficulty=4, reward=10.0
+2025-06-15 15:53:55,463 - PersistenceManager - INFO - No blockchain file found at refined_blockchain.json
+2025-06-15 15:53:55,463 - Blockchain - INFO - Created genesis block
+2025-06-15 15:53:55,465 - main - INFO - Starting blockchain node on port 5001
+2025-06-15 15:53:55,465 - main - INFO - Configuration: difficulty=4, reward=10.0
+2025-06-15 15:53:55,481 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://10.0.1.20:5001
+2025-06-15 15:53:55,481 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-06-15 16:00:23,295 - PersistenceManager - INFO - No blockchain file found at refined_blockchain.json
+2025-06-15 16:00:23,295 - Blockchain - INFO - Created genesis block
+2025-06-15 16:00:23,311 - Blockchain - INFO - No transactions to mine
+2025-06-15 16:00:23,316 - Blockchain - INFO - Added transaction: b7735718b45ab67af6474ea39d3d9fe4025fc43dbe5553df8407368b7a598bb3
+2025-06-15 16:00:23,316 - Blockchain - INFO - Added transaction: ddad03c32c2deaa68877b985191f65a649d7e70ca66d232de1f47d8c0478ee54
+2025-06-15 16:00:23,316 - Blockchain - INFO - Mining block #1...
+2025-06-15 16:00:23,321 - PersistenceManager - INFO - Blockchain saved to refined_blockchain.json
+2025-06-15 16:00:23,321 - Blockchain - INFO - Block #1 mined in 0.00s with 3 transactions
+2025-06-15 16:04:17,331 - PersistenceManager - INFO - Blockchain loaded from refined_blockchain.json
+2025-06-15 16:04:17,352 - Blockchain - ERROR - Loaded blockchain is invalid: ["Block 1: Block doesn't meet difficulty requirement: 4"]
+2025-06-15 16:04:17,352 - Blockchain - INFO - Created genesis block
+2025-06-15 16:04:17,357 - main - INFO - Starting blockchain node on port 5001
+2025-06-15 16:04:17,357 - main - INFO - Configuration: difficulty=4, reward=10.0
+2025-06-15 16:04:17,421 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://10.0.1.20:5001
+2025-06-15 16:04:17,421 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-06-15 16:04:20,373 - PersistenceManager - INFO - Blockchain loaded from refined_blockchain.json
+2025-06-15 16:04:20,380 - Blockchain - ERROR - Loaded blockchain is invalid: ["Block 1: Block doesn't meet difficulty requirement: 2"]
+2025-06-15 16:04:20,380 - Blockchain - INFO - Created genesis block
+2025-06-15 16:04:20,382 - Blockchain - INFO - Added transaction: 27e27e1098a58d07499b2534d741e04e7d4d0ef83d8511aacd873ed4914e31e7
+2025-06-15 16:04:20,382 - Blockchain - INFO - Mining block #1...
+2025-06-15 16:04:20,383 - PersistenceManager - INFO - Blockchain saved to refined_blockchain.json
+2025-06-15 16:04:20,383 - Blockchain - INFO - Block #1 mined in 0.00s with 2 transactions
+2025-06-15 16:04:20,385 - Blockchain - INFO - Added transaction: 6426a35d9b42940e5698c0c7a09d3384fa5dba956f530cb3e152d67640fd2653
+2025-06-15 16:04:20,385 - Blockchain - WARNING - Invalid transaction: ['Insufficient balance: 0 < 5.0']
+2025-06-15 16:04:20,388 - Blockchain - WARNING - Invalid transaction: ['Insufficient balance: 0 < 5.0']
+2025-06-15 16:04:20,388 - Blockchain - INFO - Mining block #2...
+2025-06-15 16:04:20,398 - PersistenceManager - INFO - Blockchain saved to refined_blockchain.json
+2025-06-15 16:04:20,398 - Blockchain - INFO - Block #2 mined in 0.00s with 2 transactions

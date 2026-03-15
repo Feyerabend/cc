@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIBRIS Xsearch</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 1000px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h2 {
+            color: #005A9C;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .search-container {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 120px;
+        }
+        input, select { 
+            padding: 10px; 
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex-grow: 1;
+            max-width: 400px;
+        }
+        .buttons-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #005A9C;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #003D6B;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button.secondary {
+            background-color: #6c757d;
+        }
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+        }
+        .pagination-info {
+            font-style: italic;
+            color: #666;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .result-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            margin-bottom: 10px;
+        }
+        .result-title {
+            font-weight: bold;
+            color: #005A9C;
+            margin-bottom: 5px;
+        }
+        .result-meta {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+        .hidden {
+            display: none;
+        }
+        .xml-view {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow: auto;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+        .xml-toggle {
+            color: #005A9C;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        .xml-toggle:hover {
+            color: #003D6B;
+        }
+        .citation-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-left: 3px solid #005A9C;
+        }
+    </style>
+</head>
+<body>
+    <h2>LIBRIS Xsearch API</h2>
+
+    <div class="search-container">
+        <div class="form-group">
+            <label for="query">Search Query:</label>
+            <input type="text" id="query" placeholder="Enter search term">
+        </div>
+
+        <div class="form-group">
+            <label for="format">Format:</label>
+            <select id="format">
+                <option value="json">JSON</option>
+                <option value="bibtex">Bibtex</option>
+                <option value="oxford">Oxford</option>
+                <option value="harvard">Harvard</option>
+                <option value="refworks">Refworks</option>
+                <option value="marcxml">MARC-XML</option>
+                <option value="mods">MODS</option>
+                <option value="ris">RIS</option>
+                <option value="dc">Dublin Core</option>
+                <option value="rdfdc">RDF + Dublin Core</option>
+            </select>
+        </div>
+
+        <div class="buttons-container">
+            <button id="searchBtn" onclick="searchLibris(true)">Search</button>
+            <button id="resetBtn" class="secondary" onclick="resetSearch()">Reset</button>
+        </div>
+    </div>
+
+    <div id="loading" class="loading hidden">Searching LIBRIS database ..</div>
+
+    <div id="resultsContainer" class="hidden">
+        <h3>Results</h3>
+        <div id="resultsStats"></div>
+        <div id="results"></div>
+
+        <div class="pagination">
+            <div>
+                <button id="prevBtn" disabled onclick="changePage(-pageSize)">Previous</button>
+                <button id="nextBtn" disabled onclick="changePage(pageSize)">Next</button>
+            </div>
+            <div class="pagination-info" id="paginationInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        let start = 1; // Start at result #1
+        const pageSize = 10; // Number of results per page
+        let totalRecords = 0; // Total results found
+        let currentQuery = ""; // Keep track of current query
+
+        // Add event listener for pressing Enter in search field
+        document.getElementById("query").addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                searchLibris(true);
+            }
+        });
+
+        function searchLibris(reset = false) {
+            let query = document.getElementById("query").value.trim();
+            let format = document.getElementById("format").value;
+
+            if (!query) {
+                alert("Please enter a search term.");
+                return;
+            }
+
+            if (reset) {
+                start = 1; // Reset pagination when making a new search
+                currentQuery = query;
+            }
+
+            // Show loading indicator
+            document.getElementById("loading").classList.remove("hidden");
+            document.getElementById("resultsContainer").classList.add("hidden");
+
+            // Disable search button during fetch
+            document.getElementById("searchBtn").disabled = true;
+
+            let apiUrl = `https://libris.kb.se/xsearch?query=${encodeURIComponent(query)}&format=${format}&start=${start}&n=${pageSize}`;
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error("Network response was not ok");
+
+                    // Try to get total records from X-Total-Count header if available
+                    const totalCountHeader = response.headers.get("X-Total-Count");
+                    if (totalCountHeader) {
+                        totalRecords = parseInt(totalCountHeader);
+                    }
+
+                    // Route by requested format, not content-type header
+                    if (format === "json") {
+                        return response.json().then(data => ({ data, format }));
+                    } else {
+                        return response.text().then(text => ({ rawContent: text, format: format }));
+                    }
+                })
+                .then(({ data, rawContent, format }) => {
+                    // Hide loading indicator
+                    document.getElementById("loading").classList.add("hidden");
+                    document.getElementById("resultsContainer").classList.remove("hidden");
+
+                    // Handle JSON response
+                    if (data && data.xsearch && data.xsearch.records !== undefined) {
+                        totalRecords = parseInt(data.xsearch.records);
+                        displayResults(data.xsearch.list || []);
+                        updatePagination();
+                    } 
+                    // Handle non-JSON formats
+                    else if (rawContent) {
+                        displayFormattedContent(rawContent, format);
+                        updatePagination();
+                    }
+                    else {
+                        document.getElementById("results").innerHTML = "<div class='result-item'>No results found.</div>";
+                        document.getElementById("resultsStats").textContent = "0 results found";
+                        totalRecords = 0;
+                        updatePagination();
+                    }
+
+                    // Re-enable search button
+                    document.getElementById("searchBtn").disabled = false;
+                })
+                .catch(error => {
+                    // Hide loading indicator
+                    document.getElementById("loading").classList.add("hidden");
+                    document.getElementById("resultsContainer").classList.remove("hidden");
+
+                    document.getElementById("results").innerHTML = 
+                        `<div class='result-item'>Error fetching data: ${error.message}</div>`;
+                    document.getElementById("resultsStats").textContent = "Error occurred";
+
+                    // Re-enable search button
+                    document.getElementById("searchBtn").disabled = false;
+                });
+        }
+
+        function displayResults(records) {
+            let resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";
+
+            if (!records || records.length === 0) {
+                resultsDiv.innerHTML = "<div class='result-item'>No results found.</div>";
+                document.getElementById("resultsStats").textContent = "0 results found";
+                return;
+            }
+
+            // Update result stats
+            document.getElementById("resultsStats").textContent = 
+                `Showing ${start} - ${Math.min(start + records.length - 1, totalRecords)} of ${totalRecords} results`;
+
+            records.forEach(record => {
+                let item = document.createElement("div");
+                item.className = "result-item";
+
+                let title = document.createElement("div");
+                title.className = "result-title";
+                title.textContent = record.title || "No title available";
+                item.appendChild(title);
+
+                // Add additional metadata if available
+                let meta = document.createElement("div");
+                meta.className = "result-meta";
+
+                let metaText = [];
+                if (record.creator) metaText.push(`Author: ${record.creator}`);
+                if (record.date) metaText.push(`Date: ${record.date}`);
+                if (record.type) metaText.push(`Type: ${record.type}`);
+                if (record.identifier) metaText.push(`ID: ${record.identifier}`);
+
+                meta.textContent = metaText.join(" | ");
+                if (metaText.length > 0) {
+                    item.appendChild(meta);
+                }
+
+                resultsDiv.appendChild(item);
+            });
+        }
+
+        function displayFormattedContent(content, format) {
+            let resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";
+
+            // Try to parse XML formats
+            if (format === "marcxml" || format === "mods") {
+                try {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(content, "text/xml");
+
+                    // Check for parser errors
+                    const parserErrors = xmlDoc.getElementsByTagName("parsererror");
+                    if (parserErrors.length > 0) {
+                        throw new Error("XML parsing error");
+                    }
+
+                    // Handle MARC-XML
+                    if (format === "marcxml") {
+                        displayMarcXmlResults(xmlDoc, resultsDiv);
+                    }
+                    // Handle MODS
+                    else if (format === "mods") {
+                        displayModsResults(xmlDoc, resultsDiv);
+                    }
+
+                    // Add raw XML toggle
+                    const toggle = document.createElement("div");
+                    toggle.className = "xml-toggle";
+                    toggle.textContent = "Show raw XML";
+                    toggle.onclick = function() {
+                        const rawPre = document.createElement("pre");
+                        rawPre.className = "xml-view";
+                        rawPre.textContent = formatXml(content);
+
+                        if (this.textContent === "Show raw XML") {
+                            resultsDiv.appendChild(rawPre);
+                            this.textContent = "Hide raw XML";
+                        } else {
+                            resultsDiv.removeChild(resultsDiv.lastChild);
+                            this.textContent = "Show raw XML";
+                        }
+                    };
+
+                    resultsDiv.insertBefore(toggle, resultsDiv.firstChild);
+
+                } catch (error) {
+                    console.error("Error parsing XML:", error);
+                    displayRawContent(content, format);
+                }
+            } 
+            // Handle citation formats
+            else if (format === "bibtex" || format === "oxford" || format === "harvard" || format === "refworks") {
+                displayCitationResults(content, format);
+            }
+            // For other formats, just display raw content
+            else {
+                displayRawContent(content, format);
+            }
+
+            // Update stats
+            document.getElementById("resultsStats").textContent = 
+                `Showing ${start} - ${Math.min(start + pageSize - 1, totalRecords)} of ${totalRecords} results (${format.toUpperCase()})`;
+        }
+
+        function displayMarcXmlResults(xmlDoc, container) {
+            const records = xmlDoc.getElementsByTagName("record");
+
+            if (records.length === 0) {
+                container.innerHTML = "<div class='result-item'>No records found in MARC-XML response.</div>";
+                return;
+            }
+
+            for (let record of records) {
+                const item = document.createElement("div");
+                item.className = "result-item";
+
+                // Extract title from 245 field
+                const titleField = record.querySelector("datafield[tag='245']");
+                let title = "No title available";
+                if (titleField) {
+                    const subfieldA = titleField.querySelector("subfield[code='a']");
+                    const subfieldB = titleField.querySelector("subfield[code='b']");
+                    title = (subfieldA ? subfieldA.textContent : "") + 
+                           (subfieldB ? " " + subfieldB.textContent : "");
+                }
+
+                // Extract author from 100 field
+                const authorField = record.querySelector("datafield[tag='100']");
+                const author = authorField ? authorField.querySelector("subfield[code='a']")?.textContent : null;
+
+                // Extract date from 260$c or 264$c
+                const dateField = record.querySelector("datafield[tag='260'], datafield[tag='264']");
+                const date = dateField ? dateField.querySelector("subfield[code='c']")?.textContent : null;
+
+                // Extract ID from controlfield 001
+                const idField = record.querySelector("controlfield[tag='001']");
+                const id = idField ? idField.textContent : null;
+
+                // Create title element
+                const titleEl = document.createElement("div");
+                titleEl.className = "result-title";
+                titleEl.textContent = title;
+                item.appendChild(titleEl);
+
+                // Create metadata element
+                const metaEl = document.createElement("div");
+                metaEl.className = "result-meta";
+
+                const metaText = [];
+                if (author) metaText.push(`Author: ${author}`);
+                if (date) metaText.push(`Date: ${date}`);
+                if (id) metaText.push(`ID: ${id}`);
+
+                metaEl.textContent = metaText.join(" | ");
+                if (metaText.length > 0) {
+                    item.appendChild(metaEl);
+                }
+
+                container.appendChild(item);
+            }
+        }
+
+        function displayModsResults(xmlDoc, container) {
+            const modsElements = xmlDoc.getElementsByTagNameNS("http://www.loc.gov/mods/v3", "mods") || 
+                                xmlDoc.getElementsByTagName("mods");
+
+            if (modsElements.length === 0) {
+                container.innerHTML = "<div class='result-item'>No MODS records found.</div>";
+                return;
+            }
+
+            for (let mods of modsElements) {
+                const item = document.createElement("div");
+                item.className = "result-item";
+
+                // Extract title
+                const titleInfo = mods.querySelector("titleInfo");
+                let title = "No title available";
+                if (titleInfo) {
+                    const titlePart = titleInfo.querySelector("title");
+                    const nonSort = titleInfo.querySelector("nonSort");
+                    title = (nonSort ? nonSort.textContent + " " : "") + 
+                           (titlePart ? titlePart.textContent : "");
+                }
+
+                // Extract author
+                const nameElements = mods.querySelectorAll("name[nameRole='aut']");
+                const authors = [];
+                for (let name of nameElements) {
+                    const namePart = name.querySelector("namePart");
+                    if (namePart) authors.push(namePart.textContent);
+                }
+
+                // Extract date
+                const originInfo = mods.querySelector("originInfo");
+                let date = null;
+                if (originInfo) {
+                    const dateIssued = originInfo.querySelector("dateIssued");
+                    if (dateIssued) date = dateIssued.textContent;
+                }
+
+                // Extract ID
+                const recordInfo = mods.querySelector("recordInfo");
+                let id = null;
+                if (recordInfo) {
+                    const recordIdentifier = recordInfo.querySelector("recordIdentifier");
+                    if (recordIdentifier) id = recordIdentifier.textContent;
+                }
+
+                // Create title element
+                const titleEl = document.createElement("div");
+                titleEl.className = "result-title";
+                titleEl.textContent = title;
+                item.appendChild(titleEl);
+
+                // Create metadata element
+                const metaEl = document.createElement("div");
+                metaEl.className = "result-meta";
+
+                const metaText = [];
+                if (authors.length > 0) metaText.push(`Author(s): ${authors.join(", ")}`);
+                if (date) metaText.push(`Date: ${date}`);
+                if (id) metaText.push(`ID: ${id}`);
+
+                metaEl.textContent = metaText.join(" | ");
+                if (metaText.length > 0) {
+                    item.appendChild(metaEl);
+                }
+
+                container.appendChild(item);
+            }
+        }
+
+        function displayCitationResults(content, format) {
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";
+
+            // Split content into individual citations
+            let citations = [];
+
+            if (format === "bibtex") {
+                // BibTeX entries start with @ and end with }
+                citations = content.split(/(?=@)/).filter(c => c.trim());
+            } 
+            else if (format === "refworks") {
+                // RefWorks entries are separated by blank lines
+                citations = content.split(/\n\s*\n/).filter(c => c.trim());
+            }
+            else {
+                // For Oxford/Harvard, assume one citation per line
+                citations = content.split('\n').filter(c => c.trim());
+            }
+
+            if (citations.length === 0) {
+                resultsDiv.innerHTML = "<div class='result-item'>No citations found.</div>";
+                return;
+            }
+
+            citations.forEach(citation => {
+                const item = document.createElement("div");
+                item.className = "citation-item";
+
+                // Format the citation based on format
+                if (format === "bibtex") {
+                    // Try to extract title from BibTeX
+                    const titleMatch = citation.match(/title\s*=\s*{([^}]*)}/i);
+                    const title = titleMatch ? titleMatch[1] : "Untitled";
+
+                    const titleEl = document.createElement("div");
+                    titleEl.className = "result-title";
+                    titleEl.textContent = title;
+                    item.appendChild(titleEl);
+
+                    const pre = document.createElement("pre");
+                    pre.textContent = citation;
+                    item.appendChild(pre);
+                } 
+                else {
+                    // For other citation formats, just display as-is
+                    const pre = document.createElement("pre");
+                    pre.textContent = citation;
+                    item.appendChild(pre);
+                }
+
+                resultsDiv.appendChild(item);
+            });
+        }
+
+        function displayRawContent(content, format) {
+            let resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";
+
+            // For non-JSON formats, display raw content with syntax highlighting
+            let pre = document.createElement("pre");
+            pre.className = "xml-view";
+
+            // Format XML if needed
+            if (format === "marcxml" || format === "mods") {
+                pre.textContent = formatXml(content);
+            } else {
+                pre.textContent = content;
+            }
+
+            resultsDiv.appendChild(pre);
+        }
+
+        function formatXml(xml) {
+            // A simple XML formatter that adds indentation
+            let formatted = '';
+            let indent = '';
+            const tab = '  ';
+            let inTag = false;
+
+            xml.split(/>\s*</).forEach(node => {
+                if (node.match(/^\/\w/)) {
+                    // Closing tag - decrease indent
+                    indent = indent.substring(tab.length);
+                }
+
+                formatted += indent + '<' + node + '>\r\n';
+
+                if (node.match(/^<?\w[^>]*[^\/]$/) && !node.startsWith('?xml')) {
+                    // Opening tag - increase indent
+                    indent += tab;
+                }
+            });
+
+            return formatted.substring(1, formatted.length - 3);
+        }
+
+        function updatePagination() {
+            let prevBtn = document.getElementById("prevBtn");
+            let nextBtn = document.getElementById("nextBtn");
+            let paginationInfo = document.getElementById("paginationInfo");
+
+            prevBtn.disabled = start <= 1;
+            nextBtn.disabled = start + pageSize > totalRecords;
+
+            if (totalRecords > 0) {
+                const currentPage = Math.ceil(start / pageSize);
+                const totalPages = Math.ceil(totalRecords / pageSize);
+                paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+            } else {
+                paginationInfo.textContent = "No results";
+            }
+        }
+
+        function changePage(offset) {
+            start += offset;
+            if (start < 1) start = 1;
+            searchLibris(false);
+        }
+
+        function resetSearch() {
+            document.getElementById("query").value = "";
+            document.getElementById("format").selectedIndex = 0;
+            document.getElementById("resultsContainer").classList.add("hidden");
+            start = 1;
+            totalRecords = 0;
+            currentQuery = "";
+
+            // Reset focus to search field
+            document.getElementById("query").focus();
+        }
+    </script>
+</body>
+</html>

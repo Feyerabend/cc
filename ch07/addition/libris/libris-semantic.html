@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIBRIS Semantic Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h1 { color: #005A9C; margin-bottom: 10px; }
+
+        /* Model status bar */
+        #model-status {
+            padding: 8px 14px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 0.85em;
+        }
+        #model-status.loading { background: #fff3cd; color: #856404; }
+        #model-status.ready   { background: #d4edda; color: #155724; }
+        #model-status.error   { background: #f8d7da; color: #721c24; }
+
+        /* Search bar */
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        button {
+            padding: 10px 16px;
+            background: #005A9C;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover    { background: #003D6B; }
+        button:disabled { background: #aaa; cursor: not-allowed; }
+        button.secondary { background: #6c757d; }
+        button.secondary:hover { background: #5a6268; }
+
+        /* Results */
+        .result-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .result-title {
+            font-weight: bold;
+            color: #005A9C;
+            margin-bottom: 3px;
+        }
+        .result-meta {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .score-bar-wrap {
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .score-bar {
+            height: 100%;
+            background: #005A9C;
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+        .score-label {
+            font-size: 0.72em;
+            color: #999;
+            margin-top: 3px;
+        }
+
+        /* Recommendation panel */
+        .rec-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .rec-panel h3 {
+            margin: 0 0 10px;
+            color: #2d3748;
+            font-size: 0.9em;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+        .rec-card {
+            background: white;
+            padding: 10px 12px;
+            margin: 6px 0;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: box-shadow 0.15s;
+        }
+        .rec-card:hover { box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
+        .rec-title { font-weight: bold; color: #2b6cb0; font-size: 0.88em; }
+        .rec-meta  { font-size: 0.75em; color: #718096; margin-top: 2px; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .pagination-info { font-size: 0.88em; color: #666; }
+
+        .hidden { display: none; }
+        .info-msg { color: #666; font-style: italic; padding: 16px 0; }
+        .error-msg { color: #c0392b; padding: 10px 0; }
+
+        #results-stats {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>LIBRIS Semantic Search</h1>
+<p style="color:#555; font-size:0.9em; margin-top:-8px; margin-bottom:14px;">
+    Keyword search via LIBRIS API · results re-ranked by semantic similarity in-browser
+</p>
+
+<div id="model-status" class="loading">
+    Loading embedding model (~23 MB, cached after first use) …
+</div>
+
+<div class="search-box">
+    <input type="text" id="query" placeholder="Search for books, articles …"
+           onkeydown="if(event.key==='Enter') searchLibris(true)">
+    <button id="searchBtn" onclick="searchLibris(true)" disabled>Search</button>
+</div>
+
+<div id="recommendations" class="rec-panel hidden">
+    <h3>Semantically related — from previous searches</h3>
+    <div id="rec-list"></div>
+</div>
+
+<div id="results-stats"></div>
+<div id="results"></div>
+
+<div class="pagination hidden" id="pagination">
+    <button class="secondary" id="prevBtn" onclick="changePage(-10)">← Previous</button>
+    <button class="secondary" id="nextBtn" onclick="changePage(10)">Next →</button>
+    <span class="pagination-info" id="pagination-info"></span>
+</div>
+
+<script type="module">
+    import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+    env.allowLocalModels = false;   // always fetch from HuggingFace Hub / CDN cache
+
+    // -------------------------------------------------------------------------
+    // State
+    // -------------------------------------------------------------------------
+    let embedder = null;
+    let start = 1;
+    const PAGE = 10;
+    let totalRecords = 0;
+
+    // Knowledge base — accumulated across searches
+    // Each entry: { id, title, type, authors, date, vec }
+    const KB = [];
+    const KB_MAX = 100;
+
+    // -------------------------------------------------------------------------
+    // Model init
+    // -------------------------------------------------------------------------
+    async function loadModel() {
+        const el = document.getElementById('model-status');
+        try {
+            embedder = await pipeline(
+                'feature-extraction',
+                'Xenova/all-MiniLM-L6-v2',
+                {
+                    progress_callback: p => {
+                        if (p.status === 'progress') {
+                            el.textContent = `Downloading model … ${Math.round(p.progress)}%`;
+                        }
+                    }
+                }
+            );
+            el.className = 'ready';
+            el.textContent = 'Model ready — all-MiniLM-L6-v2 (384-dim embeddings)';
+            document.getElementById('searchBtn').disabled = false;
+            document.getElementById('query').focus();
+        } catch (e) {
+            el.className = 'error';
+            el.textContent = `Failed to load model: ${e.message}`;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Embedding helpers
+    // -------------------------------------------------------------------------
+    async function embed(text) {
+        const out = await embedder(text, { pooling: 'mean', normalize: true });
+        return Array.from(out.data);   // Float32Array → plain Array
+    }
+
+    // Dot product of two pre-normalised vectors = cosine similarity
+    function cosineSim(a, b) {
+        let dot = 0;
+        for (let i = 0; i < a.length; i++) dot += a[i] * b[i];
+        return dot;
+    }
+
+    // -------------------------------------------------------------------------
+    // Knowledge base
+    // -------------------------------------------------------------------------
+    function kbAdd(items) {
+        for (const item of items) {
+            if (!KB.find(k => k.id === item.id)) KB.push(item);
+        }
+        if (KB.length > KB_MAX) KB.splice(0, KB.length - KB_MAX);
+    }
+
+    function kbRecommend(queryVec, excludeIds, topK = 3) {
+        return KB
+            .filter(item => !excludeIds.includes(item.id))
+            .map(item => ({ ...item, score: cosineSim(queryVec, item.vec) }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, topK);
+    }
+
+    // -------------------------------------------------------------------------
+    // Search
+    // -------------------------------------------------------------------------
+    window.searchLibris = async function(reset = false) {
+        const query = document.getElementById('query').value.trim();
+        if (!query) return;
+
+        if (reset) start = 1;
+
+        const resultsEl = document.getElementById('results');
+        const statsEl   = document.getElementById('results-stats');
+        resultsEl.innerHTML = '<p class="info-msg">Fetching from LIBRIS …</p>';
+        statsEl.textContent = '';
+        document.getElementById('searchBtn').disabled = true;
+        document.getElementById('recommendations').classList.add('hidden');
+        document.getElementById('pagination').classList.add('hidden');
+
+        try {
+            // 1. Keyword search via LIBRIS Xsearch
+            const url = `https://libris.kb.se/xsearch?query=${encodeURIComponent(query)}&format=json&start=${start}&n=${PAGE}`;
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error(`LIBRIS responded with ${resp.status}`);
+            const json = await resp.json();
+
+            const records = json.xsearch?.list || [];
+            totalRecords  = parseInt(json.xsearch?.records || '0', 10);
+
+            if (records.length === 0) {
+                resultsEl.innerHTML = '<p class="info-msg">No results found.</p>';
+                return;
+            }
+
+            resultsEl.innerHTML = `<p class="info-msg">Computing embeddings for ${records.length} results …</p>`;
+
+            // 2. Embed query
+            const queryVec = await embed(query);
+
+            // 3. Embed each result (title + subjects concatenated for richer signal)
+            const embedded = await Promise.all(records.map(async rec => {
+                const subjects = Array.isArray(rec.subject) ? rec.subject : (rec.subject ? [rec.subject] : []);
+                const text = [rec.title, ...subjects].filter(Boolean).join(' ');
+                const vec  = await embed(text);
+                return {
+                    id:      rec.identifier || rec.title + (rec.date || ''),
+                    title:   rec.title   || 'Untitled',
+                    type:    rec.type    || '',
+                    authors: rec.creator
+                                ? (Array.isArray(rec.creator) ? rec.creator : [rec.creator])
+                                : [],
+                    date:    rec.date    || '',
+                    vec
+                };
+            }));
+
+            // 4. Re-rank by cosine similarity to query vector
+            const ranked = embedded
+                .map(r => ({ ...r, score: cosineSim(queryVec, r.vec) }))
+                .sort((a, b) => b.score - a.score);
+
+            // 5. Semantic recommendations from *previous* searches (before adding current)
+            const recs = kbRecommend(queryVec, ranked.map(r => r.id));
+
+            // 6. Update knowledge base with current page
+            kbAdd(embedded);
+
+            // 7. Render
+            displayResults(ranked, query);
+            if (recs.length > 0) displayRecommendations(recs);
+            updatePagination();
+
+        } catch (e) {
+            resultsEl.innerHTML = `<p class="error-msg">Error: ${e.message}</p>`;
+        } finally {
+            document.getElementById('searchBtn').disabled = false;
+        }
+    };
+
+    // -------------------------------------------------------------------------
+    // Display
+    // -------------------------------------------------------------------------
+    function displayResults(records, query) {
+        const el    = document.getElementById('results');
+        const stats = document.getElementById('results-stats');
+        el.innerHTML = '';
+
+        stats.textContent =
+            `Showing ${start}–${Math.min(start + records.length - 1, totalRecords)} ` +
+            `of ${totalRecords} results, re-ranked by semantic similarity to "${query}"`;
+
+        const topScore = records[0]?.score || 1;
+
+        records.forEach(rec => {
+            const relPct = Math.round((rec.score / topScore) * 100); // bar width
+            const simPct = Math.round(rec.score * 100);              // displayed %
+
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <div class="result-title">${esc(rec.title)}</div>
+                <div class="result-meta">${[
+                    rec.authors.length ? 'By ' + esc(rec.authors.join(', ')) : '',
+                    rec.date ? esc(rec.date) : '',
+                    rec.type ? esc(rec.type) : ''
+                ].filter(Boolean).join(' · ')}</div>
+                <div class="score-bar-wrap">
+                    <div class="score-bar" style="width:${relPct}%"></div>
+                </div>
+                <div class="score-label">Semantic similarity to query: ${simPct}%</div>
+            `;
+            el.appendChild(div);
+        });
+    }
+
+    function displayRecommendations(recs) {
+        const panel = document.getElementById('recommendations');
+        const list  = document.getElementById('rec-list');
+        list.innerHTML = '';
+
+        recs.forEach(rec => {
+            const card = document.createElement('div');
+            card.className = 'rec-card';
+            card.innerHTML = `
+                <div class="rec-title">${esc(rec.title)}</div>
+                <div class="rec-meta">${
+                    [
+                        `${Math.round(rec.score * 100)}% similar`,
+                        rec.authors.length ? esc(rec.authors[0]) : '',
+                        rec.date ? esc(rec.date) : ''
+                    ].filter(Boolean).join(' · ')
+                }</div>
+            `;
+            card.onclick = () => {
+                document.getElementById('query').value = rec.title;
+                searchLibris(true);
+            };
+            list.appendChild(card);
+        });
+
+        panel.classList.remove('hidden');
+    }
+
+    // -------------------------------------------------------------------------
+    // Pagination
+    // -------------------------------------------------------------------------
+    function updatePagination() {
+        const el   = document.getElementById('pagination');
+        const info = document.getElementById('pagination-info');
+        el.classList.remove('hidden');
+        document.getElementById('prevBtn').disabled = start <= 1;
+        document.getElementById('nextBtn').disabled = start + PAGE > totalRecords;
+        const cur   = Math.ceil(start / PAGE);
+        const total = Math.ceil(totalRecords / PAGE);
+        info.textContent = `Page ${cur} of ${total}`;
+    }
+
+    window.changePage = function(offset) {
+        start = Math.max(1, start + offset);
+        searchLibris(false);
+    };
+
+    // -------------------------------------------------------------------------
+    // Utility
+    // -------------------------------------------------------------------------
+    function esc(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    // Boot
+    loadModel();
+</script>
+</body>
+</html>

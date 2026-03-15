@@ -1,0 +1,70 @@
+[
+  {
+    "index": 0,
+    "previous_hash": "0",
+    "timestamp": 1749996260.380979,
+    "merkle_root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "nonce": 0,
+    "difficulty": 2,
+    "hash": "487b7ddc71f41f3a4ecb3e0eddf28026a0b841559b6e87b5fb7ea027b7b4c814",
+    "transactions": []
+  },
+  {
+    "index": 1,
+    "previous_hash": "487b7ddc71f41f3a4ecb3e0eddf28026a0b841559b6e87b5fb7ea027b7b4c814",
+    "timestamp": 1749996260.382617,
+    "merkle_root": "f1914a567063f709fd0d771b2484e926cbad62b37e93d72e39b05e15eb231011",
+    "nonce": 281,
+    "difficulty": 2,
+    "hash": "0045a54f93f1cc4328515666f545a70692910643006354af1bffe9f49793e1aa",
+    "transactions": [
+      {
+        "sender": "network",
+        "recipient": "kT/qcjFpzm3F++wuS+cbGN4BQQoc69WsjQrqgA/GxCKtu5iWtJcxx1HhnP4QNUcXlqL9/7CCNFs5Vc34iGZaSA==",
+        "amount": 0.1,
+        "timestamp": 1749996260.38256,
+        "signature": null,
+        "status": "pending",
+        "hash": "27e27e1098a58d07499b2534d741e04e7d4d0ef83d8511aacd873ed4914e31e7"
+      },
+      {
+        "sender": "network",
+        "recipient": "kT/qcjFpzm3F++wuS+cbGN4BQQoc69WsjQrqgA/GxCKtu5iWtJcxx1HhnP4QNUcXlqL9/7CCNFs5Vc34iGZaSA==",
+        "amount": 50.0,
+        "timestamp": 1749996260.382611,
+        "signature": null,
+        "status": "pending",
+        "hash": "fa57728befa193bff0e09db042fab4721dfc5ad63ef46434ab742a62fa3cb94e"
+      }
+    ]
+  },
+  {
+    "index": 2,
+    "previous_hash": "0045a54f93f1cc4328515666f545a70692910643006354af1bffe9f49793e1aa",
+    "timestamp": 1749996260.3882399,
+    "merkle_root": "42a5e0989ba16eef086cf13e15d33c7b82eb38df84ff491c723ec7ac223866ad",
+    "nonce": 31,
+    "difficulty": 2,
+    "hash": "00cf5862827d878345f7048c43144c4139e9f05d52ca9d3ae390f991abdaba89",
+    "transactions": [
+      {
+        "sender": "kT/qcjFpzm3F++wuS+cbGN4BQQoc69WsjQrqgA/GxCKtu5iWtJcxx1HhnP4QNUcXlqL9/7CCNFs5Vc34iGZaSA==",
+        "recipient": "bjky1TBHoxq8qxtBd1ZHjJXRnjoH2BGlce5XnyvR6VqAYE+Ab8csVWKiLapJCXK06MFI6I2Mdc3CK9lA7/3cIw==",
+        "amount": 20.0,
+        "timestamp": 1749996260.383327,
+        "signature": "N8f/o6mGFM9o2aJbb7YyYZA6CvBJ567EeaAkJnZvRj66CTGFLKblKfVC9V+gnu69Yf6i45o4WKLa6ZUiOyfdhg==",
+        "status": "pending",
+        "hash": "6426a35d9b42940e5698c0c7a09d3384fa5dba956f530cb3e152d67640fd2653"
+      },
+      {
+        "sender": "network",
+        "recipient": "bjky1TBHoxq8qxtBd1ZHjJXRnjoH2BGlce5XnyvR6VqAYE+Ab8csVWKiLapJCXK06MFI6I2Mdc3CK9lA7/3cIw==",
+        "amount": 50.0,
+        "timestamp": 1749996260.3882382,
+        "signature": null,
+        "status": "pending",
+        "hash": "921e58c5c73227e05a3d6c264f6cc3d4dfe667a56171c48eedffa9107512ba1b"
+      }
+    ]
+  }
+]
