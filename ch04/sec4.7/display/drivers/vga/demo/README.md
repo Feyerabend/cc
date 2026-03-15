@@ -395,7 +395,7 @@ Standard RGB565 constants: `COLOR_BLACK`, `COLOR_WHITE`, `COLOR_RED`, `COLOR_GRE
 
 | Component | Detail |
 |-----------|--------|
-| Board     | Raspberry Pi Pico 2W |
+| Board     | Raspberry Pi Pico 2/2W |
 | MCU       | RP2350, dual Cortex-M33 @ 150 MHz |
 | Display   | Pimoroni Pico VGA Demo Base (or RPi Pico VGA Demo Board) |
 | VGA GPIOs | 0–15 colour, 16 H-Sync, 17 V-Sync |
