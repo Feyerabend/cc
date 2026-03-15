@@ -1,7 +1,7 @@
 
-## Pico 2W RTOS — VGA Edition
+## Pico 2/2W RTOS — VGA Edition
 
-A preemptive RTOS built from scratch for the Raspberry Pi Pico 2W (RP2350 / Cortex-M33),
+A preemptive RTOS built from scratch for the Raspberry Pi Pico 2/2W (RP2350 / Cortex-M33),
 with a live VGA visualisation that makes the scheduler's decisions visible in real time on
 a standard monitor.
 
