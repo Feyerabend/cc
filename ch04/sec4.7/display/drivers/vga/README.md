@@ -13,11 +13,11 @@ or even video playback on a VGA monitor.
 This section assumes that you have some experience with, or have read about,
 VGA and the way older monitors worked.
 
-There is also a [demo](./demo) built on the Pico Demo Board (hardware example)
-which shows a simple RTOS showing some graphics of the current status. Here
-we use both software and hardware that has already been tested. Intended for use
-with the original Raspberry Pi Pico RP2040, but demonstrably working with
-the Raspberry Pi Pico 2/2W RP2350.
+There is also a [demo](./demo) built for the Pico Demo Board (a hardware example)
+that runs a simple RTOS and displays graphical information about the current
+system status. It uses both software and hardware components that have already
+been tested, intended for the original Raspberry Pi Pico (RP2040). But as can be seen,
+also work with the Raspberry Pi Pico 2 and Pico 2 W (RP2350).
 
 
 ### Hardware Requirements for VGA Output
