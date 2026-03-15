@@ -133,13 +133,13 @@ stateDiagram-v2
 
     [*] --> READY : task_create()
 
-    READY --> RUNNING : PendSV selects task\n(highest priority wins;\nround-robin on tie)
+    READY --> RUNNING : PendSV selects task (highest priority wins, round-robin on tie)
 
-    RUNNING --> READY : task_yield()\nor preempted by\nhigher-priority task
+    RUNNING --> READY : task_yield() or preempted by higher-priority task
 
-    RUNNING --> BLOCKED : task_delay(ms)\nmutex / semaphore contention
+    RUNNING --> BLOCKED : task_delay(ms) or mutex/semaphore contention
 
-    BLOCKED --> READY : SysTick: tick_count >= wake_time\nor semaphore signalled
+    BLOCKED --> READY : SysTick when tick_count >= wake_time or semaphore signalled
 
     RUNNING --> SUSPENDED : stack overflow detected
 ```
