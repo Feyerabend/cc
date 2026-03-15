@@ -28,16 +28,16 @@
  */
 
 #define SHELL_LINE_MAX  80    /* maximum input line length in characters */
-#define SHELL_ARGC_MAX   8    /* maximum number of tokens per line       */
-#define SHELL_CMD_MAX   16    /* maximum number of registered commands   */
+#define SHELL_ARGC_MAX   8    /*       maximum number of tokens per line */
+#define SHELL_CMD_MAX   16    /*   maximum number of registered commands */
 
 /* Callback invoked when a matching command line is received */
 typedef void (*shell_cmd_fn)(int argc, char **argv);
 
 typedef struct {
     const char   *name; /* command keyword (matched against argv[0]) */
-    const char   *help; /* one-line description shown by 'help'      */
-    shell_cmd_fn  fn;   /* handler invoked on match                  */
+    const char   *help; /*      one-line description shown by 'help' */
+    shell_cmd_fn  fn;   /*                  handler invoked on match */
 } shell_cmd_t;
 
 /*

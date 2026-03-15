@@ -71,12 +71,12 @@ void display_vga_run(uint16_t * volatile *active_fb_ptr) {
     }
 }
 
-/* ==========================================================================
+/*
  * Framebuffer rendering helpers
  * (identical to the previous SPI-based display.c — the fb_* API is hardware-
  * independent; only the blit path changes, which is now handled by the VGA
  * scanline loop above.)
- * ========================================================================== */
+ */
 
 static inline int clamp_i(int v, int lo, int hi) {
     return v < lo ? lo : v > hi ? hi : v;

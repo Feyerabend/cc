@@ -44,27 +44,27 @@ typedef enum {
     DISPLAY_ERROR_NOT_INITIALIZED
 } display_error_t;
 
-/* ---------------------------------------------------------------------------
+/*
  * VGA initialisation and main loop.
  *
  * Call display_vga_init() from Core 1 before entering the scanline loop.
  * Call display_vga_run() from Core 1 to start the scanline output loop;
  * it never returns.  Pass a pointer to the volatile framebuffer pointer
  * so Core 0 can swap buffers without a lock.
- * --------------------------------------------------------------------------- */
+ */
 display_error_t display_vga_init(void);
 void            display_vga_run(uint16_t * volatile *active_fb_ptr);
 
 /* Kept for any callers that still use the old name */
 static inline display_error_t display_pack_init(void) { return display_vga_init(); }
 
-/* ---------------------------------------------------------------------------
+/*
  * Framebuffer rendering API.
  *
  * All functions operate on a caller-supplied uint16_t array of size
  * DISPLAY_WIDTH * DISPLAY_HEIGHT.  Render into it then hand the pointer
  * to display_vga_run() via the active_fb_ptr mechanism.
- * --------------------------------------------------------------------------- */
+ */
 
 /* Pack 8-bit RGB into RGB565 */
 static inline uint16_t fb_rgb(uint8_t r, uint8_t g, uint8_t b) {
@@ -95,11 +95,11 @@ void fb_blit_scaled(uint16_t *fb,
                     const uint16_t *src, int sw, int sh,
                     int dx, int dy, int dw, int dh);
 
-/* ---------------------------------------------------------------------------
+/*
  * Color transform — ported from Flash ColorTransform.
  *   result_channel = clamp(src_channel * mul/256 + add)
  * Use mul=256, add=0 for identity. mul=0..255 dims, add>0 tints.
- * --------------------------------------------------------------------------- */
+ */
 typedef struct {
     int r_mul, r_add;
     int g_mul, g_add;

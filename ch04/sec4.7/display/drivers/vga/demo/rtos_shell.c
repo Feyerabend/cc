@@ -166,7 +166,7 @@ void shell_init(void)
     shell_register("tasks",      "show task names and states",         cmd_tasks);
     shell_register("stats",      "show CPU%%, stack, switch count",     cmd_stats);
     shell_register("uptime",     "ms elapsed since boot",              cmd_uptime);
-    shell_register("fault_test", "corrupt a task guard (demo) [idx]", cmd_fault_test);
+//  shell_register("fault_test", "corrupt a task guard (demo) [idx]", cmd_fault_test);
 }
 
 bool shell_register(const char *name, const char *help, shell_cmd_fn fn)

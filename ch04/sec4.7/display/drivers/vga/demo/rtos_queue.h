@@ -38,11 +38,11 @@
 
 typedef struct {
     void     *buf;       /* pointer to caller-supplied flat item storage */
-    uint16_t  item_size; /* size of each item in bytes                   */
-    uint16_t  capacity;  /* maximum number of items                      */
-    uint16_t  head;      /* dequeue index (next item to read)            */
-    uint16_t  tail;      /* enqueue index (next slot to write)           */
-    uint16_t  count;     /* items currently in the queue                 */
+    uint16_t  item_size; /*                   size of each item in bytes */
+    uint16_t  capacity;  /*                      maximum number of items */
+    uint16_t  head;      /*            dequeue index (next item to read) */
+    uint16_t  tail;      /*           enqueue index (next slot to write) */
+    uint16_t  count;     /*                 items currently in the queue */
 } rtos_queue_t;
 
 /*

@@ -213,24 +213,6 @@ flowchart LR
 
 
 
-### Known issue — display_task at priority 1
-
-`display_task` currently runs at the same priority (1) as `counter_task` and `shell_task`.
-Because the framebuffer render loop (`fb_clear` + all draw calls) can take several
-milliseconds without yielding, it competes heavily with Counter and Shell on every frame,
-which causes the RTOS timeline to look uneven and the USB shell to feel sluggish.
-
-*Fix — lower display_task to priority 0* in `main.c`:
-
-```c
-task_create(display_task, "Display", 0, NULL);   /* was 1 */
-```
-
-At priority 0 it round-robins with the idle task (which runs `WFI` and sleeps each tick),
-so rendering takes roughly twice as long in wall time but the RTOS tasks at priority 1+
-are completely unaffected. The 50 ms `task_delay` between frames keeps average CPU usage
-low. This is the recommended setting once the display is confirmed working.
-
 
 
 ### RTOS Concepts
@@ -386,8 +368,6 @@ Standard RGB565 constants: `COLOR_BLACK`, `COLOR_WHITE`, `COLOR_RED`, `COLOR_GRE
 | Shell   | 1 (med)  | 10 ms    | USB CDC command shell; blocks between ticks |
 | Display | 1 (med)* | 50 ms    | Renders framebuffer; swaps double-buffer; blocks 50 ms |
 | Idle    | 0 (low)  | —        | `WFI` forever; runs only when all higher-priority tasks are blocked |
-
-\* See [Known issue — display_task at priority 1](#known-issue--display_task-at-priority-1) above.
 
 
 

@@ -388,7 +388,7 @@ __attribute__((noreturn)) void __stack_chk_fail(void)
  *   STMDB Rn!, {R4-R11}  - save 8 regs, decrement-before, writeback
  *   LDMIA Rn!, {R4-R11}  - load 8 regs, increment-after, writeback
  *   PUSH/POP {LR}        - uses MSP (handler mode)
- *   BL, BX, CPSID/CPSIE - standard
+ *   BL, BX, CPSID/CPSIE  - standard
  */
 __attribute__((naked)) void isr_pendsv(void)
 {

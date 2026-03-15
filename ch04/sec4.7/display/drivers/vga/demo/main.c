@@ -6,13 +6,13 @@
  * Core 1: VGA scanline output loop (pico_scanvideo_dpi, never returns)
  *
  * Double-buffered VGA:
- *   fb_a / fb_b  : two full 320x240 framebuffers in SRAM
- *   vga_active_fb: volatile pointer; Core 1 reads, Core 0's display_task writes
+ *     fb_a / fb_b : two full 320x240 framebuffers in SRAM
+ *   vga_active_fb : volatile pointer; Core 1 reads, Core 0's display_task writes
  *
  * Layout (320x240):
- *   y=  0..15  header bar
- *   y= 18..127 three task cards (96x110 each)
- *   y=132..239 scheduler timeline (3 rows, one per task)
+ *   y =   0..15  header bar
+ *   y =  18..127 three task cards (96x110 each)
+ *   y = 132..239 scheduler timeline (3 rows, one per task)
  */
 
 #include "pico/stdlib.h"
@@ -53,9 +53,9 @@ static const uint16_t TC[3] = {
 static const char * const TL_LABEL[3] = { "LED", "CTR", "IDL" };
 
 /* State badge text and colors */
-static const char     * const STXT[4] = { "  READY  ", ">>RUNNING<<", " BLOCKED ", " SUSPEND " };
-static const uint16_t         SBG[4]  = { COLOR_YELLOW, COLOR_GREEN, COL_ORANGE, COL_SEP  };
-static const uint16_t         SFG[4]  = { COLOR_BLACK,  COLOR_BLACK, COLOR_BLACK, COLOR_WHITE };
+static const char     * const STXT[4] = { "  READY  ",  ">>RUNNING<<", " BLOCKED ", " SUSPEND " };
+static const uint16_t         SBG[4]  = { COLOR_YELLOW, COLOR_GREEN,   COL_ORANGE,  COL_SEP     };
+static const uint16_t         SFG[4]  = { COLOR_BLACK,  COLOR_BLACK,   COLOR_BLACK, COLOR_WHITE };
 
 /* ------------------ */
 /*  Layout constants  */
@@ -66,16 +66,16 @@ static const uint16_t         SFG[4]  = { COLOR_BLACK,  COLOR_BLACK, COLOR_BLACK
 #define CARD_H     110
 static const int CX[3] = { 4, 108, 212 };   /* card x positions */
 
-#define TL_Y       132   /* timeline section y start               */
-#define TL_X        40   /* bar x start (after row label)          */
-#define TL_W       RTOS_TIMELINE_LEN   /* 280px × 4ms/px = 1120ms  */
+#define TL_Y       132   /* timeline section y start */
+#define TL_X        40   /* bar x start (after row label) */
+#define TL_W       RTOS_TIMELINE_LEN   /* 280px × 4ms/px = 1120ms */
 #define TL_ROW_H    18
 #define TL_ROW_GAP   4
 
 /* Scan the stack canary from the base upward to find the high-watermark.
  * Core 1 calls this; Core 0 writes to the stack from the top downward.
  * 32-bit aligned reads on shared SRAM are atomic on RP2350, so a slightly
- * stale watermark on the display is acceptable.                          */
+ * stale watermark on the display is acceptable. */
 static uint16_t stack_peak_words(int ci)
 {
     /* Skip stack[0] - it holds the random security guard word, not a
@@ -222,7 +222,7 @@ static void render_frame(uint16_t *fb) {
 
     /* -- Header -- */
     fb_fill_rect(fb, 0, 0, DISPLAY_WIDTH, HDR_H, COL_HDR_BG);
-    fb_draw_string(fb, 4,   4, "PICO 2W  RTOS", COLOR_BLACK, COL_HDR_BG);
+    fb_draw_string(fb, 4, 4, "PICO 2W  RTOS", COLOR_BLACK, COL_HDR_BG);
     snprintf(buf, sizeof(buf), "tick:%06lu", (unsigned long)tick_count);
     fb_draw_string(fb, 196, 4, buf, COLOR_WHITE, COL_HDR_BG);
     fb_fill_rect(fb, 0, HDR_H, DISPLAY_WIDTH, 1, COL_SEP);
@@ -255,7 +255,7 @@ void display_task(void *param) {
     uint16_t *back = fb_b;   /* render into the non-active buffer */
     while (1) {
         render_frame(back);
-        vga_active_fb = back;                                    /* swap */
+        vga_active_fb = back; /* swap */
         back = (back == fb_a) ? fb_b : fb_a;
         task_delay(50);
     }
@@ -312,8 +312,8 @@ void counter_task(void *param) {
     (void)param;
     while (1) {
         g_count++;
-        active_ms(80);         /* 80 ms: medium-prio, preempted by LED     */
-        task_delay(20);        /* 20 ms: BLOCKED, Idle gets a turn         */
+        active_ms(80);         /* 80 ms: medium-prio, preempted by LED */
+        task_delay(20);        /* 20 ms: BLOCKED, Idle gets a turn     */
     }
 }
 
@@ -338,7 +338,7 @@ void idle_task(void *param) {
 void shell_task(void *param) {
     (void)param;
     task_delay(1500);                /* wait for USB CDC to enumerate */
-    printf("\r\n=== Pico 2W RTOS Shell ===\r\n");
+    printf("\r\n-- Pico 2W RTOS Shell --\r\n");
     printf("Type 'help' for a list of commands.\r\n> ");
     while (1) {
         shell_tick();

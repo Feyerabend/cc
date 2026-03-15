@@ -51,7 +51,7 @@ typedef void (*task_function_t)(void *param);
  */
 typedef struct {
     uint32_t        *stack_ptr;              /* [offset 0] active stack pointer - MUST be first */
-    uint32_t         stack[TASK_STACK_SIZE]; /* [offset 4] per-task stack storage              */
+    uint32_t         stack[TASK_STACK_SIZE]; /* [offset 4] per-task stack storage               */
     task_state_t     state;
     task_priority_t  priority;
     uint8_t          _pad[2];               /* explicit padding for 4-byte alignment            */
@@ -143,14 +143,14 @@ void rtos_stats_get(rtos_stats_t *out);
 
 /* ------------------------------------------------------------------ */
 /*  Fault record - written by pendsv_switch() on stack guard          */
-/*  violation, or by __stack_chk_fail() on GCC protector trip.       */
-/*  Core 1 reads this to render the fault overlay on the display.    */
+/*  violation, or by __stack_chk_fail() on GCC protector trip.        */
+/*  Core 1 reads this to render the fault overlay on the display.     */
 /* ------------------------------------------------------------------ */
 typedef struct {
-    bool        active;      /* true once a fault has been recorded     */
-    uint8_t     task_index;  /* index into tasks[] of the offending task */
+    bool        active;      /* true once a fault has been recorded        */
+    uint8_t     task_index;  /* index into tasks[] of the offending task   */
     const char *task_name;   /* points to TCB name field (static lifetime) */
-    uint32_t    tick;        /* tick_count at the moment of detection   */
+    uint32_t    tick;        /* tick_count at the moment of detection      */
 } rtos_fault_t;
 
 extern volatile rtos_fault_t rtos_last_fault;
