@@ -530,5 +530,5 @@ VGA fault report while other tasks keep running.
 Reference: *ARM Cortex-M33 Generic User Guide*, Chapter 4 (MPU) and Chapter 4.3 (Fault handling).
 
 
-[Demo](./../../../../../assets/image/display/vga.png)
+![Demo](./../../../../../assets/image/display/vga.png)
 
