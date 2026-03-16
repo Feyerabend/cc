@@ -11,8 +11,11 @@ rather than inferred from blinking LEDs or serial logs.
 
 > *Hardware note:* The VGA output targets the *Pimoroni Pico VGA Demo Base* (identical
 > hardware to the Raspberry Pi Pico VGA Demo Board). The board was originally designed for
-> the RP2040 Pico; RP2350 (Pico 2W) compatibility via `pico_scanvideo_dpi` is functional
+> the RP2040 Pico; RP2350 (Pico 2/2W) compatibility via `pico_scanvideo_dpi` is functional
 > but not officially certified.
+
+We will return to more on the following low-level concurrent patterns in
+e.g. [sec7.3](./../../../../../../ch07/sec7.3/concurrent/) such as context switching.
 
 
 
