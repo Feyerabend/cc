@@ -11,6 +11,8 @@ At its simplest, you can think of a blockchain as a chain of blocks, where each
 block contains some data (for example: transactions, contracts, or records).
 Once a block is added to the chain, it becomes part of a permanent history.
 
+A more indepth story about blockchain can be found in
+[ch07, addition](./../../../ch07/addition/algo/blockchain/).
 
 
 ### Why Blockchains?
