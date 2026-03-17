@@ -682,9 +682,9 @@ void display_cleanup(void) {
     }
 }
 
-// ============================================================================
+// 
 // 3D RENDERING PRIMITIVES
-// ============================================================================
+// 
 
 // Helper: swap two integers
 static inline void swap_int(int *a, int *b) {
