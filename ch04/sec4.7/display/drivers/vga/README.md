@@ -14,8 +14,7 @@ This section assumes that you have some experience with, or have read about,
 VGA and the way older monitors worked.
 
 There is also a [demo](./demo) built for the Pico Demo Board (a hardware example)
-that runs a simple RTOS and displays graphical information about the current
-system status. It uses both software and hardware components that have already
+It uses both software and hardware components that have already
 been tested, intended for the original Raspberry Pi Pico (RP2040). But as can be seen,
 also work with the Raspberry Pi Pico 2 and Pico 2 W (RP2350).
 
