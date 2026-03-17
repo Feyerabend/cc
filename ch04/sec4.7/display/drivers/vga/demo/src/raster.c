@@ -7,11 +7,11 @@
  *  2. For each straight segment (beziers subdivided), emit an edge into a
  *     y-indexed bucket table.
  *  3. For each scanline y (top-->bottom):
- *       a. Move edges whose y1 == y from bucket to active edge list (AEL).
- *       b. Sort AEL by current x.
- *       c. Walk AEL in pairs, toggling fill state at each edge (even-odd).
- *       d. Fill horizontal spans between matched pairs.
- *       e. Advance each edge's x by dx; remove edges where y2 == y+1.
+ *     a. Move edges whose y1 == y from bucket to active edge list (AEL).
+ *     b. Sort AEL by current x.
+ *     c. Walk AEL in pairs, toggling fill state at each edge (even-odd).
+ *     d. Fill horizontal spans between matched pairs.
+ *     e. Advance each edge's x by dx; remove edges where y2 == y+1.
  *  4. For strokes: re-walk path, draw Bresenham segments with the given width.
  *
  * Gradient fills: at each filled span a colour is looked up from a 256-entry
@@ -329,9 +329,11 @@ static void stroke_line(gfx_color_t *fb,
     }
 }
 
-/* probably got to go alpha here ..
-   stroke rasterizer, antialiased
-
+/* probably got to go alpha here .. not retro but looks nicer with
+   weird widths and curves.  Wu line algorithm is a bit more complex
+   but not too bad.
+   stroke rasterizer, antialiased */
+/*
 static void stroke_line_wu(gfx_color_t *fb,
                            int x0, int y0, int x1, int y1,
                            int half_w, gfx_color_t color)

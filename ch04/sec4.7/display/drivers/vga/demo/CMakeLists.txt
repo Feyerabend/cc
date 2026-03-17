@@ -12,7 +12,7 @@
 #
 # Flash:
 #   Hold BOOTSEL, plug in USB, then:
-#   cp pico_gfx.uf2 /Volumes/RPI-RP2    (macOS)
+#   cp pico_gfx.uf2 /Volumes/RPI-RP2     (macOS)
 #   cp pico_gfx.uf2 /media/$USER/RPI-RP2 (Linux)
 
 cmake_minimum_required(VERSION 3.13)
@@ -31,7 +31,7 @@ set(CMAKE_CXX_STANDARD 17)
 # Initialise the Pico SDK
 pico_sdk_init()
 
-# ── executable ───────────────────────────────────────────────────────────────
+# executable
 add_executable(pico_gfx
     src/main.c
     src/gfx.c
@@ -52,7 +52,7 @@ target_compile_options(pico_gfx PRIVATE
     -fdata-sections
 )
 
-# ── link libraries ───────────────────────────────────────────────────────────
+# link libraries
 target_link_libraries(pico_gfx PRIVATE
     pico_stdlib          # stdio, time, sleep
     pico_multicore       # multicore_launch_core1
@@ -71,7 +71,7 @@ pico_enable_stdio_uart(pico_gfx 0)
 # Generate .uf2 and .hex alongside the ELF
 pico_add_extra_outputs(pico_gfx)
 
-# ── memory layout sanity check ────────────────────────────────────────────────
+# memory layout sanity check
 # Two 320×240 RGB565 framebuffers = 307,200 bytes ≈ 300 KB
 # RP2350 has 520 KB SRAM — leaves ~213 KB for code/stack/heap.
 # If the linker complains about RAM overflow, enable XIP cache or reduce

@@ -12,13 +12,13 @@
 #include "gfx.h"
 
 typedef struct {
-    float    t;          /* global time in seconds */
-    float    star_angle; /* rotation of the star */
-    float    diamond_x;
-    float    diamond_y;
-    float    diamond_vx;
-    float    diamond_vy;
-    float    orbit_angle;
+    float t;          /* global time in seconds */
+    float star_angle; /* rotation of the star */
+    float diamond_x;
+    float diamond_y;
+    float diamond_vx;
+    float diamond_vy;
+    float orbit_angle;
 
     /* pre-built shapes (allocated once, reused each frame) */
     gfx_shape_t star;
