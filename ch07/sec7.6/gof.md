@@ -1,4 +1,5 @@
 
+![GOF](./../assets/image/gang4.png)
 
 ## 1. Historical Origins of Design Patterns
 

@@ -213,7 +213,7 @@ void draw_moving_pattern() {
 int main() {
     stdio_init_all();
     
-    printf("Initializing VGA output...\n");
+    printf("Initialising VGA output...\n");
     
     // Initialize VGA
     init_pio_vga();
@@ -222,7 +222,7 @@ int main() {
     // Draw initial test pattern
     draw_test_pattern();
     
-    printf("VGA initialized. You should see color bars on your monitor.\n");
+    printf("VGA initialised. You should see color bars on your monitor.\n");
     printf("Press any key to switch to moving pattern...\n");
     
     // Start DMA transfer
