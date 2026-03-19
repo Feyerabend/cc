@@ -19,7 +19,7 @@ Core 0                          Core 1
   │           ├── raster_shape()  │           ├── copy row from front buffer
   │           └── raster_stroke() │           └── end_scanline_generation()
   │                               │
-  └── vga_swap_buffers()  ─────> picks up new front on next frame
+  └── vga_swap_buffers()  ------> picks up new front on next frame
 ```
 
 The two cores share nothing except two framebuffers and a handful of volatile pointers.
@@ -102,7 +102,7 @@ Parts of the code have been reimplemented of Flash, originally
 developed in Java--likely by Macromedia in the late 1990s. Core concepts
 such as gradient rendering and similar techniques are already well established,
 but the relatively small codebase (designed for applets) includes a number
-of clever optimisations and trade-offs, used here.
+of clever optimisations and trade-offs, reused here.
 
 
 #### Coordinate system and matrix (`gfx.h`, `gfx.c`)
