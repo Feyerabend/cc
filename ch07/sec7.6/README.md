@@ -8,7 +8,7 @@ felt like it had finally discovered its "architecture." Its golden calf. Not jus
 but code that *made sense*. That moment revolved around three ideas that became deeply intertwined:
 object-oriented programming, Java, and design patterns.*
 
-*Object-oriented programming (OO) didn’t begin there, of course. Its roots go back to languages like
+*Object-oriented programming (OO) didn't begin there, of course. Its roots go back to languages like
 Simula and later Smalltalk, where the idea was almost philosophical: model software as a collection
 of interacting "objects," each with its own state and behaviour. But for years, this was more of an
 academic curiosity than an industry standard.*
@@ -22,7 +22,7 @@ piece of the puzzle, maybe you could keep things understandable.*
 
 __Enter Java.__
 
-*When Java appeared in the mid-90s, it didn’t just bring a new syntax. It arrived with a message:
+*When Java appeared in the mid-90s, it didn't just bring a new syntax. It arrived with a message:
 write once, run anywhere. It offered a cleaner, safer alternative to C++, enforced object-oriented
 structure more strictly, and removed many of the sharp edges that had made large systems fragile.
 For many developers, Java was their first real immersion into OO thinking--not as theory,
@@ -34,11 +34,11 @@ Java became one of the primary tools for doing it.**
 
 *But even with OO and Java, a question remained*: how do you design systems well?
 
-__That’s where design patterns entered the story.__
+__That's where design patterns entered the story.__
 
 *In 1994, four authors, often referred to as the "Gang of Four", published a book that would quietly
 reshape how developers think: *Design Patterns: Elements of Reusable Object-Oriented Software*. What
-they did was deceptively simple. They didn’t invent new features or languages. Instead, they named
+they did was deceptively simple. They didn't invent new features or languages. Instead, they named
 recurring solutions.*
 
 __They gave developers a vocabulary.__
@@ -59,14 +59,14 @@ the right patterns, and disciplined object-oriented design, software complexity 
 *Reality, of course, turned out to be messier. Some patterns became overapplied. New paradigms--functional
 programming, simpler architectures—pushed back against the heaviness that OO systems could accumulate.*
 
-__But that doesn’t diminish what that period achieved.__
+__But that doesn't diminish what that period achieved.__
 
 * It gave developers a shared language for design.
 * It made large-scale software development more systematic.
 * And it shaped how we still think about structure, responsibility, and abstraction in code.
 
 *Even today, when you see a well-factored class, a clean interface, or a familiar pattern quietly
-doing its job, you’re seeing echoes of that moment--when software engineering first felt like it
+doing its job, you're seeing echoes of that moment--when software engineering first felt like it
 was becoming a true craft.*
 
 
@@ -95,7 +95,8 @@ Typical examples:
 * structuring communication
 * representing hierarchies
 
-By the late 1980s, object-oriented programming (OOP) was spreading, but developers repeatedly encountered the same structural problems.
+By the late 1980s, object-oriented programming (OOP) was spreading, but developers
+repeatedly encountered the same structural problems.
 
 Patterns started appearing informally in research groups.
 
