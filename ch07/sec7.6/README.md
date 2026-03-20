@@ -44,7 +44,7 @@ recurring solutions.*
 __They gave developers a vocabulary.__
 
 *Instead of vaguely describing "some object that creates other objects in a flexible way," you could
-say *Factory*. Instead of explaining a complex subscription mechanism, you could say *Observer*.
+say __Factory__. Instead of explaining a complex subscription mechanism, you could say __Observer__.
 These patterns captured hard-won experience and made it transferable.*
 
 __And in the Java world, they spread like wildfire.__
