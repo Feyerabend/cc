@@ -23,7 +23,7 @@ piece of the puzzle, maybe you could keep things understandable.*
 __Enter Java.__
 
 *When Java appeared in the mid-90s, it didn’t just bring a new syntax. It arrived with a message:
-*write once, run anywhere*. It offered a cleaner, safer alternative to C++, enforced object-oriented
+write once, run anywhere. It offered a cleaner, safer alternative to C++, enforced object-oriented
 structure more strictly, and removed many of the sharp edges that had made large systems fragile.
 For many developers, Java was their first real immersion into OO thinking--not as theory,
 but as daily practice.*
@@ -32,7 +32,7 @@ but as daily practice.*
 heavily in software. Suddenly, there was a massive demand for building large, maintainable systems--and
 Java became one of the primary tools for doing it.**
 
-*But even with OO and Java, a question remained: *how do you design systems well?* *
+*But even with OO and Java, a question remained*: how do you design systems well?
 
 __That’s where design patterns entered the story.__
 
