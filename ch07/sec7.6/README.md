@@ -728,7 +728,6 @@ In that sense, patterns are closer to *case studies* than formulas.
 And importantly, they carry with them a kind of humility.
 They don't claim: "this is the best solution."
 They suggest: "this has worked, many times, under these conditions."
-
 That distinction matters.
 It leaves room for judgment. For context. For variation. It acknowledges that software systems
 are not identical, and that design is rarely about applying a rule blindly.
