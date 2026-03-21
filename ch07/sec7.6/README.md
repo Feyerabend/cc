@@ -57,7 +57,7 @@ even overusing them, as if every problem deserved a named solution.*
 the right patterns, and disciplined object-oriented design, software complexity could be tamed.*
 
 *Reality, of course, turned out to be messier. Some patterns became overapplied. New paradigms--functional
-programming, simpler architectures—pushed back against the heaviness that OO systems could accumulate.*
+programming, simpler architectures--pushed back against the heaviness that OO systems could accumulate.*
 
 __But that doesn't diminish what that period achieved.__
 
@@ -735,7 +735,7 @@ are not identical, and that design is rarely about applying a rule blindly.
 
 Seen this way, patterns are less about prescribing structure and more about preserving memory.
 They are fragments of collective experience, gathered from thousands of systems, compressed into
-forms that can be shared. Not to eliminate thinking, but to guide it—to give developers a starting
+forms that can be shared. Not to eliminate thinking, but to guide it--to give developers a starting
 point that is informed by what came before.
 
 And that may be their most enduring contribution: they remind us that building software is not
@@ -784,7 +784,7 @@ and a way to transfer experience across teams and projects. They fit the moment.
 
 __But the same context that enables an idea can also shape its limitations.__
 
-Patterns, in some cases, became overused—applied mechanically rather than thoughtfully.
+Patterns, in some cases, became overused--applied mechanically rather than thoughtfully.
 Systems grew layered and abstracted to the point of heaviness. What began as a way to
 manage complexity sometimes *introduced* new forms of it. The surrounding forces--enterprise
 needs, tooling, education, even hiring practices--amplified both the strengths and the weaknesses.
