@@ -384,7 +384,7 @@ The book:
 
 * sold over 100,000 copies
 * quickly became a classic
-* helped bring patterns into mainstream programming. ([Wikipedia][4])
+* helped bring patterns into mainstream programming.
 
 At the same time, the software industry was transitioning to:
 
@@ -674,20 +674,283 @@ These ideas underpin modern architecture.
 
 ### What changed
 
-Modern languages reduce the need for explicit patterns.
 
-Examples:
+__a.) Object Creation -> Factory Pattern vs Language Features__
 
+In classic OO, object creation was often wrapped in patterns like *Factory* to avoid tight coupling.
+
+
+Old Java-style Factory:
+
+```java
+interface Shape {
+    void draw();
+}
+
+class Circle implements Shape {
+    public void draw() { System.out.println("Circle"); }
+}
+
+class ShapeFactory {
+    static Shape create(String type) {
+        if (type.equals("circle")) {
+            return new Circle();
+        }
+        throw new IllegalArgumentException();
+    }
+}
 ```
-Scala
-Rust
-Haskell
-Kotlin
-Swift
+
+This solves a real problem: avoiding direct dependencies on concrete classes.
+
+
+__Modern Kotlin / Scala__
+
+You often don't need a factory at all:
+
+```kotlin
+sealed interface Shape
+
+data class Circle(val radius: Double) : Shape
+
+fun createShape(type: String): Shape = when (type) {
+    "circle" -> Circle(1.0)
+    else -> error("Unknown")
+}
 ```
 
-They integrate many concepts directly.
+Or even more directly, you pass constructors/functions:
 
+```kotlin
+val creator: () -> Shape = { Circle(1.0) }
+```
+
+What changed?
+* First-class functions replace factories
+* Sealed types give controlled hierarchies
+* Pattern matching replaces manual branching
+
+The *intent* of Factory is still there--but the ceremony is gone.
+
+
+
+__b.) Strategy Pattern --> Functions as Values__
+
+
+Classic OO Strategy in Java:
+```java
+interface SortStrategy {
+    void sort(List<Integer> list);
+}
+
+class QuickSort implements SortStrategy {
+    public void sort(List<Integer> list) { /* ... */ }
+}
+
+class Context {
+    private SortStrategy strategy;
+
+    Context(SortStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    void execute(List<Integer> list) {
+        strategy.sort(list);
+    }
+}
+```
+
+
+
+__Modern Scala / Kotlin / Swift__
+
+```kotlin
+fun execute(list: List<Int>, strategy: (List<Int>) -> List<Int>) {
+    strategy(list)
+}
+
+val quickSort = { l: List<Int> -> l.sorted() }
+
+execute(listOf(3,1,2), quickSort)
+```
+
+What changed?
+* Functions are first-class citizens
+* No need for interfaces + classes + wiring
+
+The *Strategy pattern collapses into a function parameter.*
+
+
+
+__c.) Observer Pattern → Reactive / Built-in Constructs__
+
+Classic Observer in Java:
+```java
+interface Observer {
+    void update(String data);
+}
+
+class Subject {
+    private List<Observer> observers = new ArrayList<>();
+
+    void subscribe(Observer o) {
+        observers.add(o);
+    }
+
+    void notifyAll(String data) {
+        for (Observer o : observers) {
+            o.update(data);
+        }
+    }
+}
+```
+
+
+
+__Kotlin / Swift (simplified reactive style)__
+
+```kotlin
+val listeners = mutableListOf<(String) -> Unit>()
+
+fun subscribe(listener: (String) -> Unit) {
+    listeners += listener
+}
+
+fun notifyAll(data: String) {
+    listeners.forEach { it(data) }
+}
+```
+
+Or in more advanced systems (e.g. flows, streams):
+
+```kotlin
+val flow = MutableStateFlow("")
+
+flow.collect { println(it) }
+flow.value = "new data"
+```
+
+What changed?
+* Built-in reactive abstractions
+* Language + libraries model data flow directly
+
+Observer becomes *part of the ecosystem*, not a pattern you manually implement.
+
+
+
+__d.) Null Handling → Option / Maybe Types__
+
+A major pain in classic OO:
+```java
+String name = getUser();
+if (name != null) {
+    System.out.println(name.length());
+}
+```
+
+
+__Modern languages (Rust, Scala, Kotlin)__
+
+```kotlin
+val name: String? = getUser()
+println(name?.length)
+```
+
+Or Rust:
+
+```rust
+fn print_len(name: Option<String>) {
+    if let Some(n) = name {
+        println!("{}", n.len());
+    }
+}
+```
+
+What changed?
+* Null handling becomes part of the type system
+* Eliminates entire classes of bugs
+
+This replaces many defensive patterns with *language guarantees*.
+
+
+
+__e.) Immutability → No Need for Defensive Patterns__
+
+Older OO often required defensive copying:
+```java
+class Person {
+    private final List<String> items;
+
+    Person(List<String> items) {
+        this.items = new ArrayList<>(items);
+    }
+}
+```
+
+
+__Modern (e.g. Haskell / Scala / Rust)__
+
+```scala
+case class Person(items: List[String])
+```
+
+or Rust:
+
+```rust
+struct Person {
+    items: Vec<String>,
+}
+```
+
+But immutability (especially in functional languages like Haskell) is the default.
+
+What changed?
+* Immutability is enforced or encouraged
+* No need for defensive design patterns
+
+
+ 
+__f.) Algebraic Data Types → Replace Complex Hierarchies__
+
+In classic OO, representing variants required inheritance:
+```java
+abstract class Shape {}
+
+class Circle extends Shape {}
+class Rectangle extends Shape {}
+```
+
+
+__Modern (Scala / Rust / Haskell)__
+
+```rust
+enum Shape {
+    Circle(f64),
+    Rectangle(f64, f64),
+}
+```
+
+What changed?
+* Data + variants are modeled directly
+* Pattern matching replaces polymorphic dispatch
+
+This removes the need for certain Visitor-like patterns.
+
+
+__So What Happened?__
+
+Languages like Scala, Rust, Haskell, Kotlin, or Swift
+did not reject object-oriented ideas—they *absorbed and generalized them*.
+They took recurring patterns and asked:
+"Why is this a pattern instead of a language feature?"
+And then they encoded those ideas directly into: type systems, function semantics,
+pattern matching, immutability, and concurrency models.
+
+This is evolution. For early OO you *manually encode structure* using patterns.
+But modern languages *encodes the structure for you*.
+
+So patterns didn’t disappear. Rather, they became invisible.
+And that’s actually their greatest success.
 
 
 ### 14. Insights from the Book
