@@ -470,5 +470,5 @@ Identify the culprit task, mark it SUSPENDED, and display a fault report while o
 
 Reference: *ARM Cortex-M33 Generic User Guide*, Chapter 4 (MPU) and Chapter 4.3 (Fault handling).
 
-![RTOS API](./../../assets/image/rtos-api.gif)
+![RTOS API](./../../assets/image/rtos-api.png)
 
