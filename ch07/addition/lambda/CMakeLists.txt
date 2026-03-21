@@ -28,7 +28,7 @@ set(CMAKE_C_STANDARD 11)
 
 pico_sdk_init()
 
-# ── executable ───────────────────────────────────────────────────────────────
+# -- executable
 add_executable(pico_lambda
     main.c
     net.c
@@ -43,7 +43,7 @@ target_include_directories(pico_lambda PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_compile_options(pico_lambda PRIVATE -O2 -Wall -Wextra -ffunction-sections -fdata-sections)
 
-# ── link libraries ───────────────────────────────────────────────────────────
+# -- link libraries
 target_link_libraries(pico_lambda PRIVATE
     pico_stdlib                   # stdio, time, sleep
     pico_cyw43_arch_lwip_poll     # CYW43 WiFi + lwIP in polling (no-RTOS) mode
