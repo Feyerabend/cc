@@ -734,7 +734,7 @@ The *intent* of Factory is still there--but the ceremony is gone.
 
 
 
-__b.) Strategy Pattern --> Functions as Values__
+__b.) Strategy Pattern -> Functions as Values__
 
 
 Classic OO Strategy in Java:
@@ -782,7 +782,7 @@ The *Strategy pattern collapses into a function parameter.*
 
 
 
-__c.) Observer Pattern → Reactive / Built-in Constructs__
+__c.) Observer Pattern -> Reactive / Built-in Constructs__
 
 Classic Observer in Java:
 ```java
@@ -838,7 +838,7 @@ Observer becomes *part of the ecosystem*, not a pattern you manually implement.
 
 
 
-__d.) Null Handling → Option / Maybe Types__
+__d.) Null Handling -> Option / Maybe Types__
 
 A major pain in classic OO:
 ```java
@@ -874,7 +874,7 @@ This replaces many defensive patterns with *language guarantees*.
 
 
 
-__e.) Immutability → No Need for Defensive Patterns__
+__e.) Immutability -> No Need for Defensive Patterns__
 
 Older OO often required defensive copying:
 ```java
@@ -910,7 +910,7 @@ What changed?
 
 
  
-__f.) Algebraic Data Types → Replace Complex Hierarchies__
+__f.) Algebraic Data Types -> Replace Complex Hierarchies__
 
 In classic OO, representing variants required inheritance:
 ```java
