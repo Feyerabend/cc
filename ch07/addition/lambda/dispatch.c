@@ -13,7 +13,7 @@
 #include <string.h>
 
 /* ------------------------------------------------------------------ */
-/*  Output callback                                                    */
+/*  Output callback                                                   */
 /* ------------------------------------------------------------------ */
 
 /* Appended to by the output_cb below; pointer is valid only during
@@ -34,7 +34,7 @@ static void output_cb(const char *s, int len)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Public API                                                         */
+/*  Public API                                                        */
 /* ------------------------------------------------------------------ */
 
 void dispatch_eval(const char *src, dispatch_result_t *out)

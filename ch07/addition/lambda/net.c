@@ -39,7 +39,7 @@ static void *find_mem(const void *hay, size_t hlen,
 }
 
 /* ------------------------------------------------------------------ */
-/*  Constants                                                          */
+/*  Constants                                                         */
 /* ------------------------------------------------------------------ */
 #define HTTP_PORT       80
 
@@ -49,7 +49,7 @@ static void *find_mem(const void *hay, size_t hlen,
 
 /* Static HTML served at GET / — the browser UI.
  * fetch() sends the body as text/plain so the server receives raw
- * Forth source without any URL-encoding to undo.                     */
+ * Forth source without any URL-encoding to undo. */
 static const char HTML_FORM[] =
     "<!DOCTYPE html><html><head><meta charset=utf-8>"
     "<title>pico-lambda</title></head><body>"
@@ -65,7 +65,7 @@ static const char HTML_FORM[] =
     "</script></body></html>";
 
 /* ------------------------------------------------------------------ */
-/*  Connection state                                                   */
+/*  Connection state                                                  */
 /* ------------------------------------------------------------------ */
 typedef struct {
     char buf[REQ_BUF_SIZE];
@@ -73,7 +73,7 @@ typedef struct {
 } conn_t;
 
 /* ------------------------------------------------------------------ */
-/*  Helpers                                                            */
+/*  Helpers                                                           */
 /* ------------------------------------------------------------------ */
 
 /* Case-insensitive search for header value, e.g. "Content-Length: " */
@@ -101,7 +101,7 @@ static void close_conn(struct tcp_pcb *pcb, conn_t *c)
 
 /* Write a fixed C string followed by optional body bytes.
  * Using TCP_WRITE_FLAG_MORE on the header tells lwIP to coalesce
- * both writes into as few segments as possible.                      */
+ * both writes into as few segments as possible. */
 static err_t write_response(struct tcp_pcb *pcb,
                              const char *hdr,
                              const char *body, int bodylen)
@@ -122,14 +122,14 @@ static err_t write_response(struct tcp_pcb *pcb,
 }
 
 /* ------------------------------------------------------------------ */
-/*  Request processing                                                 */
+/*  Request processing                                                */
 /* ------------------------------------------------------------------ */
 static void handle_request(struct tcp_pcb *pcb, conn_t *c)
 {
     char *buf = c->buf;
     int   len = c->rxlen;
 
-    /* ── Parse request line ──────────────────────────────────────── */
+    /* Parse request line */
     char *line_end = (char *)find_mem(buf, len, "\r\n", 2);
     if (!line_end) goto bad_request;
 
@@ -151,7 +151,7 @@ static void handle_request(struct tcp_pcb *pcb, conn_t *c)
     if (plen >= (int)sizeof(path)) goto bad_request;
     memcpy(path, p, plen); path[plen] = '\0';
 
-    /* ── Find end of headers ─────────────────────────────────────── */
+    /* Find end of headers */
     char *hdr_end = (char *)find_mem(buf, len, "\r\n\r\n", 4);
     if (!hdr_end) goto bad_request;
 
@@ -166,7 +166,7 @@ static void handle_request(struct tcp_pcb *pcb, conn_t *c)
 
     if (body_avail < content_length) goto bad_request;   /* shouldn't happen */
 
-    /* ── Route ───────────────────────────────────────────────────── */
+    /* Route */
     if (strcmp(method, "GET") == 0 && strcmp(path, "/") == 0) {
         /* Browser UI */
         char hdr[128];
@@ -231,7 +231,7 @@ bad_request:;
 }
 
 /* ------------------------------------------------------------------ */
-/*  lwIP callbacks                                                     */
+/*  lwIP callbacks                                                    */
 /* ------------------------------------------------------------------ */
 static err_t recv_cb(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
@@ -319,7 +319,7 @@ static err_t accept_cb(void *arg, struct tcp_pcb *newpcb, err_t err)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Public API                                                         */
+/*  Public API                                                        */
 /* ------------------------------------------------------------------ */
 void net_init(void)
 {

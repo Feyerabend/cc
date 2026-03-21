@@ -3,18 +3,18 @@
  *
  * Layout (320 × 240, 5×8 font, 10px line pitch):
  *
- *  ┌──────────────────────────────────────────────────────────────┐
- *  │  pico-lambda                          10.0.x.x              │  header (blue)
- *  ├──────────────────────────────────────────────────────────────┤
- *  │  Requests: 0          Uptime: 00:00:00                       │
- *  ├──────────────────────────────────────────────────────────────┤
- *  │  Expression                                                  │  label (dark)
- *  │  ...truncated to 52 chars...                                 │
- *  │                                                              │
- *  │  Result                                                      │
- *  │  ...up to 4 lines...                                         │
- *  │                                                              │
- *  └──────────────────────────────────────────────────────────────┘
+ *  ┌-------------------------------------------------┐
+ *  │  pico-lambda                          10.0.x.x  │  header
+ *  ├-------------------------------------------------┤
+ *  │  Requests: 0          Uptime: 00:00:00          │
+ *  ├-------------------------------------------------┤
+ *  │  Expression                                     │  label
+ *  │  ...truncated to 52 chars...                    │
+ *  │                                                 │
+ *  │  Result                                         │
+ *  │  ...up to 4 lines...                            │
+ *  │                                                 │
+ *  └-------------------------------------------------┘
  *
  * All drawing goes into a static framebuffer; display_blit_full()
  * pushes it to the ST7789 over DMA-SPI.
@@ -27,12 +27,12 @@
 #include <string.h>
 
 /* ------------------------------------------------------------------ */
-/*  Layout constants                                                   */
+/*  Layout constants                                                  */
 /* ------------------------------------------------------------------ */
-#define LINE_H      10      /* pixels per text row (8px char + 2px gap) */
-#define COL_W        6      /* pixels per char (5px glyph + 1px gap)    */
-#define MARGIN       6      /* left/right margin in pixels               */
-#define CHARS_PER_ROW  ((DISPLAY_WIDTH - 2 * MARGIN) / COL_W)   /* 51  */
+#define LINE_H      10    /* pixels per text row (8px char + 2px gap) */
+#define COL_W        6    /* pixels per char (5px glyph + 1px gap)    */
+#define MARGIN       6    /* left/right margin in pixels              */
+#define CHARS_PER_ROW  ((DISPLAY_WIDTH - 2 * MARGIN) / COL_W)   /* 51 */
 
 /* Row Y positions */
 #define Y_HEADER     4
@@ -54,8 +54,8 @@
 
 /* Accent colors */
 #define C_BG        COLOR_BLACK
-#define C_HEADER    fb_rgb(0,  50, 120)   /* dark blue                 */
-#define C_DIV       fb_rgb(40, 40,  40)   /* dim grey                  */
+#define C_HEADER    fb_rgb(0,  50, 120)
+#define C_DIV       fb_rgb(40, 40,  40)
 #define C_TITLE     COLOR_WHITE
 #define C_IP        COLOR_WHITE
 #define C_LABEL     COLOR_WHITE
@@ -65,14 +65,14 @@
 #define C_DIM       fb_rgb(80, 80, 80)
 
 /* ------------------------------------------------------------------ */
-/*  Module state                                                       */
+/*  Module state                                                      */
 /* ------------------------------------------------------------------ */
 static uint16_t fb[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 static char     stored_ip[24];
 static uint32_t req_count = 0;
 
 /* ------------------------------------------------------------------ */
-/*  Helpers                                                            */
+/*  Helpers                                                           */
 /* ------------------------------------------------------------------ */
 static void draw_divider(int y)
 {
@@ -95,7 +95,7 @@ static void draw_row(int x, int y, const char *s, uint16_t fg, uint16_t bg)
 }
 
 /* Wrap src into up to max_rows rows of CHARS_PER_ROW each,
- * clearing any rows below the content.                              */
+ * clearing any rows below the content. */
 static void draw_wrapped(int x, int y, const char *src,
                          int max_rows, uint16_t fg, uint16_t bg)
 {
@@ -140,7 +140,7 @@ static void draw_static_layout(void)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Public API                                                         */
+/*  Public API                                                        */
 /* ------------------------------------------------------------------ */
 void ui_init(const char *ip)
 {
@@ -183,7 +183,7 @@ void ui_on_request(const char *src, const dispatch_result_t *result)
 {
     req_count++;
 
-    /* Expression — strip leading/trailing whitespace for display   */
+    /* Expression — strip leading/trailing whitespace for display */
     draw_wrapped(MARGIN, Y_EXPR_VAL, src ? src : "",
                  EXPR_ROWS, C_DIM, C_BG);
 

@@ -52,7 +52,7 @@ int main(void)
 
     ui_init(ip);
 
-    /* ── Event loop ─────────────────────────────────────────────── */
+    /* Event loop */
     bool     led        = false;
     uint32_t last_tick  = 0;
 

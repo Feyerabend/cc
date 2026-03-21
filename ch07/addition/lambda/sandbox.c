@@ -84,7 +84,6 @@ static const char *ALLOWED[] = {
 
 #define ALLOWED_COUNT ((int)(sizeof(ALLOWED) / sizeof(ALLOWED[0])))
 
-void sandbox_install(void)
-{
+void sandbox_install(void) {
     forth_restrict_to(ALLOWED, ALLOWED_COUNT);
 }

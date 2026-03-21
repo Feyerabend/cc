@@ -1,7 +1,7 @@
 /*
  * forth.c — token-threaded Forth interpreter for pico-lambda
  *
- * Derived from forth-vga/forth.c with the following cuts:
+ * A derived from forth-vga/forth.c with the following cuts:
  *   - Float stack and all F* words removed
  *   - RTOS words (TASKS, UPTIME, MS, YIELD) removed
  *   - Filesystem words (INCLUDE, EDIT) removed
@@ -31,9 +31,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-/* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------- */
 /*  Configuration                                                      */
-/* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------- */
 #define DS_SZ       64      /* data stack depth                        */
 #define RS_SZ       32      /* return stack depth                      */
 #define LS_SZ        8      /* DO..LOOP nesting depth                  */
@@ -50,7 +50,7 @@
 #define EXEC_LIMIT  100000
 
 /* ------------------------------------------------------------------ */
-/*  Types                                                              */
+/*  Types                                                             */
 /* ------------------------------------------------------------------ */
 typedef intptr_t cell_t;
 
@@ -67,7 +67,7 @@ typedef struct {
 } word_t;
 
 /* ------------------------------------------------------------------ */
-/*  Global state                                                       */
+/*  Global state                                                      */
 /* ------------------------------------------------------------------ */
 static word_t   dict[MAX_WORDS];
 static int      nwords = 0;
@@ -107,7 +107,7 @@ static int      forth_base = 10;   /* number I/O radix           */
 static int tok_lit, tok_br0, tok_br, tok_do_rt, tok_loop_rt,
            tok_exit_rt, tok_slit;
 
-/* Error flags — cleared in forth_init(), set on any error path */
+/* Error flags — cleared in forth_init(), set on any error path  */
 static bool ds_fault   = false;   /* stack overflow / underflow  */
 static bool pool_fault = false;   /* body / string pool overflow */
 static bool error_flag = false;   /* any error this session      */
@@ -119,7 +119,7 @@ static int  exec_steps = 0;
 static void (*out_fn)(const char *s, int len) = NULL;
 
 /* ------------------------------------------------------------------ */
-/*  Output helpers                                                     */
+/*  Output helpers                                                    */
 /* ------------------------------------------------------------------ */
 static void out_write(const char *s, int len)
 {
@@ -137,7 +137,7 @@ static void out_str(const char *s)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Stack helpers                                                      */
+/*  Stack helpers                                                     */
 /* ------------------------------------------------------------------ */
 static void push(cell_t v)
 {
@@ -153,7 +153,7 @@ static cell_t pop(void)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Dictionary helpers                                                 */
+/*  Dictionary helpers                                                */
 /* ------------------------------------------------------------------ */
 static int find_word(const char *n)
 {
@@ -187,7 +187,7 @@ static int add_prim_required(const char *n, void (*fn)(void), bool imm)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Compile helpers                                                    */
+/*  Compile helpers                                                   */
 /* ------------------------------------------------------------------ */
 static void emit_tok(int t)
 {
@@ -210,7 +210,7 @@ static void patch_fwd(int patch_pos, int target)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Executor                                                           */
+/*  Executor                                                          */
 /* ------------------------------------------------------------------ */
 static void execute(int wi)
 {
@@ -295,7 +295,7 @@ static void execute(int wi)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Tokeniser                                                          */
+/*  Tokeniser                                                         */
 /* ------------------------------------------------------------------ */
 static bool next_token(char *out, int maxlen)
 {
@@ -327,7 +327,7 @@ static int read_string(char delim, int *len)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Primitive implementations                                          */
+/*  Primitive implementations                                         */
 /* ------------------------------------------------------------------ */
 static void p_noop(void) {}   /* placeholder for special executor tokens */
 
@@ -694,7 +694,7 @@ static void p_words(void)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Interpreter                                                        */
+/*  Interpreter                                                       */
 /* ------------------------------------------------------------------ */
 static void abort_compile(void)
 {
@@ -750,7 +750,7 @@ static void interpret_line(void)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Public API                                                         */
+/*  Public API                                                        */
 /* ------------------------------------------------------------------ */
 
 /* forth_init — reset all interpreter state.
