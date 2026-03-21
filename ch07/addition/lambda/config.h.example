@@ -1,0 +1,9 @@
+/* config.h.example — copy to config.h and fill in your credentials. */
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define WIFI_SSID  "your-network-name"
+#define WIFI_PASS  "your-password"
+
+#endif /* CONFIG_H */
