@@ -731,7 +731,7 @@ That comparison, to architecture, is more than a historical curiosity.
 It reveals something fundamental about how technology evolves.
 
 
-#### The Context and Evolution
+### 16. The Context and Evolution
 
 Technology does not grow in a vacuum.
 
@@ -760,7 +760,7 @@ That is the quiet cautionary tale: *good ideas do not exist independently of the
 that adopts them*. They are interpreted, stretched, and sometimes distorted by it.
 
 
-#### The Lessons
+### 17. The Lessons
 
 __That lesson feels especially relevant today.__
 
