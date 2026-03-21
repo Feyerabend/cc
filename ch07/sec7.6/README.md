@@ -781,14 +781,15 @@ __In other words, AI is not just a technological phenomenon. It is a socio-techn
 Looking back at the rise of design patterns, we can see both inspiration and warning.
 
 The inspiration is clear: capturing and sharing knowledge can elevate an entire field.
-It can give practitioners a language, a sense of structure, and a way to build on each other's work.
+It can give practitioners a language, a sense of structure, and a way to build on each
+other's work.
 
-The warning is quieter: once ideas enter a larger system--organizations, markets,
+The warning is quieter: once ideas enter a larger system--organisations, markets,
 expectations--they evolve in ways that are not always intentional.
 
-The comparison is revealing because it reminds us that programming is not just about code.
+*The comparison is revealing because it reminds us that programming is not just about code.
 It is about the conditions under which code is written, the forces that shape decisions,
-and the assumptions that quietly become standard practice.
+and the assumptions that quietly become standard practice.*
 
 __And those conditions are always changing.__
 
