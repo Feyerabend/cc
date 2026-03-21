@@ -226,7 +226,7 @@ It encouraged thinking about:
 * reuse
 * decoupling
 
-This helped push *software engineering toward architectural thinking*. ([Software Patterns Lexicon][2])
+This helped push *software engineering toward architectural thinking*.
 
 
 
