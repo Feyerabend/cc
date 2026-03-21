@@ -710,26 +710,85 @@ from thousands of systems.
 
 
 
-## 15. The Legacy
-
-Today the GoF book is considered one of the *most influential software engineering books ever written*.
-
-Its legacy includes:
-
-```
-pattern-based thinking
-software architecture culture
-shared design vocabulary
-framework architecture
-```
-
-Even if specific patterns are sometimes obsolete, the *conceptual shift remains permanent*.
+### 15. The Legacy
 
 
-That comparison is quite revealing about the evolution of programming.
+When *Design Patterns: Elements of Reusable Object-Oriented Software* appeared,
+it didn't just catalog clever techniques--it changed how developers *saw* their work.
+Over time, its influence crystallised:
+
+* pattern-based thinking
+* a stronger culture around software architecture
+* a shared vocabulary for design discussions
+* the foundation for many frameworks and libraries
+
+Even today, you can hear echoes of it in everyday conversations: "this is basically an Observer,"
+or "we should hide that behind a Factory." The specific patterns may come and go. Some feel
+heavy or outdated, but the deeper shift remains. Developers learned to recognise structure,
+to reason about systems at a higher level than individual lines of code.
+
+That comparison, to architecture, is more than a historical curiosity.
+It reveals something fundamental about how technology evolves.
 
 
+#### The Context and Evolution
 
-[3]: https://en.wikipedia.org/wiki/Factory_method_pattern "Factory method pattern"
-[4]: https://en.wikipedia.org/wiki/Dr._Dobb%27s_Excellence_in_Programming_Award "Dr. Dobb's Excellence in Programming Award"
+Technology does not grow in a vacuum.
+
+Object-oriented programming did not rise purely because it was elegant.
+Java did not succeed solely because it was well-designed. Design patterns
+did not spread just because they were insightful.
+
+__They all emerged within a particular context.__
+
+There was a growing need to manage large, complex systems. There were organisations
+investing heavily in long-lived software. There was an industry searching for
+discipline Something that could make software development feel less like improvisation,
+and more like engineering.
+
+In that environment, patterns made sense. They offered stability, shared understanding,
+and a way to transfer experience across teams and projects. They fit the moment.
+
+__But the same context that enables an idea can also shape its limitations.__
+
+Patterns, in some cases, became overused—applied mechanically rather than thoughtfully.
+Systems grew layered and abstracted to the point of heaviness. What began as a way to
+manage complexity sometimes *introduced* new forms of it. The surrounding forces--enterprise
+needs, tooling, education, even hiring practices--amplified both the strengths and the weaknesses.
+
+That is the quiet cautionary tale: *good ideas do not exist independently of the environment
+that adopts them*. They are interpreted, stretched, and sometimes distorted by it.
+
+
+#### The Lessons
+
+__That lesson feels especially relevant today.__
+
+Consider the rapid rise of AI systems. Their technical foundations are impressive,
+but their trajectory is shaped just as much by context:
+
+* large technology companies driving development and deployment
+* economic incentives favoring scale, speed, and market dominance
+* expectations from users, investors, and society about what AI *should* do
+* the availability of massive datasets and computing infrastructure
+* cultural narratives about automation, intelligence, and progress
+
+These forces don't just influence how AI is used: they influence what gets built in
+the first place, how it is evaluated, and what trade-offs are considered acceptable.
+
+In other words, AI is not just a technological phenomenon. It is a socio-technical one.
+
+Looking back at the rise of design patterns, we can see both inspiration and warning.
+
+The inspiration is clear: capturing and sharing knowledge can elevate an entire field.
+It can give practitioners a language, a sense of structure, and a way to build on each other's work.
+
+The warning is quieter: once ideas enter a larger system--organizations, markets,
+expectations--they evolve in ways that are not always intentional.
+
+The comparison is revealing because it reminds us that programming is not just about code.
+It is about the conditions under which code is written, the forces that shape decisions,
+and the assumptions that quietly become standard practice.
+
+__And those conditions are always changing.__
 
