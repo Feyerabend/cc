@@ -641,7 +641,7 @@ Modern architecture patterns for cloud systems.
 
 
 
-## 13. Where GoF Stands Today
+### 13. Where GoF Stands Today
 
 There is a certain way to read the *Design Patterns: Elements of Reusable Object-Oriented Software*
 today that feels different from how it was read at its peak.
@@ -681,7 +681,7 @@ And that is perhaps the clearest sign of something that has truly lasted:
 
 
 
-### What changed
+#### *What changed*
 
 
 __a.) Object Creation -> Factory Pattern vs Language Features__
