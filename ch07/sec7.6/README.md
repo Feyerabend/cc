@@ -643,32 +643,41 @@ Modern architecture patterns for cloud systems.
 
 ## 13. Where GoF Stands Today
 
-The GoF book is now *historically foundational but not always practical*.
+There is a certain way to read the *Design Patterns: Elements of Reusable Object-Oriented Software*
+today that feels different from how it was read at its peak.
+When it first spread through the industry, it was practical, almost tactical.
+Developers reached for it as a toolbox. You needed flexibility? Use a Factory.
+You needed communication between components? Try Observer. It was immediate,
+concrete, and often applied quite literally.
 
-Think of it like:
+__But time has a way of changing how books are used.__
 
-```
-Euclid's Elements for software architecture
-```
+Today, the GoF book feels less like a manual and more like a foundation.
+Its role has shifted. It is still deeply important--but not always something
+you follow line by line in everyday work. What remains, and what matters
+ are not the individual patterns as rigid templates, but the ideas underneath them.
 
-Important for understanding concepts.
+The book taught developers to see systems in terms of relationships
+rather than just code. It emphasised that structure matters—that how
+parts connect is just as important as what each part does.
 
-But not necessarily used literally every day.
+Out of that came a set of principles that still quietly underpin modern software:
+* decoupling, so that parts of a system can change without breaking everything else
+* abstraction, so that complexity can be managed and hidden when necessary
+* composition, so that behavior can be built by combining smaller pieces
+  rather than inheriting rigid hierarchies
+* extensibility, so that systems can evolve without constant rewriting
 
+These are not tied to any specific language or era. You will find them in functional programming,
+in microservices, in modern type systems, in UI frameworks—everywhere.
+So while the patterns themselves may sometimes feel dated, or overly formal,
+the shift they introduced has not faded. If anything, it has dissolved into the background.
+You no longer need to name a pattern for it to shape your thinking. You no longer
+need to implement it explicitly for its influence to be present. The language,
+the frameworks, and the collective habits of developers now carry much of that weight.
 
-
-### What remains essential
-
-The *principles* remain crucial:
-
-```
-decoupling
-abstraction
-composition
-extensibility
-```
-
-These ideas underpin modern architecture.
+And that is perhaps the clearest sign of something that has truly lasted:
+*it stops feeling like a technique, and starts feeling like common sense*.
 
 
 
@@ -940,7 +949,7 @@ This removes the need for certain Visitor-like patterns.
 __So What Happened?__
 
 Languages like Scala, Rust, Haskell, Kotlin, or Swift
-did not reject object-oriented ideas—they *absorbed and generalised them*.
+did not reject object-oriented ideas--they *absorbed and generalised them*.
 They took recurring patterns and asked:
 "Why is this a pattern instead of a language feature?"
 And then they encoded those ideas directly into: type systems, function semantics,
