@@ -940,7 +940,7 @@ This removes the need for certain Visitor-like patterns.
 __So What Happened?__
 
 Languages like Scala, Rust, Haskell, Kotlin, or Swift
-did not reject object-oriented ideas—they *absorbed and generalized them*.
+did not reject object-oriented ideas—they *absorbed and generalised them*.
 They took recurring patterns and asked:
 "Why is this a pattern instead of a language feature?"
 And then they encoded those ideas directly into: type systems, function semantics,
@@ -948,7 +948,6 @@ pattern matching, immutability, and concurrency models.
 
 This is evolution. For early OO you *manually encode structure* using patterns.
 But modern languages *encodes the structure for you*.
-
 So patterns didn’t disappear. Rather, they became invisible.
 And that’s actually their greatest success.
 
