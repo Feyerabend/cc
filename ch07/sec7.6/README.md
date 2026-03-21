@@ -458,7 +458,7 @@ One of the most interesting consequences:
 Examples:
 
 | Pattern   | Modern language feature  |
-|  |  |
+|-----------|--------------------------|
 | Iterator  | foreach loops            |
 | Strategy  | higher-order functions   |
 | Singleton | modules / static objects |
