@@ -652,7 +652,7 @@ concrete, and often applied quite literally.
 
 __But time has a way of changing how books are used.__
 
-Today, the GoF book feels less like a manual and more like a foundation.
+Today, the GoF book feels less like a manual and more like a __foundation__.
 Its role has shifted. It is still deeply important--but not always something
 you follow line by line in everyday work. What remains, and what matters
  are not the individual patterns as rigid templates, but the ideas underneath them.
@@ -662,14 +662,14 @@ rather than just code. It emphasised that structure matters—that how
 parts connect is just as important as what each part does.
 
 Out of that came a set of principles that still quietly underpin modern software:
-* decoupling, so that parts of a system can change without breaking everything else
-* abstraction, so that complexity can be managed and hidden when necessary
-* composition, so that behavior can be built by combining smaller pieces
+* __decoupling__, so that parts of a system can change without breaking everything else
+* __abstraction__, so that complexity can be managed and hidden when necessary
+* __composition__, so that behavior can be built by combining smaller pieces
   rather than inheriting rigid hierarchies
-* extensibility, so that systems can evolve without constant rewriting
+* __extensibility__, so that systems can evolve without constant rewriting
 
 These are not tied to any specific language or era. You will find them in functional programming,
-in microservices, in modern type systems, in UI frameworks—everywhere.
+in microservices, in modern type systems, in UI frameworks--everywhere.
 So while the patterns themselves may sometimes feel dated, or overly formal,
 the shift they introduced has not faded. If anything, it has dissolved into the background.
 You no longer need to name a pattern for it to shape your thinking. You no longer
