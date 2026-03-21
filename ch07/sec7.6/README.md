@@ -776,7 +776,7 @@ but their trajectory is shaped just as much by context:
 These forces don't just influence how AI is used: they influence what gets built in
 the first place, how it is evaluated, and what trade-offs are considered acceptable.
 
-In other words, AI is not just a technological phenomenon. It is a socio-technical one.
+__In other words, AI is not just a technological phenomenon. It is a socio-technical one.__
 
 Looking back at the rise of design patterns, we can see both inspiration and warning.
 
