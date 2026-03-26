@@ -10,7 +10,14 @@ preemption, task blocking, and round-robin scheduling--can be watched
 happening on screen rather than inferred from blinking LEDs or serial
 logs.
 
+#### Historical lineage
 
+If you trace the ideas backward, the chain is surprisingly short. This RTOS does what early
+Unix did on far more capable hardware, using the same conceptual machinery: a timer interrupt
+triggers a context switch through a priority-ordered ready queue, with each task owning its
+own stack. The specific ARM mechanisms (SysTick, PendSV, PSP/MSP split) are modern, but the
+logic `isr_systick` runs is structurally identical to what `clock()` did in Research Unix V6,
+written by Ken Thompson in 1975.
 
 ### What You See on the Display
 
