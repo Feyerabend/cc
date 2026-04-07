@@ -521,30 +521,6 @@ In that sense, the ideas from the GoF book became part of the infrastructure of 
 What started as a way to describe good design gradually became a way to standardise and distribute it.
 
 
-## 9. Influence on Programming Languages
-
-One of the most interesting consequences:
-
-*many design patterns later became language features.*
-
-Examples:
-
-| Pattern   | Modern language feature  |
-|-----------|--------------------------|
-| Iterator  | foreach loops            |
-| Strategy  | higher-order functions   |
-| Singleton | modules / static objects |
-| Visitor   | pattern matching         |
-| Builder   | named parameters         |
-
-So patterns often reveal:
-
-```
-missing language features
-```
-
-When languages evolve, some patterns disappear.
-
 
 ### 9. Influence on Programming Languages
 
@@ -582,6 +558,15 @@ A number of well-known examples illustrate this transition:
 * *Builder --> named parameters*
   Builder helped manage complex object construction with many optional parameters.
   Named and default parameters now address much of this problem more naturally.
+
+| Pattern   | Modern language feature  |
+|-----------|--------------------------|
+| Iterator  | foreach loops            |
+| Strategy  | higher-order functions   |
+| Singleton | modules / static objects |
+| Visitor   | pattern matching         |
+| Builder   | named parameters         |
+
 
 What this reveals is something deeper.
 
