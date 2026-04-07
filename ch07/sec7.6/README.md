@@ -591,80 +591,70 @@ they capture the boundary between what a language provides and what developers s
 
 
 
-## 10. Criticisms
+### 10. Criticisms
 
-Despite its importance, the GoF book also received criticism.
+Despite the lasting influence of *Design Patterns: Elements of Reusable Object-Oriented Software*,
+it has not been without criticism.
 
+Many of these critiques emerged as the industry matured and as programming languages
+evolved beyond the constraints present in the early 1990s.
 
+#### 10.1 Pattern obsession
 
-### 10.1 Pattern obsession
+One common criticism is what might be called *pattern-first thinking*.
 
-Some developers began writing code like:
+Instead of starting from the problem, some developers began starting from the solution: "I must use a pattern"
+rather than: "I must solve the problem simply".
 
-```
-pattern-first programming
-```
+__This mindset led to over-engineered systems.__
 
-Meaning:
+Code became unnecessarily complex, not because the problem demanded it,
+but because patterns were applied where they were not needed. In such cases,
+patterns stopped being helpful abstractions and became a source of accidental complexity.
 
-```
-"I must use a pattern"
-```
+The original intent was to simplify communication and design—not to impose structure for its own sake.
 
-Instead of:
+#### 10.2 OOP bias
 
-```
-"I must solve the problem simply"
-```
+The book is deeply rooted in class-based object-oriented programming.
 
-This produced *over-engineered systems*.
+Its patterns assume a world of classes, inheritance, and object hierarchies.
+This makes sense given the context in which it was written, but it also limits its universality.
 
+In functional programming languages, many of the same problems are approached
+differently--or do not arise in the same form at all.
 
+A classic example is the Visitor pattern.
 
-### 10.2 OOP bias
+In object-oriented systems, Visitor provides a way to define new operations
+over structured data without modifying existing classes.
 
-The book assumes:
+In functional languages, this can often be handled more directly through
+algebraic data types combined with pattern matching. The need for an explicit Visitor structure largely disappears.
 
-```
-class-based object-oriented programming
-```
+This highlights an important point: patterns are not universal truths.
+They are shaped by the paradigms and constraints of their environment.
 
-Functional languages often don't need many patterns.
+#### 10.3 Language limitations
 
-Example:
+Another major criticism is that many patterns exist primarily because
+of limitations in programming languages at the time.
 
-```
-Visitor pattern
-```
+They are workarounds as much as they are solutions.
 
-In functional languages:
+For example, the Singleton pattern enforces that a class has only one instance.
 
-```
-algebraic data types + pattern matching
-```
+In many modern languages, this requirement can be satisfied more naturally
+through built-in constructs such as modules or static objects. The explicit pattern becomes unnecessary.
 
-replace it naturally.
+This connects back to a broader observation:
+Patterns often indicate missing language features.
 
+As languages evolve, some patterns fade away—not because they were wrong,
+but because they have been absorbed into the language itself.
 
-
-### 10.3 Language limitations
-
-Many patterns exist only because languages lacked features.
-
-Example:
-
-```
-Singleton
-```
-
-In modern languages:
-
-```
-module or static object
-```
-
-makes it unnecessary.
-
+What remains valuable is not the pattern in isolation,
+but the underlying problem it was designed to solve.
 
 
 ## 11. Influence on Software Engineering Thinking
