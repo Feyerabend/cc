@@ -599,12 +599,13 @@ it has not been without criticism.
 Many of these critiques emerged as the industry matured and as programming languages
 evolved beyond the constraints present in the early 1990s.
 
+
 #### 10.1 Pattern obsession
 
 One common criticism is what might be called *pattern-first thinking*.
 
-Instead of starting from the problem, some developers began starting from the solution: "I must use a pattern"
-rather than: "I must solve the problem simply".
+Instead of starting from the problem, some developers began starting
+from the solution: "I must use a pattern" rather than: "I must solve the problem simply".
 
 __This mindset led to over-engineered systems.__
 
@@ -612,14 +613,17 @@ Code became unnecessarily complex, not because the problem demanded it,
 but because patterns were applied where they were not needed. In such cases,
 patterns stopped being helpful abstractions and became a source of accidental complexity.
 
-The original intent was to simplify communication and design—not to impose structure for its own sake.
+The original intent was to simplify communication and
+design--not to impose structure for its own sake.
+
 
 #### 10.2 OOP bias
 
 The book is deeply rooted in class-based object-oriented programming.
 
 Its patterns assume a world of classes, inheritance, and object hierarchies.
-This makes sense given the context in which it was written, but it also limits its universality.
+This makes sense given the context in which it was written,
+but it also limits its universality.
 
 In functional programming languages, many of the same problems are approached
 differently--or do not arise in the same form at all.
@@ -630,10 +634,12 @@ In object-oriented systems, Visitor provides a way to define new operations
 over structured data without modifying existing classes.
 
 In functional languages, this can often be handled more directly through
-algebraic data types combined with pattern matching. The need for an explicit Visitor structure largely disappears.
+algebraic data types combined with pattern matching.
+The need for an explicit Visitor structure largely disappears.
 
 This highlights an important point: patterns are not universal truths.
 They are shaped by the paradigms and constraints of their environment.
+
 
 #### 10.3 Language limitations
 
@@ -645,7 +651,8 @@ They are workarounds as much as they are solutions.
 For example, the Singleton pattern enforces that a class has only one instance.
 
 In many modern languages, this requirement can be satisfied more naturally
-through built-in constructs such as modules or static objects. The explicit pattern becomes unnecessary.
+through built-in constructs such as modules or static objects.
+The explicit pattern becomes unnecessary.
 
 This connects back to a broader observation:
 Patterns often indicate missing language features.
