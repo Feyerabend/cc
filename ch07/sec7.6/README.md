@@ -538,24 +538,24 @@ becomes unnecessary--or at least less visible.
 
 A number of well-known examples illustrate this transition:
 
-* *Iterator --> foreach loops*
+* *Iterator --> foreach loops:*
   Originally, the Iterator pattern provided a structured way to traverse
   collections without exposing their internal representation.
   Modern languages now include native iteration constructs, making this pattern largely implicit.
 
-* *Strategy --> higher-order functions*
+* *Strategy --> higher-order functions:*
   The Strategy pattern encapsulates interchangeable behaviour.
   In languages with first-class functions, this can often be expressed directly by passing functions as values.
 
-* *Singleton --> modules / static objects*
+* *Singleton --> modules / static objects:*
   The need to enforce a single instance can be handled at the language level
   through modules or static constructs, removing the need for explicit Singleton implementations.
 
-* *Visitor --> pattern matching*
+* *Visitor --> pattern matching:*
   Visitor was a way to perform operations across structured data without modifying the data types.
   Modern pattern matching features provide a more direct and expressive alternative.
 
-* *Builder --> named parameters*
+* *Builder --> named parameters:*
   Builder helped manage complex object construction with many optional parameters.
   Named and default parameters now address much of this problem more naturally.
 
