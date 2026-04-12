@@ -1,6 +1,7 @@
 
 ![GOF](./../assets/image/gof4.png)
 
+Once the golden standard for OO-code:
 [JHotDraw5.1](./../../ch06/addition/documentation/JHotDraw5.1/)
 
 
