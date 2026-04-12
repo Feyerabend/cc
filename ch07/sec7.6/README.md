@@ -82,7 +82,7 @@ The language now provides algebraic data types and pattern matching, reducing
 the need for explicit factory structures.
 
 A similar transformation appears in behavioral composition. The Strategy
-pattern originally expresses interchangeable behavior through objects:
+pattern originally expresses interchangeable behaviour through objects:
 
 ```java id="strategy-java"
 interface SortStrategy {
@@ -240,9 +240,9 @@ repeatedly generate similar structural problems, and those structures
 can be recognised and reused. The difference lies in where that
 structure is represented.
 
-In early systems, structure is built manually. In intermediate systems,
-structure is expressed through language features. In modern systems,
-structure is enforced through types and runtime models.
+In early systems, structure is built *manually*. In intermediate systems,
+structure is expressed through *language features*. In modern systems,
+structure is enforced through *types* and *runtime models*.
 
 Design patterns sit at the transition point between these phases.
 They document the intermediate stage where structure still had
@@ -266,8 +266,8 @@ be framed as structured object interaction.*
 
 This assumption holds reasonably well in classical object-oriented systems,
 but begins to weaken once we move outside that domain. In languages that
-are not centered on objects—such as C, Python, or JavaScript—the same
-problems exist, but the “pattern-first” framing often becomes unnecessary
+are not centered on objects--such as C, Python, or JavaScript--the same
+problems exist, but the "pattern-first" framing often becomes unnecessary
 or even misleading.
 
 A useful starting point is C, where there is no object model at all.
@@ -319,8 +319,8 @@ interface, no class hierarchy, no explicit design structure beyond passing a fun
 If we try to reintroduce pattern vocabulary here, it becomes retrofitted rather
 than descriptive. The language already contains the abstraction directly.
 
-This leads to a second distortion: design patterns sometimes encourage unnecessary
-structural layering even when the language already provides a simpler mechanism.
+This leads to a second distortion: *design patterns sometimes encourage unnecessary
+structural layering* even when the language already provides a simpler mechanism.
 
 A similar phenomenon appears in Python, particularly with patterns like Singleton.
 In classical OO terms, Singleton is used to ensure a single instance of a class.
@@ -340,12 +340,12 @@ Or even more directly:
 value = 42
 ```
 
-The “pattern” dissolves entirely into the module system. Introducing a
-Singleton class here does not improve clarity—it adds structure that the
+The "pattern" dissolves entirely into the module system. Introducing a
+Singleton class here does not improve clarity--it adds structure that the
 language does not require.
 
 This exposes a broader issue: many design patterns were historically
-solutions to language limitations rather than intrinsic design necessities.
+solutions to *language limitations* rather than intrinsic design necessities.
 As those limitations disappear, the patterns can become conceptual
 overhead rather than insight.
 
@@ -375,14 +375,15 @@ trees. The pattern vocabulary (Factory, Observer, Strategy, etc.)
 can still be applied here, but it often leads to architectural weight
 that is not required by the problem.
 
-This reveals a third issue: patterns can shift from descriptive tools
-into prescriptive habits. Instead of emerging from the problem, they
+This reveals a third issue: *patterns can shift from descriptive tools
+into prescriptive habits*. Instead of emerging from the problem, they
 become templates that are applied before the problem is fully understood.
 
 The consequences of this are not purely theoretical. Overuse of
 pattern-based thinking can lead to systems where structure is optimised
 for conceptual cleanliness rather than practical simplicity. Layers of
-abstraction accumulate not because they are needed, but *because they are familiar*.
+abstraction accumulate not because they are needed,
+but *because they are familiar*.
 
 At the same time, it is important not to discard the insight entirely.
 The value of design patterns becomes clearer when viewed as historical
@@ -404,11 +405,12 @@ function emit(data) {
 }
 ```
 
-Here, the structure is minimal, but the idea is identical: decoupled notification.
-The difference is that the language no longer requires a formal pattern to express it.
+Here, the structure is minimal, but the idea is identical:
+decoupled notification. The difference is that the language
+*no longer requires a formal pattern* to express it.
 
-Similarly, in Python, handling variation in behaviour (traditionally Strategy)
-is often naturally expressed through functions:
+Similarly, in Python, handling variation in behaviour
+(traditionally Strategy) is often naturally expressed through functions:
 
 ```python id="py-strategy"
 def execute(data, strategy):
@@ -420,12 +422,13 @@ def quick_sort(arr):
 execute([3, 1, 2], quick_sort)
 ```
 
-Again, the pattern survives conceptually, but not structurally.
+Again, the pattern survives conceptually, but __not__ structurally.
 
 What emerges from this comparison is a more precise view of what design
 patterns actually represent. They are not fundamental building blocks of
 software design, but rather artifacts of a particular phase in language
-evolution--specifically a phase where abstraction had to be manually constructed.
+evolution--specifically a phase where abstraction had to be manually
+constructed.
 
 As languages evolved, many of these constructions were absorbed directly
 into core features: first-class functions, modules, type systems, and
@@ -451,7 +454,7 @@ The shift is therefore not a rejection of design patterns, but a redistribution
 of their concerns into different layers of abstraction.
 
 The value that remains is not the pattern itself, but the awareness that such
-pressures exist at all—and that they can be solved in multiple ways depending
+pressures exist at all--and that they can be solved in multiple ways depending
 on the expressive power of the language being used.
 
 In that sense, the legacy of design patterns is not architectural rigidity,
