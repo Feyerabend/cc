@@ -6,7 +6,8 @@ NOTES:
 
 ## Signal Processing
 
-This chapter introduces the fundamentals of signal processing,
+AIM:
+This missing section introduces the fundamentals of signal processing,
 including sampling, frequency analysis, and filtering. It combines
 theoretical foundations with practical implementations.
 
