@@ -64,7 +64,8 @@ class ShapeFactory {
 This structure became known as a Factory. Its purpose is not the code itself,
 but the separation between *what is requested* and *what is constructed*.
 
-The same structural need appears again later in different form when languages evolve:
+The same structural need appears again later in different form when languages evolve
+(Kotlin):
 
 ```kotlin id="factory-modern"
 sealed interface Shape
@@ -77,7 +78,7 @@ fun createShape(type: String): Shape = when (type) {
 }
 ```
 
-Here the same idea remains—controlled construction—but the mechanism shifts.
+Here the same idea remains--controlled construction--but the mechanism shifts.
 The language now provides algebraic data types and pattern matching, reducing
 the need for explicit factory structures.
 
@@ -189,7 +190,8 @@ fn print_len(name: Option<String>) {
 }
 ```
 
-At this stage, the absence of a value is no longer a convention but a structural guarantee.
+At this stage, the absence of a value is no longer a convention but a
+*structural guarantee*.
 
 Data modeling follows a similar trajectory. Traditional inheritance-based hierarchies:
 
@@ -209,7 +211,7 @@ enum Shape {
 }
 ```
 
-The structure becomes explicit at the type level rather than
+The structure becomes explicit at the *type level* rather than
 distributed across inheritance trees.
 
 Across all of these cases, the same pattern appears: structures
@@ -223,8 +225,8 @@ languages no longer impose.
 
 Originally, patterns captured recurring structural needs in systems
 where those needs had no direct language support. As languages
-evolved, those needs were absorbed into core constructs: functions,
-algebraic types, pattern matching, and type safety.
+evolved, those needs were absorbed into core constructs: *functions*,
+*algebraic types*, *pattern matching*, and *type safety*.
 
 The consequence is not that the ideas disappeared, but that their
 implementation moved downward—from application code into language
