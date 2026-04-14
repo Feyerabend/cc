@@ -379,3 +379,19 @@ Reading an FFT spectrum is a skill. Here is what to look for.
 *Interpreting FFT output in folder [analysis](./analysis/).*
 
 
+#### 4.3 Audio Processing
+
+Audio signals are time-varying pressure waves, digitised at rates typically
+between 8 kHz (telephone quality) and 48 kHz (professional audio).
+Signal processing techniques are central to nearly every stage of an audio pipeline.
+
+*A common task: removing broadband noise from a recording.*
+
+The simplest approach is *spectral subtraction*: estimate the noise spectrum
+from a segment where only noise is present (no speech or music), then subtract
+that estimate from every frame of the recording. More sophisticated methods
+include Wiener filtering and deep neural network denoisers,
+but spectral subtraction is a good introduction to the idea.
+
+*See more on loading, filtering, and denoising audio in folder [denoise](./denoise/).*
+
