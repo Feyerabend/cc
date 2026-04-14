@@ -112,3 +112,40 @@ precision and infinite storage--both impossible. Discrete sampling reduces the r
 to a finite (or countably infinite) sequence of numbers, which computers can store,
 transmit, and process. The key question--addressed in the next section--is how fast
 we must sample to avoid losing information.
+
+
+
+#### 2.2 Sampling and the Nyquist-Shannon Theorem
+
+The *Nyquist-Shannon sampling theorem* gives the minimum sampling rate required
+to perfectly reconstruct a band-limited continuous signal from its discrete samples.
+
+> A continuous signal whose highest frequency component is f_max can be perfectly
+> reconstructed from discrete samples taken at a rate f_s, provided:
+>
+> $*f_s ≥ 2 · f_max*$
+
+The frequency $f_s / 2$ is called the *Nyquist frequency* (or folding frequency).
+It is the highest frequency representable at a given sampling rate.
+
+*Aliasing.* If the signal contains components above the Nyquist frequency and we
+sample below $2 · f_max$, those high-frequency components are *folded* back into
+the representable range and appear as phantom low-frequency components. This
+phenomenon is called aliasing, and it is irreversible--once aliased, the original
+high-frequency content cannot be recovered.
+
+A classic visual example: a wheel spinning at 24 revolutions per second filmed at
+24 frames per second appears stationary. The sampling rate (24 fps) equals the signal
+frequency (24 Hz), which is exactly at the Nyquist limit for 12 Hz content--here th
+ rotation frequency exceeds it, causing the aliased "stationary" appearance.
+ (Think of a spinning wheel in a movie, or even observation with your own eyes.)
+
+*Anti-aliasing filters.* In practice, a low-pass filter is applied to the continuous
+signal *before* sampling to remove any content above f_s / 2. This is called an
+anti-aliasing filter, and it is present in every ADC (analogue-to-digital converter)
+front end.
+
+Formula:
+```math
+f_s >= 2 * f_max
+```
