@@ -289,3 +289,45 @@ weight each one by the corresponding filter coefficient, and sum the results."
 
 *See the folder [convolution](./conv/).*
 
+
+#### 3.2 Filters
+
+A filter is a system that selectively attenuates (reduces) certain frequencies
+while passing others. The three fundamental types are defined by which part of
+the frequency spectrum they pass.
+
+
+##### 3.2.1 Low-Pass Filter
+
+A low-pass filter (LPF) passes frequencies *below* a cutoff frequency f_c and
+attenuates frequencies above it. The result in the time domain is a smoothing
+effect: rapid, high-frequency oscillations are suppressed while slow, low-frequency
+trends are preserved.
+
+*Typical applications:* noise smoothing in sensor data, removing hiss from audio,
+anti-aliasing before downsampling, blurring in image processing.
+
+
+##### 3.2.2 High-Pass Filter
+
+A high-pass filter (HPF) passes frequencies *above* $f_c$ and attenuates those below it.
+It removes slow-varying trends and baseline drift, leaving only rapid changes. Mathematically,
+a high-pass filter is the complement of a low-pass: $HPF = 1 - LPF$.
+
+*Typical applications:* removing DC offset from audio or sensor data, detecting edges in images
+(where edges correspond to high spatial frequencies), removing low-frequency hum (50/60 Hz mains
+interference) from biomedical signals.
+
+
+##### 3.2.3 Band-Pass Filter
+
+A band-pass filter (BPF) passes only the frequencies *within* a specified range
+$[f_low, f_high]$, attenuating both lower and higher content. It can be constructed
+by cascading a high-pass and a low-pass filter, or designed directly.
+
+*Typical applications:* radio tuning (selecting one station's frequency band),
+isolating a physiological rhythm in biosignals (e.g. the alpha band 8-12 Hz in EEG),
+equaliser bands in audio processing, extracting a specific harmonic from a vibrating structure.
+
+*See folder on [filters](./filters/).*
+
