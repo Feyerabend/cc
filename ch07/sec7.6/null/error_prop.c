@@ -74,7 +74,7 @@ void merge_free_blocks() {
 }
 
 
-// Allocator API — explicit error propagation
+// Allocator API - explicit error propagation
 //
 // Every function returns a MemError.
 // Outputs are written through pointer parameters.
@@ -121,7 +121,7 @@ MemError mem_realloc(void* ptr, size_t new_size, void** out_ptr) {
 
     BlockHeader* old_block = (BlockHeader*)((uint8_t*)ptr - sizeof(BlockHeader));
     if (old_block->size >= new_size) {
-        *out_ptr = ptr; // already fits — no move needed
+        *out_ptr = ptr; // already fits - no move needed
         return ERR_OK;
     }
 
@@ -139,7 +139,7 @@ MemError mem_realloc(void* ptr, size_t new_size, void** out_ptr) {
 }
 
 
-// Machine layer — propagates errors up to the caller
+// Machine layer - propagates errors up to the caller
 //
 // Compare with allocator.c: there, machine_* functions
 // absorbed failure silently via the null object.
@@ -182,8 +182,8 @@ MemError machine_realloc(Machine* machine, void* addr, size_t new_size, void** o
     if (err == ERR_OK) {
         printf("  Reallocated %p -> %p (%zu bytes)\n", addr, *out_addr, new_size);
     } else {
-        // Original pointer untouched — caller still owns it
-        printf("  [ERROR] machine_realloc(%zu): %s — original block preserved\n",
+        // Original pointer untouched - caller still owns it
+        printf("  [ERROR] machine_realloc(%zu): %s - original block preserved\n",
                new_size, mem_error_str(err));
     }
     return err;
@@ -239,7 +239,7 @@ int main() {
 
     printf("-- Normal path --\n");
 
-    // 1: allocate block for 3 integers — abort on failure (critical path)
+    // 1: allocate block for 3 integers - abort on failure (critical path)
     REQUIRE_OK(machine_alloc(&machine, 3 * z, &block));
 
     // 2: store values
@@ -247,7 +247,7 @@ int main() {
     REQUIRE_OK(machine_store(block, 1 * z, 20));
     REQUIRE_OK(machine_store(block, 2 * z, 30));
 
-    // 3: expand block — abort on failure
+    // 3: expand block - abort on failure
     REQUIRE_OK(machine_realloc(&machine, block, 6 * z, &block));
 
     // 4: store more values
@@ -303,7 +303,7 @@ int main() {
     printf("  machine_load on NULL returned: %s (val unchanged: %d)\n",
            mem_error_str(err), val);
 
-    // Realloc on a failed allocation — again, explicit:
+    // Realloc on a failed allocation - again, explicit:
     void* recovered = NULL;
     err = machine_realloc(&machine, too_large, 10, &recovered);
     if (err == ERR_OK) {
@@ -314,8 +314,8 @@ int main() {
     }
 
     printf("\n");
-    printf("  Null Object  — failure becomes neutral behaviour; load returns 0\n");
-    printf("  Error codes  — failure is preserved; caller decides what 0 means\n");
+    printf("  Null Object  - failure becomes neutral behaviour; load returns 0\n");
+    printf("  Error codes  - failure is preserved; caller decides what 0 means\n");
 
     return 0;
 }

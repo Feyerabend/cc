@@ -36,9 +36,9 @@
 #include <string.h>
 #include <setjmp.h>
 
-/* =========================================================================
+/* 
  * Configuration
- * ========================================================================= */
+ */
 #define MAX_LINES     1000
 #define MAX_LINE_LEN   256
 #define MAX_VARS       256
@@ -48,19 +48,19 @@
 #define VAR_NAME_LEN    32
 #define TRIM_BUFS        8
 
-/* =========================================================================
+/* 
  * SIGINT — Ctrl-C sets a flag; run_program() polls it
- * ========================================================================= */
+ */
 static volatile sig_atomic_t g_interrupted = 0;
 static void sigint_handler(int sig) { (void)sig; g_interrupted = 1; }
 
-/* =========================================================================
+/* 
  * Error handling  (longjmp-based)
  *
  * ONE global jmp_buf. eval_str() does NOT install its own setjmp — it lets
  * errors propagate outward to whichever guard is active (run_program or
  * feed_line), so errors are always reported in the right context.
- * ========================================================================= */
+ *  */
 typedef enum {
     ERR_NONE = 0,
     ERR_PARSER,
@@ -88,9 +88,9 @@ static void raise_error(ErrorKind kind, const char *fmt, ...) {
     abort(); /* no guard active — should never happen */
 }
 
-/* =========================================================================
+/* 
  * Value  (tagged union: number or string)
- * ========================================================================= */
+ */
 typedef enum { VAL_NUM, VAL_STR } ValKind;
 typedef struct {
     ValKind kind;
@@ -108,9 +108,9 @@ static inline bool val_truthy(Value v) {
     return (v.kind == VAL_NUM) ? (v.num != 0.0) : (v.str[0] != '\0');
 }
 
-/* =========================================================================
+/* 
  * trim() — uses a ring of TRIM_BUFS static buffers to avoid aliasing
- * ========================================================================= */
+ */
 static const char *trim(const char *s) {
     static char bufs[TRIM_BUFS][MAX_LINE_LEN];
     static int  slot = 0;
@@ -122,9 +122,9 @@ static const char *trim(const char *s) {
     return buf;
 }
 
-/* =========================================================================
+/* 
  * AST node hierarchy
- * ========================================================================= */
+ */
 typedef enum { EXPR_NUMBER, EXPR_STRING, EXPR_VARIABLE, EXPR_BINARY, EXPR_FUNCTION } ExprKind;
 
 struct Expr; struct ExprVisitor;
@@ -142,9 +142,9 @@ typedef struct Expr {
     };
 } Expr;
 
-/* =========================================================================
+/* 
  * Visitor interface  (one function pointer per node kind)
- * ========================================================================= */
+ */
 typedef struct ExprVisitor {
     Value (*visit_number)  (struct ExprVisitor *, Expr *);
     Value (*visit_string)  (struct ExprVisitor *, Expr *);
@@ -160,9 +160,9 @@ static Value accept_variable(Expr *e, ExprVisitor *v) { return v->visit_variable
 static Value accept_binary  (Expr *e, ExprVisitor *v) { return v->visit_binary  (v,e); }
 static Value accept_function(Expr *e, ExprVisitor *v) { return v->visit_function(v,e); }
 
-/* =========================================================================
+/* 
  * Expression arena  (bump allocator; reset before each parse)
- * ========================================================================= */
+ */
 #define ARENA_SIZE 4096
 static Expr g_arena[ARENA_SIZE];
 static int  g_arena_top = 0;
@@ -176,9 +176,9 @@ static Expr *alloc_expr(ExprKind kind, AcceptFn fn) {
 }
 static void arena_reset(void) { g_arena_top = 0; }
 
-/* =========================================================================
+/* 
  * Interpreter state  (global singleton)
- * ========================================================================= */
+ */
 typedef struct { int lineno; char text[MAX_LINE_LEN]; }    ProgramLine;
 typedef struct { char name[VAR_NAME_LEN]; Value value; }   Variable;
 typedef struct {
@@ -236,9 +236,9 @@ static void store_line(int lineno, const char *text) {
     qsort(G.lines, G.line_count, sizeof(ProgramLine), cmp_lines);
 }
 
-/* =========================================================================
+/* 
  * EvaluationVisitor — computes a Value by walking the AST
- * ========================================================================= */
+ */
 static Value ev_number  (ExprVisitor *v, Expr *e) { (void)v; return val_num(e->number); }
 static Value ev_string  (ExprVisitor *v, Expr *e) { (void)v; return val_str(e->string); }
 static Value ev_variable(ExprVisitor *v, Expr *e) { (void)v; return get_var(e->varname); }
@@ -332,12 +332,12 @@ static ExprVisitor g_eval_visitor = {
 };
 static Value evaluate(Expr *e) { return e->accept(e, &g_eval_visitor); }
 
-/* =========================================================================
+/* 
  * Recursive-descent parser
  *
  * Uses global cursor P. Must be called inside a setjmp guard.
  * eval_str() does NOT set up its own guard — errors propagate upward.
- * ========================================================================= */
+ */
 static const char *P;
 static void skip_ws(void) { while (*P==' '||*P=='\t') P++; }
 
@@ -452,9 +452,9 @@ static Value eval_str(const char *src) {
     return evaluate(parse_expr());
 }
 
-/* =========================================================================
+/* 
  * "Did you mean?" — Levenshtein distance for command suggestions
- * ========================================================================= */
+ */
 static int levenshtein(const char *a, const char *b) {
     int la = (int)strlen(a), lb = (int)strlen(b);
     if (la > 31 || lb > 31) return 99;
@@ -484,9 +484,9 @@ static void suggest_command(const char *unknown) {
     if (best && best_d <= 3) fprintf(stderr, "         Did you mean: %s ?\n", best);
 }
 
-/* =========================================================================
+/* 
  * Command implementations
- * ========================================================================= */
+ */
 static void execute_line(const char *line);  /* forward */
 
 static void cmd_print(const char *args) {
@@ -736,9 +736,9 @@ static void cmd_help(const char *args) {
     puts("");
 }
 
-/* =========================================================================
+/* 
  * Command dispatch table
- * ========================================================================= */
+ */
 typedef void (*CmdFn)(const char *);
 typedef struct { const char *name; CmdFn fn; } CmdEntry;
 
@@ -771,9 +771,9 @@ static void execute_line(const char *line) {
     suggest_command(kw);
 }
 
-/* =========================================================================
+/* 
  * Program runner
- * ========================================================================= */
+ */
 static void run_program(void) {
     int steps = 0;
     g_interrupted = 0;
@@ -813,9 +813,9 @@ static void run_program(void) {
     }
 }
 
-/* =========================================================================
+/* 
  * REPL / file loader
- * ========================================================================= */
+ */
 static void feed_line(const char *raw) {
     const char *s = trim(raw);
     if (!*s) return;
@@ -838,9 +838,9 @@ static void feed_line(const char *raw) {
     }
 }
 
-/* =========================================================================
+/* 
  * main
- * ========================================================================= */
+ */
 int main(int argc, char *argv[]) {
     state_reset();
     signal(SIGINT, sigint_handler);

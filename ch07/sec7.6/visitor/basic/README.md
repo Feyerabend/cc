@@ -1,5 +1,5 @@
 
-## BASIC Interpreter — Visitor Pattern Illustration
+## BASIC Interpreter - Visitor Pattern Illustration
 
 A small but complete BASIC interpreter implemented in both *Python* (`basic.py`)
 and *C* (`basic.c`). The project exists primarily as a worked example of the
@@ -8,22 +8,22 @@ hierarchy.
 
 
 
-### Visitor Pattern — Core Concepts
+### Visitor Pattern - Core Concepts
 
 The Visitor Pattern is a behavioral design pattern that lets you add new
 operations to an existing object structure without modifying the structure itself.
 This codebase demonstrates three of its defining characteristics:
 
-*Separation of Concerns* — the AST node classes (`NumberExpression`,
+*Separation of Concerns* - the AST node classes (`NumberExpression`,
 `BinaryExpression`, etc.) contain no evaluation logic. All computation lives in
 visitor classes that are layered on top.
 
-*Double Dispatch* — when a node's `accept(visitor)` method is called, it
+*Double Dispatch* - when a node's `accept(visitor)` method is called, it
 immediately calls back `visitor.visit_<node_type>(self)`. This second virtual
 call selects the correct operation for the specific combination of node type and
 visitor type, which is the heart of the pattern.
 
-*Extensibility* — a new operation (e.g. a pretty-printer, a type-checker, or
+*Extensibility* - a new operation (e.g. a pretty-printer, a type-checker, or
 an optimiser) is added by writing a new visitor subclass. The node classes are
 never touched.
 
@@ -77,7 +77,7 @@ classDiagram
     FunctionExpression --> ExpressionVisitor : accept calls visit_function
 ```
 
-#### Sequence Diagram — evaluating `A + 1`
+#### Sequence Diagram - evaluating `A + 1`
 
 ```mermaid
 sequenceDiagram
@@ -98,10 +98,36 @@ sequenceDiagram
     BinExpr -->> Caller  : A + 1
 ```
 
+The sequence diagram shows *who calls whom*, but it flattens the stack.
+The actual call stack at peak depth - when `visit_number` is about to
+return the literal `1` - looks like this:
+
+```
+evaluate(expr)                          <-- entry point
+  expr->accept(expr, &g_eval_visitor)   <-- first dispatch: node is BinaryExpression
+    eval_visit_binary(v, e)             <-- second dispatch: visitor is EvaluationVisitor
+      left->accept(left, v)             <-- recurse: left child is VariableExpression
+        eval_visit_variable(v, e)       <-- looks up "A" in state table, returns 5
+      right->accept(right, v)           <-- recurse: right child is NumberExpression
+        eval_visit_number(v, e)         <-- returns 1    <-- deepest point
+      return 5 + 1                      <-- combined result
+```
+
+Each `accept` call is the *first* dispatch (selecting by node type via
+the function pointer stored in the node). Each `eval_visit_*` call is
+the *second* dispatch (selecting by visitor type). The two levels are what
+give the pattern its name: double dispatch.
+
+A plain `switch` on node kind would collapse both levels into one function.
+The cost of double dispatch is two indirect calls per node instead of one.
+In an interpreter over a small BASIC program this is invisible.
+In a high-frequency path - a JIT, a parser running millions of expressions -
+it can matter.
 
 
 
-### Python code excerpt — the visitor interface and its evaluation implementation
+
+### Python code excerpt - the visitor interface and its evaluation implementation
 
 ```python
 class ExpressionVisitor(ABC):
@@ -127,7 +153,7 @@ class EvaluationVisitor(ExpressionVisitor):
                 if right == 0:
                     raise ExecutionError("Division by zero")
                 return left / right
-            ## … other operators …
+            ## .. other operators ..
         except TypeError as exc:
             raise ExecutionError(
                 f"Type error for '{op}' on "
@@ -150,23 +176,23 @@ python3 basic.py program.bas
 ### C Implementation (`basic.c`)
 
 The C port maps the Python class hierarchy onto C structs and function pointers.
-There are no C++ virtual tables — the Visitor Pattern is assembled manually,
+There are no C++ virtual tables - the Visitor Pattern is assembled manually,
 which makes the double-dispatch mechanism visible and explicit.
 
 #### How the Visitor Pattern is expressed in C
 
-*Element interface* — every `Expr` node contains an `accept` function pointer
+*Element interface* - every `Expr` node contains an `accept` function pointer
 as its second field. Calling `expr->accept(expr, visitor)` is the first dispatch.
 
 ```c
 typedef struct Expr {
     ExprKind kind;
     AcceptFn accept;   /* double-dispatch entry point */
-    union { … };       /* node-specific data */
+    union { ... };       /* node-specific data */
 } Expr;
 ```
 
-*Visitor interface* — the visitor is a struct of five function pointers, one
+*Visitor interface* - the visitor is a struct of five function pointers, one
 per node kind. This mirrors the abstract `ExpressionVisitor` in Python.
 
 ```c
@@ -179,7 +205,7 @@ typedef struct ExprVisitor {
 } ExprVisitor;
 ```
 
-*Accept functions* — each node kind has a thin static function that performs
+*Accept functions* - each node kind has a thin static function that performs
 the second dispatch into the visitor.
 
 ```c
@@ -188,7 +214,7 @@ static Value accept_binary(Expr *e, ExprVisitor *v) {
 }
 ```
 
-*Concrete visitor* — `g_eval_visitor` is a statically initialised instance of
+*Concrete visitor* - `g_eval_visitor` is a statically initialised instance of
 `ExprVisitor` with all five slots populated. New visitors (e.g. a
 pretty-printer) can be added without touching `Expr` at all.
 
@@ -202,7 +228,7 @@ static ExprVisitor g_eval_visitor = {
 };
 ```
 
-*Double dispatch in full* — a call to `evaluate(e)` triggers the following chain:
+*Double dispatch in full* - a call to `evaluate(e)` triggers the following chain:
 
 ```
 evaluate(e)
@@ -260,7 +286,7 @@ Program stopped.
 
 | Command   | Syntax                          | Notes                                   |
 |-----------|---------------------------------|-----------------------------------------|
-| `PRINT`   | `PRINT expr ; expr …`           | Semicolons separate values              |
+| `PRINT`   | `PRINT expr ; expr ..`          | Semicolons separate values              |
 | `INPUT`   | `INPUT [prompt ;] var`          | String vars end with `$`                |
 | `LET`     | `LET var = expr` or `var = expr`| Implicit LET accepted                   |
 | `IF`      | `IF cond THEN stmt`             | Single-line only                        |
@@ -289,7 +315,7 @@ Program stopped.
 
 ### Adding a New Visitor (Python example)
 
-The node classes never change. To add a new operation — say, an AST pretty-printer:
+The node classes never change. To add a new operation - say, an AST pretty-printer:
 
 ```python
 class PrettyPrintVisitor(ExpressionVisitor):

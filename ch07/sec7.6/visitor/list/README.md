@@ -21,14 +21,15 @@ Design patterns should not be applied for their own sake;
 they do not automatically improve software quality.
 Rather, they provide structured solutions to recurring design
 problems and should be used only when the situation genuinely
-matches the pattern’s intent. The Visitor pattern, in particular,
+matches the pattern's intent. The Visitor pattern, in particular,
 is useful when operations on a stable object structure need to
 evolve independently from the objects themselves. In such cases
 it allows new behaviour to be introduced without modifying the
 underlying classes. However, if the object structure itself
 changes frequently, the pattern can introduce unnecessary
 complexity and maintenance overhead. Its value therefore lies
-not in demonstration alone, but in its careful and justified application.
+not in demonstration alone, but in its careful and justified
+application.
 
 
 #### Elements
@@ -130,8 +131,10 @@ not in demonstration alone, but in its careful and justified application.
 
 - *Edge Cases Handled*:
   - Empty lists: `EmptyNode` provides base cases.
-  - Non-existent values: Visitors like Remove/Replace traverse fully without changes.
-  - Multiple matches: Remove skips all (in some impls; others remove first).
+  - Non-existent values: Visitors like Remove/Replace traverse
+    fully without changes.
+  - Multiple matches: Remove skips all (in some impls; others
+    remove first).
   - Printing: Handles empty lists by printing nothing.
 
 - *Variations Across Languages*:
@@ -142,6 +145,41 @@ not in demonstration alone, but in its careful and justified application.
     pointers for similar flexibility (e.g., `CompareFn`, `PrintFn`).
     Macros in `main_macro.c` generate type-specific code,
     avoiding runtime dispatch.
+
+### The Expression Problem
+
+The Visitor pattern trades extensibility in one dimension for rigidity in
+another. This tradeoff has a name: the *Expression Problem*.
+
+|                      | Add a new *operation*       | Add a new *node type*       |
+|----------------------|-----------------------------|-----------------------------|
+| OOP (open subclass)  | Hard - touch all classes    | Easy - add one subclass     |
+| Visitor              | Easy - add one visitor      | Hard - modify every visitor |
+| `switch` on enum (C) | Hard - touch every function | Easy - add one `case`       |
+
+When the `RemoveVisitor`, `InsertVisitor`, `ReplaceVisitor`, and
+`PrintVisitor` are all written and the list is declared stable,
+adding a new operation is trivial. But if a new node type must be added -
+say, a `LazyNode` that defers evaluation - every existing visitor must
+be extended. In Python this is caught at runtime when the abstract method
+is not implemented. In Java the compiler flags it. In C there is no
+check: the function pointer slot is simply missing from the struct
+initializer, and the resulting `NULL` call is a crash.
+
+```c
+/* Adding UnaryNode to ExprKind requires:
+   1. A new field in the Expr union
+   2. A new accept_unary() function
+   3. A new visit_unary slot in ExprVisitor
+   4. An implementation in g_eval_visitor
+   5. An implementation in every other visitor (printer, checker, ...)
+   - and the compiler will not tell you which visitors you missed. */
+```
+
+The brittleness of Visitor is therefore not in the operations dimension
+but in the data dimension. The pattern is a good fit when node types are
+fixed and operations are expected to grow; it is the wrong tool when the
+opposite is true.
 
 In summary, the Visitor pattern here transforms a simple linked list
 into a flexible, extensible system. It's overkill for basic lists but

@@ -303,6 +303,40 @@ This reveals the first limitation: patterns often emerge as
 *compensations for abstraction-heavy environments*,
 not as universal truths about computation.
 
+The contrast becomes clearer when C *does* need variation in behaviour.
+The standard library's `qsort` is the canonical example:
+
+```c id="c-qsort"
+int compare_asc(const void *a, const void *b) {
+    return (*(int*)a - *(int*)b);
+}
+
+int compare_desc(const void *b, const void *a) {
+    return (*(int*)a - *(int*)b);
+}
+
+int arr[] = {3, 1, 4, 1, 5};
+qsort(arr, 5, sizeof(int), compare_asc);
+```
+
+This is structurally identical to the Strategy pattern: a function pointer
+selects interchangeable behaviour at call time, with no coupling between
+the sort algorithm and the comparison logic.
+
+But nothing about this code *requires* a pattern framing to be understood.
+There is no interface, no class hierarchy, no named design decision.
+The language already provides the mechanism — a function pointer — and
+`qsort` uses it directly. Calling this "Strategy" adds vocabulary without
+adding clarity.
+
+The difference from the file-reading example above is important.
+In the file case, no variation was needed, so no abstraction was needed.
+In `qsort`, genuine variation exists, and the language's natural
+mechanism for expressing it happens to look like Strategy.
+
+This is the good outcome: the pattern dissolves into the language.
+The idea survives; the scaffolding does not.
+
 The same issue appears in JavaScript, where functions and
 dynamic objects collapse many traditional patterns into
 language primitives. For example, the Strategy pattern:
@@ -389,6 +423,76 @@ pattern-based thinking can lead to systems where structure is optimised
 for conceptual cleanliness rather than practical simplicity. Layers of
 abstraction accumulate not because they are needed,
 but *because they are familiar*.
+
+One structural cost of inheritance-heavy design is easy to miss until it
+happens: a change in a base class can silently break subclasses in ways
+the compiler does not catch.
+
+```python
+# Version 1 of a library base class
+class DataProcessor:
+    def process(self, data):
+        return self.transform(data)      # calls overridable method
+
+    def transform(self, data):
+        return data
+```
+
+A subclass overrides `transform` to add validation:
+
+```python
+class ValidatingProcessor(DataProcessor):
+    def transform(self, data):
+        if data < 0:
+            raise ValueError("negative input")
+        return data * 2
+```
+
+In version 2 of the library, `process` is extended:
+
+```python
+# Version 2 — seemingly safe internal change
+class DataProcessor:
+    def process(self, data):
+        data = self.transform(data)      # still calls transform
+        data = self.transform(data)      # normalise a second time
+        return data
+```
+
+The API has not changed. The subclass has not changed.
+But `ValidatingProcessor.transform` is now called twice per `process` call.
+If the first call doubles the input, the second call sees `data * 2`,
+not the original value. The result is silently wrong.
+
+This is the *Fragile Base Class* problem. The subclass depends on
+an implementation detail — how many times `transform` is invoked —
+that the base class never committed to as part of its contract.
+No interface changed, no method signature changed, no compiler warned.
+
+The problem is not specific to Python. It appears in any language
+where inheritance gives base classes the ability to call overridden methods
+internally. It is one of the concrete reasons the field moved toward
+*composition* rather than inheritance:
+
+```python
+# Composition: no hidden call structure
+class ValidatingProcessor:
+    def __init__(self, inner):
+        self.inner = inner
+
+    def process(self, data):
+        if data < 0:
+            raise ValueError("negative input")
+        return self.inner.process(data)
+```
+
+Now the subclass does not inherit internal behaviour from `DataProcessor`.
+It wraps it. A change to `DataProcessor.process` can no longer affect
+`ValidatingProcessor` without a visible API change.
+
+The shift from "extend a class" to "wrap an object" is not a stylistic
+preference. It is a response to a real failure mode in inheritance-based
+pattern design.
 
 At the same time, it is important not to discard the insight entirely.
 The value of design patterns becomes clearer when viewed as historical

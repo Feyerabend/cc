@@ -20,14 +20,16 @@ you which one you're dealing with at any given moment.
 
 ### Two Different Solutions to "Nothing"
 
-Before going further, it is important to separate two ideas that are often conflated:
+Before going further, it is important to separate
+two ideas that are often conflated:
 1. *Absence-as-Type* (`Option`, `Maybe`, `Optional`)
 2. *Absence-as-Object* (Null Object pattern)
 
 They solve different problems.
 
 * `Option<T>` forces the caller to *handle* absence.
-* `Null Object` removes the need to branch by making absence behave like a valid value.
+* `Null Object` removes the need to branch by making
+  absence behave like a valid value.
 
 One increases explicitness. The other increases behavioral continuity.
 
@@ -38,7 +40,8 @@ They are not interchangeable--and the tradeoffs matter.
 ### Absence as a Type: Option / Maybe
 
 The *good* version of the null pattern is a *typed container for optionality*--you
-force the programmer to explicitly acknowledge that a value might be absent before they can use it.
+force the programmer to explicitly acknowledge that a value might
+be absent before they can use it.
 
 The absence of a value becomes part of the type signature, not a hidden landmine.
 
@@ -53,7 +56,7 @@ This is how modern type systems try to make illegal states unrepresentable.
 
 ### Language by Language
 
-#### Haskell — the gold standard
+#### Haskell - the gold standard
 
 ```haskell
 data Maybe a = Nothing | Just a
@@ -75,7 +78,7 @@ through a chain of operations without explicit checks.
 
 
 
-#### Rust — null does not exist
+#### Rust - null does not exist
 
 ```rust
 fn find_user(id: u32) -> Option<User> {
@@ -96,7 +99,7 @@ The `?` operator makes propagation terse without hiding it.
 
 
 
-#### Java — a retrofit
+#### Java - a retrofit
 
 ```java
 Optional<String> name = Optional.ofNullable(getName());
@@ -112,7 +115,7 @@ It is a convention, not a guarantee.
 
 
 
-#### Kotlin — nullability in the type system
+#### Kotlin - nullability in the type system
 
 ```kotlin
 var name: String? = null
@@ -125,11 +128,12 @@ name!!.length
 
 Kotlin encodes nullability directly in the type (`String` vs `String?`).
 
-It is pragmatic rather than pure, but it closes most of the holes that Java leaves open.
+It is pragmatic rather than pure, but it closes most of
+the holes that Java leaves open.
 
 
 
-#### TypeScript — structural but leaky
+#### TypeScript - structural but leaky
 
 ```typescript
 function find(id: number): User | undefined { ... }
@@ -143,11 +147,11 @@ if (user) {
 
 With `strictNullChecks`, `null` and `undefined` become explicit types.
 
-But safety stops at runtime boundaries — APIs, `JSON.parse`, poorly typed libraries.
+But safety stops at runtime boundaries - APIs, `JSON.parse`, poorly typed libraries.
 
 
 
-#### JavaScript — two nothings
+#### JavaScript - two nothings
 
 JavaScript has both `null` and `undefined`.
 
@@ -179,6 +183,33 @@ Typed optionality preserves information:
 * `None`
 
 The absence is explicit and cannot be ignored.
+
+
+
+### C's Sentinel Problem
+
+Before exploring how C handles absence, it helps to see *why* the baseline
+is fragile. The standard library uses at least four different sentinel
+conventions, with no unified rule:
+
+| Function          | Sentinel on failure | Ambiguity                                         |
+|-------------------|---------------------|---------------------------------------------------|
+| `fopen`           | `NULL`              | None - pointer identity is unambiguous            |
+| `strcmp("a","a")` | `0` means *equal*   | `0` is not failure here; it is success            |
+| `atoi("bad")`     | `0`                 | Indistinguishable from `atoi("0")`                |
+| `getchar()` at EOF| `-1` (`EOF`)        | Requires cast to `unsigned char` before comparing |
+
+```c
+int n = atoi(user_input);
+/* "0" and "bad" both produce 0.
+   There is no way to distinguish them without reparsing the string. */
+```
+
+Each function documents its own convention. The compiler enforces none of them.
+This is the practical consequence of having no type-level representation of absence:
+the distinction between *zero as a valid value* and *zero as a failure signal*
+is invisible to the type system and has to be reconstructed by the programmer
+at every call site.
 
 
 
@@ -250,9 +281,62 @@ Information is erased.
 
 In type-theoretic terms:
 * `Maybe<int>` preserves failure information
-* Null Object collapses failure into default behavior
+* Null Object collapses failure into default behaviour
 
 This is not inherently wrong--but it is a deliberate loss of semantic precision.
+
+
+
+#### A Concrete Failure: The Silent Logger
+
+The same tradeoff appears at higher abstraction levels, and the cost
+is easier to see in Python.
+
+A common application of Null Object is a no-op logger used when the caller
+wants to suppress output - in tests, for example:
+
+```python
+class NullLogger:
+    def log(self, msg):
+        pass          # deliberate no-op
+
+class RealLogger:
+    def log(self, msg):
+        print(msg)
+
+def transfer(amount, logger=NullLogger()):
+    try:
+        result = execute_transfer(amount)
+        logger.log(f"Transfer OK: {result}")
+        return result
+    except Exception as e:
+        logger.log(f"Transfer FAILED: {e}")   # swallowed silently
+        return None                            # caller receives None, not a reason
+```
+
+In tests, `NullLogger` suppresses noise. In production with a misconfigured
+default, the exception is caught, handed to the null logger, and discarded.
+The caller receives `None` with no indication of what failed.
+
+Compare with making absence explicit at the type boundary:
+
+```python
+class TransferError(Exception):
+    pass
+
+def transfer(amount) -> int:
+    try:
+        return execute_transfer(amount)
+    except Exception as e:
+        raise TransferError(f"Failed: {e}") from e
+```
+
+There is no longer a logger to absorb the failure. The error propagates
+and must be handled by the caller, which now knows *why* it failed and
+can choose its own policy: retry, alert, rollback.
+
+The Null Object removed the `if result is None:` checks at call sites.
+But it also removed the information that those checks were supposed to act on.
 
 
 
@@ -270,7 +354,8 @@ Dangerous:
 * Cryptographic buffers
 * Systems where allocation failure is catastrophic
 
-If allocation failure is unrecoverable, silent degradation may hide fatal conditions.
+If allocation failure is unrecoverable, silent degradation
+may hide fatal conditions.
 
 You traded segmentation faults for behavioral continuity.
 That trade is sometimes elegant, sometimes reckless.
@@ -285,11 +370,12 @@ C already uses related techniques:
 * Error codes
 
 Comparison:
-* `NULL` — explicit absence, requires branching
-* Sentinel — structural simplification inside a data structure
-* Null Object — behavioral simplification across an interface
+* `NULL` - explicit absence, requires branching
+* Sentinel - structural simplification inside a data structure
+* Null Object - behavioral simplification across an interface
 
-The Null Object generalises the sentinel idea to an entire abstraction boundary.
+The Null Object generalises the sentinel idea to an entire
+abstraction boundary.
 
 
 
@@ -324,7 +410,8 @@ eliminating null dereferences and centralising failure handling.
 
 But it does so by collapsing failure into neutral behavior.
 
-Whether that is an improvement depends entirely on the semantic weight of failure in your system.
+Whether that is an improvement depends entirely on the semantic
+weight of failure in your system.
 
 That is the real design decision hiding underneath the pattern.
 
