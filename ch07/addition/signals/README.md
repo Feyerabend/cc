@@ -1,0 +1,114 @@
+
+## Signal Processing
+
+> *About this additional section:* This section fills a gap in the main text by introducing
+  the fundamentals of signal processing: what signals are, how they are sampled and represented
+  digitally, how to analyse them in the frequency domain, and how to filter them.
+  Each concept is paired with working code in Python, C, and (where applicable) JavaScript
+  so you can experiment immediately.
+
+
+### 1. Introduction
+
+#### 1.1 What is a Signal?
+
+A *signal* is any quantity that varies and carries information. The variation can be over time,
+space, or any other independent variable; what matters is that a receiver can extract meaning
+from the variation.
+
+*Time-domain signals* change with time. A microphone converts air pressure variations into
+a voltage that fluctuates thousands of times per second--that voltage waveform is a time-domain
+signal. An electrocardiogram records the heart's electrical activity as a function of time.
+A gyroscope in a phone reports angular velocity moment by moment.
+
+*Spatial signals* vary across position rather than (or in addition to) time. A digital photograph
+is a two-dimensional spatial signal: each pixel encodes light intensity (and colour) at a particular
+(x, y) location. A seismic survey maps reflected sound energy across a field of sensors buried in the ground.
+
+*Continuous signals* are defined at every instant, with no gaps. Mathematically we write x(t) to
+mean the signal value at time t, where t is a real number. Physical signals--sound, light,
+temperature--are continuous.
+
+*Discrete signals* are defined only at specific, regularly spaced instants. We write x[n] to mean
+the value at sample index n, where n is an integer. Every digital system works with discrete signals:
+computers cannot store a value for every real-numbered instant, only for a countably infinite
+(or finite) sequence of moments.
+
+*Examples across domains:*
+
+| Domain     | Signal                   | Independent variable |
+|------------|--------------------------|----------------------|
+| Audio      | Pressure wave / voltage  | Time                 |
+| Image      | Pixel intensity          | Space (x, y)         |
+| Radar      | Reflected pulse envelope | Time / range         |
+| Finance    | Stock price              | Time                 |
+| Biology    | Neuron firing rate       | Time                 |
+| Geophysics | Seismic wave             | Space and time       |
+
+The central task of signal processing is to extract useful information from these varying
+quantities--removing noise, detecting patterns, compressing data, or transforming representations
+so that downstream algorithms can work more easily.
+
+
+
+#### 1.2 Why Signal Processing Matters
+
+Signal processing underpins a surprisingly wide range of technologies.
+Here are four areas where a working knowledge makes a real difference.
+
+*Audio processing.* Every phone call, music stream, and voice assistant relies on signal processing.
+Noise cancellation in headphones uses adaptive filters to subtract an estimate of background noise
+from the microphone signal in real time. MP3 and AAC compression apply psychoacoustic models that
+discard frequency content the human ear cannot perceive, achieving 10:1 compression with minimal
+audible loss. Speech recognition first converts audio to a spectrogram--a time-frequency map--before
+feeding it to a neural network.
+
+*Communications.* Amplitude modulation (AM), frequency modulation (FM), and modern schemes like OFDM
+(used in Wi-Fi, 4G, and 5G) all work by shifting information-bearing signals to carrier frequencies
+suitable for transmission. At the receiver, a matched filter recovers the original signal from noise.
+Channel equalisation corrects for the distortion introduced by the medium.
+
+*Machine learning.* Raw signals are rarely fed directly to a classifier. A common pre-processing pipeline
+converts a time-series into a frequency representation (spectrogram or mel-frequency cepstral coefficients),
+applies normalisation, and possibly applies a learned filter bank. Convolutional neural networks are
+themselves a form of adaptive signal processing: their learnable kernels are filters optimised for a particular task.
+
+*Embedded systems.* Microcontrollers in industrial sensors, medical devices, and consumer electronics
+all perform signal processing under tight constraints of memory and compute budget. A digital filter that
+smooths a noisy ADC reading, a PID controller that cancels vibration, an encoder that detects a zero
+crossing--these are signal processing tasks executed in real time, often without an operating system,
+in a few kilobytes of RAM.
+
+
+### 2. Mathematical Foundations
+
+#### 2.1 Continuous vs Discrete Signals
+
+A continuous signal x(t) assigns a real (or complex) number to every real-valued time t.
+This is the natural model for physical phenomena. We can differentiate it, integrate it,
+and reason about its behaviour at any instant.
+
+A discrete signal $x[n]$ assigns a value only at integer indices $n ∈ ℤ$. It arises whenever
+we *sample* a continuous signal--measuring its value at regular intervals.
+
+*Notation summary:*
+
+- Continuous signal:  $x(t)$,   $t ∈ ℝ$
+- Discrete signal:    $x[n]$,   $n ∈ ℤ$
+- Sampling period:    $T$  (seconds between samples)
+- Sampling rate:      $f_s = 1 / T$  (samples per second, Hz)
+
+
+The relationship between the two is:
+
+```math
+x[n] = x(n · T) = x(n / f_s)
+```
+
+Each discrete sample is simply the continuous signal evaluated at time t = nT.
+
+*Why discrete signals are necessary.* Storing a continuous signal requires infinite
+precision and infinite storage--both impossible. Discrete sampling reduces the representation
+to a finite (or countably infinite) sequence of numbers, which computers can store,
+transmit, and process. The key question--addressed in the next section--is how fast
+we must sample to avoid losing information.
