@@ -67,7 +67,8 @@ def spectral_subtract(signal, sr, noise_start=0.0, noise_end=0.3, frame_ms=25, h
 
 
 # ---- Usage example (requires an audio file) ----
-# The Birth of the Telephone by Thomas Augustus Watson, Public Domain (ca 1 min part)
+# The Birth of the Telephone by Thomas Augustus Watson
+# Public Domain (ca 1 min part): https://www.gutenberg.org/ebooks/10254
 sr, audio = load_audio('noisy.wav') 
 clean = spectral_subtract(audio, sr)
 wavfile.write('clean.wav', sr, (clean * 32767).astype(np.int16))
