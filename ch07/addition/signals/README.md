@@ -265,13 +265,13 @@ signal $x$, at each position computing a dot product of the kernel with the loca
 The discrete convolution of $x$ and $h$ is:
 
 ```math
-(x * h)[n] = sigma_{k=-∞}^{+∞}  x[k] · h[n - k]
+(x * h)[n] = \sigma_{k=-∞}^{+∞}  x[k] · h[n - k]
 ```
 
 For a finite-length kernel of length $M$, this becomes:
 
 ```math
-y[n] = sigma_{k=0}^{M-1}  h[k] · x[n - k]
+y[n] = \sigma_{k=0}^{M-1}  h[k] · x[n - k]
 ```
 
 Read this as: "to compute the output at position $n$, take the last $M$ input samples,
