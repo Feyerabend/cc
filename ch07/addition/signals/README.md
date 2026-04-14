@@ -204,7 +204,7 @@ This is why frequency-domain filtering is often computationally cheaper.
 
 #### 2.4 Discrete Fourier Transform (DFT)
 
-For a finite sequence of $N$ samples $x[0], x[1]$, ..., x[N-1]$, the
+For a finite sequence of $N$ samples $x[0], x[1], ..., x[N-1]$, the
 *Discrete Fourier Transform* computes $N$ complex frequency coefficients:
 
 ```math
