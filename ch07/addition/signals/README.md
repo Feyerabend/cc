@@ -121,7 +121,7 @@ The *Nyquist-Shannon sampling theorem* gives the minimum sampling rate required
 to perfectly reconstruct a band-limited continuous signal from its discrete samples.
 
 > A continuous signal whose highest frequency component is $$f_max$$ can be perfectly
-> reconstructed from discrete samples taken at a rate $$f_s$$, provided: $$*f_s ≥ 2 · f_max*$$
+> reconstructed from discrete samples taken at a rate $$f_s$$, provided: $*f_s ≥ 2 · f_max*$
 
 The frequency $f_s / 2$ is called the *Nyquist frequency* (or folding frequency).
 It is the highest frequency representable at a given sampling rate.
