@@ -208,7 +208,7 @@ For a finite sequence of $N$ samples $x[0], x[1], ..., x[N-1]$, the
 *Discrete Fourier Transform* computes $N$ complex frequency coefficients:
 
 ```math
-X[k] = sigma_{n=0}^{N-1}  x[n] · e^{-i 2π k n / N}     k = 0, 1, ..., N-1
+X[k] = \sigma_{n=0}^{N-1}  x[n] · e^{-i 2π k n / N}     k = 0, 1, ..., N-1
 ```
 
 Each $X[k]$ corresponds to the frequency $f_k = k · f_s / N$. The magnitude
