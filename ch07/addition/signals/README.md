@@ -418,7 +418,7 @@ Different kernels produce different effects. Three important ones:
 | Positive centre, negative surround | Sharpening           | Enhancing fine detail |
 | Asymmetric gradients               | Edge detection       | Feature extraction    |
 
-*Blur, sharpen, and edge detection on an image in folder [process](.)*
+*Blur, sharpen, and edge detection on an image in folder [process](./process/).*
 
 
 
