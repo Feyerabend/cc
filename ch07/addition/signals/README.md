@@ -201,3 +201,24 @@ $h$ to a signal $x$ by convolution in the time domain is *equivalent* to multipl
 their Fourier transforms $H(f) · X(f)$ in the frequency domain.
 This is why frequency-domain filtering is often computationally cheaper.
 
+
+#### 2.4 Discrete Fourier Transform (DFT)
+
+For a finite sequence of $N$ samples $x[0], x[1]$, ..., x[N-1]$, the
+*Discrete Fourier Transform* computes $N$ complex frequency coefficients:
+
+```math
+X[k] = sigma_{n=0}^{N-1}  x[n] · e^{-i 2π k n / N}     k = 0, 1, ..., N-1
+```
+
+Each $X[k]$ corresponds to the frequency $f_k = k · f_s / N$. The magnitude
+$|X[k]|$ tells you how strongly that frequency is present in the signal.
+
+*Computational cost.* Evaluating the sum naively requires $O(N^2)$ operations:
+for each of the $N$ output bins $k$, we sum $N$ terms. For $N = 10 000$ this
+is $10⁸$ multiply-add operations--feasible but slow. The FFT, introduced next,
+reduces this to $O(N log N)$.
+
+
+*See the [DFT](./dft/) folder on discrete Fourier transforms.*
+
