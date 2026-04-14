@@ -322,7 +322,7 @@ interference) from biomedical signals.
 ##### 3.2.3 Band-Pass Filter
 
 A band-pass filter (BPF) passes only the frequencies *within* a specified range
-$[f_low, f_high]$, attenuating both lower and higher content. It can be constructed
+`[f_low, f_high]`, attenuating both lower and higher content. It can be constructed
 by cascading a high-pass and a low-pass filter, or designed directly.
 
 *Typical applications:* radio tuning (selecting one station's frequency band),
@@ -330,4 +330,5 @@ isolating a physiological rhythm in biosignals (e.g. the alpha band 8-12 Hz in E
 equaliser bands in audio processing, extracting a specific harmonic from a vibrating structure.
 
 *See folder on [filters](./filters/).*
+
 
