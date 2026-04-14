@@ -4,6 +4,8 @@
 Once the golden standard for OO-code:
 [JHotDraw5.1](./../../ch06/addition/documentation/JHotDraw5.1/)
 
+* Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994).
+  *Design patterns: Elements of reusable object-oriented software*. Addison-Wesley.
 
 ### Design Patterns
 
