@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FFT in the Browser</title>
+  <style>
+    body { font-family: sans-serif; padding: 1rem; }
+    canvas { border: 1px solid #ccc; }
+  </style>
+  <!-- CDN-hosted FFT implementation (MIT licence) -->
+  <script src="https://unpkg.com/fft.js@4.0.4/lib/fft.js"></script>
+</head>
+<body>
+  <h2>Browser FFT Demo</h2>
+  <p>Spectrum of a 1-second signal with components at 5 Hz and 13 Hz.</p>
+  <canvas id="canvas" width="800" height="300"></canvas>
+
+  <script>
+    // --- Generate signal ---
+    const fs     = 128;    // samples/second (power of 2 recommended for fft.js)
+    const N      = 128;    // one second
+    const f1     = 5, f2 = 13;
+    const signal = new Float32Array(N);
+    for (let n = 0; n < N; n++) {
+      const t   = n / fs;
+      signal[n] = Math.sin(2 * Math.PI * f1 * t)
+                + 0.5 * Math.sin(2 * Math.PI * f2 * t);
+    }
+
+    // --- Run FFT ---
+    const fft = new FFT(N);
+    const out  = fft.createComplexArray();   // interleaved [re, im, re, im ...]
+    fft.realTransform(out, signal);
+    fft.completeSpectrum(out);
+
+    // Compute magnitude for positive bins only
+    const magnitudes = new Float32Array(N / 2);
+    for (let k = 0; k < N / 2; k++) {
+      const re = out[2 * k];
+      const im = out[2 * k + 1];
+      magnitudes[k] = 2 * Math.sqrt(re * re + im * im) / N;
+    }
+
+    // --- Draw spectrum ---
+    const canvas = document.getElementById('canvas');
+    const ctx    = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const maxMag = Math.max(...magnitudes);
+
+    ctx.fillStyle = '#f0f4ff';
+    ctx.fillRect(0, 0, W, H);
+
+    const barW = W / (N / 2);
+    for (let k = 0; k < N / 2; k++) {
+      const barH = (magnitudes[k] / maxMag) * (H - 40);
+      ctx.fillStyle = `hsl(${210 + k * 2}, 70%, 50%)`;
+      ctx.fillRect(k * barW, H - 30 - barH, barW - 1, barH);
+    }
+
+    // Axis labels
+    ctx.fillStyle = '#333';
+    ctx.font      = '12px sans-serif';
+    for (let f = 0; f <= fs / 2; f += 10) {
+      const x = (f / (fs / 2)) * W;
+      ctx.fillText(`${f}`, x, H - 10);
+    }
+    ctx.fillText('Frequency (Hz)', W / 2 - 40, H - 0);
+  </script>
+</body>
+</html>
