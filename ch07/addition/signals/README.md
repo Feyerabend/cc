@@ -332,3 +332,50 @@ equaliser bands in audio processing, extracting a specific harmonic from a vibra
 *See folder on [filters](./filters/).*
 
 
+
+
+
+### 4. Practical Examples
+
+#### 4.1 Signal Generation
+
+Understanding how to construct synthetic signals with known properties is core
+both for testing algorithms and for building intuition about the frequency domain.
+
+A pure sinusoid at frequency $f$ with amplitude $A$ and phase $φ$ is:
+
+```math
+x(t) = A · sin(2π f t + φ)
+```
+
+Real signals are almost always *multi-frequency*: a musical note contains a
+fundamental frequency and its harmonics; a speech vowel has formant peaks;
+a machine vibration spectrum reveals bearing defects.
+
+*See folder [generate](./generate/) on generating and combining signals.*
+
+
+#### 4.2 Frequency Analysis
+
+Reading an FFT spectrum is a skill. Here is what to look for.
+
+- *Peaks* indicate dominant frequency components. The height of a peak
+  (after normalisation) gives the amplitude; its position on the frequency
+  axis gives the frequency.
+
+- *DC component* (bin k = 0) represents the signal mean. A non-zero
+  DC bin means the signal has a constant offset.
+
+- *Noise floor*--if the spectrum has many small bins rather than a few
+  clear peaks, the signal is noisy in a spectrally broad sense.
+
+- *Harmonics* appear as evenly spaced peaks at integer multiples of a
+  fundamental. They indicate non-linear distortion, clipping, or a
+  naturally harmonic source like a plucked string.
+
+- *The symmetric half*--for a real-valued signal, the FFT output above
+  N/2 is the conjugate mirror of the lower half. Use `np.fft.rfft`
+  to work with just the unique positive-frequency half.
+
+
+*Interpreting FFT output in folder [analysis](./analysis/).*
