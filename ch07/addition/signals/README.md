@@ -361,7 +361,7 @@ Reading an FFT spectrum is a skill. Here is what to look for.
   (after normalisation) gives the amplitude; its position on the frequency
   axis gives the frequency.
 
-- *DC component* (bin k = 0) represents the signal mean. A non-zero
+- *DC component* (`bin k = 0`) represents the signal mean. A non-zero
   DC bin means the signal has a constant offset.
 
 - *Noise floor*--if the spectrum has many small bins rather than a few
