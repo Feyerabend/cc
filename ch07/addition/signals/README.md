@@ -395,3 +395,30 @@ but spectral subtraction is a good introduction to the idea.
 
 *See more on loading, filtering, and denoising audio in folder [denoise](./denoise/).*
 
+
+
+
+#### 4.4 Image Processing (2D Signals)
+
+An image is a two-dimensional discrete signal: the value at position (x, y) is the
+pixel intensity (or a colour triplet). All the concepts developed for 1-D signals
+extend naturally to 2-D.
+
+The 2-D convolution of an image $I$ with a kernel $K$ is:
+
+```math
+(I * K)[m, n] = \sigma_i \sigma_j  I[m - i, n - j] · K[i, j]
+```
+
+Different kernels produce different effects. Three important ones:
+
+| Kernel                             | Effect               | Use                   |
+|------------------------------------|----------------------|-----------------------|
+| All-positive, sums to 1            | Blurring / smoothing | Noise reduction       |
+| Positive centre, negative surround | Sharpening           | Enhancing fine detail |
+| Asymmetric gradients               | Edge detection       | Feature extraction    |
+
+*Blur, sharpen, and edge detection on an image in folder [process](.)*
+
+
+
