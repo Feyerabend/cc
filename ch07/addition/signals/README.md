@@ -137,11 +137,11 @@ high-frequency content cannot be recovered.
 A classic visual example: a wheel spinning at 24 revolutions per second filmed at
 24 frames per second appears stationary. The sampling rate (24 fps) equals the signal
 frequency (24 Hz), which is exactly at the Nyquist limit for 12 Hz content--here th
- rotation frequency exceeds it, causing the aliased "stationary" appearance.
- (Think of a spinning wheel in a movie, or even observation with your own eyes.)
+rotation frequency exceeds it, causing the aliased "stationary" appearance.
+(Think of a spinning wheel in a movie, or even observation with your own eyes.)
 
 *Anti-aliasing filters.* In practice, a low-pass filter is applied to the continuous
-signal *before* sampling to remove any content above f_s / 2. This is called an
+signal *before* sampling to remove any content above $f_s / 2$. This is called an
 anti-aliasing filter, and it is present in every ADC (analogue-to-digital converter)
 front end.
 
