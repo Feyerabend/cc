@@ -222,3 +222,32 @@ reduces this to $O(N log N)$.
 
 *See the [DFT](./dft/) folder on discrete Fourier transforms.*
 
+
+
+#### 2.5 Fast Fourier Transform (FFT)
+
+The FFT is not a different transform--it is an efficient *algorithm* for computing the DFT.
+The standard Cooley-Tukey radix-2 FFT exploits the fact that a DFT of size N can be recursively
+split into two DFTs of size N/2:
+
+```math
+X[k]      = E[k] + W^k · O[k]
+X[k + N/2] = E[k] - W^k · O[k]
+```
+where $W = e^{-i 2π / N}$   (the "twiddle factor")
+- $E[k] = DFT$ of even-indexed samples
+- $O[k] = DFT$ of odd-indexed samples
+
+Applying this split recursively (for $N = 2^m$) reduces the total operation count from
+$O(N^2)$ to $*O(N log₂ N)*$. For $N = 1 048 576 (2²⁰)$, the speedup is roughly $52 000×$.
+
+*Complexity comparison:*
+
+| N      | DFT (N²)  | FFT (N log₂ N) | Speedup |
+|--------|-----------|----------------|---------|
+| 64     | 4 096     | 384            | 10.7×   |
+| 1 024  | 1 048 576 | 10 240         | 102×    |
+| 65 536 | 4.3 × 10⁹ | 1 048 576      | 4 096×  |
+
+This dramatic improvement is what makes real-time frequency analysis practical.
+
