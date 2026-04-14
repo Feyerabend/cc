@@ -251,3 +251,41 @@ $O(N^2)$ to $*O(N log₂ N)*$. For $N = 1 048 576 (2²⁰)$, the speedup is roug
 
 This dramatic improvement is what makes real-time frequency analysis practical.
 
+*See folder on [FFT](./fft/).*
+
+
+### 3. Convolution and Filtering
+
+#### 3.1 Convolution
+
+Convolution is the mathematical operation that describes how a filter transforms a signal.
+Intuitively, it is a *weighted, sliding average*: the filter kernel $h$ slides across the
+signal $x$, at each position computing a dot product of the kernel with the local signal values.
+
+The discrete convolution of $x$ and $h$ is:
+
+```math
+(x * h)[n] = sigma_{k=-∞}^{+∞}  x[k] · h[n - k]
+```
+
+For a finite-length kernel of length $M$, this becomes:
+
+```math
+y[n] = sigma_{k=0}^{M-1}  h[k] · x[n - k]
+```
+
+Read this as: "to compute the output at position $n$, take the last $M$ input samples,
+weight each one by the corresponding filter coefficient, and sum the results."
+
+*Why convolution matters for filtering:*
+- A low-pass filter has a kernel whose coefficients are all positive and roughly
+  equal--it computes a *running average*, smoothing out rapid fluctuations.
+- A high-pass filter has a kernel with positive and negative coefficients that sum
+  to zero--it subtracts a smoothed version of the signal from itself, emphasising
+  edges and rapid changes.
+- The Convolution Theorem tells us that convolution in the time domain equals
+  multiplication in the frequency domain, so filter design is often done in the
+  frequency domain and converted back via the inverse Fourier Transform.
+
+*See the folder [convolution](./conv/).*
+
