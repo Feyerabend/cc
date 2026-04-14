@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Aliasing Demo</title>
+  <style>
+    body { font-family: sans-serif; padding: 1rem; background: #f8f8f8; }
+    canvas { border: 1px solid #ccc; background: #fff; display: block; margin: 1rem 0; }
+    label { margin-right: 1rem; }
+  </style>
+</head>
+<body>
+  <h2>Sampling & Aliasing Demo</h2>
+  <div>
+    <label>Signal frequency (Hz):
+      <input id="fSignal" type="range" min="1" max="20" value="5" />
+      <span id="fSignalVal">5</span>
+    </label>
+    <label>Sampling rate (Hz):
+      <input id="fs" type="range" min="4" max="100" value="30" />
+      <span id="fsVal">30</span>
+    </label>
+  </div>
+  <canvas id="canvas" width="800" height="300"></canvas>
+  <p id="info"></p>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx    = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const MID = H / 2;
+
+    function draw() {
+      const fSig = +document.getElementById('fSignal').value;
+      const fs   = +document.getElementById('fs').value;
+      document.getElementById('fSignalVal').textContent = fSig;
+      document.getElementById('fsVal').textContent      = fs;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Axes
+      ctx.strokeStyle = '#ccc';
+      ctx.beginPath(); ctx.moveTo(0, MID); ctx.lineTo(W, MID); ctx.stroke();
+
+      const duration    = 1;          // seconds to display
+      const densePts    = 800;        // points for "continuous" reference
+      const samplesPerSecond = fs;
+
+      // Continuous reference
+      ctx.strokeStyle = '#aaa';
+      ctx.lineWidth   = 1;
+      ctx.beginPath();
+      for (let i = 0; i <= densePts; i++) {
+        const t = (i / densePts) * duration;
+        const y = MID - (Math.sin(2 * Math.PI * fSig * t) * (H * 0.4));
+        i === 0 ? ctx.moveTo((i / densePts) * W, y)
+                : ctx.lineTo((i / densePts) * W, y);
+      }
+      ctx.stroke();
+
+      // Discrete samples
+      const nSamples  = Math.floor(samplesPerSecond * duration);
+      const sampleX   = [];
+      const sampleY   = [];
+      for (let n = 0; n <= nSamples; n++) {
+        const t = n / fs;
+        const y = Math.sin(2 * Math.PI * fSig * t);
+        sampleX.push((t / duration) * W);
+        sampleY.push(MID - y * (H * 0.4));
+      }
+
+      // Draw reconstructed line through samples
+      const nyquist = fs / 2;
+      ctx.strokeStyle = fSig <= nyquist ? '#2196F3' : '#F44336';
+      ctx.lineWidth   = 2;
+      ctx.beginPath();
+      sampleX.forEach((x, i) => i === 0 ? ctx.moveTo(x, sampleY[i])
+                                        : ctx.lineTo(x, sampleY[i]));
+      ctx.stroke();
+
+      // Stem markers
+      sampleX.forEach((x, i) => {
+        ctx.strokeStyle = fSig <= nyquist ? '#1565C0' : '#B71C1C';
+        ctx.lineWidth   = 1;
+        ctx.beginPath(); ctx.moveTo(x, MID); ctx.lineTo(x, sampleY[i]); ctx.stroke();
+        ctx.fillStyle = fSig <= nyquist ? '#1565C0' : '#B71C1C';
+        ctx.beginPath(); ctx.arc(x, sampleY[i], 4, 0, 2 * Math.PI); ctx.fill();
+      });
+
+      const status = fSig <= nyquist
+        ? `✓ Nyquist satisfied--f_s (${fs} Hz) ≥ 2 × f_signal (${fSig} Hz)`
+        : `✗ Aliasing! f_signal (${fSig} Hz) > Nyquist limit (${nyquist} Hz)`;
+      document.getElementById('info').textContent = status;
+      document.getElementById('info').style.color = fSig <= nyquist ? 'green' : 'red';
+    }
+
+    document.getElementById('fSignal').addEventListener('input', draw);
+    document.getElementById('fs').addEventListener('input', draw);
+    draw();
+  </script>
+</body>
+</html>

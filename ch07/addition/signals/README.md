@@ -149,3 +149,55 @@ Formula:
 ```math
 f_s >= 2 * f_max
 ```
+
+*See the [sampling](./sampling/) folder.*
+
+
+#### 2.3 Fourier Transform
+
+The central insight of Fourier analysis is that *any* periodic signal--and,
+with suitable extension, any signal with finite energy--can be expressed as
+a sum of sinusoids of different frequencies, amplitudes, and phases. This is
+not just a mathematical curiosity; it reveals which frequencies are present
+in a signal and in what proportion, turning a time-domain waveform into a
+*frequency-domain spectrum*.
+
+*Intuition.* Imagine a chord played on a piano. The pressure waveform at your
+ear is a messy, oscillating curve. Yet your auditory system immediately resolves
+it into individual notes--A, C, E--each at its own frequency and loudness.
+Fourier analysis is the mathematical version of that decomposition: it asks,
+"for each possible frequency f, how much of that frequency is present in the signal?"
+
+*The Fourier Transform* of a continuous signal x(t) is defined as:
+
+```math
+X(f) = ∫_{-∞}^{+∞}  x(t) · e^{-i 2π f t}  dt
+```
+
+$X(f)$ is a complex-valued function of frequency. Its magnitude $|X(f)|$ is
+the *amplitude spectrum* (how strong each frequency is), and its argument $∠X(f)$
+is the *phase spectrum* (the phase offset of each sinusoidal component).
+
+The *inverse Fourier Transform* recovers the time-domain signal:
+
+```math
+x(t) = ∫_{-∞}^{+∞}  X(f) · e^{+i 2π f t}  df
+```
+
+These two transforms form a perfect pair: going to the frequency domain loses no
+information, and coming back gives back the original signal exactly.
+
+*Key properties to know:*
+
+| Property            | Statement                                                |
+|---------------------|----------------------------------------------------------|
+| Linearity           | $FT{a·x + b·y} = a·X + b·Y$                              |
+| Time shift          | Shifting $x(t)$ by $τ$ multiplies $X(f)$ by $e^{-i2πfτ}$ |
+| Convolution theorem | Convolution in time <--> multiplication in frequency     |
+| Parseval's theorem  | Energy is preserved: $∫\|x\|² dt = ∫\|X\|² df$           |
+
+The *convolution theorem* is particularly important for filtering: applying a filter
+$h$ to a signal $x$ by convolution in the time domain is *equivalent* to multiplying
+their Fourier transforms $H(f) · X(f)$ in the frequency domain.
+This is why frequency-domain filtering is often computationally cheaper.
+
