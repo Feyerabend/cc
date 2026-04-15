@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Acoustic OFDM — Sender</title>
+  <style>
+    body { font-family: monospace; max-width: 700px; margin: 40px auto; background: #111; color: #0f0; }
+    h1   { color: #0ff; margin-bottom: 4px; }
+    p    { color: #888; margin: 4px 0 16px; }
+    .tone-grid { display: flex; gap: 8px; margin: 10px 0; }
+    .tone {
+      width: 80px; height: 60px;
+      border: 2px solid #0f0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: 4px; font-size: 11px; text-align: center;
+      transition: background 0.04s;
+    }
+    .tone .bit  { font-size: 18px; font-weight: bold; }
+    .tone.on    { background: #0f0; color: #000; border-color: #0f0; }
+    .tone.off   { background: #111; color: #0f0; }
+    input[type=text] {
+      background: #222; color: #0f0;
+      border: 1px solid #0f0; padding: 8px;
+      width: 420px; font-family: monospace; font-size: 16px;
+    }
+    button {
+      background: #0f0; color: #000;
+      border: none; padding: 10px 20px;
+      cursor: pointer; font-family: monospace; font-size: 14px; margin: 4px;
+    }
+    button.stop { background: #f44; color: #fff; }
+    #status { margin: 12px 0; font-size: 14px; color: #ff0; min-height: 20px; }
+    #log {
+      margin-top: 10px; height: 160px; overflow-y: auto;
+      border: 1px solid #333; padding: 8px; font-size: 11px; color: #888;
+    }
+    .section { margin-top: 20px; }
+    h3 { color: #0f0; margin-bottom: 6px; }
+    .params { font-size: 12px; color: #888; margin-bottom: 8px; }
+    .params span { color: #0ff; }
+  </style>
+</head>
+<body>
+
+<h1>Acoustic OFDM — Sender</h1>
+<p>Encodes text as simultaneous tones and plays them through your speakers.</p>
+
+<div class="params">
+  Subcarriers: <span>800 · 1000 · 1200 · 1400 · 1600 · 1800 Hz</span> &nbsp;|&nbsp;
+  Spacing: <span>200 Hz</span> &nbsp;|&nbsp;
+  Symbol: <span>350 ms</span> &nbsp;|&nbsp;
+  Bits/symbol: <span>6</span>
+</div>
+
+<div>
+  <input type="text" id="msg" value="HELLO WORLD" maxlength="50" />
+</div>
+<div style="margin-top:10px">
+  <button onclick="startSending()">&#9654; Send (loops)</button>
+  <button class="stop" onclick="stopSending()">&#9632; Stop</button>
+</div>
+
+<div class="section">
+  <h3>Current symbol &mdash; each box is one subcarrier (1 bit)</h3>
+  <div class="tone-grid" id="toneGrid"></div>
+  <div id="status">Idle &mdash; press Send to begin</div>
+</div>
+
+<div class="section">
+  <h3>Transmission log</h3>
+  <div id="log"></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// CONFIGURATION  (must match receiver.html exactly)
+// ─────────────────────────────────────────────────────────────────────────────
+const FREQS        = [800, 1000, 1200, 1400, 1600, 1800]; // subcarrier frequencies (Hz)
+const SYMBOL_MS    = 250;   // duration of one data symbol
+const PREAMBLE_MS  = 600;   // duration of the all-tones preamble
+const GAP_MS       = 250;   // silence between preamble and first symbol
+const PAUSE_MS     = 800;   // pause between repeated transmissions
+const AMPLITUDE    = 0.25;  // oscillator output level (0–1)
+
+// Character set — index 0..39 map to these characters.
+// Index 63 (= 0b111111) is reserved as the END marker.
+const CHARSET = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!?';
+
+function charToIndex(c) {
+  const i = CHARSET.indexOf(c.toUpperCase());
+  return i >= 0 ? i : 0; // unknown chars become space
+}
+
+// Encode index as 6 bits (MSB first), one bit per subcarrier
+function indexToBits(idx) {
+  return FREQS.map((_, i) => (idx >> (5 - i)) & 1);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIO ENGINE
+// ─────────────────────────────────────────────────────────────────────────────
+let audioCtx, oscillators, gainNodes;
+
+function initAudio() {
+  if (audioCtx) audioCtx.close();
+  audioCtx  = new AudioContext();
+  oscillators = [];
+  gainNodes   = [];
+
+  FREQS.forEach(freq => {
+    const osc  = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.value = 0;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    oscillators.push(osc);
+    gainNodes.push(gain);
+  });
+}
+
+// Apply a short ramp to avoid audible clicks at tone edges
+function setTones(bits) {
+  const t = audioCtx.currentTime;
+  bits.forEach((b, i) => {
+    gainNodes[i].gain.cancelScheduledValues(t);
+    gainNodes[i].gain.setValueAtTime(gainNodes[i].gain.value, t);
+    gainNodes[i].gain.linearRampToValueAtTime(b ? AMPLITUDE : 0, t + 0.008);
+  });
+  updateGrid(bits);
+}
+
+function allOn()  { setTones(FREQS.map(() => 1)); }
+function allOff() { setTones(FREQS.map(() => 0)); }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TONE GRID UI
+// ─────────────────────────────────────────────────────────────────────────────
+const grid = document.getElementById('toneGrid');
+FREQS.forEach(f => {
+  const div = document.createElement('div');
+  div.className = 'tone off';
+  div.innerHTML = `<span class="bit" id="bit-${f}">0</span><span>${f} Hz</span>`;
+  div.id = 'tone-' + f;
+  grid.appendChild(div);
+});
+
+function updateGrid(bits) {
+  FREQS.forEach((f, i) => {
+    const box = document.getElementById('tone-' + f);
+    const bit = document.getElementById('bit-' + f);
+    box.className = 'tone ' + (bits[i] ? 'on' : 'off');
+    bit.textContent = bits[i];
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SENDER LOGIC
+// ─────────────────────────────────────────────────────────────────────────────
+let running = false;
+
+const statusEl = document.getElementById('status');
+const logEl    = document.getElementById('log');
+
+function log(msg) {
+  logEl.innerHTML += msg + '<br>';
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function sendMessage(text) {
+  log('── transmission start ──');
+
+  // 1. Preamble: all tones on — receiver uses this to synchronize
+  statusEl.textContent = 'PREAMBLE  (all tones ON)';
+  allOn();
+  await sleep(PREAMBLE_MS);
+
+  // 2. Gap: silence — receiver detects end-of-preamble here
+  statusEl.textContent = 'GAP  (silence)';
+  allOff();
+  await sleep(GAP_MS);
+
+  // 3. Data symbols: one per character
+  for (const c of text) {
+    if (!running) break;
+    const idx  = charToIndex(c);
+    const bits = indexToBits(idx);
+    setTones(bits);
+    statusEl.textContent = `DATA  "${c}"  →  idx ${String(idx).padStart(2)}  →  [${bits.join('')}]`;
+    log(`  &nbsp; char='${c}'  idx=${idx}  bits=[${bits.join('')}]`);
+    await sleep(SYMBOL_MS);
+  }
+
+  // 4. End marker: all-ones (index 63, not in charset — signals end of message)
+  if (running) {
+    log('  &nbsp; END MARKER  [111111]');
+    setTones([1,1,1,1,1,1]);
+    await sleep(SYMBOL_MS);
+  }
+
+  allOff();
+  statusEl.textContent = 'Transmission complete — pausing before repeat';
+  log('── transmission end ──<br>');
+}
+
+async function startSending() {
+  if (running) return;
+  running = true;
+  initAudio();
+
+  // Sanitize: keep only chars that exist in CHARSET
+  const raw  = document.getElementById('msg').value;
+  const text = raw.toUpperCase().replace(/[^A-Z0-9 .!?]/g, '');
+  if (!text) { statusEl.textContent = 'Nothing to send.'; running = false; return; }
+
+  log(`Message: "${text}"  (${text.length} chars × ${SYMBOL_MS} ms + overhead)`);
+
+  while (running) {
+    await sendMessage(text);
+    await sleep(PAUSE_MS);
+  }
+}
+
+function stopSending() {
+  running = false;
+  if (gainNodes) allOff();
+  statusEl.textContent = 'Stopped';
+}
+</script>
+</body>
+</html>

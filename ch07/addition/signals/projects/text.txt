@@ -1,0 +1,259 @@
+A browser-based acoustic communication system that behaves like a simplified Orthogonal Frequency Division Multiplexing link.
+
+Three layers:
+
+System architecture (what exists)
+Implementation plan (how to build it step by step)
+What it teaches (the intuition you’ll gain)
+
+
+1. System Architecture
+
+Sender (Transmitter)
+
+Runs in a browser tab:
+
+Generates multiple sine waves (subcarriers)
+Encodes bits into tones
+Plays sound through speakers
+
+
+
+Receiver
+
+Runs in another browser tab/device:
+
+Records audio via microphone
+Extracts frequency content using Fast Fourier Transform
+Decodes which tones are present → bits
+
+Channel (the air)
+Introduces noise, echoes, distortion
+This is your “wireless medium”
+
+
+2. Implementation Plan (step-by-step)
+Phase 1 — Single Tone Link (sanity check)
+
+Goal: prove sound → detection works
+
+Sender
+
+Play a single tone (e.g., 1000 Hz)
+Turn it ON/OFF every second
+
+Receiver
+
+Detect energy at 1000 Hz
+Print: ON or OFF
+
+Outcome:
+
+You confirm microphone + FFT pipeline works
+Phase 2 — Multi-tone (your core idea)
+
+Goal: parallel bits
+
+Sender
+
+Add 4–8 tones (e.g., 700–2000 Hz spaced apart)
+Each tone = 1 bit
+
+Example:
+
+[1 0 1 1 0 0]
+
+→ play tones 1, 3, 4
+
+Receiver
+
+Monitor all frequencies simultaneously
+Output a bit vector
+
+Outcome:
+
+You see parallel transmission
+Phase 3 — Symbol timing
+
+Goal: structure data like real systems
+
+Introduce:
+
+Symbol duration (e.g., 100 ms)
+
+Sender
+
+Change all tones only at symbol boundaries
+
+Receiver
+
+Sample FFT in sync with symbols
+
+Outcome:
+
+You now have discrete “data frames”
+Phase 4 — Message encoding
+
+Goal: send actual data
+
+Add:
+
+Bit grouping → characters
+
+Example:
+
+6 tones → 6 bits per symbol
+Map bits → ASCII-like encoding
+
+Send:
+
+HELLO
+
+Outcome:
+
+Real communication over sound
+Phase 5 — Synchronization (critical)
+
+Problem:
+Receiver doesn’t know when symbols start
+
+Solution: preamble
+
+Send a known pattern first
+
+Example:
+
+111111 → 000000 → 111111
+
+Receiver:
+
+Detects this pattern
+Aligns timing
+
+Outcome:
+
+Stable decoding
+Phase 6 — Robustness
+
+Real-world issues show up
+
+Add:
+
+Thresholding (ignore weak signals)
+Repeat symbols (basic error correction)
+Frequency spacing (reduce overlap)
+
+Outcome:
+
+Works in a noisy room
+Phase 7 — Upgrade toward real OFDM
+
+Make it closer to Wi-Fi
+
+Instead of just ON/OFF:
+
+Introduce:
+
+Multiple amplitude levels
+(Optional) phase shifts
+
+This moves toward:
+Quadrature Amplitude Modulation
+
+Outcome:
+
+Each tone carries multiple bits
+3. What this illustrates (the “aha” moments)
+A. Subcarriers are real, physical tones
+
+You literally hear:
+
+multiple frequencies at once
+
+That is how OFDM divides bandwidth
+
+B. Parallel transmission
+
+Instead of:
+
+1 bit at a time
+
+You get:
+
+N bits per symbol (one per tone)
+
+This explains Wi-Fi speed gains
+
+C. Frequency-domain thinking
+
+You stop thinking in time:
+
+“signal goes up/down”
+“energy exists at specific frequencies”
+
+D. Tradeoffs become obvious
+
+You’ll feel:
+
+More tones →
+higher data rate
+– more interference risk
+Closer spacing →
+efficient spectrum
+– harder to distinguish
+
+E. Noise & channel effects
+
+You’ll notice:
+
+tones blur
+echoes confuse detection
+
+This is why real systems need:
+
+equalization
+coding
+synchronization
+
+
+F. Why FFT is essential
+
+Without Fast Fourier Transform:
+
+you can’t separate tones cleanly
+
+FFT = “ears of the receiver”
+
+The deep insight you’ll gain
+
+This project makes one big idea click:
+
+Data transmission is not about “signals changing over time”
+It’s about shaping energy across frequencies and time blocks
+
+That’s the core of:
+
+Wi-Fi
+4G/5G
+modern communication systems
+
+Optional extensions (if you want to go further)
+Add a live spectrum visualizer (see tones in real time)
+Simulate interference (play music in background)
+Add adaptive modulation (change number of tones)
+Implement crude channel estimation
+
+
+Final takeaway
+
+What you’re building is:
+
+
+a hearable, visible version of Wi-Fi’s core idea
+
+Not just a demo — a conceptual bridge between:
+
+abstract math (OFDM, QAM)
+physical intuition (sound, tones, hearing)
+
+
