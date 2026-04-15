@@ -438,8 +438,44 @@ Different kernels produce different effects. Three important ones:
 
 
 
+### 5. Advanced Topics
 
 
+#### 5.1 Windowing and Spectral Leakage
+
+When we compute the DFT of a finite block of N samples, we are implicitly assuming the
+signal is periodic with period N. If the signal is not exactly periodic within the
+block--which is almost always the case for real data--the discontinuity at the block
+boundaries causes energy to *leak* from the true frequency bins into neighbouring bins.
+This is called *spectral leakage*.
+
+*Illustration.* Take a 1-second sine wave at exactly 50 Hz sampled at 1000 Hz: the FFT
+produces a single clean spike. Now take the same wave at 50.3 Hz: the signal no longer
+completes an integer number of cycles in 1 second, and the FFT shows a smeared blob
+rather than a sharp spike--energy has leaked into adjacent bins.
+
+*Window functions* reduce leakage by tapering the signal to zero at both ends of the block.
+This eliminates the artificial discontinuity at the cost of slightly widening the spectral
+peak (reduced frequency resolution). The choice of window is a trade-off between:
+
+- *Main-lobe width*--how narrow/sharp the spectral peak is (frequency resolution)
+- *Side-lobe level*--how much energy leaks into distant bins (leakage suppression)
+
+*Common windows:*
+
+| Window       | Main-lobe                   | Peak side-lobe        | Best for ..                             |
+|--------------|-----------------------------|-----------------------|-----------------------------------------|
+| Rectangular  | Narrowest                   | -13 dB (high leakage) | Signals with exact-bin frequencies      |
+| Hann         | Wider                       | -31 dB                | General-purpose audio/vibration         |
+| Hamming      | Slightly narrower than Hann | -41 dB                | Speech processing                       |
+| Blackman     | Widest                      | -57 dB                | Detecting weak signals near strong ones |
+| Flat-top     | Widest                      | -93 dB                | Precise amplitude measurement           |
+
+*Leakage and window comparison in folder [window](./window/).*
+
+*Rule of thumb:* use a Hann window as the default for audio and vibration analysis.
+Use a flat-top window when you need to measure amplitudes precisely. Use rectangular
+only when you know the signal frequency aligns exactly with a DFT bin.
 
 
 
@@ -517,7 +553,7 @@ through to practical implementation:
 3. *The Fourier Transform* decomposes a signal into its constituent
    sinusoids, revealing the frequency content invisible in the time
    domain. The DFT is the discrete version; the FFT computes it in
-   O(N log N) time, making real-time frequency analysis practical.
+   $O(N log N)$ time, making real-time frequency analysis practical.
 
 4. *Convolution* is the operation underlying all linear filtering.
    Choosing different kernels produces smoothing (low-pass), sharpening
