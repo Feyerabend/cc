@@ -23,31 +23,32 @@ A gyroscope in a phone reports angular velocity moment by moment.
 
 *Spatial signals* vary across position rather than (or in addition to) time. A digital photograph
 is a two-dimensional spatial signal: each pixel encodes light intensity (and colour) at a particular
-(x, y) location. A seismic survey maps reflected sound energy across a field of sensors buried in the ground.
+`(x, y)` location. A seismic survey maps reflected sound energy across a field of sensors buried
+in the ground.
 
-*Continuous signals* are defined at every instant, with no gaps. Mathematically we write x(t) to
-mean the signal value at time t, where t is a real number. Physical signals--sound, light,
+*Continuous signals* are defined at every instant, with no gaps. Mathematically we write `x(t)`
+to mean the signal value at time t, where t is a real number. Physical signals--sound, light,
 temperature--are continuous.
 
-*Discrete signals* are defined only at specific, regularly spaced instants. We write x[n] to mean
-the value at sample index n, where n is an integer. Every digital system works with discrete signals:
-computers cannot store a value for every real-numbered instant, only for a countably infinite
-(or finite) sequence of moments.
+*Discrete signals* are defined only at specific, regularly spaced instants. We write `x[n]`
+to mean the value at sample index `n`, where `n` is an integer. Every digital system works
+with discrete signals: computers cannot store a value for every real-numbered instant,
+only for a countably infinite (or finite) sequence of moments.
 
 *Examples across domains:*
 
 | Domain     | Signal                   | Independent variable |
 |------------|--------------------------|----------------------|
 | Audio      | Pressure wave / voltage  | Time                 |
-| Image      | Pixel intensity          | Space (x, y)         |
+| Image      | Pixel intensity          | Space `(x, y)`       |
 | Radar      | Reflected pulse envelope | Time / range         |
 | Finance    | Stock price              | Time                 |
 | Biology    | Neuron firing rate       | Time                 |
 | Geophysics | Seismic wave             | Space and time       |
 
-The central task of signal processing is to extract useful information from these varying
-quantities--removing noise, detecting patterns, compressing data, or transforming representations
-so that downstream algorithms can work more easily.
+The central task of signal processing is to extract useful information from these
+varying quantities--removing noise, detecting patterns, compressing data, or
+transforming representations so that downstream algorithms can work more easily.
 
 
 
@@ -56,27 +57,32 @@ so that downstream algorithms can work more easily.
 Signal processing underpins a surprisingly wide range of technologies.
 Here are four areas where a working knowledge makes a real difference.
 
-*Audio processing.* Every phone call, music stream, and voice assistant relies on signal processing.
-Noise cancellation in headphones uses adaptive filters to subtract an estimate of background noise
-from the microphone signal in real time. MP3 and AAC compression apply psychoacoustic models that
-discard frequency content the human ear cannot perceive, achieving 10:1 compression with minimal
-audible loss. Speech recognition first converts audio to a spectrogram--a time-frequency map--before
-feeding it to a neural network.
+*Audio processing.* Every phone call, music stream, and voice assistant relies
+on signal processing. Noise cancellation in headphones uses adaptive filters to
+subtract an estimate of background noise from the microphone signal in real time.
+MP3 and AAC compression apply psychoacoustic models that discard frequency content
+the human ear cannot perceive, achieving 10:1 compression with minimal audible
+loss. Speech recognition first converts audio to a spectrogram--a time-frequency
+map--before feeding it to a neural network.
 
-*Communications.* Amplitude modulation (AM), frequency modulation (FM), and modern schemes like OFDM
-(used in Wi-Fi, 4G, and 5G) all work by shifting information-bearing signals to carrier frequencies
-suitable for transmission. At the receiver, a matched filter recovers the original signal from noise.
-Channel equalisation corrects for the distortion introduced by the medium.
+*Communications.* Amplitude modulation (AM), frequency modulation (FM), and modern
+schemes like OFDM (used in Wi-Fi, 4G, and 5G) all work by shifting information-bearing
+signals to carrier frequencies suitable for transmission. At the receiver, a matched
+filter recovers the original signal from noise. Channel equalisation corrects for
+the distortion introduced by the medium.
 
-*Machine learning.* Raw signals are rarely fed directly to a classifier. A common pre-processing pipeline
-converts a time-series into a frequency representation (spectrogram or mel-frequency cepstral coefficients),
-applies normalisation, and possibly applies a learned filter bank. Convolutional neural networks are
-themselves a form of adaptive signal processing: their learnable kernels are filters optimised for a particular task.
+*Machine learning.* Raw signals are rarely fed directly to a classifier. A common
+pre-processing pipeline converts a time-series into a frequency representation
+(spectrogram or mel-frequency cepstral coefficients), applies normalisation, and
+possibly applies a learned filter bank. Convolutional neural networks are themselves
+a form of adaptive signal processing: their learnable kernels are filters optimised
+for a particular task.
 
-*Embedded systems.* Microcontrollers in industrial sensors, medical devices, and consumer electronics
-all perform signal processing under tight constraints of memory and compute budget. A digital filter that
-smooths a noisy ADC reading, a PID controller that cancels vibration, an encoder that detects a zero
-crossing--these are signal processing tasks executed in real time, often without an operating system,
+*Embedded systems.* Microcontrollers in industrial sensors, medical devices, and
+consumer electronics all perform signal processing under tight constraints of memory
+and compute budget. A digital filter that smooths a noisy ADC reading, a PID controller
+that cancels vibration, an encoder that detects a zero crossing--these are signal
+processing tasks executed in real time, often without an operating system,
 in a few kilobytes of RAM.
 
 
@@ -84,15 +90,15 @@ in a few kilobytes of RAM.
 
 #### 2.1 Continuous vs Discrete Signals
 
-A continuous signal x(t) assigns a real (or complex) number to every real-valued time t.
-This is the natural model for physical phenomena. We can differentiate it, integrate it,
-and reason about its behaviour at any instant.
+A continuous signal $x(t)$ assigns a real (or complex) number to every real-valued
+time $t$. This is the natural model for physical phenomena. We can differentiate it,
+integrate it, and reason about its behaviour at any instant.
 
-A discrete signal $x[n]$ assigns a value only at integer indices $n ∈ ℤ$. It arises whenever
-we *sample* a continuous signal--measuring its value at regular intervals.
+A discrete signal $x[n]$ assigns a value only at integer indices $n ∈ ℤ$.
+It arises whenever we *sample* a continuous signal--measuring its value
+at regular intervals.
 
 *Notation summary:*
-
 - Continuous signal:  $x(t)$,   $t ∈ ℝ$
 - Discrete signal:    $x[n]$,   $n ∈ ℤ$
 - Sampling period:    $T$  (seconds between samples)
@@ -100,18 +106,17 @@ we *sample* a continuous signal--measuring its value at regular intervals.
 
 
 The relationship between the two is:
-
 ```math
 x[n] = x(n · T) = x(n / f_s)
 ```
 
-Each discrete sample is simply the continuous signal evaluated at time t = nT.
+Each discrete sample is simply the continuous signal evaluated at time $t = nT$.
 
 *Why discrete signals are necessary.* Storing a continuous signal requires infinite
-precision and infinite storage--both impossible. Discrete sampling reduces the representation
-to a finite (or countably infinite) sequence of numbers, which computers can store,
-transmit, and process. The key question--addressed in the next section--is how fast
-we must sample to avoid losing information.
+precision and infinite storage--both impossible. Discrete sampling reduces the
+representation to a finite (or countably infinite) sequence of numbers, which
+computers can store, transmit, and process. The key question--addressed in the
+next section--is how fast we must sample to avoid losing information.
 
 
 
@@ -120,23 +125,22 @@ we must sample to avoid losing information.
 The *Nyquist-Shannon sampling theorem* gives the minimum sampling rate required
 to perfectly reconstruct a band-limited continuous signal from its discrete samples.
 
-> A continuous signal whose highest frequency component is $$f_max$$ can be perfectly
-> reconstructed from discrete samples taken at a rate $$f_s$$, provided: $f_s ≥ 2 · f_max$
+> A continuous signal whose highest frequency component is $$f_m$$ can be perfectly
+> reconstructed from discrete samples taken at a rate $$f_s$$, provided: $f_s ≥ 2 · f_m$
 
 The frequency $f_s / 2$ is called the *Nyquist frequency* (or folding frequency).
 It is the highest frequency representable at a given sampling rate.
 
 *Aliasing.* If the signal contains components above the Nyquist frequency and we
-sample below $2 · f_max$, those high-frequency components are *folded* back into
+sample below $2 · f_m$, those high-frequency components are *folded* back into
 the representable range and appear as phantom low-frequency components. This
 phenomenon is called aliasing, and it is irreversible--once aliased, the original
 high-frequency content cannot be recovered.
 
 A classic visual example: a wheel spinning at 24 revolutions per second filmed at
 24 frames per second appears stationary. The sampling rate (24 fps) equals the signal
-frequency (24 Hz), which is exactly at the Nyquist limit for 12 Hz content--here th
+frequency (24 Hz), which is exactly at the Nyquist limit for 12 Hz content--here the
 rotation frequency exceeds it, causing the aliased "stationary" appearance.
-(Think of a spinning wheel in a movie, or even observation with your own eyes.)
 
 *Anti-aliasing filters.* In practice, a low-pass filter is applied to the continuous
 signal *before* sampling to remove any content above $f_s / 2$. This is called an
@@ -145,7 +149,7 @@ front end.
 
 Formula:
 ```math
-f_s >= 2 * f_max
+f_s >= 2 * f_m
 ```
 
 *See the [sampling](./sampling/) folder.*
@@ -164,26 +168,26 @@ in a signal and in what proportion, turning a time-domain waveform into a
 ear is a messy, oscillating curve. Yet your auditory system immediately resolves
 it into individual notes--A, C, E--each at its own frequency and loudness.
 Fourier analysis is the mathematical version of that decomposition: it asks,
-"for each possible frequency f, how much of that frequency is present in the signal?"
+"for each possible frequency $f$, how much of that frequency is present in
+the signal?"
 
-*The Fourier Transform* of a continuous signal x(t) is defined as:
+*The Fourier Transform* of a continuous signal $x(t)$ is defined as:
 
 ```math
 X(f) = ∫_{-∞}^{+∞}  x(t) · e^{-i 2π f t}  dt
 ```
 
-$X(f)$ is a complex-valued function of frequency. Its magnitude $|X(f)|$ is
-the *amplitude spectrum* (how strong each frequency is), and its argument $∠X(f)$
-is the *phase spectrum* (the phase offset of each sinusoidal component).
+$X(f)$ is a complex-valued function of frequency. Its magnitude $|X(f)|$
+is the *amplitude spectrum* (how strong each frequency is), and its argument
+$∠X(f)$ is the *phase spectrum* (the phase offset of each sinusoidal component).
 
 The *inverse Fourier Transform* recovers the time-domain signal:
-
 ```math
 x(t) = ∫_{-∞}^{+∞}  X(f) · e^{+i 2π f t}  df
 ```
 
-These two transforms form a perfect pair: going to the frequency domain loses no
-information, and coming back gives back the original signal exactly.
+These two transforms form a perfect pair: going to the frequency domain
+loses no information, and coming back gives back the original signal exactly.
 
 *Key properties to know:*
 
@@ -224,9 +228,9 @@ reduces this to $O(N log N)$.
 
 #### 2.5 Fast Fourier Transform (FFT)
 
-The FFT is not a different transform--it is an efficient *algorithm* for computing the DFT.
-The standard Cooley-Tukey radix-2 FFT exploits the fact that a DFT of size N can be recursively
-split into two DFTs of size N/2:
+The FFT is not a different transform--it is an efficient *algorithm* for
+computing the DFT. The standard Cooley-Tukey radix-2 FFT exploits the fact
+that a DFT of size N can be recursively split into two DFTs of size $N/2$:
 
 ```math
 X[k]      = E[k] + W^k · O[k]
@@ -236,8 +240,9 @@ where $W = e^{-i 2π / N}$   (the "twiddle factor")
 - $E[k] = DFT$ of even-indexed samples
 - $O[k] = DFT$ of odd-indexed samples
 
-Applying this split recursively (for $N = 2^m$) reduces the total operation count from
-$O(N^2)$ to $*O(N log₂ N)*$. For $N = 1 048 576 (2²⁰)$, the speedup is roughly $52 000×$.
+Applying this split recursively (for $N = 2^m$) reduces the total operation
+count from $O(N^2)$ to $*O(N log₂ N)*$. For $N = 1 048 576 (2²⁰)$,
+the speedup is roughly $52 000×$.
 
 *Complexity comparison:*
 
@@ -256,9 +261,10 @@ This dramatic improvement is what makes real-time frequency analysis practical.
 
 #### 3.1 Convolution
 
-Convolution is the mathematical operation that describes how a filter transforms a signal.
-Intuitively, it is a *weighted, sliding average*: the filter kernel $h$ slides across the
-signal $x$, at each position computing a dot product of the kernel with the local signal values.
+Convolution is the mathematical operation that describes how a filter
+transforms a signal. Intuitively, it is a *weighted, sliding average*:
+the filter kernel $h$ slides across the signal $x$, at each position
+computing a dot product of the kernel with the local signal values.
 
 The discrete convolution of $x$ and $h$ is:
 
@@ -272,18 +278,25 @@ For a finite-length kernel of length $M$, this becomes:
 y[n] = \sigma_{k=0}^{M-1}  h[k] · x[n - k]
 ```
 
-Read this as: "to compute the output at position $n$, take the last $M$ input samples,
-weight each one by the corresponding filter coefficient, and sum the results."
+Read this as: "to compute the output at position $n$, take the last
+$M$ input samples, weight each one by the corresponding filter
+coefficient, and sum the results."
 
 *Why convolution matters for filtering:*
-- A low-pass filter has a kernel whose coefficients are all positive and roughly
-  equal--it computes a *running average*, smoothing out rapid fluctuations.
-- A high-pass filter has a kernel with positive and negative coefficients that sum
-  to zero--it subtracts a smoothed version of the signal from itself, emphasising
-  edges and rapid changes.
-- The Convolution Theorem tells us that convolution in the time domain equals
-  multiplication in the frequency domain, so filter design is often done in the
-  frequency domain and converted back via the inverse Fourier Transform.
+
+- A low-pass filter has a kernel whose coefficients are all positive
+  and roughly equal--it computes a *running average*, smoothing out
+  rapid fluctuations.
+
+- A high-pass filter has a kernel with positive and negative coefficients
+  that sum to zero--it subtracts a smoothed version of the signal from
+  itself, emphasising edges and rapid changes.
+
+- The Convolution Theorem tells us that convolution in the time
+  domain equals multiplication in the frequency domain, so filter
+  design is often done in the frequency domain and converted back
+  via the inverse Fourier Transform.
+
 
 *See the folder [convolution](./conv/).*
 
@@ -297,7 +310,7 @@ the frequency spectrum they pass.
 
 ##### 3.2.1 Low-Pass Filter
 
-A low-pass filter (LPF) passes frequencies *below* a cutoff frequency f_c and
+A low-pass filter (LPF) passes frequencies *below* a cutoff frequency $f_c$ and
 attenuates frequencies above it. The result in the time domain is a smoothing
 effect: rapid, high-frequency oscillations are suppressed while slow, low-frequency
 trends are preserved.
@@ -308,13 +321,14 @@ anti-aliasing before downsampling, blurring in image processing.
 
 ##### 3.2.2 High-Pass Filter
 
-A high-pass filter (HPF) passes frequencies *above* $f_c$ and attenuates those below it.
-It removes slow-varying trends and baseline drift, leaving only rapid changes. Mathematically,
-a high-pass filter is the complement of a low-pass: $HPF = 1 - LPF$.
+A high-pass filter (HPF) passes frequencies *above* $f_c$ and attenuates those
+below it. It removes slow-varying trends and baseline drift, leaving only rapid
+changes. Mathematically, a high-pass filter is the complement of a low-pass:
+$HPF = 1 - LPF$.
 
-*Typical applications:* removing DC offset from audio or sensor data, detecting edges in images
-(where edges correspond to high spatial frequencies), removing low-frequency hum (50/60 Hz mains
-interference) from biomedical signals.
+*Typical applications:* removing DC offset from audio or sensor data, detecting
+edges in images (where edges correspond to high spatial frequencies), removing
+low-frequency hum (50/60 Hz mains interference) from biomedical signals.
 
 
 ##### 3.2.3 Band-Pass Filter
@@ -383,7 +397,8 @@ Reading an FFT spectrum is a skill. Here is what to look for.
 
 Audio signals are time-varying pressure waves, digitised at rates typically
 between 8 kHz (telephone quality) and 48 kHz (professional audio).
-Signal processing techniques are central to nearly every stage of an audio pipeline.
+Signal processing techniques are central to nearly every stage of
+an audio pipeline.
 
 *A common task: removing broadband noise from a recording.*
 
@@ -400,7 +415,7 @@ but spectral subtraction is a good introduction to the idea.
 
 #### 4.4 Image Processing (2D Signals)
 
-An image is a two-dimensional discrete signal: the value at position (x, y) is the
+An image is a two-dimensional discrete signal: the value at position `(x, y)` is the
 pixel intensity (or a colour triplet). All the concepts developed for 1-D signals
 extend naturally to 2-D.
 
@@ -421,4 +436,142 @@ Different kernels produce different effects. Three important ones:
 *Blur, sharpen, and edge detection on an image in folder [process](./process/).*
 
 
+
+
+### 5. Advanced Topics
+
+
+#### 5.1 Windowing and Spectral Leakage
+
+When we compute the DFT of a finite block of N samples, we are implicitly assuming the
+signal is periodic with period N. If the signal is not exactly periodic within the
+block--which is almost always the case for real data--the discontinuity at the block
+boundaries causes energy to *leak* from the true frequency bins into neighbouring bins.
+This is called *spectral leakage*.
+
+*Illustration.* Take a 1-second sine wave at exactly 50 Hz sampled at 1000 Hz: the FFT
+produces a single clean spike. Now take the same wave at 50.3 Hz: the signal no longer
+completes an integer number of cycles in 1 second, and the FFT shows a smeared blob
+rather than a sharp spike--energy has leaked into adjacent bins.
+
+*Window functions* reduce leakage by tapering the signal to zero at both ends of the block.
+This eliminates the artificial discontinuity at the cost of slightly widening the spectral
+peak (reduced frequency resolution). The choice of window is a trade-off between:
+
+- *Main-lobe width*--how narrow/sharp the spectral peak is (frequency resolution)
+- *Side-lobe level*--how much energy leaks into distant bins (leakage suppression)
+
+*Common windows:*
+
+| Window       | Main-lobe                   | Peak side-lobe        | Best for ..                             |
+|--------------|-----------------------------|-----------------------|-----------------------------------------|
+| Rectangular  | Narrowest                   | -13 dB (high leakage) | Signals with exact-bin frequencies      |
+| Hann         | Wider                       | -31 dB                | General-purpose audio/vibration         |
+| Hamming      | Slightly narrower than Hann | -41 dB                | Speech processing                       |
+| Blackman     | Widest                      | -57 dB                | Detecting weak signals near strong ones |
+| Flat-top     | Widest                      | -93 dB                | Precise amplitude measurement           |
+
+*Leakage and window comparison in folder [window](./window/).*
+
+*Rule of thumb:* use a Hann window as the default for audio and vibration analysis.
+Use a flat-top window when you need to measure amplitudes precisely. Use rectangular
+only when you know the signal frequency aligns exactly with a DFT bin.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 6. Projects
+
+#### 6.1 Real-Time Spectrum Analyser
+
+This project uses the Web Audio API to capture microphone input in the browser,
+run the browser's built-in FFT, and display a live frequency spectrum.
+No external libraries needed.
+
+File: [spectrum.html](./projects/spectrum.html)
+
+
+
+
+#### 6.2 Aliasing Demonstration
+
+This self-contained script generates a publication-quality figure showing
+the effect of aliasing at three sampling rates, and computes the alias
+frequency analytically.
+
+File [alias.py](./projects/alias.py)
+
+
+
+
+#### 6.3 Image Filter Toolkit
+
+A reusable toolkit for applying common 2-D signal processing kernels to greyscale images.
+
+File: [toolkit.py](./projects/toolkit.py)
+
+
+
+
+#### 6.4 FFT Benchmark: Naive DFT vs FFT
+
+This project benchmarks the naive $O(N^2)$ DFT against `numpy.fft`
+(which uses a compiled FFT library) and plots the measured times
+alongside the theoretical complexity curves.
+
+File: [benchmark.py](./projects/benchmark.py)
+
+
+
+
+### Conclusion
+
+This section introduced signal processing from first principles
+through to practical implementation:
+
+1. *Signals* are information-carrying quantities that vary over time,
+   space, or any other independent variable. Digital systems work with
+   *discrete* samples of underlying *continuous* physical signals.
+
+2. *Sampling* converts a continuous signal to a discrete one. The
+   Nyquist-Shannon theorem sets the minimum sampling rate at twice
+   the highest frequency component. Violating this limit causes
+   *aliasing*--an irreversible corruption where high-frequency
+   content appears as phantom low-frequency artefacts.
+
+3. *The Fourier Transform* decomposes a signal into its constituent
+   sinusoids, revealing the frequency content invisible in the time
+   domain. The DFT is the discrete version; the FFT computes it in
+   $O(N log N)$ time, making real-time frequency analysis practical.
+
+4. *Convolution* is the operation underlying all linear filtering.
+   Choosing different kernels produces smoothing (low-pass), sharpening
+   (high-pass), edge detection, and more. The convolution theorem
+   makes frequency-domain filtering efficient.
+
+5. *FIR filters* are unconditionally stable and can achieve exact
+   linear phase. *IIR filters* are more efficient but introduce phase
+   distortion and require care to ensure stability--checked via pole
+   location in the z-plane.
+
+6. *Windowing* reduces spectral leakage when analysing finite-length
+signals, at the cost of slightly reduced frequency resolution.
+
+The projects in Section 6 tie these ideas together into runnable programs:
+a live spectrum analyser in the browser, an aliasing visualiser, an image
+filter toolkit, and a complexity benchmark. Each can be extended--add
+a waterfall spectrogram to the spectrum analyser, experiment with
+non-uniform sampling, or implement a Cooley-Tukey FFT from scratch to
+see exactly how the $O(N log N)$ recursion works.
 
