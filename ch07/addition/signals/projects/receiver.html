@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Acoustic OFDM — Receiver</title>
+  <style>
+    body { font-family: monospace; max-width: 720px; margin: 40px auto; background: #111; color: #0f0; }
+    h1   { color: #0ff; margin-bottom: 4px; }
+    p    { color: #888; margin: 4px 0 16px; }
+    canvas { border: 1px solid #333; display: block; }
+    .tone-grid { display: flex; gap: 8px; margin: 10px 0; }
+    .tone {
+      width: 80px; height: 60px;
+      border: 2px solid #0f0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: 4px; font-size: 11px; text-align: center;
+      transition: background 0.04s;
+    }
+    .tone .bit  { font-size: 18px; font-weight: bold; }
+    .tone.on    { background: #0f0; color: #000; border-color: #0f0; }
+    .tone.off   { background: #111; color: #0f0; }
+    button {
+      background: #0f0; color: #000;
+      border: none; padding: 10px 20px;
+      cursor: pointer; font-family: monospace; font-size: 14px; margin: 4px;
+    }
+    button.stop { background: #f44; color: #fff; }
+    label  { font-size: 12px; color: #888; }
+    input[type=range] { width: 180px; vertical-align: middle; accent-color: #0ff; }
+    #stateBox {
+      font-size: 16px; font-weight: bold;
+      color: #ff0; margin: 12px 0 4px;
+    }
+    #decoded {
+      font-size: 28px; letter-spacing: 2px; color: #0ff;
+      min-height: 48px; padding: 8px 12px;
+      border: 1px solid #0ff; margin: 8px 0;
+    }
+    #log {
+      margin-top: 8px; height: 140px; overflow-y: auto;
+      border: 1px solid #333; padding: 8px; font-size: 11px; color: #888;
+    }
+    .section { margin-top: 20px; }
+    h3 { color: #0f0; margin-bottom: 6px; }
+    .params { font-size: 12px; color: #888; margin-bottom: 8px; }
+    .params span { color: #0ff; }
+  </style>
+</head>
+<body>
+
+<h1>Acoustic OFDM — Receiver</h1>
+<p>Listens via microphone, runs FFT, decodes tones back into text.</p>
+
+<div class="params">
+  Subcarriers: <span>800 · 1000 · 1200 · 1400 · 1600 · 1800 Hz</span> &nbsp;|&nbsp;
+  Spacing: <span>200 Hz</span> &nbsp;|&nbsp;
+  Symbol: <span>250 ms</span> &nbsp;|&nbsp;
+  Bits/symbol: <span>6</span>
+</div>
+
+<button onclick="startReceiver()">&#9654; Start Microphone</button>
+<button class="stop" onclick="stopReceiver()">&#9632; Stop</button>
+
+<div style="margin-top: 12px;">
+  <label>
+    Detection threshold:&nbsp;
+    <input type="range" id="threshold" min="10" max="230" value="90" oninput="updateThreshold(this)">
+    &nbsp;<span id="threshVal">90</span>&nbsp;/ 255
+    &nbsp;&nbsp;<span style="color:#ff0">&larr; yellow line on spectrum</span>
+  </label>
+</div>
+
+<div class="section">
+  <h3>Live spectrum (0–3000 Hz) &mdash; cyan bars = target subcarriers</h3>
+  <canvas id="spectrum" width="700" height="130"></canvas>
+</div>
+
+<div class="section">
+  <h3>Detected tones (current symbol)</h3>
+  <div class="tone-grid" id="toneGrid"></div>
+</div>
+
+<div id="stateBox">State: WAITING FOR MICROPHONE</div>
+
+<div class="section">
+  <h3>Decoded message</h3>
+  <div id="decoded">&nbsp;</div>
+</div>
+
+<div class="section">
+  <h3>Receiver log</h3>
+  <div id="log"></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// CONFIGURATION  (must match sender.html exactly)
+// ─────────────────────────────────────────────────────────────────────────────
+const FREQS             = [800, 1000, 1200, 1400, 1600, 1800];
+const SYMBOL_MS         = 250;
+const PREAMBLE_NEED_MS  = 300;  // how long all tones must be on to confirm preamble
+const GAP_NEED_MS       = 100;  // how long silence must last to confirm gap ended
+
+// Same charset as sender — index → character
+const CHARSET = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!?';
+
+function bitsToIndex(bits) {
+  // MSB first (matches sender's indexToBits)
+  return bits.reduce((acc, b, i) => acc | (b << (5 - i)), 0);
+}
+
+function indexToChar(idx) {
+  if (idx === 63) return null;       // end marker (all-ones)
+  return CHARSET[idx] ?? '?';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIO + FFT SETUP
+// ─────────────────────────────────────────────────────────────────────────────
+const FFT_SIZE = 8192;  // large → ~5.4 Hz resolution per bin at 44100 Hz
+
+let audioCtx, analyser, dataArray;
+let freqBins = [];      // which FFT bin each subcarrier lands on
+let sampleRate;
+let animId;
+let threshold = 90;
+
+function updateThreshold(el) {
+  threshold = parseInt(el.value);
+  document.getElementById('threshVal').textContent = threshold;
+}
+
+async function startReceiver() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    audioCtx   = new AudioContext();
+    sampleRate  = audioCtx.sampleRate;
+
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = FFT_SIZE;
+    analyser.smoothingTimeConstant = 0.25;  // low smoothing = faster response
+
+    const source = audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
+
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    // Map each target frequency to its nearest FFT bin
+    const binWidth = sampleRate / FFT_SIZE;
+    freqBins = FREQS.map(f => Math.round(f / binWidth));
+
+    log(`Sample rate: ${sampleRate} Hz`);
+    log(`FFT bins: ${analyser.frequencyBinCount}, resolution: ${binWidth.toFixed(1)} Hz/bin`);
+    log('Freq → bin: ' + FREQS.map((f, i) => `${f}Hz→${freqBins[i]}`).join(', '));
+
+    startStateMachine();
+    drawLoop();
+  } catch (e) {
+    log('Microphone error: ' + e.message);
+  }
+}
+
+function stopReceiver() {
+  if (animId) cancelAnimationFrame(animId);
+  if (audioCtx) audioCtx.close();
+  setState('STOPPED');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FREQUENCY DETECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Average ±2 bins around the target to handle slight microphone/speaker pitch drift
+function getBinEnergy(bin) {
+  let sum = 0;
+  for (let d = -2; d <= 2; d++) {
+    const idx = bin + d;
+    if (idx >= 0 && idx < dataArray.length) sum += dataArray[idx];
+  }
+  return sum / 5;
+}
+
+// Returns a 6-element bit array for the current FFT frame
+function getCurrentBits() {
+  analyser.getByteFrequencyData(dataArray);
+  return freqBins.map(bin => getBinEnergy(bin) > threshold ? 1 : 0);
+}
+
+function allOn(bits)  { return bits.every(b => b === 1); }
+function allOff(bits) { return bits.every(b => b === 0); }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE MACHINE
+// ─────────────────────────────────────────────────────────────────────────────
+//
+//  WAITING ──(all 6 tones on ≥ PREAMBLE_NEED_MS)──► PREAMBLE
+//  PREAMBLE ──(all tones off ≥ GAP_NEED_MS)────────► READING
+//  READING ──(symbol by symbol, setTimeout)─────────► WAITING  (on end marker)
+//
+const ST = { WAITING: 0, PREAMBLE: 1, READING: 2, STOPPED: 3 };
+let state = ST.STOPPED;
+
+let preambleStart = null;
+let gapStart      = null;
+let decodedChars  = [];
+
+function setState(name) {
+  state = ST[name] ?? ST.STOPPED;
+  document.getElementById('stateBox').textContent = 'State: ' + name;
+}
+
+const logEl = document.getElementById('log');
+function log(msg) {
+  logEl.innerHTML += msg + '<br>';
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+// Poll the FFT at ~33 Hz to drive the state machine
+function startStateMachine() {
+  setState('WAITING');
+  setInterval(tick, 30);
+}
+
+function tick() {
+  if (state === ST.STOPPED || state === ST.READING || !analyser) return;
+
+  const bits = getCurrentBits();
+  updateGrid(bits);
+
+  // ── WAITING: scan for preamble ──────────────────────────────────────────
+  if (state === ST.WAITING) {
+    if (allOn(bits)) {
+      if (!preambleStart) {
+        preambleStart = Date.now();
+      } else if (Date.now() - preambleStart >= PREAMBLE_NEED_MS) {
+        log('✓ Preamble confirmed — waiting for gap...');
+        setState('PREAMBLE');
+        gapStart = null;
+      }
+    } else {
+      preambleStart = null;
+    }
+    return;
+  }
+
+  // ── PREAMBLE: wait for silence (gap) ────────────────────────────────────
+  if (state === ST.PREAMBLE) {
+    if (allOff(bits)) {
+      if (!gapStart) {
+        gapStart = Date.now();
+      } else if (Date.now() - gapStart >= GAP_NEED_MS) {
+        log('✓ Gap confirmed — reading symbols...');
+        decodedChars = [];
+        document.getElementById('decoded').textContent = '';
+        setState('READING');
+        // Wait half a symbol before the first read so we sample near the middle
+        scheduleRead(SYMBOL_MS / 2);
+      }
+    } else {
+      // Tones came back — still in preamble
+      gapStart = null;
+    }
+    return;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SYMBOL READING  (runs independently of tick() via setTimeout)
+// ─────────────────────────────────────────────────────────────────────────────
+function scheduleRead(delayMs) {
+  setTimeout(readSymbol, delayMs);
+}
+
+function readSymbol() {
+  if (state !== ST.READING) return;
+
+  const bits  = getCurrentBits();
+  updateGrid(bits);
+  const idx   = bitsToIndex(bits);
+  const char  = indexToChar(idx);
+
+  log(`  bits=[${bits.join('')}]  idx=${String(idx).padStart(2)}  → ${char === null ? '(END)' : `'${char}'`}`);
+
+  if (char === null) {
+    // End marker received
+    log('✓ End marker — message complete');
+    setState('WAITING');
+    preambleStart = null;
+    gapStart      = null;
+  } else {
+    decodedChars.push(char);
+    document.getElementById('decoded').textContent = decodedChars.join('');
+    scheduleRead(SYMBOL_MS);  // schedule next symbol
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SPECTRUM VISUALIZER
+// ─────────────────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('spectrum');
+const ctx2d  = canvas.getContext('2d');
+
+function drawLoop() {
+  animId = requestAnimationFrame(drawLoop);
+  if (!analyser) return;
+
+  analyser.getByteFrequencyData(dataArray);
+
+  const W = canvas.width, H = canvas.height;
+  ctx2d.fillStyle = '#111';
+  ctx2d.fillRect(0, 0, W, H);
+
+  // Only show 0–3000 Hz for clarity
+  const binWidth  = sampleRate / FFT_SIZE;
+  const maxBin    = Math.round(3000 / binWidth);
+  const barPixels = W / maxBin;
+
+  for (let i = 0; i < maxBin; i++) {
+    const mag  = dataArray[i];
+    const barH = (mag / 255) * H;
+
+    // Highlight bins near a target frequency in cyan
+    const isTarget = freqBins.some(b => Math.abs(b - i) <= 2);
+    ctx2d.fillStyle = isTarget
+      ? (mag > threshold ? '#0ff' : '#057')   // bright cyan if above threshold
+      : '#0a0';
+    ctx2d.fillRect(i * barPixels, H - barH, Math.max(barPixels - 0.5, 1), barH);
+  }
+
+  // Yellow threshold line
+  const threshY = H - (threshold / 255) * H;
+  ctx2d.strokeStyle = '#ff0';
+  ctx2d.setLineDash([4, 4]);
+  ctx2d.lineWidth = 1;
+  ctx2d.beginPath();
+  ctx2d.moveTo(0, threshY);
+  ctx2d.lineTo(W, threshY);
+  ctx2d.stroke();
+  ctx2d.setLineDash([]);
+
+  // Label each target frequency on the spectrum
+  ctx2d.fillStyle = '#fff';
+  ctx2d.font = '10px monospace';
+  FREQS.forEach((f, i) => {
+    const x = (freqBins[i] / maxBin) * W;
+    ctx2d.fillText(f, x - 14, H - 4);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TONE GRID UI
+// ─────────────────────────────────────────────────────────────────────────────
+const grid = document.getElementById('toneGrid');
+FREQS.forEach(f => {
+  const div = document.createElement('div');
+  div.className = 'tone off';
+  div.innerHTML = `<span class="bit" id="rbit-${f}">0</span><span>${f} Hz</span>`;
+  div.id = 'rtone-' + f;
+  grid.appendChild(div);
+});
+
+function updateGrid(bits) {
+  FREQS.forEach((f, i) => {
+    document.getElementById('rtone-' + f).className = 'tone ' + (bits[i] ? 'on' : 'off');
+    document.getElementById('rbit-' + f).textContent = bits[i];
+  });
+}
+</script>
+</body>
+</html>
