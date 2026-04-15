@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Real-Time Spectrum Analyser</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #111;
+      color: #eee;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    h1 { margin-bottom: 1rem; font-size: 1.4rem; letter-spacing: 0.1em; }
+    canvas {
+      background: #1a1a2e;
+      border: 1px solid #444;
+      width: 800px;
+      height: 300px;
+    }
+    #controls { margin: 1rem 0; display: flex; gap: 1rem; align-items: center; }
+    button {
+      padding: 0.5rem 1.5rem;
+      background: #0077ff;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    button:hover { background: #0055cc; }
+    label { font-size: 0.9rem; }
+    select { background: #222; color: #eee; border: 1px solid #555; padding: 0.3rem; }
+  </style>
+</head>
+<body>
+  <h1>Real-Time Spectrum Analyser</h1>
+  <div id="controls">
+    <button id="startBtn">Start Microphone</button>
+    <label>FFT size:
+      <select id="fftSize">
+        <option value="512">512</option>
+        <option value="1024">1024</option>
+        <option value="2048" selected>2048</option>
+        <option value="4096">4096</option>
+      </select>
+    </label>
+    <label>Mode:
+      <select id="mode">
+        <option value="bars">Bars</option>
+        <option value="line">Line</option>
+      </select>
+    </label>
+  </div>
+  <canvas id="canvas" width="800" height="300"></canvas>
+  <p id="status" style="margin-top:0.5rem; color:#aaa;">Press Start to begin.</p>
+
+  <script>
+    const canvas  = document.getElementById('canvas');
+    const ctx     = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    let   animId  = null;
+    let   analyser, dataArray;
+
+    async function start() {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source   = audioCtx.createMediaStreamSource(stream);
+      analyser       = audioCtx.createAnalyser();
+
+      analyser.fftSize         = parseInt(document.getElementById('fftSize').value);
+      analyser.smoothingTimeConstant = 0.8;
+      source.connect(analyser);
+
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      document.getElementById('status').textContent =
+        `Listening--${audioCtx.sampleRate / 1000} kHz, ` +
+        `${analyser.frequencyBinCount} frequency bins`;
+
+      draw();
+    }
+
+    function draw() {
+      animId = requestAnimationFrame(draw);
+      analyser.getByteFrequencyData(dataArray);
+
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, W, H);
+
+      // Grid lines at -10, -20, -40, -60 dB
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth   = 1;
+      [0.25, 0.5, 0.75, 1.0].forEach(frac => {
+        const y = frac * H;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      });
+
+      const mode = document.getElementById('mode').value;
+      const bins = dataArray.length;
+      const barW = W / bins;
+
+      if (mode === 'bars') {
+        for (let i = 0; i < bins; i++) {
+          const barH   = (dataArray[i] / 255) * H;
+          const hue    = (i / bins) * 240;              // blue -> violet
+          ctx.fillStyle = `hsl(${hue}, 80%, 55%)`;
+          ctx.fillRect(i * barW, H - barH, barW - 0.5, barH);
+        }
+      } else {
+        ctx.strokeStyle = '#0af';
+        ctx.lineWidth   = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < bins; i++) {
+          const x = i * barW;
+          const y = H - (dataArray[i] / 255) * H;
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      // Frequency axis labels
+      ctx.fillStyle = '#888';
+      ctx.font      = '10px Courier New';
+      const sr     = analyser.context.sampleRate;
+      const step   = Math.floor(bins / 6);
+      for (let i = 0; i <= bins; i += step) {
+        const freq = (i / bins) * (sr / 2);
+        const x    = (i / bins) * W;
+        const label = freq >= 1000
+          ? `${(freq / 1000).toFixed(1)}k`
+          : `${Math.round(freq)}`;
+        ctx.fillText(label, x + 2, H - 4);
+      }
+    }
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      if (animId) { cancelAnimationFrame(animId); animId = null; }
+      start().catch(err => {
+        document.getElementById('status').textContent =
+          'Microphone access denied: ' + err.message;
+      });
+    });
+
+    document.getElementById('fftSize').addEventListener('change', () => {
+      if (analyser) analyser.fftSize = parseInt(document.getElementById('fftSize').value);
+    });
+  </script>
+</body>
+</html>
