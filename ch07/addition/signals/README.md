@@ -40,7 +40,7 @@ only for a countably infinite (or finite) sequence of moments.
 | Domain     | Signal                   | Independent variable |
 |------------|--------------------------|----------------------|
 | Audio      | Pressure wave / voltage  | Time                 |
-| Image      | Pixel intensity          | Space (x, y)         |
+| Image      | Pixel intensity          | Space `(x, y)`       |
 | Radar      | Reflected pulse envelope | Time / range         |
 | Finance    | Stock price              | Time                 |
 | Biology    | Neuron firing rate       | Time                 |
@@ -90,8 +90,8 @@ in a few kilobytes of RAM.
 
 #### 2.1 Continuous vs Discrete Signals
 
-A continuous signal `x(t)` assigns a real (or complex) number to every real-valued
-time `t`. This is the natural model for physical phenomena. We can differentiate it,
+A continuous signal $x(t)$ assigns a real (or complex) number to every real-valued
+time $t$. This is the natural model for physical phenomena. We can differentiate it,
 integrate it, and reason about its behaviour at any instant.
 
 A discrete signal $x[n]$ assigns a value only at integer indices $n ∈ ℤ$.
@@ -99,7 +99,6 @@ It arises whenever we *sample* a continuous signal--measuring its value
 at regular intervals.
 
 *Notation summary:*
-
 - Continuous signal:  $x(t)$,   $t ∈ ℝ$
 - Discrete signal:    $x[n]$,   $n ∈ ℤ$
 - Sampling period:    $T$  (seconds between samples)
@@ -107,7 +106,6 @@ at regular intervals.
 
 
 The relationship between the two is:
-
 ```math
 x[n] = x(n · T) = x(n / f_s)
 ```
@@ -127,7 +125,7 @@ next section--is how fast we must sample to avoid losing information.
 The *Nyquist-Shannon sampling theorem* gives the minimum sampling rate required
 to perfectly reconstruct a band-limited continuous signal from its discrete samples.
 
-> A continuous signal whose highest frequency component is $$f_max$$ can be perfectly
+> A continuous signal whose highest frequency component is $$f_m$$ can be perfectly
 > reconstructed from discrete samples taken at a rate $$f_s$$, provided: $f_s ≥ 2 · f_m$
 
 The frequency $f_s / 2$ is called the *Nyquist frequency* (or folding frequency).
@@ -170,10 +168,10 @@ in a signal and in what proportion, turning a time-domain waveform into a
 ear is a messy, oscillating curve. Yet your auditory system immediately resolves
 it into individual notes--A, C, E--each at its own frequency and loudness.
 Fourier analysis is the mathematical version of that decomposition: it asks,
-"for each possible frequency f, how much of that frequency is present in
+"for each possible frequency $f$, how much of that frequency is present in
 the signal?"
 
-*The Fourier Transform* of a continuous signal `x(t)` is defined as:
+*The Fourier Transform* of a continuous signal $x(t)$ is defined as:
 
 ```math
 X(f) = ∫_{-∞}^{+∞}  x(t) · e^{-i 2π f t}  dt
@@ -184,7 +182,6 @@ is the *amplitude spectrum* (how strong each frequency is), and its argument
 $∠X(f)$ is the *phase spectrum* (the phase offset of each sinusoidal component).
 
 The *inverse Fourier Transform* recovers the time-domain signal:
-
 ```math
 x(t) = ∫_{-∞}^{+∞}  X(f) · e^{+i 2π f t}  df
 ```
