@@ -485,7 +485,7 @@ for analysing and designing digital filters.
 
 *Definition:*
 ```math
-X(z) = sigma_{n=-∞}^{+∞}  x[n] · z^{-n}       z ∈ ℂ
+X(z) = \sigma_{n=-∞}^{+∞}  x[n] · z^{-n}       z ∈ ℂ
 ```
 
 Evaluating on the unit circle $z = e^{i2πf/fs}$ recovers the DTFT.
