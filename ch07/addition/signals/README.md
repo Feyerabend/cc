@@ -412,7 +412,6 @@ but spectral subtraction is a good introduction to the idea.
 
 
 
-
 #### 4.4 Image Processing (2D Signals)
 
 An image is a two-dimensional discrete signal: the value at position `(x, y)` is the
@@ -437,9 +436,7 @@ Different kernels produce different effects. Three important ones:
 
 
 
-
 ### 5. Advanced Topics
-
 
 #### 5.1 Windowing and Spectral Leakage
 
@@ -479,16 +476,85 @@ only when you know the signal frequency aligns exactly with a DFT bin.
 
 
 
+#### 5.2 The Z-Transform
+
+The Z-Transform is a generalisation of the Discrete-Time Fourier Transform (DTFT)
+to the complex plane. Where the DTFT evaluates on the unit circle $|z| = 1$, the
+Z-Transform evaluates everywhere in the z-plane. This makes it the principal tool
+for analysing and designing digital filters.
+
+*Definition:*
+```math
+X(z) = sigma_{n=-∞}^{+∞}  x[n] · z^{-n}       z ∈ ℂ
+```
+
+Evaluating on the unit circle $z = e^{i2πf/fs}$ recovers the DTFT.
+
+*Why the z-plane matters:*
+
+The *poles* and *zeros* of a filter's transfer function H(z) completely determine its behaviour:
+- A *zero* at $z = z₀$ means the filter completely cancels that frequency.
+- A *pole* at $z = p₀$ means the filter amplifies frequencies near the angle of $p₀$.
+- For a stable filter, all poles must lie *strictly inside* the unit circle.
+
+*Transfer function H(z) and difference equation.*
+
+A causal linear filter is described by a rational transfer function:
+
+```math
+H(z) = B(z) / A(z) = (b₀ + b₁z⁻¹ + ... + bₘz⁻ᴹ) / (1 + a₁z⁻¹ + ... + aₙz⁻ᴺ)
+```
+
+This corresponds directly to the difference equation:
+
+```math
+y[n] = b₀x[n] + b₁x[n-1] + ... - a₁y[n-1] - a₂y[n-2] - ...
+```
+
+*Pole-zero plot and filter stability in folder [z](./z/).*
 
 
 
+#### 5.3 FIR vs IIR Filters
 
+Digital filters fall into two fundamental families.
 
+*FIR (Finite Impulse Response)* filters have only feedforward paths--the output
+depends only on current and past *inputs*, never on past outputs. Their impulse
+response is finite (it dies out in exactly M steps for an M-tap filter).
 
+```math
+y[n] = \sigma_{k=0}^{M-1}  b_k · x[n - k]
+```
 
+*IIR (Infinite Impulse Response)* filters have feedback paths--the output depends on
+past *outputs* as well as past inputs. Their impulse response is theoretically infinite,
+though it decays exponentially for a stable filter.
 
+```math
+y[n] = \sigma_{k=0}^{M} b_k · x[n-k]  -  \sigma_{k=1}^{N} a_k · y[n-k]
+```
 
+*Comparison:*
 
+| Property              | FIR                             | IIR                                               |
+|-----------------------|---------------------------------|---------------------------------------------------|
+| Stability             | Always stable (no feedback)     | Possible instability if poles outside unit circle |
+| Phase response        | Exactly linear phase achievable | Non-linear phase (introduces distortion)          |
+| Computational cost    | Higher (needs many taps)        | Lower (fewer coefficients for same sharpness)     |
+| Frequency selectivity | Moderate per tap                | High (matches analogue filter prototypes)         |
+| Typical design method | Windowed sinc, Parks-McClellan  | Butterworth, Chebyshev, Elliptic                  |
+| Suited for            | Audio (phase-critical), sensors | Communications, real-time systems                 |
+
+*Comparing FIR and IIR for the same specification in folder [firiir](./firiir/).*
+
+*When to choose FIR:* audio processing, biomedical signal analysis,
+any application where phase linearity matters (phase distortion can
+cause waveform dispersion or ear-fatiguing artefacts in audio).
+
+*When to choose IIR:* real-time systems with tight computational budgets,
+communications receivers, control loops--anywhere the non-linear phase
+is acceptable and efficiency is paramount.
 
 
 ### 6. Projects
