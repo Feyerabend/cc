@@ -23,11 +23,11 @@ A gyroscope in a phone reports angular velocity moment by moment.
 
 *Spatial signals* vary across position rather than (or in addition to) time. A digital photograph
 is a two-dimensional spatial signal: each pixel encodes light intensity (and colour) at a particular
-`(x, y)` location. A seismic survey maps reflected sound energy across a field of sensors buried
+$(x, y)$ location. A seismic survey maps reflected sound energy across a field of sensors buried
 in the ground.
 
 *Continuous signals* are defined at every instant, with no gaps. Mathematically we write $x(t)$
-to mean the signal value at time t, where t is a real number. Physical signals--sound, light,
+to mean the signal value at time $t$, where $t$ is a real number. Physical signals--sound, light,
 temperature--are continuous.
 
 *Discrete signals* are defined only at specific, regularly spaced instants. We write $x[n]$
@@ -159,10 +159,15 @@ f_s >= 2 · f_m
 
 The central insight of Fourier analysis is that *any* periodic signal--and,
 with suitable extension, any signal with finite energy--can be expressed as
-a sum of sinusoids of different frequencies, amplitudes, and phases. This is
-not just a mathematical curiosity; it reveals which frequencies are present
-in a signal and in what proportion, turning a time-domain waveform into a
-*frequency-domain spectrum*.
+a sum of sinusoids[^sinusoids] of different frequencies, amplitudes, and
+phases. This is not just a mathematical curiosity; it reveals which frequencies
+are present in a signal and in what proportion, turning a time-domain waveform
+into a *frequency-domain spectrum*.
+
+[sinusoids]: A sinusoid is a mathematical curve—specifically the sine ($\sin$)
+or cosine ($\cos$) function--that describes a continuous, smooth oscillation.
+In signal processing, sinusoids are the fundamental "building blocks" of all
+complex signals.
 
 *Intuition.* Imagine a chord played on a piano. The pressure waveform at your
 ear is a messy, oscillating curve. Yet your auditory system immediately resolves
