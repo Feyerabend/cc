@@ -164,8 +164,8 @@ phases. This is not just a mathematical curiosity; it reveals which frequencies
 are present in a signal and in what proportion, turning a time-domain waveform
 into a *frequency-domain spectrum*.
 
-[^sinusoids]: A sinusoid is a mathematical curve—specifically the sine $ \sin $
-or cosine $ \cos $ function--that describes a continuous, smooth oscillation.
+[^sinusoids]: A sinusoid is a mathematical curve—specifically the sine
+or cosine function--that describes a continuous, smooth oscillation.
 In signal processing, sinusoids are the fundamental "building blocks" of all
 complex signals.
 
