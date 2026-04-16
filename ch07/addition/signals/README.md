@@ -26,12 +26,12 @@ is a two-dimensional spatial signal: each pixel encodes light intensity (and col
 `(x, y)` location. A seismic survey maps reflected sound energy across a field of sensors buried
 in the ground.
 
-*Continuous signals* are defined at every instant, with no gaps. Mathematically we write `x(t)`
+*Continuous signals* are defined at every instant, with no gaps. Mathematically we write $x(t)$
 to mean the signal value at time t, where t is a real number. Physical signals--sound, light,
 temperature--are continuous.
 
-*Discrete signals* are defined only at specific, regularly spaced instants. We write `x[n]`
-to mean the value at sample index `n`, where `n` is an integer. Every digital system works
+*Discrete signals* are defined only at specific, regularly spaced instants. We write $x[n]$
+to mean the value at sample index $n$, where $n$ is an integer. Every digital system works
 with discrete signals: computers cannot store a value for every real-numbered instant,
 only for a countably infinite (or finite) sequence of moments.
 
@@ -149,7 +149,7 @@ front end.
 
 Formula:
 ```math
-f_s >= 2 * f_m
+f_s >= 2 · f_m
 ```
 
 *See the [sampling](./sampling/) folder.*
@@ -485,7 +485,7 @@ for analysing and designing digital filters.
 
 *Definition:*
 ```math
-X(z) = sigma_{n=-∞}^{+∞}  x[n] · z^{-n}       z ∈ ℂ
+X(z) = \sigma_{n=-∞}^{+∞}  x[n] · z^{-n}       z ∈ ℂ
 ```
 
 Evaluating on the unit circle $z = e^{i2πf/fs}$ recovers the DTFT.
