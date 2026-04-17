@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FSK Modem — Sender</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0d0d0d;
+      color: #33ff33;
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    h1   { color: #00ffcc; margin-bottom: 2px; font-size: 1.3rem; letter-spacing: .08em; }
+    .sub { color: #555; font-size: 0.82rem; margin-bottom: 18px; }
+    .params { font-size: 11px; color: #888; margin-bottom: 14px; }
+    .params span { color: #0ff; }
+
+    textarea {
+      width: 100%; background: #111; color: #33ff33;
+      border: 1px solid #33ff33; padding: 8px;
+      font-family: 'Courier New', monospace; font-size: 14px;
+      resize: vertical; margin-bottom: 10px;
+    }
+    .controls { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; flex-wrap: wrap; }
+    button {
+      background: #33ff33; color: #000; border: none;
+      padding: 8px 18px; cursor: pointer;
+      font-family: monospace; font-size: 13px; font-weight: bold;
+    }
+    button.stop { background: #ff3333; color: #fff; }
+    label  { font-size: 11px; color: #888; }
+    select { background: #111; color: #33ff33; border: 1px solid #555; padding: 3px 6px; font-family: monospace; }
+
+    /* Carrier indicator */
+    .carrier {
+      height: 56px; border: 2px solid #333; background: #111;
+      position: relative; margin-bottom: 14px;
+      transition: border-color .06s;
+    }
+    .c-label { position: absolute; top: 50%; left: 12px; transform: translateY(-50%); font-size: 22px; font-weight: bold; transition: color .06s; }
+    .c-freq  { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); font-size: 13px; color: #888; }
+    .c-phase { position: absolute; bottom: 4px; left: 12px; font-size: 10px; color: #555; }
+
+    /* Bit stream */
+    .bits {
+      font-size: 11px; letter-spacing: 3px; min-height: 22px;
+      border: 1px solid #1a1a1a; padding: 3px 8px; margin-bottom: 8px; overflow: hidden;
+    }
+    .bits .s { color: #ffff00; }   /* start */
+    .bits .d1 { color: #33ff33; }  /* data 1 */
+    .bits .d0 { color: #226622; }  /* data 0 */
+    .bits .p { color: #00ffcc; }   /* stop */
+
+    #status { color: #ff0; font-size: 12px; min-height: 16px; margin-bottom: 8px; }
+    #log {
+      height: 110px; overflow-y: auto;
+      border: 1px solid #1a1a1a; padding: 5px 8px;
+      font-size: 10px; color: #555;
+    }
+  </style>
+</head>
+<body>
+
+<h1>FSK Modem &mdash; Sender</h1>
+<p class="sub">Bell&nbsp;202-style FSK &mdash; MARK&nbsp;=&nbsp;1 (high tone) &nbsp;|&nbsp; SPACE&nbsp;=&nbsp;0 (low tone) &nbsp;|&nbsp; 8N1 UART framing</p>
+
+<div class="params">
+  Mark&nbsp;(1):&nbsp;<span id="pMark">1200&nbsp;Hz</span>&nbsp;&nbsp;|&nbsp;&nbsp;
+  Space&nbsp;(0):&nbsp;<span id="pSpace">2200&nbsp;Hz</span>&nbsp;&nbsp;|&nbsp;&nbsp;
+  Baud:&nbsp;<span id="pBaud">10</span>&nbsp;&nbsp;|&nbsp;&nbsp;
+  Bit&nbsp;period:&nbsp;<span id="pBitMs">100&nbsp;ms</span>
+</div>
+
+<textarea id="msg" rows="3">HELLO MODEM WORLD</textarea>
+
+<div class="controls">
+  <button onclick="startSending()">&#9654;&nbsp;Send</button>
+  <button class="stop" onclick="stopSending()">&#9632;&nbsp;Stop</button>
+  <label>Baud:
+    <select id="baudSel">
+      <option value="5">5</option>
+      <option value="10" selected>10</option>
+      <option value="20">20</option>
+    </select>
+  </label>
+  <label>Mark&nbsp;Hz:
+    <select id="markSel">
+      <option value="1200" selected>1200</option>
+      <option value="1270">1270</option>
+      <option value="2100">2100</option>
+    </select>
+  </label>
+  <label>Space&nbsp;Hz:
+    <select id="spaceSel">
+      <option value="2200" selected>2200</option>
+      <option value="1070">1070</option>
+      <option value="1300">1300</option>
+    </select>
+  </label>
+</div>
+
+<div class="carrier" id="carrier">
+  <span class="c-label" id="cLabel">IDLE</span>
+  <span class="c-freq"  id="cFreq">&#x2014;&nbsp;Hz</span>
+  <span class="c-phase" id="cPhase">&nbsp;</span>
+</div>
+
+<div class="bits" id="bits">&nbsp;</div>
+<div id="status">Press Send to begin.</div>
+<div id="log"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// PARAMETERS  (refreshed from UI on each Send)
+// ─────────────────────────────────────────────────────────────────────────────
+let MARK_FREQ  = 1200;   // binary 1 — line idle
+let SPACE_FREQ = 2200;   // binary 0 — start bit, data 0
+let BAUD       = 10;
+let BIT_MS     = 100;
+const AMPLITUDE      = 0.30;
+const TRAINING_BITS  = 40;   // alternating 1/0 carrier training
+const IDLE_BITS      = 10;   // mark-only gap before data (lets receiver sync)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIO ENGINE — single oscillator, frequency-switched
+// ─────────────────────────────────────────────────────────────────────────────
+let audioCtx = null;
+let osc      = null;
+
+function initAudio() {
+  if (audioCtx) { audioCtx.close(); }
+  audioCtx = new AudioContext();
+  osc      = audioCtx.createOscillator();
+  const g  = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = MARK_FREQ;
+  g.gain.value = AMPLITUDE;
+  osc.connect(g);
+  g.connect(audioCtx.destination);
+  osc.start();
+}
+
+// Switch carrier frequency with a tiny 3 ms ramp to avoid clicks
+function setFreq(freq) {
+  const t = audioCtx.currentTime;
+  osc.frequency.cancelScheduledValues(t);
+  osc.frequency.setValueAtTime(osc.frequency.value, t);
+  osc.frequency.linearRampToValueAtTime(freq, t + 0.003);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UI
+// ─────────────────────────────────────────────────────────────────────────────
+const carrierEl = document.getElementById('carrier');
+const cLabel    = document.getElementById('cLabel');
+const cFreq     = document.getElementById('cFreq');
+const cPhase    = document.getElementById('cPhase');
+const statusEl  = document.getElementById('status');
+const logEl     = document.getElementById('log');
+
+function showTone(freq, phase) {
+  const isMark = (freq === MARK_FREQ);
+  cLabel.textContent  = isMark ? 'MARK  1' : 'SPACE  0';
+  cLabel.style.color  = isMark ? '#33ff33' : '#ff3333';
+  cFreq.textContent   = freq + ' Hz';
+  cPhase.textContent  = phase || '';
+  carrierEl.style.borderColor = isMark ? '#33ff33' : '#ff3333';
+}
+
+function showIdle() {
+  cLabel.textContent = 'IDLE';
+  cLabel.style.color = '#555';
+  cFreq.textContent  = '\u2014 Hz';
+  cPhase.textContent = '';
+  carrierEl.style.borderColor = '#333';
+}
+
+let bitHistory = [];
+
+function pushBit(bit, cls) {
+  bitHistory.push({ bit, cls });
+  if (bitHistory.length > 88) bitHistory.shift();
+  const bitsEl = document.getElementById('bits');
+  bitsEl.innerHTML = bitHistory
+    .map(b => `<span class="${b.cls}">${b.bit}</span>`)
+    .join('');
+}
+
+function log(msg) {
+  logEl.innerHTML += msg + '<br>';
+  logEl.scrollTop  = logEl.scrollHeight;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UART FRAMING — 8N1
+// Bit order: START(0) | D0 D1 D2 D3 D4 D5 D6 D7  (LSB first) | STOP(1)
+// ─────────────────────────────────────────────────────────────────────────────
+function charToBits(c) {
+  const code = c.charCodeAt(0) & 0xFF;
+  const bits = [ { b: 0, cls: 's' } ];          // start bit
+  for (let i = 0; i < 8; i++) {
+    const b = (code >> i) & 1;
+    bits.push({ b, cls: b ? 'd1' : 'd0' });
+  }
+  bits.push({ b: 1, cls: 'p' });                 // stop bit
+  return bits;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SEND LOOP
+// ─────────────────────────────────────────────────────────────────────────────
+let running = false;
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function sendBit(b, cls, phaseLabel) {
+  const freq = b ? MARK_FREQ : SPACE_FREQ;
+  setFreq(freq);
+  showTone(freq, phaseLabel);
+  pushBit(b, cls);
+  await sleep(BIT_MS);
+}
+
+async function sendChar(c) {
+  const bits = charToBits(c);
+  const code = c.charCodeAt(0);
+  statusEl.textContent = `Sending '${c}'  0x${code.toString(16).toUpperCase().padStart(2,'0')}  [${bits.map(x=>x.b).join('')}]`;
+  log(`  '${c}' = 0x${code.toString(16).padStart(2,'0')}  bits: ${bits.map(x=>x.b).join(' ')}`);
+  for (const { b, cls } of bits) {
+    if (!running) return;
+    const label = cls === 's' ? 'START' : cls === 'p' ? 'STOP' : `D${bits.indexOf({b,cls})-1||'?'}`;
+    await sendBit(b, cls);
+  }
+}
+
+async function startSending() {
+  if (running) return;
+
+  BAUD       = parseInt(document.getElementById('baudSel').value);
+  MARK_FREQ  = parseInt(document.getElementById('markSel').value);
+  SPACE_FREQ = parseInt(document.getElementById('spaceSel').value);
+  BIT_MS     = Math.round(1000 / BAUD);
+
+  document.getElementById('pMark').textContent  = MARK_FREQ  + ' Hz';
+  document.getElementById('pSpace').textContent = SPACE_FREQ + ' Hz';
+  document.getElementById('pBaud').textContent  = BAUD;
+  document.getElementById('pBitMs').textContent = BIT_MS + ' ms';
+
+  const text = document.getElementById('msg').value;
+  if (!text) return;
+
+  running = true;
+  bitHistory = [];
+  initAudio();
+
+  // Phase 1 — Training: alternating MARK/SPACE so receiver can see both tones
+  statusEl.textContent = 'TRAINING — alternating tones …';
+  log('── training ──');
+  for (let i = 0; i < TRAINING_BITS && running; i++) {
+    await sendBit(i % 2 ? 1 : 0, i % 2 ? 'd1' : 'd0');
+  }
+
+  // Phase 2 — Idle (MARK) so receiver confirms carrier and resets edge detector
+  statusEl.textContent = 'IDLE (MARK) — receiver sync …';
+  log('── idle / sync ──');
+  for (let i = 0; i < IDLE_BITS && running; i++) {
+    await sendBit(1, 'p');
+  }
+
+  // Phase 3 — Data
+  log('── data ──');
+  for (const c of text) {
+    if (!running) break;
+    await sendChar(c);
+  }
+
+  // Phase 4 — EOT (ASCII 0x04 = End Of Transmission)
+  if (running) {
+    statusEl.textContent = 'EOT';
+    log('── EOT (0x04) ──');
+    await sendChar('\x04');
+  }
+
+  // Return to idle
+  setFreq(MARK_FREQ);
+  showIdle();
+  statusEl.textContent = 'Transmission complete — line idle (MARK)';
+  log('── idle ──');
+  running = false;
+}
+
+function stopSending() {
+  running = false;
+  if (osc) try { setFreq(MARK_FREQ); } catch(_) {}
+  showIdle();
+  statusEl.textContent = 'Stopped.';
+}
+</script>
+</body>
+</html>

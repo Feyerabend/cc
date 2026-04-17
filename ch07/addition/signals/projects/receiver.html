@@ -118,12 +118,15 @@ function indexToChar(idx) {
 // ─────────────────────────────────────────────────────────────────────────────
 // AUDIO + FFT SETUP
 // ─────────────────────────────────────────────────────────────────────────────
-const FFT_SIZE = 8192;  // large → ~5.4 Hz resolution per bin at 44100 Hz
+const FFT_SIZE      = 8192;   // large → ~5.4 Hz resolution per bin at 44100 Hz
+const GAP_APPROX_MS = 250;    // must match sender's GAP_MS
 
 let audioCtx, analyser, dataArray;
 let freqBins = [];      // which FFT bin each subcarrier lands on
 let sampleRate;
 let animId;
+let tickInterval = null;
+let pendingRead  = null;
 let threshold = 90;
 
 function updateThreshold(el) {
@@ -162,8 +165,12 @@ async function startReceiver() {
 }
 
 function stopReceiver() {
-  if (animId) cancelAnimationFrame(animId);
-  if (audioCtx) audioCtx.close();
+  if (animId)       { cancelAnimationFrame(animId); animId = null; }
+  if (tickInterval) { clearInterval(tickInterval);  tickInterval = null; }
+  if (pendingRead)  { clearTimeout(pendingRead);    pendingRead  = null; }
+  if (audioCtx)     { audioCtx.close(); audioCtx = null; analyser = null; }
+  preambleStart = null;
+  gapStart      = null;
   setState('STOPPED');
 }
 
@@ -219,7 +226,8 @@ function log(msg) {
 // Poll the FFT at ~33 Hz to drive the state machine
 function startStateMachine() {
   setState('WAITING');
-  setInterval(tick, 30);
+  if (tickInterval) clearInterval(tickInterval);
+  tickInterval = setInterval(tick, 30);
 }
 
 function tick() {
@@ -254,8 +262,12 @@ function tick() {
         decodedChars = [];
         document.getElementById('decoded').textContent = '';
         setState('READING');
-        // Wait half a symbol before the first read so we sample near the middle
-        scheduleRead(SYMBOL_MS / 2);
+        // We confirmed the gap after GAP_NEED_MS of silence; roughly
+        // (GAP_APPROX_MS - GAP_NEED_MS) ms of gap remain before the first
+        // symbol starts.  Wait that remainder plus half a symbol so we
+        // sample near the centre of the first symbol.
+        const remainingGap = Math.max(0, GAP_APPROX_MS - GAP_NEED_MS);
+        scheduleRead(remainingGap + SYMBOL_MS / 2);
       }
     } else {
       // Tones came back — still in preamble
@@ -269,7 +281,8 @@ function tick() {
 // SYMBOL READING  (runs independently of tick() via setTimeout)
 // ─────────────────────────────────────────────────────────────────────────────
 function scheduleRead(delayMs) {
-  setTimeout(readSymbol, delayMs);
+  if (pendingRead) clearTimeout(pendingRead);
+  pendingRead = setTimeout(readSymbol, delayMs);
 }
 
 function readSymbol() {
