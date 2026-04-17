@@ -30,7 +30,7 @@ variation can be over time, space, or any other independent variable;
 what matters is that a receiver can extract meaning from the variation.
 
 *Time-domain signals* change with time. A microphone converts air pressure
-variations into a voltage that fluctuates thousands of times per second --
+variations into a voltage that fluctuates thousands of times per second--
 that voltage waveform is a time-domain signal. An electrocardiogram records
 the heart's electrical activity as a function of time. A gyroscope in a
 phone reports angular velocity moment by moment.
@@ -43,7 +43,7 @@ in the ground.
 
 *Continuous signals* are defined at every instant, with no gaps.
 Mathematically we write $x(t)$ to mean the signal value at time $t$,
-where $t$ is a real number. Physical signals--sound, light, temperature --
+where $t$ is a real number. Physical signals--sound, light, temperature--
 are continuous.
 
 *Discrete signals* are defined only at specific, regularly spaced instants.
@@ -197,7 +197,7 @@ f_s \ge 2 \cdot f_m
 
 #### 2.3 Fourier Transform
 
-The central insight of Fourier analysis is that *any* periodic signal --
+The central insight of Fourier analysis is that *any* periodic signal--
 and, with a suitable extension, any signal with finite energy--can be
 expressed as a sum of sinusoids[^sinusoids] of different frequencies,
 amplitudes, and phases. This is not just a mathematical curiosity; it
@@ -272,7 +272,7 @@ the block of samples.
 
 *Computational cost.* Evaluating the sum naively requires $O(N^2)$
 operations: for each of the $N$ output bins $k$, we sum over all $N$
-input samples. For $N = 10{,}000$ this is $10^8$ multiply-add operations --
+input samples. For $N = 10{,}000$ this is $10^8$ multiply-add operations--
 feasible but slow for interactive use. The FFT, introduced next, reduces
 this dramatically.
 
@@ -719,7 +719,7 @@ edge detectors, a Sobel edge magnitude map, and an emboss effect.
 the larger sigma removes more detail. Compare the Laplacian-4 and
 Laplacian-8 edge detectors: the 8-connected version picks up diagonal edges
 that the 4-connected version misses. The Sobel edge magnitude combines
-horizontal and vertical gradient images into a single edge strength map --
+horizontal and vertical gradient images into a single edge strength map--
 look at how it outlines the staircase structure.
 
 *Concepts exercised.* Section 3.1 (convolution), Section 4.4 (2-D signal
@@ -834,7 +834,7 @@ practical implementation.
 
 2. *Sampling* converts a continuous signal to a discrete one. The
    Nyquist-Shannon theorem sets the minimum sampling rate at twice the
-   highest frequency component. Violating this limit causes *aliasing* --
+   highest frequency component. Violating this limit causes *aliasing*--
    an irreversible corruption where high-frequency content appears as
    phantom low-frequency artefacts.
 
