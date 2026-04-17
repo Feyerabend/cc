@@ -787,7 +787,7 @@ is carried by one of six fixed subcarrier frequencies (800, 1000, 1200,
 Before the data, the sender transmits a *preamble*--all six tones on
 simultaneously for 600 ms--so the receiver knows a message is coming.
 A brief silence (gap) follows to mark the end of the preamble. The
-receiver uses a state machine (WAITING → PREAMBLE → READING) to stay
+receiver uses a state machine (WAITING --> PREAMBLE --> READING) to stay
 synchronised.
 
 *How to use it.*
@@ -820,6 +820,66 @@ receivers.
 
 *Requirements.* Any modern browser with microphone access. Run each file
 directly from the filesystem (no server needed).
+
+
+
+
+
+#### 6.6 FSK Modem: Sender and Receiver
+
+*Files:* [modem_sender.html](./projects/modem_sender.html) and
+[modem_receiver.html](./projects/modem_receiver.html)
+
+*What it does.* This pair of pages simulates the acoustic modems of the
+1970s--1990s. The sender encodes text using *Frequency Shift Keying* (FSK):
+a MARK tone at 1200 Hz represents a binary 1, and a SPACE tone at 2200 Hz
+represents a binary 0. Each character is wrapped in a *UART frame*: one
+start bit (SPACE), eight data bits sent LSB-first, and one stop bit (MARK).
+This 8N1 framing is exactly how serial ports and dial-up modems worked.
+Before data the sender plays a training sequence of alternating tones, then
+a run of MARK, so the receiver can learn the signal level and synchronise.
+
+The receiver listens through the microphone, runs an FFT on each 8 ms poll
+window, and compares energy at the two FSK frequencies. When it detects a
+falling edge from MARK to SPACE (the start bit), it schedules eight
+sample points at bit-centres using the classic UART 1.5 × bit-period offset,
+then reconstructs the byte and appends the character to the terminal.
+
+*How to use it.*
+
+1. Open `modem_receiver.html` first. Click *Start Mic* and wait until the
+   spectrum shows the two labelled frequency lines (green = MARK, red = SPACE).
+2. Adjust the threshold slider until the yellow line sits just above the
+   ambient noise floor--the VU bars for both tones should be at zero when
+   the room is quiet.
+3. Open `modem_sender.html`. Leave the baud rate and frequency settings at
+   their defaults (both pages must match). Type a message and click *Send*.
+4. You will hear two alternating tones during training, then the faint
+   rhythmic clicking of the data stream. Watch the receiver's bit stream
+   strip: yellow = start bit, green/dark-green = data bits, cyan = stop bit.
+   The decoded text appears in the terminal panel.
+
+*What to observe.* Watch the VU bars during the training sequence: both
+MARK and SPACE bars peak alternately, then only the MARK bar stays high
+during the idle/sync phase. The state box on the receiver transitions
+IDLE --> READING and back for each character. If you lower the baud rate to
+5 (200 ms per bit) the individual tones become clearly audible as separate
+pitches; at 20 baud they blur into a rapid warble -- the classic modem
+sound. Try moving the sender device further from the receiver microphone
+and watch how the threshold needs to be lowered until bits start to be
+missed.
+
+*Concepts exercised.* Section 1.2 (FSK and communications), Section 2.2
+(Nyquist -- the bit rate must stay well below the carrier frequencies),
+Section 2.5 (FFT for tone detection), Section 4.2 (reading a spectrum).
+The UART framing is an independent concept from signal processing but
+shows how a serial protocol sits on top of a physical modulation layer --
+exactly the layering used in real telecommunications.
+
+*Requirements.* Any modern browser with microphone access. Open both
+files directly from the filesystem (no server needed). Works best with
+laptop internal speakers and microphone; if using headphones, use two
+devices or a virtual audio loopback.
 
 
 
@@ -856,12 +916,13 @@ practical implementation.
 6. *Windowing* reduces spectral leakage when analysing finite-length
    signals, at the cost of slightly reduced frequency resolution.
 
-The five projects in Section 6 tie these ideas together into runnable
+The six projects in Section 6 tie these ideas together into runnable
 programs: a live spectrum analyser, an aliasing visualiser, an image filter
-toolkit, a complexity benchmark, and a complete acoustic data link. Each
-one can be extended. Add a waterfall spectrogram to the spectrum analyser.
-Experiment with non-integer frequencies in the aliasing demo to see how
-the alias formula behaves. Swap in a custom image in the toolkit. Implement
-the Cooley-Tukey recursion from scratch to see exactly how the $O(N \log N)$
-splitting works. Build a second OFDM channel at different frequencies and
-try to run both simultaneously.
+toolkit, a complexity benchmark, an OFDM acoustic data link, and an FSK
+modem. Each one can be extended. Add a waterfall spectrogram to the
+spectrum analyser. Experiment with non-integer frequencies in the aliasing
+demo to see how the alias formula behaves. Swap in a custom image in the
+toolkit. Implement the Cooley-Tukey recursion from scratch to see exactly
+how the $O(N \log N)$ splitting works. Add parity bits to the FSK modem
+and watch how error detection changes the reliability as you increase the
+baud rate.
