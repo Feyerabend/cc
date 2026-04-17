@@ -108,9 +108,9 @@
 
 <div class="controls" style="margin-top:-4px">
   <label>Threshold:
-    <input type="range" id="thresh" min="5" max="200" value="40"
+    <input type="range" id="thresh" min="3" max="200" value="15"
       oninput="threshold=+this.value; document.getElementById('threshVal').textContent=this.value">
-    &nbsp;<span id="threshVal">40</span>/255
+    &nbsp;<span id="threshVal">15</span>/255
     &nbsp;<span style="color:#ff0">&#8592; raise if noise causes false bits</span>
   </label>
 </div>
@@ -119,11 +119,11 @@
 
 <div class="vu-row">
   <div class="vu-box vu-m">
-    <div class="vu-lbl">MARK energy &nbsp;<span id="markHz" style="color:#0ff"></span></div>
+    <div class="vu-lbl">MARK &nbsp;<span id="markHz" style="color:#0ff"></span>&nbsp;&nbsp;<span id="markVal" style="color:#33ff33">0</span>/255</div>
     <div class="vu-bg"><div class="vu-bar" id="markBar"></div></div>
   </div>
   <div class="vu-box vu-s">
-    <div class="vu-lbl">SPACE energy &nbsp;<span id="spaceHz" style="color:#0ff"></span></div>
+    <div class="vu-lbl">SPACE &nbsp;<span id="spaceHz" style="color:#0ff"></span>&nbsp;&nbsp;<span id="spaceVal" style="color:#ff3333">0</span>/255</div>
     <div class="vu-bg"><div class="vu-bar" id="spaceBar"></div></div>
   </div>
 </div>
@@ -171,7 +171,7 @@ let markBin    = 0;
 let spaceBin   = 0;
 let animId     = null;
 let tickId     = null;
-let threshold  = 40;
+let threshold  = 15;
 
 // All pending bit-read timeouts are stored here so they can all be cancelled.
 let pendingReads = [];
@@ -192,7 +192,19 @@ async function startReceiver() {
   document.getElementById('spaceHz').textContent = SPACE_FREQ + ' Hz';
 
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    // Disable all browser audio processing — echo cancellation is the killer:
+    // it specifically suppresses speaker output heard by the microphone, which
+    // is exactly the signal we are trying to decode.
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation:   false,
+        noiseSuppression:   false,
+        autoGainControl:    false,
+        channelCount:       1,
+        sampleRate:         { ideal: 44100 }
+      },
+      video: false
+    });
     audioCtx  = new AudioContext();
     sampleRate = audioCtx.sampleRate;
 
@@ -239,15 +251,17 @@ function stopReceiver() {
 // ─────────────────────────────────────────────────────────────────────────────
 // TONE DETECTION
 // ─────────────────────────────────────────────────────────────────────────────
-// Average ±3 bins around each target to tolerate slight pitch drift from
-// speaker/microphone frequency response.
+// Average ±5 bins around each target.
+// At FFT_SIZE=2048 / 44100 Hz, one bin ≈ 21.5 Hz, so ±5 bins = ±107 Hz —
+// wide enough to tolerate speaker/mic frequency response variation while
+// still keeping MARK (1200 Hz) and SPACE (2200 Hz) cleanly separated.
 function binEnergy(bin) {
   let s = 0;
-  for (let d = -3; d <= 3; d++) {
+  for (let d = -5; d <= 5; d++) {
     const i = bin + d;
     if (i >= 0 && i < dataArray.length) s += dataArray[i];
   }
-  return s / 7;
+  return s / 11;
 }
 
 const MARK  =  1;
@@ -518,9 +532,13 @@ function drawLoop() {
     ctx.fillText(f >= 1000 ? (f/1000).toFixed(1)+'k' : f, x + 1, 9);
   }
 
-  // VU bars
-  document.getElementById('markBar').style.width  = Math.min(100, binEnergy(markBin)  / 255 * 100) + '%';
-  document.getElementById('spaceBar').style.width = Math.min(100, binEnergy(spaceBin) / 255 * 100) + '%';
+  // VU bars + numeric readout
+  const me = Math.round(binEnergy(markBin));
+  const se = Math.round(binEnergy(spaceBin));
+  document.getElementById('markBar').style.width  = Math.min(100, me / 255 * 100) + '%';
+  document.getElementById('spaceBar').style.width = Math.min(100, se / 255 * 100) + '%';
+  document.getElementById('markVal').textContent  = me;
+  document.getElementById('spaceVal').textContent = se;
 }
 </script>
 </body>
