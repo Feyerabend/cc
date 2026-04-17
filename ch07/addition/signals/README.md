@@ -95,7 +95,8 @@ and modern schemes like OFDM (used in Wi-Fi, 4G, and 5G) all work by
 shifting information-bearing signals to carrier frequencies suitable for
 transmission. At the receiver, a matched filter recovers the original
 signal from noise. The acoustic OFDM project in Section 6 is a
-browser-based demo of exactly this idea.
+browser-based demo of exactly this idea, and the FSK modem project
+recreates the modulation scheme used by dial-up modems.
 
 *Machine learning.* Raw signals are rarely fed directly to a classifier.
 A common pre-processing pipeline converts a time-series into a frequency
@@ -773,8 +774,8 @@ python benchmark.py
 
 #### 6.5 Acoustic OFDM: Sender and Receiver
 
-*Files:* [sender.html](./projects/sender.html) and
-[receiver.html](./projects/receiver.html)
+*Files:* [ofdm_sender.html](./projects/ofdm_sender.html) and
+[ofdm_receiver.html](./projects/ofdm_receiver.html)
 
 *What it does.* This two-part project is a working acoustic data link:
 the sender encodes a text message as audible tones and plays them through
@@ -784,48 +785,77 @@ data travels as sound through the air.
 
 The encoding scheme is a simplified version of *OFDM (Orthogonal
 Frequency-Division Multiplexing)*, the same technique used in Wi-Fi and
-4G/5G. The alphabet is mapped to 6-bit indices, and each bit of a symbol
-is carried by one of six fixed subcarrier frequencies (800, 1000, 1200,
-1400, 1600, and 1800 Hz). A bit value of 1 means that subcarrier is
-*on* for the symbol duration (250 ms); a 0 means it is silent.
+4G/5G. The character set is mapped to 6-bit indices, and each bit of a
+symbol is carried by one of six fixed subcarrier frequencies (1000, 1200,
+1400, 1600, 1800, and 2000 Hz). A bit value of 1 means that subcarrier is
+*on* for the symbol duration (300 ms); a 0 means it is silent. Six
+simultaneous tones therefore transmit 6 bits--one character--every
+300 ms. The subcarriers start at 1000 Hz rather than a lower frequency to
+stay clear of low-frequency room rumble and HVAC noise that would otherwise
+contaminate the lowest bin.
 
 Before the data, the sender transmits a *preamble*--all six tones on
-simultaneously for 600 ms--so the receiver knows a message is coming.
-A brief silence (gap) follows to mark the end of the preamble. The
-receiver uses a state machine (WAITING --> PREAMBLE --> READING) to stay
-synchronised.
+simultaneously for 900 ms--so the receiver knows a message is coming.
+A 400 ms silence (gap) follows to mark the end of the preamble and give
+the receiver time to align to the first symbol. The receiver uses a state
+machine (WAITING --> PREAMBLE --> READING) to stay synchronised.
+
+Several engineering details matter for reliable operation across a room:
+
+- *FFT window size.* The receiver uses `FFT_SIZE = 2048`, giving a
+  46 ms analysis window at 44 100 Hz. This is short enough to resolve
+  individual 300 ms symbols clearly. An earlier version used 8192 (186 ms
+  window), which smeared across symbol boundaries and caused decoding errors.
+
+- *Echo cancellation.* The browser's built-in echo cancellation
+  specifically suppresses any audio from the local speakers heard by the
+  microphone--exactly the signal we want. It must be disabled with
+  `echoCancellation: false` in the `getUserMedia` call or the receiver
+  hears nothing.
+
+- *Symbol timing.* The receiver schedules each symbol read at an absolute
+  time (`firstReadAt + n × SYMBOL_MS`) rather than chaining `setTimeout`
+  calls. Chained timeouts accumulate ±10–50 ms of jitter per symbol; for
+  a ten-character message this can reach 500 ms of drift, putting sample
+  points outside their symbol windows entirely.
+
+- *Gap detection robustness.* The gap between preamble and data is
+  detected by requiring all tone bins to fall silent. One noisy bin is
+  allowed before the silence is disqualified, which prevents a single
+  acoustic spike from blocking the gap detector and delaying the first
+  symbol read.
 
 *How to use it.*
 
-1. Open `sender.html` in one browser tab (or on a separate device).
-2. Open `receiver.html` in another tab (or on the same device if your
-   speakers and microphone are not acoustically isolated).
-3. In the receiver, press *Start Microphone* and adjust the detection
-   threshold slider until the cyan subcarrier bars are near the yellow
-   threshold line.
-4. In the sender, type a message (uppercase letters, digits, and `.!?`
-   are supported) and press *Send*.
-5. Watch the receiver's spectrum, tone grid, and decoded message panel.
+1. Open `ofdm_receiver.html` first. Click *Start Microphone* and wait for
+   the spectrum display to appear.
+2. Adjust the detection threshold slider until the yellow line sits just
+   above the ambient noise floor. The cyan subcarrier bars should be flat
+   when the room is quiet.
+3. Open `ofdm_sender.html`. Type a message (uppercase letters, digits, and
+   `.!?` are supported) and press *Send (loops)*.
+4. Watch the receiver's tone grid: boxes light up for each subcarrier that
+   is on in the current symbol. After the message, decoded text appears in
+   the blue panel.
 
-*What to observe.* On the receiver's spectrum display, the cyan-coloured
-bars are the six subcarrier frequencies. When the sender plays a symbol,
-some of those bars jump above the yellow threshold line and the
-corresponding bit boxes light up green. After a complete message, the
-decoded text appears in the blue panel.
+*What to observe.* During the preamble all six tone boxes light up green
+simultaneously. During the gap all go dark. Then each character lights up
+its own pattern of boxes. Notice that some characters use many tones
+(large index, high bits set) while others use few.
 
-Try increasing the room noise or moving the devices further apart and
-notice that the receiver starts misreading bits. Adjusting the threshold
-can partially compensate. This is a miniature version of the signal-to-noise
-and sensitivity trade-offs that engineers tune in real communications
-receivers.
+Try increasing room noise or moving the devices apart. The receiver will
+start misreading bits; adjusting the threshold slider can partially
+compensate. This reproduces in miniature the sensitivity trade-offs that
+engineers tune in real communications receivers.
 
 *Concepts exercised.* Section 1.2 (communications and OFDM), Section 2.5
-(FFT for frequency detection), Section 4.2 (reading a spectrum), Section 3.2
-(band-pass detection at specific frequencies).
+(FFT for frequency detection), Section 4.2 (reading a spectrum), Section
+3.2 (band-pass detection at specific frequencies), Section 5.1
+(windowing--why FFT window size affects temporal resolution).
 
-*Requirements.* Any modern browser with microphone access. Run each file
-directly from the filesystem (no server needed).
-
+*Requirements.* Any modern browser with microphone access. Open both files
+directly from the filesystem (no server needed). Works best with two
+laptops. One using the built-in speakers, and the other the microphones.
 
 
 
@@ -836,55 +866,73 @@ directly from the filesystem (no server needed).
 [modem_receiver.html](./projects/modem_receiver.html)
 
 *What it does.* This pair of pages simulates the acoustic modems of the
-1970s--1990s. The sender encodes text using *Frequency Shift Keying* (FSK):
-a MARK tone at 1200 Hz represents a binary 1, and a SPACE tone at 2200 Hz
-represents a binary 0. Each character is wrapped in a *UART frame*: one
-start bit (SPACE), eight data bits sent LSB-first, and one stop bit (MARK).
-This 8N1 framing is exactly how serial ports and dial-up modems worked.
-Before data the sender plays a training sequence of alternating tones, then
-a run of MARK, so the receiver can learn the signal level and synchronise.
+1970s-1990s. Where OFDM sends many frequencies simultaneously, FSK sends
+only *one frequency at a time* and encodes information in *which* frequency
+is playing. The sender uses *Frequency Shift Keying* (FSK) in the Bell 202
+style: a MARK tone at 1200 Hz represents a binary 1, and a SPACE tone at
+2200 Hz represents a binary 0. Each character is wrapped in a *UART frame*
+--one start bit (SPACE), eight data bits sent LSB-first, and one stop bit
+(MARK). This 8N1 framing is exactly how serial ports and dial-up modems
+worked: the receiver detects the falling edge from MARK to SPACE as the
+start of a new character, then samples the line at bit-centre intervals to
+recover each bit.
 
-The receiver listens through the microphone, runs an FFT on each 8 ms poll
-window, and compares energy at the two FSK frequencies. When it detects a
-falling edge from MARK to SPACE (the start bit), it schedules eight
-sample points at bit-centres using the classic UART 1.5 × bit-period offset,
-then reconstructs the byte and appends the character to the terminal.
+Before data, the sender transmits a short calibration sequence of
+alternating MARK/SPACE tones so that the receiver can hear both frequencies,
+followed by a long MARK guard tone (~2800 ms at 5 baud) that the receiver
+uses to synchronise. Only after the receiver has heard at least 500 ms of
+continuous MARK does it enter the IDLE state and begin watching for start
+bits.
+
+The receiver uses the *Goertzel algorithm* for tone detection. Unlike
+comparing FFT bins across the whole spectrum, Goertzel computes the DFT at
+exactly two frequencies--MARK and SPACE--and ignores everything else.
+Room resonances, speaker harmonics, and background noise at other pitches
+do not register. The detected tone switches from MARK to SPACE only when
+the SPACE energy exceeds MARK energy by at least the ratio set by the
+slider; this prevents ambiguous transition periods from triggering false
+start bits.
+
+Bit timing uses the audio hardware clock (`event.playbackTime` from a
+`ScriptProcessorNode`) rather than `setTimeout`. Each bit centre is
+sampled at `startBitTime + BIT_MS × (1.5 + n)`, where `startBitTime` is
+the audio-clock timestamp at the MARK→SPACE edge. This avoids the
+cumulative jitter of chained `setTimeout` calls.
 
 *How to use it.*
 
-1. Open `modem_receiver.html` first. Click *Start Mic* and wait until the
-   spectrum shows the two labelled frequency lines (green = MARK, red = SPACE).
-2. Adjust the threshold slider until the yellow line sits just above the
-   ambient noise floor--the VU bars for both tones should be at zero when
-   the room is quiet.
-3. Open `modem_sender.html`. Leave the baud rate and frequency settings at
-   their defaults (both pages must match). Type a message and click *Send*.
-4. You will hear two alternating tones during training, then the faint
-   rhythmic clicking of the data stream. Watch the receiver's bit stream
-   strip: yellow = start bit, green/dark-green = data bits, cyan = stop bit.
-   The decoded text appears in the terminal panel.
+1. Open `modem_receiver.html` first. Click *Start Mic*. The state box
+   should read WAITING.
+2. Open `modem_sender.html`. Leave baud (5), MARK (1200 Hz), and SPACE
+   (2200 Hz) at their defaults--sender and receiver must match.
+3. Type a message and click *Send*. You will hear alternating tones during
+   calibration, then a sustained low tone (the MARK guard), then the data.
+4. Watch the receiver: the sync bar fills during the guard phase, the state
+   transitions to IDLE, and each start bit triggers a READING flash. Decoded
+   characters appear in the terminal.
 
-*What to observe.* Watch the VU bars during the training sequence: both
-MARK and SPACE bars peak alternately, then only the MARK bar stays high
-during the idle/sync phase. The state box on the receiver transitions
-IDLE --> READING and back for each character. If you lower the baud rate to
-5 (200 ms per bit) the individual tones become clearly audible as separate
-pitches; at 20 baud they blur into a rapid warble -- the classic modem
-sound. Try moving the sender device further from the receiver microphone
-and watch how the threshold needs to be lowered until bits start to be
-missed.
+*What to observe.* At 5 baud (200 ms per bit) the two tones are clearly
+audible as distinct pitches--you can hear each bit. At 10 baud they merge
+into the rapid warble characteristic of a dial-up modem. The Goertzel VU
+bars (M: and S:) show the relative energy at each frequency in real time;
+during MARK the left bar dominates, during SPACE the right bar dominates.
+The ratio slider controls how decisive that dominance must be before the
+receiver commits to a reading.
 
 *Concepts exercised.* Section 1.2 (FSK and communications), Section 2.2
-(Nyquist -- the bit rate must stay well below the carrier frequencies),
-Section 2.5 (FFT for tone detection), Section 4.2 (reading a spectrum).
-The UART framing is an independent concept from signal processing but
-shows how a serial protocol sits on top of a physical modulation layer --
-exactly the layering used in real telecommunications.
+(Nyquist--the bit rate must stay well below the carrier frequencies),
+Section 2.4 (DFT and the Goertzel algorithm as a single-bin DFT),
+Section 4.2 (reading a spectrum). The UART framing shows how a serial
+protocol sits on top of a physical modulation layer--exactly the layering
+used in real telecommunications.
 
-*Requirements.* Any modern browser with microphone access. Open both
-files directly from the filesystem (no server needed). Works best with
-laptop internal speakers and microphone; if using headphones, use two
-devices or a virtual audio loopback.
+*Requirements.* Any modern browser with microphone access. Open both files
+directly from the filesystem (no server needed). Works best with the
+laptop's built-in speakers and microphone. Echo cancellation is disabled
+in the `getUserMedia` call--this is essential; the browser's default
+processing would otherwise suppress the speaker output before the
+microphone ever sees it. (It has been tested with two MacBook Pro laptops,
+one sender and the other receiver.)
 
 
 
@@ -923,11 +971,14 @@ practical implementation.
 
 The six projects in Section 6 tie these ideas together into runnable
 programs: a live spectrum analyser, an aliasing visualiser, an image filter
-toolkit, a complexity benchmark, an OFDM acoustic data link, and an FSK
-modem. Each one can be extended. Add a waterfall spectrogram to the
-spectrum analyser. Experiment with non-integer frequencies in the aliasing
-demo to see how the alias formula behaves. Swap in a custom image in the
-toolkit. Implement the Cooley-Tukey recursion from scratch to see exactly
-how the $O(N \log N)$ splitting works. Add parity bits to the FSK modem
-and watch how error detection changes the reliability as you increase the
-baud rate.
+toolkit, a complexity benchmark, an acoustic OFDM data link
+(`ofdm_sender.html` / `ofdm_receiver.html`), and a Bell 202-style FSK
+modem (`modem_sender.html` / `modem_receiver.html`). Each one can be
+extended. Add a waterfall spectrogram to the spectrum analyser. Experiment
+with non-integer frequencies in the aliasing demo to see how the alias
+formula behaves. Swap in a custom image in the toolkit. Implement the
+Cooley-Tukey recursion from scratch to see exactly how the $O(N \log N)$
+splitting works. Add Reed-Solomon error correction to the OFDM link and
+observe how it recovers from single-symbol errors. Add parity bits to the
+FSK modem and watch how error detection changes reliability as you increase
+the baud rate.
