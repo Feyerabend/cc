@@ -136,8 +136,8 @@ let BIT_MS     = 200;
 // SYNC_MS: how long we need a continuous MARK to consider the carrier locked.
 // Must be shorter than the sender's GUARD phase (~1400 ms at 5 baud) but longer
 // than any single MARK run during calibration (one bit = BIT_MS).
-const SYNC_MS       = 600;
-const INTER_CHAR_MS = 30;    // min MARK before a start bit counts (stop bit ≫ this)
+const SYNC_MS       = 400;   // needs 400 ms continuous MARK to lock (guard = 2800 ms)
+const INTER_CHAR_MS = 20;    // min MARK before a start bit counts (stop bit ≫ this)
 
 let RMS_THRESHOLD = 0.020;   // adjustable via slider
 
@@ -231,9 +231,10 @@ function stopReceiver() {
   if (animId)    { cancelAnimationFrame(animId); animId = null; }
   if (processor) { try { processor.disconnect(); } catch(_){} processor = null; }
   if (audioCtx)  { audioCtx.close(); audioCtx = null; analyser = null; }
-  uartState = 'STOPPED';
-  markSince = null;
-  syncStart = null;
+  uartState   = 'STOPPED';
+  markSince   = null;
+  syncStart   = null;
+  spaceFrames = 0;
   updateStateBox();
   document.getElementById('syncBar').style.width = '0%';
 }
@@ -272,9 +273,13 @@ function demodulate(samples) {
     if (sign !== 0) lastSign = sign;
   }
 
-  const freq = (crossings / 2) * sampleRate / N;
-  const mid  = (MARK_FREQ + SPACE_FREQ) / 2;
-  const tone = freq < mid ? MARK : SPACE;
+  const freq   = (crossings / 2) * sampleRate / N;
+  const mid    = (MARK_FREQ + SPACE_FREQ) / 2;   // 1700 Hz
+  const margin = (SPACE_FREQ - MARK_FREQ) * 0.2; // ±200 Hz dead zone around midpoint
+  let tone;
+  if      (freq < mid - margin) tone = MARK;
+  else if (freq > mid + margin) tone = SPACE;
+  else                          tone = NONE;      // ambiguous — treated as silence
 
   return { tone, freq: Math.round(freq), rms };
 }
@@ -292,6 +297,7 @@ let markSince    = null;   // audio time (ms) when current MARK streak began
 let syncStart    = null;   // audio time (ms) when WAITING state first saw MARK
 let startBitTime = null;   // audio time (ms) when the start bit edge was detected
 let sampledBits  = [];
+let spaceFrames  = 0;      // consecutive SPACE frames (debounce for WAITING reset)
 
 let lastResult = { tone: NONE, freq: 0, rms: 0 };
 
@@ -352,6 +358,7 @@ function onAudioProcess(event) {
 
   // ── WAITING / IDLE ─────────────────────────────────────────────────────────
   if (tone === MARK || tone === NONE) {
+    spaceFrames = 0;
     if (markSince === null) { markSince = tMs; syncStart = syncStart || tMs; }
     const markDur = tMs - markSince;
 
@@ -362,19 +369,28 @@ function onAudioProcess(event) {
       document.getElementById('syncBar').style.width = '100%';
     }
   } else {
-    // SPACE
+    // SPACE detected
+    spaceFrames++;
     const markDur = markSince !== null ? tMs - markSince : 0;
-    markSince = null;
 
-    if (uartState === 'IDLE' && markDur >= INTER_CHAR_MS) {
-      uartState    = 'READING';
-      startBitTime = tMs;
-      sampledBits  = [];
-      pushBit(0, 's');
-      updateStateBox();
-      log(`↓ start bit (prev MARK ${markDur.toFixed(0)} ms)`);
+    if (uartState === 'IDLE') {
+      if (markDur >= INTER_CHAR_MS) {
+        // Qualifying start bit — begin UART decode
+        markSince    = null;
+        uartState    = 'READING';
+        startBitTime = tMs;
+        sampledBits  = [];
+        pushBit(0, 's');
+        updateStateBox();
+        log(`↓ start bit (prev MARK ${markDur.toFixed(0)} ms)`);
+      }
+      // Brief SPACE in IDLE (<INTER_CHAR_MS) is ignored — markSince preserved so
+      // the next real start bit still sees a valid markDur and is not missed.
+    } else if (uartState === 'WAITING') {
+      // In WAITING: require 2 consecutive SPACE frames before resetting sync
+      // counter — one frame (~12 ms) of noise won't break a 400 ms MARK run.
+      if (spaceFrames >= 2) markSince = null;
     }
-    // In WAITING: any SPACE resets markSince — we keep accumulating
   }
 }
 
