@@ -65,8 +65,8 @@
 <div style="margin-top: 12px;">
   <label>
     Detection threshold:&nbsp;
-    <input type="range" id="threshold" min="10" max="230" value="90" oninput="updateThreshold(this)">
-    &nbsp;<span id="threshVal">90</span>&nbsp;/ 255
+    <input type="range" id="threshold" min="10" max="230" value="60" oninput="updateThreshold(this)">
+    &nbsp;<span id="threshVal">60</span>&nbsp;/ 255
     &nbsp;&nbsp;<span style="color:#ff0">&larr; yellow line on spectrum</span>
   </label>
 </div>
@@ -118,7 +118,10 @@ function indexToChar(idx) {
 // ─────────────────────────────────────────────────────────────────────────────
 // AUDIO + FFT SETUP
 // ─────────────────────────────────────────────────────────────────────────────
-const FFT_SIZE      = 8192;   // large → ~5.4 Hz resolution per bin at 44100 Hz
+// FFT_SIZE=2048 → 46ms window at 44100 Hz.  Much faster response than 8192
+// (which was 186ms — smearing across entire 250ms symbols).
+// Resolution = 21.5 Hz/bin; FREQS are 200 Hz apart → 9+ bins separation, no cross-talk.
+const FFT_SIZE      = 2048;
 const GAP_APPROX_MS = 250;    // must match sender's GAP_MS
 
 let audioCtx, analyser, dataArray;
@@ -127,7 +130,7 @@ let sampleRate;
 let animId;
 let tickInterval = null;
 let pendingRead  = null;
-let threshold = 90;
+let threshold = 60;
 
 function updateThreshold(el) {
   threshold = parseInt(el.value);
@@ -150,7 +153,7 @@ async function startReceiver() {
 
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = FFT_SIZE;
-    analyser.smoothingTimeConstant = 0.25;  // low smoothing = faster response
+    analyser.smoothingTimeConstant = 0.0;   // no smoothing — each frame is independent
 
     const source = audioCtx.createMediaStreamSource(stream);
     source.connect(analyser);
@@ -288,23 +291,42 @@ function tick() {
 // ─────────────────────────────────────────────────────────────────────────────
 // SYMBOL READING  (runs independently of tick() via setTimeout)
 // ─────────────────────────────────────────────────────────────────────────────
-function scheduleRead(delayMs) {
+//
+// Classic chained setTimeout(fn, 250) accumulates jitter: each firing is
+// ±10–50 ms late, so by symbol 10 we can be 100–500 ms off-centre.
+//
+// Fix: anchor all reads to a single reference time (firstReadAt) and compute
+// each delay as (firstReadAt + n*SYMBOL_MS) - now.  Jitter per symbol stays
+// at one interval's worth, never accumulates.
+//
+let firstReadAt  = 0;   // performance.now() target for symbol 0
+let readIndex    = 0;   // which symbol we are about to read
+
+function scheduleRead(initialDelayMs) {
   if (pendingRead) clearTimeout(pendingRead);
-  pendingRead = setTimeout(readSymbol, delayMs);
+  readIndex   = 0;
+  firstReadAt = performance.now() + initialDelayMs;
+  pendingRead = setTimeout(readSymbol, initialDelayMs);
+}
+
+function scheduleNextRead() {
+  readIndex++;
+  const target = firstReadAt + readIndex * SYMBOL_MS;
+  const delay  = Math.max(0, target - performance.now());
+  pendingRead  = setTimeout(readSymbol, delay);
 }
 
 function readSymbol() {
   if (state !== ST.READING) return;
 
-  const bits  = getCurrentBits();
+  const bits = getCurrentBits();
   updateGrid(bits);
-  const idx   = bitsToIndex(bits);
-  const char  = indexToChar(idx);
+  const idx  = bitsToIndex(bits);
+  const char = indexToChar(idx);
 
   log(`  bits=[${bits.join('')}]  idx=${String(idx).padStart(2)}  → ${char === null ? '(END)' : `'${char}'`}`);
 
   if (char === null) {
-    // End marker received
     log('✓ End marker — message complete');
     setState('WAITING');
     preambleStart = null;
@@ -312,7 +334,7 @@ function readSymbol() {
   } else {
     decodedChars.push(char);
     document.getElementById('decoded').textContent = decodedChars.join('');
-    scheduleRead(SYMBOL_MS);  // schedule next symbol
+    scheduleNextRead();
   }
 }
 

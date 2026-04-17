@@ -78,10 +78,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 const FREQS        = [800, 1000, 1200, 1400, 1600, 1800]; // subcarrier frequencies (Hz)
 const SYMBOL_MS    = 250;   // duration of one data symbol
-const PREAMBLE_MS  = 600;   // duration of the all-tones preamble
+const PREAMBLE_MS  = 800;   // all-tones preamble; receiver needs 300 ms to confirm
 const GAP_MS       = 250;   // silence between preamble and first symbol
 const PAUSE_MS     = 800;   // pause between repeated transmissions
-const AMPLITUDE    = 0.25;  // oscillator output level (0–1)
+// 6 simultaneous sines can peak at 6×A; keep A low enough to avoid clipping
+const AMPLITUDE    = 0.15;
 
 // Character set — index 0..39 map to these characters.
 // Index 63 (= 0b111111) is reserved as the END marker.
