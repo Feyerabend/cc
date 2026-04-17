@@ -1,6 +1,7 @@
 
 ## Signal Processing
 
+> [!IMPORTANT]
 > *About this additional section:* This section fills a gap in the main
   text by introducing the fundamentals of signal processing: what signals
   are, how they are sampled and represented digitally, how to analyse them
