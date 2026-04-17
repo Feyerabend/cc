@@ -47,9 +47,9 @@
 <p>Encodes text as simultaneous tones and plays them through your speakers.</p>
 
 <div class="params">
-  Subcarriers: <span>800 · 1000 · 1200 · 1400 · 1600 · 1800 Hz</span> &nbsp;|&nbsp;
+  Subcarriers: <span>1000 · 1200 · 1400 · 1600 · 1800 · 2000 Hz</span> &nbsp;|&nbsp;
   Spacing: <span>200 Hz</span> &nbsp;|&nbsp;
-  Symbol: <span>250 ms</span> &nbsp;|&nbsp;
+  Symbol: <span>300 ms</span> &nbsp;|&nbsp;
   Bits/symbol: <span>6</span>
 </div>
 
@@ -76,10 +76,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIGURATION  (must match receiver.html exactly)
 // ─────────────────────────────────────────────────────────────────────────────
-const FREQS        = [800, 1000, 1200, 1400, 1600, 1800]; // subcarrier frequencies (Hz)
-const SYMBOL_MS    = 250;   // duration of one data symbol
-const PREAMBLE_MS  = 800;   // all-tones preamble; receiver needs 300 ms to confirm
-const GAP_MS       = 250;   // silence between preamble and first symbol
+// Subcarriers start at 1000 Hz (not 800) to stay clear of low-frequency room noise
+const FREQS        = [1000, 1200, 1400, 1600, 1800, 2000];
+const SYMBOL_MS    = 300;   // duration of one data symbol (longer = more FFT windows per symbol)
+const PREAMBLE_MS  = 900;   // all-tones preamble; receiver needs 250 ms to confirm
+const GAP_MS       = 400;   // longer silence gives gap detector more headroom
 const PAUSE_MS     = 800;   // pause between repeated transmissions
 // 6 simultaneous sines can peak at 6×A; keep A low enough to avoid clipping
 const AMPLITUDE    = 0.15;

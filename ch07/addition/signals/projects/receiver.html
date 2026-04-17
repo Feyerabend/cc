@@ -53,9 +53,9 @@
 <p>Listens via microphone, runs FFT, decodes tones back into text.</p>
 
 <div class="params">
-  Subcarriers: <span>800 · 1000 · 1200 · 1400 · 1600 · 1800 Hz</span> &nbsp;|&nbsp;
+  Subcarriers: <span>1000 · 1200 · 1400 · 1600 · 1800 · 2000 Hz</span> &nbsp;|&nbsp;
   Spacing: <span>200 Hz</span> &nbsp;|&nbsp;
-  Symbol: <span>250 ms</span> &nbsp;|&nbsp;
+  Symbol: <span>300 ms</span> &nbsp;|&nbsp;
   Bits/symbol: <span>6</span>
 </div>
 
@@ -97,10 +97,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIGURATION  (must match sender.html exactly)
 // ─────────────────────────────────────────────────────────────────────────────
-const FREQS             = [800, 1000, 1200, 1400, 1600, 1800];
-const SYMBOL_MS         = 250;
-const PREAMBLE_NEED_MS  = 300;  // how long all tones must be on to confirm preamble
-const GAP_NEED_MS       = 100;  // how long silence must last to confirm gap ended
+const FREQS             = [1000, 1200, 1400, 1600, 1800, 2000]; // must match sender
+const SYMBOL_MS         = 300;
+const PREAMBLE_NEED_MS  = 250;  // how long all tones must be on to confirm preamble
+const GAP_NEED_MS       =  50;  // detect gap quickly — less chance of missing symbol 0
 
 // Same charset as sender — index → character
 const CHARSET = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!?';
@@ -122,7 +122,7 @@ function indexToChar(idx) {
 // (which was 186ms — smearing across entire 250ms symbols).
 // Resolution = 21.5 Hz/bin; FREQS are 200 Hz apart → 9+ bins separation, no cross-talk.
 const FFT_SIZE      = 2048;
-const GAP_APPROX_MS = 250;    // must match sender's GAP_MS
+const GAP_APPROX_MS = 400;    // must match sender's GAP_MS
 
 let audioCtx, analyser, dataArray;
 let freqBins = [];      // which FFT bin each subcarrier lands on
@@ -153,7 +153,9 @@ async function startReceiver() {
 
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = FFT_SIZE;
-    analyser.smoothingTimeConstant = 0.0;   // no smoothing — each frame is independent
+    // 0.15 smoothing: enough to suppress single-frame noise spikes that break
+    // allOff() gap detection, while still settling well within a 300 ms symbol.
+    analyser.smoothingTimeConstant = 0.15;
 
     const source = audioCtx.createMediaStreamSource(stream);
     source.connect(analyser);
@@ -206,7 +208,8 @@ function getCurrentBits() {
 }
 
 function allOn(bits)  { return bits.every(b => b === 1); }
-function allOff(bits) { return bits.every(b => b === 0); }
+// Allow 1 noisy bin — a single spike shouldn't block gap detection
+function allOff(bits) { return bits.filter(b => b === 1).length <= 1; }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STATE MACHINE
