@@ -299,7 +299,7 @@ trivial) reduces the total work from $O(N^2)$ to $O(N \log_2 N)$.
 *Complexity comparison:*
 
 | N      | DFT (N²)  | FFT (N log₂ N) | Speedup  |
-|--|--|-|-|
+|--------|-----------|----------------|----------|
 | 64     | 4 096     | 384            | 10.7×    |
 | 1 024  | 1 048 576 | 10 240         | 102×     |
 | 65 536 | 4.3 × 10⁹ | 1 048 576      | 4 096×   |
@@ -491,7 +491,7 @@ The kernel is now a small 2-D grid of weights (e.g. $3 \times 3$) that
 slides over the image. Different kernels produce very different effects:
 
 | Kernel                             | Effect               | Use                   |
-||-|--|
+|------------------------------------|----------------------|-----------------------|
 | All-positive, sums to 1            | Blurring / smoothing | Noise reduction       |
 | Positive centre, negative surround | Sharpening           | Enhancing fine detail |
 | Asymmetric gradients               | Edge detection       | Feature extraction    |
@@ -532,7 +532,7 @@ competing goals:
 *Common windows:*
 
 | Window       | Main-lobe                   | Peak side-lobe        | Best for                                |
-|--|--|--|--|
+|--------------|-----------------------------|-----------------------|-----------------------------------------|
 | Rectangular  | Narrowest                   | -13 dB (high leakage) | Signals with exact-bin frequencies      |
 | Hann         | Wider                       | -31 dB                | General-purpose audio/vibration         |
 | Hamming      | Slightly narrower than Hann | -41 dB                | Speech processing                       |
@@ -619,7 +619,7 @@ y[n] = \sum_{k=0}^{M} b_k \cdot x[n-k] - \sum_{k=1}^{N} a_k \cdot y[n-k]
 *Comparison:*
 
 | Property              | FIR                             | IIR                                               |
-|--|||
+|-----------------------|---------------------------------|---------------------------------------------------|
 | Stability             | Always stable (no feedback)     | Possible instability if poles outside unit circle |
 | Phase response        | Exactly linear phase achievable | Non-linear phase (introduces waveform distortion) |
 | Computational cost    | Higher (needs many taps)        | Lower (fewer coefficients for same sharpness)     |
