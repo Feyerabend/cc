@@ -43,7 +43,7 @@ in the ground.
 
 *Continuous signals* are defined at every instant, with no gaps.
 Mathematically we write $x(t)$ to mean the signal value at time $t$,
-where $t$ is a real number. Physical signals -- sound, light, temperature --
+where $t$ is a real number. Physical signals--sound, light, temperature --
 are continuous.
 
 *Discrete signals* are defined only at specific, regularly spaced instants.
@@ -55,7 +55,7 @@ infinite (or finite) sequence of moments.
 The table below gives a sense of how broad the domain is:
 
 | Domain     | Signal                   | Independent variable |
-||--|-|
+|------------|--------------------------|----------------------|
 | Audio      | Pressure wave / voltage  | Time                 |
 | Image      | Pixel intensity          | Space `(x, y)`       |
 | Radar      | Reflected pulse envelope | Time / range         |
@@ -64,7 +64,7 @@ The table below gives a sense of how broad the domain is:
 | Geophysics | Seismic wave             | Space and time       |
 
 The central task of signal processing is to extract useful information from
-these varying quantities -- removing noise, detecting patterns, compressing
+these varying quantities--removing noise, detecting patterns, compressing
 data, or transforming representations so that downstream algorithms can work
 more easily.
 
@@ -82,7 +82,7 @@ filters to subtract an estimate of background noise from the microphone
 signal in real time. MP3 and AAC compression apply psychoacoustic models
 that discard frequency content the human ear cannot perceive, achieving
 10:1 compression with minimal audible loss. Speech recognition first
-converts audio to a spectrogram -- a time-frequency map -- before feeding
+converts audio to a spectrogram--a time-frequency map--before feeding
 it to a neural network.
 
 *Communications.* Amplitude modulation (AM), frequency modulation (FM),
@@ -104,7 +104,7 @@ task.
 devices, and consumer electronics all perform signal processing under
 tight constraints of memory and compute budget. A digital filter that
 smooths a noisy ADC reading, a PID controller that cancels vibration,
-an encoder that detects a zero crossing -- these are signal processing
+an encoder that detects a zero crossing--these are signal processing
 tasks executed in real time, often without an operating system, in a few
 kilobytes of RAM.
 
@@ -113,7 +113,7 @@ kilobytes of RAM.
 
 The mathematics here is kept to what you will actually need in the rest of
 the section. If an equation looks unfamiliar, focus on what it *does* rather
-than proving it -- the code examples will make the behaviour concrete.
+than proving it--the code examples will make the behaviour concrete.
 
 
 #### 2.1 Continuous vs Discrete Signals
@@ -123,9 +123,9 @@ real-valued time $t$. This is the natural model for physical phenomena.
 We can differentiate it, integrate it, and reason about its behaviour at
 any instant.
 
-A discrete signal $x[n]$ assigns a value only at integer indices $n \in \mathbb{Z}$.
-It arises whenever we *sample* a continuous signal -- measuring its value
-at regular intervals.
+A discrete signal $x[n]$ assigns a value only at integer indices $n
+\in \mathbb{Z}$. It arises whenever we *sample* a continuous signal--measuring
+its value at regular intervals.
 
 *Notation summary:*
 - Continuous signal: $x(t)$, $t \in \mathbb{R}$
@@ -144,10 +144,10 @@ $t = nT$. Nothing subtle is happening: we are reading the value of the
 continuous signal at regular clock ticks and writing those numbers down.
 
 *Why discrete signals are necessary.* Storing a continuous signal requires
-infinite precision and infinite storage -- both impossible. Discrete
+infinite precision and infinite storage--both impossible. Discrete
 sampling reduces the representation to a finite (or countably infinite)
 sequence of numbers, which computers can store, transmit, and process. The
-key question -- addressed in the next section -- is how fast we must sample
+key question--addressed in the next section--is how fast we must sample
 to avoid losing information.
 
 
@@ -174,13 +174,13 @@ at a given sampling rate.
 contains components above the Nyquist frequency and we sample below
 $2 f_m$, those high-frequency components are *folded* back into the
 representable range and appear as phantom low-frequency components. The
-corruption is irreversible -- once aliased, the original high-frequency
+corruption is irreversible--once aliased, the original high-frequency
 content cannot be recovered.
 
 A classic visual example: a wheel spinning at 24 revolutions per second
 filmed at 24 frames per second appears stationary. The sampling rate (24 fps)
-is exactly equal to the rotation frequency, pushing it right at -- and in
-practice beyond -- the Nyquist limit, which causes the aliased "stationary"
+is exactly equal to the rotation frequency, pushing it right at--and in
+practice beyond--the Nyquist limit, which causes the aliased "stationary"
 appearance. The aliasing project in Section 6 makes this quantitative.
 
 *Anti-aliasing filters.* In practice, a low-pass filter is applied to the
@@ -198,13 +198,13 @@ f_s \ge 2 \cdot f_m
 #### 2.3 Fourier Transform
 
 The central insight of Fourier analysis is that *any* periodic signal --
-and, with a suitable extension, any signal with finite energy -- can be
+and, with a suitable extension, any signal with finite energy--can be
 expressed as a sum of sinusoids[^sinusoids] of different frequencies,
 amplitudes, and phases. This is not just a mathematical curiosity; it
 reveals which frequencies are present in a signal and in what proportion,
 turning a time-domain waveform into a *frequency-domain spectrum*.
 
-[^sinusoids]: A sinusoid is the sine or cosine function -- a continuous,
+[^sinusoids]: A sinusoid is the sine or cosine function--a continuous,
 smooth oscillation at a single fixed frequency. In signal processing,
 sinusoids are the fundamental building blocks: any complicated waveform
 can be built up from (or broken down into) a collection of sinusoids at
@@ -212,7 +212,7 @@ different frequencies and amplitudes.
 
 *Intuition.* Imagine a chord played on a piano. The pressure waveform at
 your ear is a messy, oscillating curve. Yet your auditory system immediately
-resolves it into individual notes -- A, C, E -- each at its own frequency
+resolves it into individual notes--A, C, E--each at its own frequency
 and loudness. Fourier analysis is the mathematical version of that
 decomposition: it asks, "for each possible frequency $f$, how much of that
 frequency is present in the signal?"
@@ -281,7 +281,7 @@ this dramatically.
 
 #### 2.5 Fast Fourier Transform (FFT)
 
-The FFT is not a different transform -- it is an efficient *algorithm* for
+The FFT is not a different transform--it is an efficient *algorithm* for
 computing exactly the same DFT result. The standard Cooley-Tukey radix-2
 FFT exploits the fact that a DFT of size $N$ can be recursively split into
 two DFTs of size $N/2$:
@@ -341,15 +341,15 @@ and sum the results." The filter *remembers* a window of past inputs.
 *Why convolution matters for filtering:*
 
 - A *low-pass* filter has a kernel whose coefficients are all positive and
-  roughly equal -- it computes a running average, smoothing out rapid
+  roughly equal--it computes a running average, smoothing out rapid
   fluctuations.
 
 - A *high-pass* filter has a kernel with positive and negative coefficients
-  that sum to zero -- it subtracts a smoothed version of the signal from
+  that sum to zero--it subtracts a smoothed version of the signal from
   itself, emphasising edges and rapid changes.
 
 - The Convolution Theorem means we can implement convolution by multiplying
-  Fourier transforms instead of sliding a kernel -- often much faster for
+  Fourier transforms instead of sliding a kernel--often much faster for
   long kernels.
 
 *See the folder [convolution](./conv/).*
@@ -409,7 +409,7 @@ band), isolating a physiological rhythm in biosignals (e.g. the alpha band
 Understanding how to construct synthetic signals with known properties is
 core both for testing algorithms and for building intuition about the
 frequency domain. If you generate a signal yourself, you know exactly what
-frequencies it contains -- so you can immediately check whether your
+frequencies it contains--so you can immediately check whether your
 analysis code finds them correctly.
 
 A pure sinusoid at frequency $f$ with amplitude $A$ and phase $\varphi$ is:
@@ -439,14 +439,14 @@ spectrum is a skill in itself. Here is what to look for.
 - *DC component* (bin $k = 0$) represents the signal mean. A non-zero DC
   bin means the signal has a constant offset added to it.
 
-- *Noise floor* -- if the spectrum has many small bins rather than a few
+- *Noise floor*--if the spectrum has many small bins rather than a few
   clear peaks, the signal is noisy in a spectrally broad sense.
 
 - *Harmonics* appear as evenly spaced peaks at integer multiples of a
   fundamental. They indicate non-linear distortion, clipping, or a
   naturally harmonic source like a plucked string.
 
-- *The symmetric half* -- for a real-valued signal, the FFT output above
+- *The symmetric half*--for a real-valued signal, the FFT output above
   $N/2$ is the conjugate mirror of the lower half. Use `np.fft.rfft` to
   work with just the unique positive-frequency half; this halves the output
   size and avoids confusion.
@@ -508,8 +508,8 @@ such kernels to a real image and compare the results side by side.
 
 When we compute the DFT of a finite block of $N$ samples, we are implicitly
 assuming the signal is periodic with period $N$. If the signal is not
-exactly periodic within the block -- which is almost always true for real
-data -- there is a discontinuity at the block boundaries (the end of the
+exactly periodic within the block--which is almost always true for real
+data--there is a discontinuity at the block boundaries (the end of the
 block does not join smoothly back to the beginning). This discontinuity
 causes energy to *leak* from the true frequency bins into neighbouring ones.
 The effect is called *spectral leakage*.
@@ -526,8 +526,8 @@ at the cost of slightly widening the spectral peak (a small loss of
 frequency resolution). The choice of window is a trade-off between two
 competing goals:
 
-- *Main-lobe width* -- how narrow the spectral peak is (frequency resolution)
-- *Side-lobe level* -- how much energy leaks into distant bins (leakage suppression)
+- *Main-lobe width*--how narrow the spectral peak is (frequency resolution)
+- *Side-lobe level*--how much energy leaks into distant bins (leakage suppression)
 
 *Common windows:*
 
@@ -553,8 +553,8 @@ The Z-Transform is a generalisation of the Discrete-Time Fourier Transform
 (DTFT) to the complex plane. Where the DTFT evaluates the spectrum only on
 the unit circle $|z| = 1$, the Z-Transform evaluates everywhere in the
 complex plane. This broader view is the principal tool for *analysing and
-designing* digital filters, because it exposes properties -- stability in
-particular -- that are not visible on the unit circle alone.
+designing* digital filters, because it exposes properties--stability in
+particular--that are not visible on the unit circle alone.
 
 *Definition:*
 
@@ -599,7 +599,7 @@ y[n] = b_0 x[n] + b_1 x[n-1] + \cdots - a_1 y[n-1] - a_2 y[n-2] - \cdots
 Digital filters fall into two fundamental families, and the choice between
 them is one of the first decisions when designing a filtering stage.
 
-*FIR (Finite Impulse Response)* filters have only feedforward paths -- the
+*FIR (Finite Impulse Response)* filters have only feedforward paths--the
 output depends only on current and past *inputs*, never on past outputs.
 Their impulse response is finite (it dies out in exactly $M$ steps for an
 $M$-tap filter).
@@ -608,7 +608,7 @@ $M$-tap filter).
 y[n] = \sum_{k=0}^{M-1} b_k \cdot x[n - k]
 ```
 
-*IIR (Infinite Impulse Response)* filters have feedback paths -- the output
+*IIR (Infinite Impulse Response)* filters have feedback paths--the output
 depends on past *outputs* as well as past inputs. Their impulse response is
 theoretically infinite, though it decays exponentially for a stable filter.
 
@@ -632,7 +632,7 @@ application where linear phase matters. Phase distortion can cause waveform
 dispersion or ear-fatiguing artefacts in audio.
 
 *When to choose IIR:* real-time systems with tight computational budgets,
-communications receivers, control loops -- anywhere the non-linear phase
+communications receivers, control loops--anywhere the non-linear phase
 is acceptable and efficiency is paramount.
 
 *Comparing FIR and IIR for the same specification in folder [firiir](./firiir/).*
@@ -644,7 +644,7 @@ The four projects below each take a concept from the preceding sections and
 turn it into a runnable, observable experiment. None of them require any
 setup beyond a browser or a standard Python environment (`numpy`,
 `matplotlib`, `scipy`). Run each one, look at what it produces, and try
-changing the parameters -- that is where the real understanding comes from.
+changing the parameters--that is where the real understanding comes from.
 
 
 
@@ -688,7 +688,7 @@ The result is saved as `aliasing_full_demo.png`.
 
 *What to observe.* In the bottom panel (14 Hz sampling), the sampled
 points land on a slow-moving curve that has nothing to do with the original
-17 Hz signal -- that is the alias. Notice how the FFT spectrum on the right
+17 Hz signal--that is the alias. Notice how the FFT spectrum on the right
 shows a peak at the wrong frequency. In the top panel (100 Hz sampling)
 the spectrum shows a clean peak right at 17 Hz.
 
@@ -755,7 +755,7 @@ speedup factor at each size.
 
 *Concepts exercised.* Section 2.4 (DFT definition), Section 2.5 (FFT
 algorithm and complexity). The `dft_naive` function is a direct
-implementation of the DFT sum formula from Section 2.4 -- tracing through
+implementation of the DFT sum formula from Section 2.4--tracing through
 it line by line is a useful exercise.
 
 *Requirements.* Python with `numpy` and `matplotlib`.
@@ -774,7 +774,7 @@ python benchmark.py
 *What it does.* This two-part project is a working acoustic data link:
 the sender encodes a text message as audible tones and plays them through
 your speakers; the receiver listens through a microphone, runs an FFT, and
-decodes the tones back into text. No network connection is involved -- the
+decodes the tones back into text. No network connection is involved--the
 data travels as sound through the air.
 
 The encoding scheme is a simplified version of *OFDM (Orthogonal
@@ -784,8 +784,8 @@ is carried by one of six fixed subcarrier frequencies (800, 1000, 1200,
 1400, 1600, and 1800 Hz). A bit value of 1 means that subcarrier is
 *on* for the symbol duration (250 ms); a 0 means it is silent.
 
-Before the data, the sender transmits a *preamble* -- all six tones on
-simultaneously for 600 ms -- so the receiver knows a message is coming.
+Before the data, the sender transmits a *preamble*--all six tones on
+simultaneously for 600 ms--so the receiver knows a message is coming.
 A brief silence (gap) follows to mark the end of the preamble. The
 receiver uses a state machine (WAITING → PREAMBLE → READING) to stay
 synchronised.
@@ -850,7 +850,7 @@ practical implementation.
 
 5. *FIR filters* are unconditionally stable and can achieve exactly linear
    phase. *IIR filters* are more efficient but introduce phase distortion
-   and require care to ensure stability -- checked via pole location in the
+   and require care to ensure stability--checked via pole location in the
    z-plane.
 
 6. *Windowing* reduces spectral leakage when analysing finite-length
