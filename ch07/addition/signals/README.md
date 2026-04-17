@@ -1,6 +1,7 @@
 
 ## Signal Processing
 
+> [!IMPORTANT]
 > *About this additional section:* This section fills a gap in the main
   text by introducing the fundamentals of signal processing: what signals
   are, how they are sampled and represented digitally, how to analyse them
@@ -19,6 +20,10 @@ FFT algorithm makes the answer fast enough to use in real time. Knowing
 the frequency content, we can design *filters* that remove unwanted
 components. The projects at the end of the section make each of these
 ideas tangible with runnable code.
+
+> [!NOTE]
+> It is recommended to work in a virtual environment when using Python.
+
 
 
 ### 1. Introduction
