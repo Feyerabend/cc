@@ -55,7 +55,7 @@ infinite (or finite) sequence of moments.
 The table below gives a sense of how broad the domain is:
 
 | Domain     | Signal                   | Independent variable |
-|------------|--------------------------|----------------------|
+||--|-|
 | Audio      | Pressure wave / voltage  | Time                 |
 | Image      | Pixel intensity          | Space `(x, y)`       |
 | Radar      | Reflected pulse envelope | Time / range         |
@@ -239,12 +239,12 @@ loses no information, and coming back gives back the original signal exactly.
 
 *Key properties to know:*
 
-| Property            | Statement                                                  |
-|---------------------|------------------------------------------------------------|
-| Linearity           | $\mathcal{F}\{ax + by\} = aX + bY$                         |
+| Property            | Statement                                                         |
+||-|
+| Linearity           | $\mathcal{F}\{ax + by\} = aX + bY$                                |
 | Time shift          | Shifting $x(t)$ by $\tau$ multiplies $X(f)$ by $e^{-i2\pi f\tau}$ |
 | Convolution theorem | Convolution in time $\leftrightarrow$ multiplication in frequency |
-| Parseval's theorem  | Energy is preserved: $\int\|x\|^2 dt = \int\|X\|^2 df$    |
+| Parseval's theorem  | Energy is preserved: $\int\|x\|^2 dt = \int\|X\|^2 df$            |
 
 The *convolution theorem* is particularly important for filtering: applying
 a filter $h$ to a signal $x$ by convolution in the time domain is
@@ -299,7 +299,7 @@ trivial) reduces the total work from $O(N^2)$ to $O(N \log_2 N)$.
 *Complexity comparison:*
 
 | N      | DFT (N²)  | FFT (N log₂ N) | Speedup  |
-|--------|-----------|----------------|----------|
+|--|--|-|-|
 | 64     | 4 096     | 384            | 10.7×    |
 | 1 024  | 1 048 576 | 10 240         | 102×     |
 | 65 536 | 4.3 × 10⁹ | 1 048 576      | 4 096×   |
@@ -491,7 +491,7 @@ The kernel is now a small 2-D grid of weights (e.g. $3 \times 3$) that
 slides over the image. Different kernels produce very different effects:
 
 | Kernel                             | Effect               | Use                   |
-|------------------------------------|----------------------|-----------------------|
+||-|--|
 | All-positive, sums to 1            | Blurring / smoothing | Noise reduction       |
 | Positive centre, negative surround | Sharpening           | Enhancing fine detail |
 | Asymmetric gradients               | Edge detection       | Feature extraction    |
@@ -532,7 +532,7 @@ competing goals:
 *Common windows:*
 
 | Window       | Main-lobe                   | Peak side-lobe        | Best for                                |
-|--------------|-----------------------------|-----------------------|-----------------------------------------|
+|--|--|--|--|
 | Rectangular  | Narrowest                   | -13 dB (high leakage) | Signals with exact-bin frequencies      |
 | Hann         | Wider                       | -31 dB                | General-purpose audio/vibration         |
 | Hamming      | Slightly narrower than Hann | -41 dB                | Speech processing                       |
@@ -619,7 +619,7 @@ y[n] = \sum_{k=0}^{M} b_k \cdot x[n-k] - \sum_{k=1}^{N} a_k \cdot y[n-k]
 *Comparison:*
 
 | Property              | FIR                             | IIR                                               |
-|-----------------------|---------------------------------|---------------------------------------------------|
+|--|||
 | Stability             | Always stable (no feedback)     | Possible instability if poles outside unit circle |
 | Phase response        | Exactly linear phase achievable | Non-linear phase (introduces waveform distortion) |
 | Computational cost    | Higher (needs many taps)        | Lower (fewer coefficients for same sharpness)     |
@@ -646,39 +646,39 @@ setup beyond a browser or a standard Python environment (`numpy`,
 `matplotlib`, `scipy`). Run each one, look at what it produces, and try
 changing the parameters -- that is where the real understanding comes from.
 
----
+
 
 #### 6.1 Real-Time Spectrum Analyser
 
-**File:** [spectrum.html](./projects/spectrum.html)
+*File:* [spectrum.html](./projects/spectrum.html)
 
-**What it does.** Open this file in a browser and click *Start Microphone*.
+*What it does.* Open this file in a browser and click *Start Microphone*.
 The page captures audio from your microphone using the Web Audio API, feeds
 it through the browser's built-in FFT, and displays a live frequency
 spectrum updated many times per second. You can switch between a bar chart
 and a line plot, and change the FFT size from 512 to 4096 bins.
 
-**What to observe.** Try speaking, whistling, or playing music near the
+*What to observe.* Try speaking, whistling, or playing music near the
 microphone. Watch which frequency bands light up. Speak a sustained vowel
 and notice the harmonic peaks at integer multiples of the fundamental pitch.
 Change the FFT size: a larger size gives finer frequency resolution but
 takes more time to fill a single window, which makes the display slightly
 less responsive.
 
-**Concepts exercised.** Section 2.4 (DFT), Section 2.5 (FFT), Section 4.2
+*Concepts exercised.* Section 2.4 (DFT), Section 2.5 (FFT), Section 4.2
 (reading a spectrum). The status bar shows the sample rate and number of
 frequency bins, connecting the live display to the notation introduced in
 the text.
 
-**Requirements.** Any modern browser. No installation needed.
+*Requirements.* Any modern browser. No installation needed.
 
----
+
 
 #### 6.2 Aliasing Demonstration
 
-**File:** [aliasing.py](./projects/aliasing.py)
+*File:* [aliasing.py](./projects/aliasing.py)
 
-**What it does.** This script generates a 17 Hz sine wave and samples it
+*What it does.* This script generates a 17 Hz sine wave and samples it
 at three different rates: 100 Hz (well above Nyquist, so correct), 25 Hz
 (just above Nyquist, so marginal), and 14 Hz (below Nyquist, so aliased).
 For each rate it plots the sampled points overlaid on the true continuous
@@ -686,60 +686,60 @@ waveform, and draws the alias frequency as a dashed curve where aliasing
 occurs. It also prints a summary table of alias frequencies to the console.
 The result is saved as `aliasing_full_demo.png`.
 
-**What to observe.** In the bottom panel (14 Hz sampling), the sampled
+*What to observe.* In the bottom panel (14 Hz sampling), the sampled
 points land on a slow-moving curve that has nothing to do with the original
 17 Hz signal -- that is the alias. Notice how the FFT spectrum on the right
 shows a peak at the wrong frequency. In the top panel (100 Hz sampling)
 the spectrum shows a clean peak right at 17 Hz.
 
-**Concepts exercised.** Section 2.2 (Nyquist theorem and aliasing). The
+*Concepts exercised.* Section 2.2 (Nyquist theorem and aliasing). The
 function `alias_frequency` in the script implements the folding formula
 analytically, which you can compare to the visual result.
 
-**Requirements.** Python with `numpy` and `matplotlib`.
+*Requirements.* Python with `numpy` and `matplotlib`.
 
 ```bash
 python aliasing.py
 ```
 
----
+
 
 #### 6.3 Image Filter Toolkit
 
-**File:** [toolkit.py](./projects/toolkit.py)
+*File:* [toolkit.py](./projects/toolkit.py)
 
-**What it does.** This script loads a standard greyscale test image
+*What it does.* This script loads a standard greyscale test image
 (scipy's built-in staircase photograph) and applies eight different 2-D
 convolution kernels to it, displaying all results in a single figure saved
 as `image_filter_toolkit.png`. The kernel library includes two box blurs,
 a Gaussian blur at two different widths, a sharpening filter, two Laplacian
 edge detectors, a Sobel edge magnitude map, and an emboss effect.
 
-**What to observe.** Compare the Gaussian blur at sigma=2 versus sigma=5:
+*What to observe.* Compare the Gaussian blur at sigma=2 versus sigma=5:
 the larger sigma removes more detail. Compare the Laplacian-4 and
 Laplacian-8 edge detectors: the 8-connected version picks up diagonal edges
 that the 4-connected version misses. The Sobel edge magnitude combines
 horizontal and vertical gradient images into a single edge strength map --
 look at how it outlines the staircase structure.
 
-**Concepts exercised.** Section 3.1 (convolution), Section 4.4 (2-D signal
+*Concepts exercised.* Section 3.1 (convolution), Section 4.4 (2-D signal
 processing). The `KERNELS` dictionary at the top of the file is worth
 reading: each entry is a small numpy array whose shape and sign pattern
 determine the effect.
 
-**Requirements.** Python with `numpy`, `scipy`, and `matplotlib`.
+*Requirements.* Python with `numpy`, `scipy`, and `matplotlib`.
 
 ```bash
 python toolkit.py
 ```
 
----
+
 
 #### 6.4 FFT Benchmark: Naive DFT vs FFT
 
-**File:** [benchmark.py](./projects/benchmark.py)
+*File:* [benchmark.py](./projects/benchmark.py)
 
-**What it does.** This script implements the naive $O(N^2)$ DFT using
+*What it does.* This script implements the naive $O(N^2)$ DFT using
 NumPy broadcasting, then measures the wall-clock time of both that
 implementation and NumPy's built-in FFT across signal lengths from 8 to
 1024 samples. It prints a table of times and speedup factors to the
@@ -747,31 +747,31 @@ console, then plots measured times alongside the theoretical $O(N^2)$ and
 $O(N \log N)$ complexity curves on a log-log scale. The plot is saved as
 `fft_benchmark.png`.
 
-**What to observe.** On the log-log plot, the naive DFT follows the
+*What to observe.* On the log-log plot, the naive DFT follows the
 steeper $N^2$ line while the FFT follows the shallower $N \log N$ line.
 The gap between them widens as $N$ increases, making the theoretical
 speedup visible in measured time. The console table shows the actual
 speedup factor at each size.
 
-**Concepts exercised.** Section 2.4 (DFT definition), Section 2.5 (FFT
+*Concepts exercised.* Section 2.4 (DFT definition), Section 2.5 (FFT
 algorithm and complexity). The `dft_naive` function is a direct
 implementation of the DFT sum formula from Section 2.4 -- tracing through
 it line by line is a useful exercise.
 
-**Requirements.** Python with `numpy` and `matplotlib`.
+*Requirements.* Python with `numpy` and `matplotlib`.
 
 ```bash
 python benchmark.py
 ```
 
----
+
 
 #### 6.5 Acoustic OFDM: Sender and Receiver
 
-**Files:** [sender.html](./projects/sender.html) and
+*Files:* [sender.html](./projects/sender.html) and
 [receiver.html](./projects/receiver.html)
 
-**What it does.** This two-part project is a working acoustic data link:
+*What it does.* This two-part project is a working acoustic data link:
 the sender encodes a text message as audible tones and plays them through
 your speakers; the receiver listens through a microphone, runs an FFT, and
 decodes the tones back into text. No network connection is involved -- the
@@ -790,7 +790,7 @@ A brief silence (gap) follows to mark the end of the preamble. The
 receiver uses a state machine (WAITING → PREAMBLE → READING) to stay
 synchronised.
 
-**How to use it.**
+*How to use it.*
 
 1. Open `sender.html` in one browser tab (or on a separate device).
 2. Open `receiver.html` in another tab (or on the same device if your
@@ -802,7 +802,7 @@ synchronised.
    are supported) and press *Send*.
 5. Watch the receiver's spectrum, tone grid, and decoded message panel.
 
-**What to observe.** On the receiver's spectrum display, the cyan-coloured
+*What to observe.* On the receiver's spectrum display, the cyan-coloured
 bars are the six subcarrier frequencies. When the sender plays a symbol,
 some of those bars jump above the yellow threshold line and the
 corresponding bit boxes light up green. After a complete message, the
@@ -814,14 +814,14 @@ can partially compensate. This is a miniature version of the signal-to-noise
 and sensitivity trade-offs that engineers tune in real communications
 receivers.
 
-**Concepts exercised.** Section 1.2 (communications and OFDM), Section 2.5
+*Concepts exercised.* Section 1.2 (communications and OFDM), Section 2.5
 (FFT for frequency detection), Section 4.2 (reading a spectrum), Section 3.2
 (band-pass detection at specific frequencies).
 
-**Requirements.** Any modern browser with microphone access. Run each file
+*Requirements.* Any modern browser with microphone access. Run each file
 directly from the filesystem (no server needed).
 
----
+
 
 ### Conclusion
 
