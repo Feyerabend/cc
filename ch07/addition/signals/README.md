@@ -20,6 +20,9 @@ the frequency content, we can design *filters* that remove unwanted
 components. The projects at the end of the section make each of these
 ideas tangible with runnable code.
 
+> [!NOTE] It is recommended to work in a virtual environment when using Python.
+
+
 
 ### 1. Introduction
 
