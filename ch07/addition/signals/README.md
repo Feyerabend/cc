@@ -240,7 +240,7 @@ loses no information, and coming back gives back the original signal exactly.
 *Key properties to know:*
 
 | Property            | Statement                                                         |
-||-|
+|---------------------|-------------------------------------------------------------------|
 | Linearity           | $\mathcal{F}\{ax + by\} = aX + bY$                                |
 | Time shift          | Shifting $x(t)$ by $\tau$ multiplies $X(f)$ by $e^{-i2\pi f\tau}$ |
 | Convolution theorem | Convolution in time $\leftrightarrow$ multiplication in frequency |
