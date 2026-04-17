@@ -7,24 +7,20 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Courier New', monospace;
-      background: #0d0d0d;
-      color: #33ff33;
-      max-width: 720px;
-      margin: 40px auto;
-      padding: 20px;
+      background: #0d0d0d; color: #33ff33;
+      max-width: 720px; margin: 40px auto; padding: 20px;
     }
     h1   { color: #00ffcc; margin-bottom: 2px; font-size: 1.3rem; letter-spacing: .08em; }
-    .sub { color: #555; font-size: 0.82rem; margin-bottom: 18px; }
-    .params { font-size: 11px; color: #888; margin-bottom: 14px; }
+    .sub { color: #555; font-size: 0.82rem; margin-bottom: 16px; }
+    .params { font-size: 11px; color: #888; margin-bottom: 12px; }
     .params span { color: #0ff; }
-
     textarea {
       width: 100%; background: #111; color: #33ff33;
       border: 1px solid #33ff33; padding: 8px;
       font-family: 'Courier New', monospace; font-size: 14px;
       resize: vertical; margin-bottom: 10px;
     }
-    .controls { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; flex-wrap: wrap; }
+    .controls { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
     button {
       background: #33ff33; color: #000; border: none;
       padding: 8px 18px; cursor: pointer;
@@ -34,29 +30,25 @@
     label  { font-size: 11px; color: #888; }
     select { background: #111; color: #33ff33; border: 1px solid #555; padding: 3px 6px; font-family: monospace; }
 
-    /* Carrier indicator */
     .carrier {
-      height: 56px; border: 2px solid #333; background: #111;
-      position: relative; margin-bottom: 14px;
-      transition: border-color .06s;
+      height: 52px; border: 2px solid #333; background: #111;
+      position: relative; margin-bottom: 12px; transition: border-color .06s;
     }
-    .c-label { position: absolute; top: 50%; left: 12px; transform: translateY(-50%); font-size: 22px; font-weight: bold; transition: color .06s; }
-    .c-freq  { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); font-size: 13px; color: #888; }
-    .c-phase { position: absolute; bottom: 4px; left: 12px; font-size: 10px; color: #555; }
+    .c-label { position: absolute; top: 50%; left: 12px; transform: translateY(-50%); font-size: 20px; font-weight: bold; transition: color .06s; }
+    .c-freq  { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); font-size: 12px; color: #888; }
 
-    /* Bit stream */
     .bits {
-      font-size: 11px; letter-spacing: 3px; min-height: 22px;
+      font-size: 11px; letter-spacing: 3px; min-height: 20px;
       border: 1px solid #1a1a1a; padding: 3px 8px; margin-bottom: 8px; overflow: hidden;
     }
-    .bits .s { color: #ffff00; }   /* start */
-    .bits .d1 { color: #33ff33; }  /* data 1 */
-    .bits .d0 { color: #226622; }  /* data 0 */
-    .bits .p { color: #00ffcc; }   /* stop */
+    .bits .s  { color: #ffff00; }
+    .bits .d1 { color: #33ff33; }
+    .bits .d0 { color: #226622; }
+    .bits .p  { color: #00ffcc; }
 
     #status { color: #ff0; font-size: 12px; min-height: 16px; margin-bottom: 8px; }
     #log {
-      height: 110px; overflow-y: auto;
+      height: 120px; overflow-y: auto;
       border: 1px solid #1a1a1a; padding: 5px 8px;
       font-size: 10px; color: #555;
     }
@@ -65,13 +57,13 @@
 <body>
 
 <h1>FSK Modem &mdash; Sender</h1>
-<p class="sub">Bell&nbsp;202-style FSK &mdash; MARK&nbsp;=&nbsp;1 (high tone) &nbsp;|&nbsp; SPACE&nbsp;=&nbsp;0 (low tone) &nbsp;|&nbsp; 8N1 UART framing</p>
+<p class="sub">Bell&nbsp;202-style FSK &nbsp;|&nbsp; MARK&nbsp;=&nbsp;1 &nbsp;|&nbsp; SPACE&nbsp;=&nbsp;0 &nbsp;|&nbsp; 8N1 UART framing</p>
 
 <div class="params">
-  Mark&nbsp;(1):&nbsp;<span id="pMark">1200&nbsp;Hz</span>&nbsp;&nbsp;|&nbsp;&nbsp;
-  Space&nbsp;(0):&nbsp;<span id="pSpace">2200&nbsp;Hz</span>&nbsp;&nbsp;|&nbsp;&nbsp;
-  Baud:&nbsp;<span id="pBaud">10</span>&nbsp;&nbsp;|&nbsp;&nbsp;
-  Bit&nbsp;period:&nbsp;<span id="pBitMs">100&nbsp;ms</span>
+  Mark (1): <span id="pMark">1200 Hz</span> &nbsp;|&nbsp;
+  Space (0): <span id="pSpace">2200 Hz</span> &nbsp;|&nbsp;
+  Baud: <span id="pBaud">10</span> &nbsp;|&nbsp;
+  Bit period: <span id="pBitMs">100 ms</span>
 </div>
 
 <textarea id="msg" rows="3">HELLO MODEM WORLD</textarea>
@@ -86,26 +78,23 @@
       <option value="20">20</option>
     </select>
   </label>
-  <label>Mark&nbsp;Hz:
+  <label>Mark Hz:
     <select id="markSel">
       <option value="1200" selected>1200</option>
       <option value="1270">1270</option>
-      <option value="2100">2100</option>
     </select>
   </label>
-  <label>Space&nbsp;Hz:
+  <label>Space Hz:
     <select id="spaceSel">
       <option value="2200" selected>2200</option>
       <option value="1070">1070</option>
-      <option value="1300">1300</option>
     </select>
   </label>
 </div>
 
 <div class="carrier" id="carrier">
   <span class="c-label" id="cLabel">IDLE</span>
-  <span class="c-freq"  id="cFreq">&#x2014;&nbsp;Hz</span>
-  <span class="c-phase" id="cPhase">&nbsp;</span>
+  <span class="c-freq"  id="cFreq">&#x2014;</span>
 </div>
 
 <div class="bits" id="bits">&nbsp;</div>
@@ -114,41 +103,58 @@
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-// PARAMETERS  (refreshed from UI on each Send)
+// PARAMETERS
 // ─────────────────────────────────────────────────────────────────────────────
-let MARK_FREQ  = 1200;   // binary 1 — line idle
-let SPACE_FREQ = 2200;   // binary 0 — start bit, data 0
+const AMPLITUDE = 0.30;
+
+let MARK_FREQ  = 1200;
+let SPACE_FREQ = 2200;
 let BAUD       = 10;
 let BIT_MS     = 100;
-const AMPLITUDE      = 0.30;
-const TRAINING_BITS  = 40;   // alternating 1/0 carrier training
-const IDLE_BITS      = 10;   // mark-only gap before data (lets receiver sync)
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AUDIO ENGINE — single oscillator, frequency-switched
+// AUDIO ENGINE
 // ─────────────────────────────────────────────────────────────────────────────
 let audioCtx = null;
+let gainNode = null;
 let osc      = null;
 
 function initAudio() {
-  if (audioCtx) { audioCtx.close(); }
+  // Tear down any previous graph
+  if (osc)      { try { osc.stop();       } catch(_){} osc      = null; }
+  if (audioCtx) { try { audioCtx.close(); } catch(_){} audioCtx = null; }
+
   audioCtx = new AudioContext();
-  osc      = audioCtx.createOscillator();
-  const g  = audioCtx.createGain();
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = AMPLITUDE;
+  gainNode.connect(audioCtx.destination);
+
+  osc = audioCtx.createOscillator();
   osc.type = 'sine';
   osc.frequency.value = MARK_FREQ;
-  g.gain.value = AMPLITUDE;
-  osc.connect(g);
-  g.connect(audioCtx.destination);
+  osc.connect(gainNode);
   osc.start();
 }
 
-// Switch carrier frequency with a tiny 3 ms ramp to avoid clicks
+// Instant frequency switch with a 3 ms ramp to prevent audible clicks
 function setFreq(freq) {
+  if (!osc || !audioCtx) return;
   const t = audioCtx.currentTime;
   osc.frequency.cancelScheduledValues(t);
   osc.frequency.setValueAtTime(osc.frequency.value, t);
   osc.frequency.linearRampToValueAtTime(freq, t + 0.003);
+}
+
+function stopAudio() {
+  if (!audioCtx) return;
+  // Ramp gain to zero, then close after a short pause
+  const t = audioCtx.currentTime;
+  gainNode.gain.cancelScheduledValues(t);
+  gainNode.gain.setValueAtTime(gainNode.gain.value, t);
+  gainNode.gain.linearRampToValueAtTime(0, t + 0.03);
+  const ctx = audioCtx;
+  audioCtx = null; osc = null; gainNode = null;
+  setTimeout(() => { try { ctx.close(); } catch(_){} }, 50);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -157,36 +163,29 @@ function setFreq(freq) {
 const carrierEl = document.getElementById('carrier');
 const cLabel    = document.getElementById('cLabel');
 const cFreq     = document.getElementById('cFreq');
-const cPhase    = document.getElementById('cPhase');
 const statusEl  = document.getElementById('status');
 const logEl     = document.getElementById('log');
 
-function showTone(freq, phase) {
+function showTone(freq) {
   const isMark = (freq === MARK_FREQ);
-  cLabel.textContent  = isMark ? 'MARK  1' : 'SPACE  0';
-  cLabel.style.color  = isMark ? '#33ff33' : '#ff3333';
-  cFreq.textContent   = freq + ' Hz';
-  cPhase.textContent  = phase || '';
+  cLabel.textContent = isMark ? 'MARK  1' : 'SPACE  0';
+  cLabel.style.color = isMark ? '#33ff33' : '#ff3333';
+  cFreq.textContent  = freq + ' Hz';
   carrierEl.style.borderColor = isMark ? '#33ff33' : '#ff3333';
 }
-
 function showIdle() {
   cLabel.textContent = 'IDLE';
   cLabel.style.color = '#555';
-  cFreq.textContent  = '\u2014 Hz';
-  cPhase.textContent = '';
+  cFreq.textContent  = '\u2014';
   carrierEl.style.borderColor = '#333';
 }
 
 let bitHistory = [];
-
-function pushBit(bit, cls) {
-  bitHistory.push({ bit, cls });
+function pushBit(b, cls) {
+  bitHistory.push({ b, cls });
   if (bitHistory.length > 88) bitHistory.shift();
-  const bitsEl = document.getElementById('bits');
-  bitsEl.innerHTML = bitHistory
-    .map(b => `<span class="${b.cls}">${b.bit}</span>`)
-    .join('');
+  document.getElementById('bits').innerHTML =
+    bitHistory.map(x => `<span class="${x.cls}">${x.b}</span>`).join('');
 }
 
 function log(msg) {
@@ -196,42 +195,43 @@ function log(msg) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // UART FRAMING — 8N1
-// Bit order: START(0) | D0 D1 D2 D3 D4 D5 D6 D7  (LSB first) | STOP(1)
+// START(0) + D0..D7 LSB-first + STOP(1)
 // ─────────────────────────────────────────────────────────────────────────────
 function charToBits(c) {
   const code = c.charCodeAt(0) & 0xFF;
-  const bits = [ { b: 0, cls: 's' } ];          // start bit
+  const bits = [{ b: 0, cls: 's' }];
   for (let i = 0; i < 8; i++) {
     const b = (code >> i) & 1;
     bits.push({ b, cls: b ? 'd1' : 'd0' });
   }
-  bits.push({ b: 1, cls: 'p' });                 // stop bit
+  bits.push({ b: 1, cls: 'p' });
   return bits;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEND LOOP
 // ─────────────────────────────────────────────────────────────────────────────
-let running = false;
+let running   = false;
+let sessionId = 0;
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function sendBit(b, cls, phaseLabel) {
-  const freq = b ? MARK_FREQ : SPACE_FREQ;
-  setFreq(freq);
-  showTone(freq, phaseLabel);
+async function sendBit(b, cls) {
+  setFreq(b ? MARK_FREQ : SPACE_FREQ);
+  showTone(b ? MARK_FREQ : SPACE_FREQ);
   pushBit(b, cls);
   await sleep(BIT_MS);
 }
 
-async function sendChar(c) {
+async function sendChar(c, alive) {
   const bits = charToBits(c);
   const code = c.charCodeAt(0);
-  statusEl.textContent = `Sending '${c}'  0x${code.toString(16).toUpperCase().padStart(2,'0')}  [${bits.map(x=>x.b).join('')}]`;
-  log(`  '${c}' = 0x${code.toString(16).padStart(2,'0')}  bits: ${bits.map(x=>x.b).join(' ')}`);
+  statusEl.textContent =
+    `Sending '${c}'  0x${code.toString(16).toUpperCase().padStart(2,'0')}` +
+    `  [${bits.map(x => x.b).join('')}]`;
+  log(`  '${c}' 0x${code.toString(16).padStart(2,'0')} [${bits.map(x => x.b).join('')}]`);
   for (const { b, cls } of bits) {
-    if (!running) return;
-    const label = cls === 's' ? 'START' : cls === 'p' ? 'STOP' : `D${bits.indexOf({b,cls})-1||'?'}`;
+    if (!alive()) return;
     await sendBit(b, cls);
   }
 }
@@ -253,48 +253,66 @@ async function startSending() {
   if (!text) return;
 
   running = true;
+  const myId = ++sessionId;
+  const alive = () => running && sessionId === myId;
+
   bitHistory = [];
   initAudio();
 
-  // Phase 1 — Training: alternating MARK/SPACE so receiver can see both tones
-  statusEl.textContent = 'TRAINING — alternating tones …';
-  log('── training ──');
-  for (let i = 0; i < TRAINING_BITS && running; i++) {
-    await sendBit(i % 2 ? 1 : 0, i % 2 ? 'd1' : 'd0');
-  }
+  try {
+    // ── Phase 1: CALIBRATE ────────────────────────────────────────────────────
+    // Alternating MARK/SPACE so the receiver's spectrum shows both tones.
+    // The receiver does NOT decode UART during this phase.
+    const calibBits = Math.max(10, Math.ceil(800 / BIT_MS));
+    statusEl.textContent = 'CALIBRATING …';
+    log('── calibrate (alternating) ──');
+    for (let i = 0; i < calibBits && alive(); i++) {
+      await sendBit(i % 2, i % 2 ? 'd1' : 'd0');
+    }
 
-  // Phase 2 — Idle (MARK) so receiver confirms carrier and resets edge detector
-  statusEl.textContent = 'IDLE (MARK) — receiver sync …';
-  log('── idle / sync ──');
-  for (let i = 0; i < IDLE_BITS && running; i++) {
-    await sendBit(1, 'p');
-  }
+    // ── Phase 2: GUARD ────────────────────────────────────────────────────────
+    // Pure continuous MARK for at least 1200 ms.
+    // Receiver uses this to lock onto the carrier (needs ~1000 ms of MARK).
+    const guardBits = Math.max(10, Math.ceil(1300 / BIT_MS));
+    statusEl.textContent = 'GUARD (MARK) …';
+    log('── guard ──');
+    for (let i = 0; i < guardBits && alive(); i++) {
+      await sendBit(1, 'p');
+    }
 
-  // Phase 3 — Data
-  log('── data ──');
-  for (const c of text) {
-    if (!running) break;
-    await sendChar(c);
-  }
+    // ── Phase 3: DATA ─────────────────────────────────────────────────────────
+    log('── data ──');
+    for (const c of text) {
+      if (!alive()) break;
+      await sendChar(c, alive);
+    }
 
-  // Phase 4 — EOT (ASCII 0x04 = End Of Transmission)
-  if (running) {
-    statusEl.textContent = 'EOT';
-    log('── EOT (0x04) ──');
-    await sendChar('\x04');
-  }
+    // ── Phase 4: EOT (ASCII 0x04 = End Of Transmission) ──────────────────────
+    if (alive()) {
+      statusEl.textContent = 'EOT';
+      log('── EOT ──');
+      await sendChar('\x04', alive);
+    }
 
-  // Return to idle
-  setFreq(MARK_FREQ);
-  showIdle();
-  statusEl.textContent = 'Transmission complete — line idle (MARK)';
-  log('── idle ──');
-  running = false;
+    if (alive()) {
+      statusEl.textContent = 'Transmission complete.';
+      log('── done ──');
+    }
+
+  } finally {
+    // Always executed — whether completed, stopped, or errored
+    if (sessionId === myId) {
+      running = false;
+      stopAudio();
+      showIdle();
+    }
+  }
 }
 
 function stopSending() {
+  sessionId++;      // invalidates any running coroutine immediately
   running = false;
-  if (osc) try { setFreq(MARK_FREQ); } catch(_) {}
+  stopAudio();
   showIdle();
   statusEl.textContent = 'Stopped.';
 }
