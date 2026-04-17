@@ -136,7 +136,15 @@ function updateThreshold(el) {
 
 async function startReceiver() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,   // CRITICAL — browser otherwise cancels the speaker output
+        noiseSuppression: false,   // we are the signal; suppress nothing
+        autoGainControl:  false,
+        channelCount:     1
+      },
+      video: false
+    });
     audioCtx   = new AudioContext();
     sampleRate  = audioCtx.sampleRate;
 

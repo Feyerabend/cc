@@ -40,8 +40,8 @@
 <div class="row">
   Mark(1): <span id="pM">1200 Hz</span> &nbsp;|&nbsp;
   Space(0): <span id="pS">2200 Hz</span> &nbsp;|&nbsp;
-  Baud: <span id="pB">10</span> &nbsp;|&nbsp;
-  Bit: <span id="pT">100 ms</span>
+  Baud: <span id="pB">5</span> &nbsp;|&nbsp;
+  Bit: <span id="pT">200 ms</span>
 </div>
 <textarea id="msg" rows="3">HELLO MODEM WORLD</textarea>
 <div class="ctrl">
@@ -61,7 +61,7 @@
 
 <script>
 const AMPLITUDE = 0.6;   // higher amplitude = easier to hear across the room
-let MF = 1200, SF = 2200, BAUD = 10, BIT_MS = 100;
+let MF = 1200, SF = 2200, BAUD = 5, BIT_MS = 200;
 
 let actx = null, gain = null, osc = null;
 let running = false, sid = 0;

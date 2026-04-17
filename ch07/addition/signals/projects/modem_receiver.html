@@ -5,73 +5,54 @@
   <title>FSK Modem — Receiver</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Courier New', monospace;
-      background: #0d0d0d; color: #33ff33;
-      max-width: 720px; margin: 40px auto; padding: 20px;
-    }
-    h1   { color: #00ffcc; margin-bottom: 2px; font-size: 1.3rem; letter-spacing: .08em; }
+    body { font-family: 'Courier New', monospace; background: #0d0d0d; color: #33ff33;
+           max-width: 720px; margin: 40px auto; padding: 20px; }
+    h1   { color: #00ffcc; margin-bottom: 2px; font-size: 1.3rem; }
     .sub { color: #555; font-size: 0.82rem; margin-bottom: 14px; }
-    .params { font-size: 11px; color: #888; margin-bottom: 12px; }
-    .params span { color: #0ff; }
-
+    .row { font-size: 11px; color: #888; margin-bottom: 10px; }
+    .row span { color: #0ff; }
     .ctrl { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
-    button {
-      background: #33ff33; color: #000; border: none;
-      padding: 8px 18px; cursor: pointer;
-      font-family: monospace; font-size: 13px; font-weight: bold;
-    }
+    button { background: #33ff33; color: #000; border: none; padding: 8px 18px;
+             cursor: pointer; font-family: monospace; font-size: 13px; font-weight: bold; }
     button.stop { background: #ff3333; color: #fff; }
     label  { font-size: 11px; color: #888; }
     select { background: #111; color: #33ff33; border: 1px solid #555; padding: 3px 6px; font-family: monospace; }
     input[type=range] { width: 130px; accent-color: #0ff; vertical-align: middle; }
-
     canvas { display: block; border: 1px solid #222; margin-bottom: 8px; }
-
-    .carrier {
-      height: 52px; border: 2px solid #333; background: #111;
-      position: relative; margin-bottom: 8px; transition: border-color .05s;
-    }
+    .vu-row { display: flex; gap: 12px; margin-bottom: 8px; }
+    .vu-box { flex: 1; }
+    .vu-lbl { font-size: 10px; margin-bottom: 2px; display: flex; justify-content: space-between; }
+    .vu-bg  { height: 10px; background: #111; border: 1px solid #2a2a2a; }
+    .vu-bar { height: 100%; width: 0%; }
+    .vu-m .vu-bar { background: #33ff33; }
+    .vu-s .vu-bar { background: #ff3333; }
+    .carrier { height: 48px; border: 2px solid #333; background: #111;
+               position: relative; margin-bottom: 8px; transition: border-color .05s; }
     .c-lbl { position: absolute; top: 50%; left: 12px; transform: translateY(-50%);
              font-size: 18px; font-weight: bold; transition: color .05s; }
     .c-rt  { position: absolute; top: 50%; right: 12px; transform: translateY(-50%);
-             font-size: 11px; color: #888; text-align: right; line-height: 1.6; }
-
-    /* sync progress bar */
-    .sync-wrap { height: 6px; background: #1a1a1a; border: 1px solid #222; margin-bottom: 8px; }
-    .sync-bar  { height: 100%; width: 0%; background: #33ff33; transition: width .06s; }
-
-    .bits {
-      font-size: 11px; letter-spacing: 3px; min-height: 20px;
-      border: 1px solid #1a1a1a; padding: 3px 8px; margin-bottom: 8px; overflow: hidden;
-    }
-    .bits .s  { color: #ffff00; } .bits .d1 { color: #33ff33; }
-    .bits .d0 { color: #226622; } .bits .p  { color: #00ffcc; }
-    .bits .e  { color: #ff3333; }
-
+             font-size: 11px; color: #888; text-align: right; line-height: 1.7; }
+    .sync-wrap { height: 5px; background: #1a1a1a; border: 1px solid #222; margin-bottom: 8px; }
+    .sync-bar  { height: 100%; width: 0%; background: #33ff33; transition: width .08s; }
+    .bits { font-size: 11px; letter-spacing: 3px; min-height: 20px;
+            border: 1px solid #1a1a1a; padding: 3px 8px; margin-bottom: 8px; overflow: hidden; }
+    .bits .s  { color: #ff0; } .bits .d1 { color: #33ff33; }
+    .bits .d0 { color: #226622; } .bits .p  { color: #0ff; } .bits .e { color: #f33; }
     #stateBox { font-size: 12px; font-weight: bold; color: #ff0; margin-bottom: 8px; }
-
-    #terminal {
-      background: #000; color: #33ff33; border: 1px solid #33ff33;
-      padding: 10px; font-size: 15px; min-height: 60px; max-height: 180px;
-      overflow-y: auto; white-space: pre-wrap; word-break: break-all;
-      margin-bottom: 8px;
-    }
+    #terminal { background: #000; color: #33ff33; border: 1px solid #33ff33;
+                padding: 10px; font-size: 15px; min-height: 60px; max-height: 180px;
+                overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin-bottom: 8px; }
     #terminal .eot { color: #ff0; }
-
-    #log {
-      height: 110px; overflow-y: auto;
-      border: 1px solid #1a1a1a; padding: 5px 8px;
-      font-size: 10px; color: #555;
-    }
+    #log { height: 110px; overflow-y: auto; border: 1px solid #1a1a1a;
+           padding: 5px 8px; font-size: 10px; color: #555; }
   </style>
 </head>
 <body>
 
 <h1>FSK Modem &mdash; Receiver</h1>
-<p class="sub">Zero-crossing FM demodulator &nbsp;|&nbsp; 8N1 UART &nbsp;|&nbsp; Bell&nbsp;202-style FSK</p>
+<p class="sub">Goertzel FSK detector &nbsp;|&nbsp; 8N1 UART &nbsp;|&nbsp; Bell&nbsp;202-style</p>
 
-<div class="params">
+<div class="row">
   Mark (1): <span id="pMark">1200 Hz</span> &nbsp;|&nbsp;
   Space (0): <span id="pSpace">2200 Hz</span> &nbsp;|&nbsp;
   Baud: <span id="pBaud">5</span> &nbsp;|&nbsp;
@@ -85,7 +66,6 @@
     <select id="baudSel">
       <option value="5" selected>5</option>
       <option value="10">10</option>
-      <option value="20">20</option>
     </select>
   </label>
   <label>Mark Hz:
@@ -103,19 +83,30 @@
 </div>
 
 <div class="ctrl" style="margin-top:-4px">
-  <label>Min signal (RMS):
-    <input type="range" id="rmsSlider" min="1" max="100" value="20"
-      oninput="RMS_THRESHOLD = this.value/1000; document.getElementById('rmsVal').textContent=(this.value/1000).toFixed(3)">
-    &nbsp;<span id="rmsVal">0.020</span>
-    &nbsp;<span style="color:#ff0">&#8592; raise if noise, lower if mic is far</span>
+  <label>Ratio threshold:
+    <input type="range" id="ratioSlider" min="10" max="30" value="15"
+      oninput="RATIO = this.value/10; document.getElementById('ratioVal').textContent=(this.value/10).toFixed(1)">
+    &nbsp;<span id="ratioVal">1.5</span>×
+    &nbsp;<span style="color:#ff0">&#8592; raise if false triggers, lower if missing bits</span>
   </label>
 </div>
 
 <canvas id="spectrum" width="680" height="90"></canvas>
 
+<div class="vu-row">
+  <div class="vu-box vu-m">
+    <div class="vu-lbl"><span>MARK <span id="markHz" style="color:#0ff"></span></span><span id="markVal" style="color:#33ff33">0.00</span></div>
+    <div class="vu-bg"><div class="vu-bar" id="markBar"></div></div>
+  </div>
+  <div class="vu-box vu-s">
+    <div class="vu-lbl"><span>SPACE <span id="spaceHz" style="color:#0ff"></span></span><span id="spaceVal" style="color:#ff3333">0.00</span></div>
+    <div class="vu-bg"><div class="vu-bar" id="spaceBar"></div></div>
+  </div>
+</div>
+
 <div class="carrier" id="carrier">
   <span class="c-lbl" id="cLbl">WAITING FOR MIC</span>
-  <span class="c-rt" id="cRt">&nbsp;</span>
+  <span class="c-rt"  id="cRt">&nbsp;</span>
 </div>
 <div class="sync-wrap"><div class="sync-bar" id="syncBar"></div></div>
 
@@ -126,36 +117,37 @@
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-// PARAMETERS  (must match sender settings)
+// PARAMETERS
 // ─────────────────────────────────────────────────────────────────────────────
 let MARK_FREQ  = 1200;
 let SPACE_FREQ = 2200;
 let BAUD       = 5;
 let BIT_MS     = 200;
 
-// SYNC_MS: how long we need a continuous MARK to consider the carrier locked.
-// Must be shorter than the sender's GUARD phase (~1400 ms at 5 baud) but longer
-// than any single MARK run during calibration (one bit = BIT_MS).
-const SYNC_MS       = 400;   // needs 400 ms continuous MARK to lock (guard = 2800 ms)
-const INTER_CHAR_MS = 20;    // min MARK before a start bit counts (stop bit ≫ this)
+const SYNC_MS       = 500;  // MARK must be heard this long before we go IDLE
+const INTER_CHAR_MS = 15;   // min MARK before a start bit (one buffer ≈ 23 ms)
 
-let RMS_THRESHOLD = 0.020;   // adjustable via slider
+let RATIO = 1.5;  // Goertzel: winning tone must be this × stronger than the other
 
 const MARK  =  1;
 const SPACE =  0;
 const NONE  = -1;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AUDIO ENGINE
+// AUDIO SETUP
 // ─────────────────────────────────────────────────────────────────────────────
-let audioCtx   = null;
-let analyser   = null;
-let processor  = null;
-let dataArray  = null;
+// ScriptProcessorNode fires every 1024/sr ≈ 23 ms — plenty faster than one bit.
+// We use event.playbackTime (audio hardware clock) for all bit timing.
+const BUF_SIZE = 1024;
+
+let audioCtx  = null;
+let analyser  = null;
+let processor = null;
+let dataArray = null;
 let sampleRate = 44100;
-let markBin    = 0;
-let spaceBin   = 0;
-let animId     = null;
+let markBin   = 0;
+let spaceBin  = 0;
+let animId    = null;
 
 async function startReceiver() {
   stopReceiver();
@@ -169,11 +161,13 @@ async function startReceiver() {
   document.getElementById('pSpace').textContent = SPACE_FREQ + ' Hz';
   document.getElementById('pBaud').textContent  = BAUD;
   document.getElementById('pBit').textContent   = BIT_MS + ' ms';
+  document.getElementById('markHz').textContent  = MARK_FREQ  + ' Hz';
+  document.getElementById('spaceHz').textContent = SPACE_FREQ + ' Hz';
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
-        echoCancellation:   false,
+        echoCancellation:   false,  // CRITICAL — browser will cancel the very signal we want
         noiseSuppression:   false,
         autoGainControl:    false,
         channelCount:       1,
@@ -185,25 +179,22 @@ async function startReceiver() {
     audioCtx   = new AudioContext();
     sampleRate  = audioCtx.sampleRate;
 
-    // Analyser node — FFT for the spectrum display only
+    // AnalyserNode for the spectrum display only
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 2048;
-    analyser.smoothingTimeConstant = 0.15;
+    analyser.smoothingTimeConstant = 0.2;
     dataArray = new Uint8Array(analyser.frequencyBinCount);
-    const bw = sampleRate / 2048;
-    markBin  = Math.round(MARK_FREQ  / bw);
-    spaceBin = Math.round(SPACE_FREQ / bw);
+    const bw  = sampleRate / 2048;
+    markBin   = Math.round(MARK_FREQ  / bw);
+    spaceBin  = Math.round(SPACE_FREQ / bw);
 
-    // ScriptProcessorNode — delivers raw PCM frames to the UART detector
-    // bufferSize 512 ≈ 11.6 ms per frame at 44100 Hz (≪ one bit at 5 baud)
-    processor = audioCtx.createScriptProcessor(512, 1, 1);
-
+    // ScriptProcessorNode — delivers raw PCM frames for Goertzel analysis
+    processor = audioCtx.createScriptProcessor(BUF_SIZE, 1, 1);
     const source = audioCtx.createMediaStreamSource(stream);
     source.connect(analyser);
     source.connect(processor);
 
-    // Must connect processor output somewhere to keep the graph alive;
-    // route to silent gain so we don't hear the mic through the speakers.
+    // Connect to a silent node so the graph isn't garbage-collected
     const silence = audioCtx.createGain();
     silence.gain.value = 0;
     processor.connect(silence);
@@ -211,19 +202,19 @@ async function startReceiver() {
 
     processor.onaudioprocess = onAudioProcess;
 
-    log(`Rate ${sampleRate} Hz | ${bw.toFixed(1)} Hz/bin`);
-    log(`Mark bin ${markBin}, Space bin ${spaceBin}`);
-    log(`Zero-crossing midpoint: ${Math.round((MARK_FREQ + SPACE_FREQ) / 2)} Hz`);
+    log(`Rate: ${sampleRate} Hz | buffer: ${BUF_SIZE} samples (${(BUF_SIZE/sampleRate*1000).toFixed(0)} ms)`);
+    log(`Goertzel k: MARK=${(BUF_SIZE*MARK_FREQ/sampleRate).toFixed(1)}, SPACE=${(BUF_SIZE*SPACE_FREQ/sampleRate).toFixed(1)}`);
 
-    uartState = 'WAITING';
-    markSince = null;
-    syncStart = null;
+    uartState   = 'WAITING';
+    markSince   = null;
+    spaceFrames = 0;
     updateStateBox();
     log('── waiting for carrier sync ──');
     drawLoop();
 
   } catch (e) {
     log('Mic error: ' + e.message);
+    alert('Microphone error: ' + e.message);
   }
 }
 
@@ -233,193 +224,177 @@ function stopReceiver() {
   if (audioCtx)  { audioCtx.close(); audioCtx = null; analyser = null; }
   uartState   = 'STOPPED';
   markSince   = null;
-  syncStart   = null;
   spaceFrames = 0;
   updateStateBox();
   document.getElementById('syncBar').style.width = '0%';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FM DEMODULATOR — zero-crossing frequency estimator
+// GOERTZEL FSK DETECTOR
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// A pure sine at frequency F produces 2·F zero crossings per second.
-// At bufferSize=512 samples / 44100 Hz, each frame is ~11.6 ms.
-// MARK (1200 Hz) → ~14 crossings/frame
-// SPACE (2200 Hz) → ~26 crossings/frame
-// Midpoint (1700 Hz) → ~20 crossings/frame — clean, 2:1 margin
+// The Goertzel algorithm computes the DFT for a single frequency using only
+// N multiply-adds. Unlike comparing FFT bins, it ignores every other frequency —
+// harmonics, room resonances, and background noise at other pitches don't count.
 //
-// Hysteresis prevents noise-induced jitter near zero: only count a crossing
-// when the signal crosses ±(rms × 0.4), not the literal zero line.
+// Returns squared magnitude (no sqrt — faster, monotonic).
 //
-function demodulate(samples) {
+function goertzel(samples, targetFreq) {
   const N = samples.length;
-
-  // RMS amplitude
-  let rms = 0;
-  for (let i = 0; i < N; i++) rms += samples[i] * samples[i];
-  rms = Math.sqrt(rms / N);
-
-  if (rms < RMS_THRESHOLD) return { tone: NONE, freq: 0, rms };
-
-  // Hysteresis threshold (40% of signal RMS)
-  const hys = rms * 0.4;
-  let crossings = 0;
-  let lastSign = 0;
+  const w = 2 * Math.PI * (N * targetFreq / sampleRate) / N;
+  const coeff = 2 * Math.cos(w);
+  let q1 = 0, q2 = 0;
   for (let i = 0; i < N; i++) {
-    const s = samples[i];
-    const sign = s > hys ? 1 : (s < -hys ? -1 : 0);
-    if (sign !== 0 && sign !== lastSign && lastSign !== 0) crossings++;
-    if (sign !== 0) lastSign = sign;
+    const q0 = coeff * q1 - q2 + samples[i];
+    q2 = q1; q1 = q0;
   }
+  return q1*q1 + q2*q2 - q1*q2*coeff;
+}
 
-  const freq   = (crossings / 2) * sampleRate / N;
-  const mid    = (MARK_FREQ + SPACE_FREQ) / 2;   // 1700 Hz
-  const margin = (SPACE_FREQ - MARK_FREQ) * 0.2; // ±200 Hz dead zone around midpoint
+let lastDetect = { tone: NONE, me: 0, se: 0 };
+
+function detectTone(samples) {
+  const me = goertzel(samples, MARK_FREQ);
+  const se = goertzel(samples, SPACE_FREQ);
+
+  // Require one tone to be clearly dominant (RATIO × stronger)
   let tone;
-  if      (freq < mid - margin) tone = MARK;
-  else if (freq > mid + margin) tone = SPACE;
-  else                          tone = NONE;      // ambiguous — treated as silence
+  if      (me > se * RATIO * RATIO) tone = MARK;   // RATIO² because values are squared
+  else if (se > me * RATIO * RATIO) tone = SPACE;
+  else                              tone = NONE;
 
-  return { tone, freq: Math.round(freq), rms };
+  lastDetect = { tone, me: Math.sqrt(me), se: Math.sqrt(se) };
+  return tone;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SOFTWARE UART STATE MACHINE
+// SOFTWARE UART  (runs inside ScriptProcessorNode callback)
 // ─────────────────────────────────────────────────────────────────────────────
 //
-//  WAITING  — accumulate MARK time; transition to IDLE after SYNC_MS
-//  IDLE     — watch for MARK→SPACE edge (start bit)
-//  READING  — sample 8 data bits + 1 stop bit by audio-clock timestamps
+//  WAITING  – accumulate MARK time; go IDLE after SYNC_MS
+//  IDLE     – watch for MARK→SPACE (start bit); brief noise SPACE is ignored
+//  READING  – sample 8 data bits + stop bit by audio-clock offset from startBitTime
 //
 let uartState    = 'STOPPED';
 let markSince    = null;   // audio time (ms) when current MARK streak began
-let syncStart    = null;   // audio time (ms) when WAITING state first saw MARK
-let startBitTime = null;   // audio time (ms) when the start bit edge was detected
+let startBitTime = null;   // audio time (ms) when start bit edge was detected
 let sampledBits  = [];
-let spaceFrames  = 0;      // consecutive SPACE frames (debounce for WAITING reset)
-
-let lastResult = { tone: NONE, freq: 0, rms: 0 };
+let spaceFrames  = 0;      // consecutive SPACE-detected frames (debounce for WAITING)
 
 function onAudioProcess(event) {
   if (uartState === 'STOPPED' || !audioCtx) return;
 
   const samples = event.inputBuffer.getChannelData(0);
-  const result  = demodulate(samples);
-  lastResult    = result;
+  const tone    = detectTone(samples);
 
-  // event.playbackTime is the audio-clock time (seconds) of the first sample
-  // in this buffer — use it for bit-accurate UART timing.
+  // event.playbackTime = audio hardware clock time at start of buffer (seconds)
   const tMs = event.playbackTime * 1000;
-  const { tone } = result;
 
-  // ── READING: sample bits at their centres using audio timestamps ───────────
+  // ── READING: sample bits at their centres ─────────────────────────────────
   if (uartState === 'READING') {
     while (sampledBits.length < 8) {
-      const bitCentre = startBitTime + BIT_MS * (1.5 + sampledBits.length);
-      if (tMs < bitCentre) break;
+      const centre = startBitTime + BIT_MS * (1.5 + sampledBits.length);
+      if (tMs < centre) break;
       const bit = (tone !== SPACE) ? 1 : 0;
       sampledBits.push(bit);
       pushBit(bit, bit ? 'd1' : 'd0');
     }
 
-    if (sampledBits.length === 8) {
-      const stopCentre = startBitTime + BIT_MS * 9.5;
-      if (tMs >= stopCentre) {
-        const stopOk = (tone !== SPACE);
-        pushBit(stopOk ? 1 : 0, stopOk ? 'p' : 'e');
+    if (sampledBits.length === 8 && tMs >= startBitTime + BIT_MS * 9.5) {
+      const stopOk = (tone !== SPACE);
+      pushBit(stopOk ? 1 : 0, stopOk ? 'p' : 'e');
 
-        if (stopOk) {
-          let code = 0;
-          for (let i = 0; i < 8; i++) code |= (sampledBits[i] << i);
-          const hex = code.toString(16).toUpperCase().padStart(2, '0');
-          log(`  [${sampledBits.join('')}] 0x${hex}`);
-
-          if (code === 0x04) {
-            appendTerminal('\n── EOT ──\n', true);
-            log('── EOT received ──');
-          } else if (code >= 0x20 || code === 0x0A || code === 0x0D) {
-            appendTerminal(String.fromCharCode(code), false);
-            log(`  char '${String.fromCharCode(code)}'`);
-          } else {
-            log(`  ctrl 0x${hex} (skipped)`);
-          }
-        } else {
-          log('⚠ framing error — stop bit was SPACE');
+      if (stopOk) {
+        let code = 0;
+        for (let i = 0; i < 8; i++) code |= (sampledBits[i] << i);
+        const hex = code.toString(16).toUpperCase().padStart(2, '0');
+        log(`  [${sampledBits.join('')}] 0x${hex}`);
+        if (code === 0x04) {
+          appendTerminal('\n── EOT ──\n', true);
+          log('── EOT received ──');
+        } else if (code >= 0x20 || code === 0x0A || code === 0x0D) {
+          appendTerminal(String.fromCharCode(code), false);
+          log(`  '${String.fromCharCode(code)}'`);
         }
-
-        markSince = tMs;
-        uartState = 'IDLE';
-        updateStateBox();
+      } else {
+        log('⚠ framing error (stop=SPACE)');
       }
+
+      markSince   = tMs;
+      uartState   = 'IDLE';
+      spaceFrames = 0;
+      updateStateBox();
     }
     return;
   }
 
-  // ── WAITING / IDLE ─────────────────────────────────────────────────────────
+  // ── MARK or NONE (treated as carrier) ─────────────────────────────────────
   if (tone === MARK || tone === NONE) {
     spaceFrames = 0;
-    if (markSince === null) { markSince = tMs; syncStart = syncStart || tMs; }
+    if (markSince === null) markSince = tMs;
     const markDur = tMs - markSince;
 
     if (uartState === 'WAITING' && markDur >= SYNC_MS) {
       uartState = 'IDLE';
       updateStateBox();
-      log(`✓ Carrier locked (${markDur.toFixed(0)} ms MARK) — ready`);
+      log(`✓ Locked (${markDur.toFixed(0)} ms MARK) — listening for data`);
       document.getElementById('syncBar').style.width = '100%';
     }
-  } else {
-    // SPACE detected
-    spaceFrames++;
-    const markDur = markSince !== null ? tMs - markSince : 0;
+    return;
+  }
 
-    if (uartState === 'IDLE') {
-      if (markDur >= INTER_CHAR_MS) {
-        // Qualifying start bit — begin UART decode
-        markSince    = null;
-        uartState    = 'READING';
-        startBitTime = tMs;
-        sampledBits  = [];
-        pushBit(0, 's');
-        updateStateBox();
-        log(`↓ start bit (prev MARK ${markDur.toFixed(0)} ms)`);
-      }
-      // Brief SPACE in IDLE (<INTER_CHAR_MS) is ignored — markSince preserved so
-      // the next real start bit still sees a valid markDur and is not missed.
-    } else if (uartState === 'WAITING') {
-      // In WAITING: require 2 consecutive SPACE frames before resetting sync
-      // counter — one frame (~12 ms) of noise won't break a 400 ms MARK run.
-      if (spaceFrames >= 2) markSince = null;
+  // ── SPACE ─────────────────────────────────────────────────────────────────
+  spaceFrames++;
+  const markDur = markSince !== null ? tMs - markSince : 0;
+
+  if (uartState === 'IDLE') {
+    if (markDur >= INTER_CHAR_MS) {
+      // Valid start bit — begin decoding
+      markSince    = null;
+      uartState    = 'READING';
+      startBitTime = tMs;
+      sampledBits  = [];
+      spaceFrames  = 0;
+      pushBit(0, 's');
+      updateStateBox();
+      log(`↓ start bit (MARK was ${markDur.toFixed(0)} ms)`);
     }
+    // Brief SPACE in IDLE: do NOT null markSince — the next real start bit
+    // must still find a valid markDur, so we preserve the accumulated time.
+
+  } else if (uartState === 'WAITING') {
+    // In WAITING, require 2 consecutive SPACE frames before resetting sync.
+    // One frame (~23 ms) of noise won't wipe out a 500 ms MARK accumulation.
+    if (spaceFrames >= 2) markSince = null;
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // UI HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
-const cLbl     = document.getElementById('cLbl');
-const cRt      = document.getElementById('cRt');
+const cLbl      = document.getElementById('cLbl');
+const cRt       = document.getElementById('cRt');
 const carrierEl = document.getElementById('carrier');
 
-function updateCarrierDisplay(result) {
-  const { tone, freq, rms } = result;
-  const rmsStr = rms.toFixed(3);
+function updateCarrier() {
+  const { tone, me, se } = lastDetect;
   if (tone === MARK) {
-    cLbl.textContent = 'MARK  1';
-    cLbl.style.color = '#33ff33';
+    cLbl.textContent = 'MARK  1'; cLbl.style.color = '#33ff33';
     carrierEl.style.borderColor = '#33ff33';
-    cRt.textContent = `${freq} Hz\nrms ${rmsStr}`;
   } else if (tone === SPACE) {
-    cLbl.textContent = 'SPACE  0';
-    cLbl.style.color = '#ff3333';
+    cLbl.textContent = 'SPACE  0'; cLbl.style.color = '#ff3333';
     carrierEl.style.borderColor = '#ff3333';
-    cRt.textContent = `${freq} Hz\nrms ${rmsStr}`;
   } else {
-    cLbl.textContent = rms > RMS_THRESHOLD * 0.5 ? `~ ${freq} Hz` : 'SILENCE';
-    cLbl.style.color = '#555';
+    cLbl.textContent = 'SILENCE'; cLbl.style.color = '#555';
     carrierEl.style.borderColor = '#333';
-    cRt.textContent = `rms ${rmsStr}`;
   }
+  cRt.textContent = `M:${me.toFixed(1)}  S:${se.toFixed(1)}`;
+
+  const max = Math.max(me, se, 0.001);
+  document.getElementById('markBar').style.width  = Math.min(100, me/max*100) + '%';
+  document.getElementById('spaceBar').style.width = Math.min(100, se/max*100) + '%';
+  document.getElementById('markVal').textContent  = me.toFixed(2);
+  document.getElementById('spaceVal').textContent = se.toFixed(2);
 }
 
 function updateStateBox() {
@@ -442,41 +417,34 @@ let termText = '';
 function appendTerminal(str, isEot) {
   termText += str;
   const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  if (isEot) {
-    termEl.innerHTML = esc(termText.slice(0, -str.length)) +
-      `<span class="eot">${esc(str)}</span>`;
-  } else {
+  if (isEot)
+    termEl.innerHTML = esc(termText.slice(0,-str.length)) + `<span class="eot">${esc(str)}</span>`;
+  else
     termEl.textContent = termText;
-  }
   termEl.scrollTop = termEl.scrollHeight;
 }
 
 const logEl = document.getElementById('log');
-function log(msg) {
-  logEl.innerHTML += msg + '<br>';
-  logEl.scrollTop  = logEl.scrollHeight;
-}
+function log(msg) { logEl.innerHTML += msg + '<br>'; logEl.scrollTop = logEl.scrollHeight; }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SPECTRUM VISUALISER
+// SPECTRUM VISUALISER  (600–2800 Hz window, using AnalyserNode for display)
 // ─────────────────────────────────────────────────────────────────────────────
 const canvas = document.getElementById('spectrum');
 const ctx    = canvas.getContext('2d');
 const W = canvas.width, H = canvas.height;
-const SPEC_LO = 600, SPEC_HI = 2800;
 
 function drawLoop() {
   animId = requestAnimationFrame(drawLoop);
   if (!analyser) return;
 
   analyser.getByteFrequencyData(dataArray);
-
   ctx.fillStyle = '#0d0d0d';
   ctx.fillRect(0, 0, W, H);
 
   const bw    = sampleRate / 2048;
-  const loBin = Math.floor(SPEC_LO / bw);
-  const hiBin = Math.ceil(SPEC_HI  / bw);
+  const loBin = Math.floor(600  / bw);
+  const hiBin = Math.ceil(2800  / bw);
   const span  = hiBin - loBin;
 
   for (let i = loBin; i < hiBin && i < dataArray.length; i++) {
@@ -484,43 +452,36 @@ function drawLoop() {
     const barH = (mag / 255) * H;
     const x    = ((i - loBin) / span) * W;
     const pw   = Math.max(W / span - 0.3, 1);
-    const nearM = Math.abs(i - markBin)  <= 3;
-    const nearS = Math.abs(i - spaceBin) <= 3;
-    ctx.fillStyle = nearM
-      ? (mag > 20 ? '#33ff33' : '#1a4a1a')
-      : nearS
-        ? (mag > 20 ? '#ff3333' : '#4a1a1a')
-        : '#1a2a1a';
+    const nearM = Math.abs(i - markBin)  <= 2;
+    const nearS = Math.abs(i - spaceBin) <= 2;
+    ctx.fillStyle = nearM ? (mag > 20 ? '#33ff33' : '#1a4a1a')
+                  : nearS ? (mag > 20 ? '#ff3333' : '#4a1a1a')
+                  : '#1a2a1a';
     ctx.fillRect(x, H - barH, pw, barH);
   }
 
-  // Frequency axis
-  ctx.fillStyle = '#333';
-  ctx.font = '9px monospace';
-  for (let f = Math.ceil(SPEC_LO/200)*200; f < SPEC_HI; f += 200) {
+  [[markBin, MARK_FREQ, '#33ff33'], [spaceBin, SPACE_FREQ, '#ff3333']].forEach(([bin, freq, col]) => {
+    const x = ((bin - loBin) / span) * W;
+    ctx.strokeStyle = col; ctx.globalAlpha = 0.4; ctx.setLineDash([2,4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H-12); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+    ctx.fillStyle = col; ctx.font = '9px monospace';
+    ctx.fillText(freq+'Hz', Math.max(2, x-20), H-2);
+  });
+
+  ctx.fillStyle = '#333'; ctx.font = '9px monospace';
+  for (let f = 800; f < 2800; f += 200) {
     const x = ((Math.round(f/bw) - loBin) / span) * W;
     ctx.fillText(f >= 1000 ? (f/1000).toFixed(1)+'k' : f, x+1, 9);
   }
 
-  // Target frequency markers
-  [[markBin, MARK_FREQ, '#33ff33'], [spaceBin, SPACE_FREQ, '#ff3333']].forEach(([bin, freq, col]) => {
-    const x = ((bin - loBin) / span) * W;
-    ctx.strokeStyle = col; ctx.globalAlpha = 0.4;
-    ctx.setLineDash([2, 4]); ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H - 12); ctx.stroke();
-    ctx.setLineDash([]); ctx.globalAlpha = 1;
-    ctx.fillStyle = col; ctx.font = '9px monospace';
-    ctx.fillText(freq+'Hz', Math.max(2, x - 20), H - 2);
-  });
-
-  // Sync progress bar (only in WAITING)
+  // Update sync progress bar
   if (uartState === 'WAITING' && markSince !== null && audioCtx) {
-    const markMs = audioCtx.currentTime * 1000 - markSince;
-    const pct = Math.min(100, (markMs / SYNC_MS) * 100);
+    const pct = Math.min(100, ((audioCtx.currentTime*1000 - markSince) / SYNC_MS) * 100);
     document.getElementById('syncBar').style.width = pct + '%';
   }
 
-  updateCarrierDisplay(lastResult);
+  updateCarrier();
 }
 </script>
 </body>
