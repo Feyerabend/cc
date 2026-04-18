@@ -400,11 +400,11 @@ each with its own process, codebase, and deployment lifecycle.
 +-----------+             +-----+-----+
                                 |
                +----------------+--------------+
-               v                                v
-        +------------+                    +------------+
-        |   Auth     |                    |    Data    |
-        |  Service   |                    |  Service   |
-        +------------+                    +------------+
+               v                               v
+        +------------+                   +------------+
+        |   Auth     |                   |    Data    |
+        |  Service   |                   |  Service   |
+        +------------+                   +------------+
 ```
 
 #### 7.3 Properties of a Microservice
@@ -814,7 +814,8 @@ maintainable.
 
 ### 13. Projects and Exercises
 
-These projects increase in difficulty.  Each builds on concepts from previous.
+These projects increase in difficulty.  Each builds on concepts from previous
+in the book/repo.
 
 
 
@@ -910,3 +911,4 @@ should work.  Then add mutual TLS: require the client to present a certificate
 too, and reject connections without one.
 
 
+![TCP/IP](./../assets/image/tcpip.png)
