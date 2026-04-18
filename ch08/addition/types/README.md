@@ -1,7 +1,23 @@
 
-Point of this: summarise all of the types, include HOTT and linear logic here ..
+# Type Systems - A Survey
 
-Into to the future!
+A *type system* is a formal mechanism that assigns types to terms in a language
+and uses them to rule out certain classes of program errors at compile time.
+What counts as "a type" varies widely: a simple tag like `Int`, a logical
+proposition, a resource budget, a protocol, or even a proof about program
+behaviour.
+
+This document surveys the main families of type systems, from the simply typed
+lambda calculus through to homotopy type theory and linear logic. Each section
+gives the core grammar or notation, key properties, and representative
+languages or proof assistants.
+
+A rough thread runs through all of them: the __Curry-Howard-Lambek
+correspondence__, which equates types with propositions, programs with proofs,
+and type-checking with proof verification. Different type systems correspond to
+different logics--intuitionistic, second-order, linear, modal, homotopy--and
+understanding that correspondence is often the fastest way to understand what a
+new type system is really doing.
 
 
 ## 1. Basic Type Systems
@@ -252,7 +268,7 @@ Scala
 
 ## 5. Intersection and Union Types
 
-### Intersection Types
+### 5.1 Intersection Types
 
 ```
 T ∧ U
@@ -264,9 +280,16 @@ Meaning:
 value satisfies both types
 ```
 
+Used for:
+
+```
+overloaded functions
+refinement
+```
 
 
-### Union Types
+
+### 5.2 Union Types
 
 ```
 T ∨ U
@@ -276,6 +299,13 @@ Meaning:
 
 ```
 value may be either type
+```
+
+Used for:
+
+```
+nullable values
+TypeScript discriminated unions
 ```
 
 
@@ -354,7 +384,7 @@ Dafny
 
 Control *value usage*.
 
-### Linear Types
+### 8.1 Linear Types
 
 ```
 use exactly once
@@ -370,7 +400,7 @@ must be consumed once.
 
 
 
-### Affine Types
+### 8.2 Affine Types
 
 ```
 use at most once
@@ -384,7 +414,7 @@ Rust ownership
 
 
 
-### Relevant Types
+### 8.3 Relevant Types
 
 ```
 use at least once
@@ -392,7 +422,7 @@ use at least once
 
 
 
-### Graded / Quantitative Types
+### 8.4 Graded / Quantitative Types
 
 Track *how many times* something is used.
 
@@ -416,7 +446,68 @@ quantitative type theory
 
 
 
-## 9. Effect Type Systems
+## 9. Linear Logic
+
+Logical foundation for *resource-sensitive* type systems (Girard, 1987).
+
+Structural rules are restricted:
+
+```
+no unrestricted weakening
+no unrestricted contraction
+```
+
+Connectives:
+
+```
+multiplicative:  A ⊗ B   (tensor — use both)
+                 A ⅋ B   (par — use one in context of other)
+                 1        (multiplicative unit)
+                 ⊥        (multiplicative false)
+
+additive:        A & B   (with — choose one)
+                 A ⊕ B   (plus — provide one)
+                 ⊤        (additive true)
+                 0        (additive false)
+
+exponentials:    !A       (of course — may be used freely)
+                 ?A       (why not — may be discarded freely)
+```
+
+Implication (derived):
+
+```
+A ⊸ B  ≡  A⊥ ⅋ B    (linear implication)
+```
+
+The exponential `!` recovers classical structural rules:
+
+```
+!A ⊢ !A ⊗ !A   (contraction)
+!A ⊢ 1          (weakening)
+```
+
+Correspondence with computation:
+
+```
+⊗   →   simultaneous resource consumption
+&   →   external choice
+⊕   →   internal choice
+!   →   unrestricted reuse (ordinary function argument)
+⊸   →   function consuming its argument exactly once
+```
+
+Connection to type systems:
+
+```
+linear types          ←→   multiplicative linear logic
+session types         ←→   linear logic + π-calculus
+Curry–Howard for LL   ←→   proof nets / sequent calculus
+```
+
+
+
+## 10. Effect Type Systems
 
 Track *side effects* in types.
 
@@ -454,7 +545,7 @@ Haskell
 
 
 
-## 10. Capability Type Systems
+## 11. Capability Type Systems
 
 Types encode *permissions*.
 
@@ -482,7 +573,7 @@ Capsicum
 
 
 
-## 11. Session Types
+## 12. Session Types
 
 Describe *communication protocols*.
 
@@ -516,7 +607,7 @@ linear logic
 
 
 
-## 12. Typestate Systems
+## 13. Typestate Systems
 
 Types represent *program state transitions*.
 
@@ -538,22 +629,23 @@ Ensures correct usage of resources.
 
 
 
-## 13. Temporal and Modal Types
+## 14. Temporal and Modal Types
 
 Track *time or modality*.
 
-Example:
+Modal operators:
 
 ```
-□T
-◇T
+□T   (necessarily T — always true)
+◇T   (possibly T — eventually true)
+○T   (next T — true at next time step)
 ```
 
-Meaning:
+Temporal operators model:
 
 ```
-always true
-eventually true
+LTL  (linear temporal logic)
+CTL  (computation tree logic)
 ```
 
 Applications:
@@ -561,11 +653,19 @@ Applications:
 ```
 reactive systems
 distributed protocols
+stream processing
+```
+
+Connection to logic:
+
+```
+modal types  ←→  S4 / S5 modal logic
+staged types ←→  S4 (code as □T)
 ```
 
 
 
-## 14. Gradual Type Systems
+## 15. Gradual Type Systems
 
 Combine static and dynamic typing.
 
@@ -583,6 +683,12 @@ x : ?
 
 Runtime checks enforce safety.
 
+Consistency relation replaces subtyping:
+
+```
+T ~ U
+```
+
 Languages:
 
 ```
@@ -593,7 +699,7 @@ Python typing
 
 
 
-## 15. Row Polymorphism
+## 16. Row Polymorphism
 
 Used for *extensible records and variants*.
 
@@ -619,7 +725,7 @@ Elm
 
 
 
-## 16. Path-Dependent Types
+## 17. Path-Dependent Types
 
 Types depend on *object paths*.
 
@@ -638,37 +744,115 @@ DOT calculus
 
 
 
-## 17. Higher Type Theories
+## 18. Higher Type Theories
 
-These extend dependent types.
+These extend dependent types with richer notions of equality.
 
-### Homotopy Type Theory
+### 18.1 Homotopy Type Theory (HoTT)
 
-Adds topology-inspired equality.
+Interprets types as *topological spaces* and equality as *paths*.
 
-Concepts:
+Core idea:
 
 ```
-identity types
-paths
-univalence
+identity type  Id_A(x, y)
+  ≡ space of paths from x to y in type A
+```
+
+Higher paths:
+
+```
+level 0  →  contractible types (propositions)
+level 1  →  sets (proof-irrelevant equality)
+level 2  →  groupoids
+level n  →  n-groupoids
+∞        →  ∞-groupoids
+```
+
+Univalence axiom (Voevodsky):
+
+```
+(A ≃ B) ≃ (A = B)
+```
+
+Meaning:
+
+```
+equivalent types are identical
+isomorphism implies equality
+```
+
+Higher Inductive Types (HITs):
+
+```
+define types by generators and path constructors
+example: circle S¹ has a point base and a path loop : base = base
+```
+
+Identity type rules:
+
+```
+refl  : Id(a, a)          (reflexivity)
+J     : eliminator for paths
+```
+
+Consequences:
+
+```
+function extensionality
+proof irrelevance for propositions
+univalent foundations for mathematics
+```
+
+Used in:
+
+```
+Agda (HoTT library)
+Coq (HoTT library)
 ```
 
 
 
-### Cubical Type Theory
+### 18.2 Cubical Type Theory
 
-Provides computational interpretation of equality.
+Provides a *computational* interpretation of the univalence axiom, avoiding it as a mere axiom.
+
+Core idea:
+
+```
+paths are functions  I → A
+  where I is an interval type [0,1]
+```
+
+Faces and boxes:
+
+```
+higher-dimensional cubes model higher equalities
+```
+
+Composition operation:
+
+```
+comp : fills open boxes (cubes with one face missing)
+```
+
+Key advantage over book HoTT:
+
+```
+univalence is provable, not postulated
+all proofs compute
+```
 
 Used in:
 
 ```
 Cubical Agda
+Cubical TTT (Cartesian cubical type theory)
 ```
 
 
 
-## 18. Behavioral and Protocol Types
+## 19. Behavioral and Protocol Types
 
 These describe *system interactions*.
 
@@ -681,11 +865,25 @@ actor types
 behavioral contracts
 ```
 
+Actor model typing:
+
+```
+Actor<S>  — actor that accepts messages of type S
+```
+
+Behavioral contracts specify:
+
+```
+liveness properties
+safety properties
+interaction patterns
+```
+
 Used in distributed systems.
 
 
 
-## 19. Staged Type Systems
+## 20. Staged Type Systems
 
 Support *multi-stage programming*.
 
@@ -701,11 +899,25 @@ Meaning:
 program fragment producing T
 ```
 
+Staging levels:
+
+```
+⟨e⟩   (quote — defer evaluation)
+~e    (splice — insert quoted code)
+```
+
+Connection to modal logic:
+
+```
+code<T>  ≃  □T  in S4 modal logic
+```
+
 Used for:
 
 ```
 metaprogramming
 code generation
+partial evaluation
 ```
 
 Languages:
@@ -716,7 +928,7 @@ MetaOCaml
 
 
 
-## 20. Probabilistic Type Systems
+## 21. Probabilistic Type Systems
 
 Used in probabilistic programming.
 
@@ -725,6 +937,19 @@ Example types track:
 ```
 distributions
 random variables
+```
+
+Example:
+
+```
+sample : Distribution<T> → T
+```
+
+Inference preserves:
+
+```
+measurability
+normalizability
 ```
 
 Languages:
@@ -736,7 +961,7 @@ Church
 
 
 
-## 21. Dimensions of Type System Design
+## 22. Dimensions of Type System Design
 
 Type systems usually vary along *these axes*.
 
@@ -783,7 +1008,7 @@ homotopy
 
 
 
-## 22. Modern Research Combinations
+## 23. Modern Research Combinations
 
 Many research systems combine multiple ideas.
 
@@ -808,49 +1033,56 @@ Koka
 
 
 
-## 23. A Rough "Expressiveness Ladder"
+## 24. A Rough "Expressiveness Ladder"
 
 This is not strict but roughly shows increasing expressive power.
 
 ```
 untyped lambda calculus
-      │
+      |
 simply typed lambda calculus
-      │
+      |
 polymorphic types (System F)
-      │
+      |
 subtyping systems
-      │
+      |
 GADTs
-      │
+      |
 effect systems
-      │
+      |
 linear / affine systems
-      │
+      |
 refinement types
-      │
+      |
 dependent types
-      │
+      |
 homotopy type theory
 ```
 
 
 
-## 24. The Deep Theoretical Correspondence
+## 25. The Deep Theoretical Correspondence
 
 Many type systems correspond to *logical systems*.
 
 ```
-STLC              <--> intuitionistic logic
+STLC              <--> intuitionistic logic          (Curry-Howard)
 System F          <--> second-order logic
-Linear types      <--> linear logic
-Dependent types   <--> higher-order logic
+Linear types      <--> multiplicative linear logic   (Girard)
 Session types     <--> linear logic + π-calculus
-HoTT              <--> homotopy theory
+Dependent types   <--> higher-order logic            (Martin-Löf)
+HoTT              <--> homotopy theory               (Voevodsky)
+Cubical TT        <--> cubical sets                  (Cohen et al.)
+Modal types       <--> S4/S5 modal logic
+Staged types      <--> S4 (necessity as code)
 ```
 
-This is part of the *Curry–Howard–Lambek correspondence*.
+This is part of the *Curry-Howard-Lambek correspondence*:
 
-
-
-
+```
+types       <-->  propositions
+programs    <-->  proofs
+evaluation  <-->  proof normalization
+categories  <-->  type theories         (Lambek)
+spaces      <-->  types                 (HoTT)
+```
