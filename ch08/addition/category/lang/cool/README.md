@@ -1,7 +1,7 @@
 
 ## COOL Category Language (a cool cat)
 
-Files in forlders:
+Files in folders:
 - cat_cool.py - OOP with category theory
 - cat_gen.py/cat_gen2.py - Generics as functors
 - cat_adt.py - Sum/product types

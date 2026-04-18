@@ -73,7 +73,7 @@ From the demo:
 - *Coproduct*: Combine logging + state; interpret together.
 - *Multiple Interpreters*: Real console vs. mock (logs outputs).
 - *Testing*: Pure interpreter checks without I/O.
-- *Optimiation*: Fuse/reorder ops before running.
+- *Optimisation*: Fuse/reorder ops before running.
 - *Web API DSL*: `http_get("/users") >> http_post("/analytics")`; mock for tests.
 
 These show free monads' flexibility: one program, many meanings.
