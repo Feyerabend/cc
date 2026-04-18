@@ -821,18 +821,18 @@ in the book/repo.
 
 #### Starter Projects
 
-*S1. Echo server*
+*S1.* __Echo server__
 Modify `c/tcp_server.c` to loop indefinitely, accepting and echoing messages
 from multiple sequential clients (one at a time).  Then modify it to handle
 one persistent connection and echo each line the client sends.
 
-*S2. HTTP method router*
+*S2.* __HTTP method router__
 Extend `c/http_server.c` to handle `POST` requests.  Accept JSON in the body
 (parse it manually as a string), and store submitted key-value pairs in a
 global `struct` or hash table.  A subsequent `GET /data` should return all
 stored pairs.
 
-*S3. Timed concurrency comparison*
+*S3.* __Timed concurrency comparison__
 Modify `python/concurrency_threads.py` and `python/concurrency_async.py` to
 accept the number of workers and sleep duration as command-line arguments.
 Plot wall time vs. number of workers for both models.  At what point do threads
@@ -842,30 +842,30 @@ start losing to async due to scheduling overhead?
 
 #### Intermediate Projects
 
-*I1. Persistent multi-client TCP chat server (C)*
+*I1.* __Persistent multi-client TCP chat server (C)__
 Write a server in C using pthreads that accepts multiple simultaneous clients.
 When any client sends a message, the server broadcasts it to all other connected
 clients.  Use a mutex to protect the list of connected sockets.
 
-*I2. Minimal HTTP file server (C)*
+*I2.* __Minimal HTTP file server (C)__
 Extend `c/http_server.c` to serve files from a directory.  A `GET /foo.txt`
 should open and stream `./files/foo.txt`.  Implement proper `Content-Length`
 and `Content-Type` headers (at least distinguish text from binary).  Guard
 against path traversal attacks (requests like `GET /../../../etc/passwd`).
 
-*I3. Auth token expiry*
+*I3.* __Auth token expiry__
 Add expiring tokens to `python/auth_service.py`.  Tokens should be issued via a
 `POST /login` endpoint with a username and password, and should expire after
 60 seconds.  The `GET /validate` endpoint should check expiry.  Use Python's
 `time.time()`--no external libraries.
 
-*I4. Service-to-service circuit breaker (Python)*
+*I4.* __Service-to-service circuit breaker (Python)__
 Implement a simple circuit breaker in `python/gateway.py`.  Track the failure
 rate of calls to the auth service.  If more than 50% of the last 10 calls
 failed, open the circuit: return `503` immediately for the next 10 seconds
 without even calling auth.  After 10 seconds, close the circuit and try again.
 
-*I5. Async gateway with httpx (Python)*
+*I5.* __Async gateway with httpx (Python)__
 Rewrite `python/gateway.py` to use `httpx.AsyncClient` and FastAPI (async
 Flask equivalent).  Benchmark both versions using `wrk` or `hey`--at what
 request rate does the async version start outperforming the threaded Flask
@@ -875,13 +875,13 @@ version?
 
 #### Advanced Projects
 
-*A1. Non-blocking event-loop server (C)*
+*A1.* __Non-blocking event-loop server (C)__
 Rewrite `c/concurrent_server.c` to use a single thread with `select()` or
 `epoll()` instead of one thread per client.  Handle up to 1024 simultaneous
 connections.  Compare throughput and memory usage to the thread-per-client
 version under load using `ab` (ApacheBench).
 
-*A2. Service discovery and load balancing*
+*A2.* __Service discovery and load balancing__
 Add a simple service registry: a fourth service that accepts `POST /register`
 (service name, host, port) and answers `GET /lookup/<name>` with a list of
 available instances.  Modify the gateway to look up the auth and data service
@@ -889,21 +889,21 @@ addresses from the registry at startup.  Then run two instances of the data
 service on different ports and implement round-robin load balancing in the
 gateway.
 
-*A3. Distributed logging and trace IDs*
+*A3.* __Distributed logging and trace IDs__
 Add a `X-Request-ID` header to every request entering the gateway.  Propagate
 it to all downstream service calls.  Have every service log the request ID
 alongside each message.  This gives you a way to correlate all logs produced
 by a single client request across three services--a stripped-down version of
 distributed tracing.
 
-*A4. Persistent data service with SQLite*
+*A4.* __Persistent data service with SQLite__
 Replace the hardcoded `DATA` dictionary in `python/data_service.py` with a
 SQLite database.  Add endpoints to create, update, and delete records.
 Handle concurrent writes correctly (SQLite is safe for concurrent reads but
 serialises writes).  Add a simple benchmark: how many reads per second can the
 service handle under concurrent load from the client?
 
-*A5. TLS everywhere (C)*
+*A5.* __TLS everywhere (C)__
 Add TLS to `c/http_server.c` using OpenSSL.  The server should generate a
 self-signed certificate if none exists, present it to the client, and upgrade
 the connection before parsing any HTTP.  `curl -k https://127.0.0.1:8443/`
