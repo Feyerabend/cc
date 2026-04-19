@@ -1,0 +1,78 @@
+/*
+    Den vanliga uppsattningen
+    for texterna.
+    (Set Lonnert
+    The Humanistic Laboratory)
+*/
+
+BODY {
+    background: white;
+    color: black;
+    font: 10pt Garamond Times serif;
+    margin-left: 5cm;
+    margin-right: 2cm;
+    margin-top: 4cm;
+    margin-bottom: 2cm;
+}
+
+H1 {
+    color: green;
+    font: 24pt Ariel sans-serif;
+}
+
+H2 {
+    color: green;
+    font: 18pt Ariel sans-serif;
+}
+
+H3 {
+    color: green;
+    font: 14pt Ariel sans-serif;
+}
+
+H4 {
+    color: green;
+    font: 12pt Ariel sans-serif;
+}
+
+H5 {
+    color: green;
+    font: 12pt Ariel sans-serif;
+}
+
+LI {
+    color: black;
+    font: 10pt Ariel sans-serif;
+}
+
+P {
+    color: black;
+    font: 10pt Times serif;
+    text-indent: 10pt;
+}
+
+P.start {
+    text-indent: 0pt;
+}
+
+BLOCKQUOTE {
+    color: black;
+    font: 9pt Times serif;
+}
+
+PRE {
+    color: blue;
+    font: 9pt Courier sans-serif;
+}
+
+A:link {
+    color: blue;
+}
+
+A:active {
+    color: red;
+}
+
+A:visited {
+    color: blue;
+}
