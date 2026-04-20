@@ -29,7 +29,7 @@ concurrent_server: concurrent_server.c
 concurrency_threads: concurrency_threads.c
 	$(CC) $(CFLAGS) -o $@ $< -lpthread
 
-# ── demos ──────────────────────────────────────────────────────────────
+# demos
 
 tcp-demo: tcp_server tcp_client
 	@echo "Starting TCP server in background..."
