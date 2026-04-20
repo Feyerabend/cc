@@ -16,7 +16,7 @@ all: help
 install:
 	$(PYTHON) -m pip install flask requests
 
-# ── individual demos ────────────────────────────────────────────────────
+# individual demos
 
 tcp-demo:
 	@echo "Starting TCP server in background..."
