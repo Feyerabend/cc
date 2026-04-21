@@ -875,13 +875,13 @@ version?
 
 #### Advanced Projects
 
-*A1.* __Non-blocking event-loop server (C)__
+*A1.* __Non-blocking event-loop server (C):__
 Rewrite `c/concurrent_server.c` to use a single thread with `select()` or
 `epoll()` instead of one thread per client.  Handle up to 1024 simultaneous
 connections.  Compare throughput and memory usage to the thread-per-client
 version under load using `ab` (ApacheBench).
 
-*A2.* __Service discovery and load balancing__
+*A2.* __Service discovery and load balancing:__
 Add a simple service registry: a fourth service that accepts `POST /register`
 (service name, host, port) and answers `GET /lookup/<name>` with a list of
 available instances.  Modify the gateway to look up the auth and data service
@@ -889,21 +889,21 @@ addresses from the registry at startup.  Then run two instances of the data
 service on different ports and implement round-robin load balancing in the
 gateway.
 
-*A3.* __Distributed logging and trace IDs__
+*A3.* __Distributed logging and trace IDs:__
 Add a `X-Request-ID` header to every request entering the gateway.  Propagate
 it to all downstream service calls.  Have every service log the request ID
 alongside each message.  This gives you a way to correlate all logs produced
 by a single client request across three services--a stripped-down version of
 distributed tracing.
 
-*A4.* __Persistent data service with SQLite__
+*A4.* __Persistent data service with SQLite:__
 Replace the hardcoded `DATA` dictionary in `python/data_service.py` with a
 SQLite database.  Add endpoints to create, update, and delete records.
 Handle concurrent writes correctly (SQLite is safe for concurrent reads but
 serialises writes).  Add a simple benchmark: how many reads per second can the
 service handle under concurrent load from the client?
 
-*A5.* __TLS everywhere (C)__
+*A5.* __TLS everywhere (C):__
 Add TLS to `c/http_server.c` using OpenSSL.  The server should generate a
 self-signed certificate if none exists, present it to the client, and upgrade
 the connection before parsing any HTTP.  `curl -k https://127.0.0.1:8443/`
