@@ -96,15 +96,15 @@ exchange:
 
 ```
 Client                          Server
-  |---- SYN (I want to connect) ------>|
-  |<--- SYN-ACK (OK, ready)     -------|
-  |---- ACK (confirmed)         ------>|
-  |                                    |
-  |   <-- data flows both ways --->    |
-  |                                    |
-  |---- FIN (I'm done)          ------>|
-  |<--- ACK + FIN               -------|
-  |---- ACK                     ------>|
+  |---- SYN (I want to connect) ----->|
+  |<--- SYN-ACK (OK, ready)     ------|
+  |---- ACK (confirmed)         ----->|
+  |                                   |
+  |   <-- data flows both ways -->    |
+  |                                   |
+  |---- FIN (I'm done)          ----->|
+  |<--- ACK + FIN               ------|
+  |---- ACK                     ----->|
 ```
 
 This handshake is why TCP connections have *latency*: even if the server is
