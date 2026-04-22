@@ -25,7 +25,7 @@ make exact statements that apply to every message over every channel.
 The fundamental quantity is the *self-information* of an event.
 If event *x* has probability P(x), the information gained by observing it is:
 
-```
+```math
 I(x) = -log₂ P(x)
 ```
 
@@ -49,7 +49,7 @@ patient tested positive for a 1-in-a-million disease carries about 20 bits.
 A single event's information depends on which event occurred. A more useful quantity
 averages over all possible outcomes, weighted by probability. This is *Shannon entropy*:
 
-```
+```math
 H(X) = -Σ P(x) log₂ P(x)
 ```
 
@@ -74,7 +74,7 @@ and achieves that bound only at the uniform distribution.
 Shannon's entropy formula is identical in structure to
 *Boltzmann's entropy* from statistical mechanics:
 
-```
+```math
 S = -k Σ pᵢ ln pᵢ
 ```
 
@@ -121,7 +121,7 @@ by clever encoding.
 *Mutual information* *I(X; Y)* measures how much knowing the channel
 output *Y* reduces uncertainty about the input *X*:
 
-```
+```math
 I(X; Y) = H(X) - H(X|Y)
 ```
 
@@ -131,7 +131,7 @@ the information in *Y*--the shared content that survives the channel.
 *Channel capacity* is the maximum mutual information
 over all possible input distributions:
 
-```
+```math
 C = max_{P(x)} I(X; Y)
 ```
 
