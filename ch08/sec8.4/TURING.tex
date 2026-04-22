@@ -1,0 +1,163 @@
+\section{The Turing Machine}\label{sec:turing-machine}
+\index{Turing machine|(}
+
+In 1936, Alan Turing unveiled a groundbreaking theoretical construct known as the \textit{Turing machine}, a model that elegantly formalised the essence of computation. This deceptively simple abstraction, capable of simulating any algorithmic process given sufficient time and memory, serves as the conceptual cornerstone of modern computing. Envision it as the most elemental ``computer'' possible, yet endowed with the capacity to execute any computation that a contemporary computer can perform. Through this model, Turing not only crystallised the notion of computation but also uncovered a profound and counterintuitive truth: no universal algorithm can determine whether an arbitrary program, when provided with a specific input, will terminate (halt) or persist indefinitely in an infinite loop. This seminal discovery, known as the \textit{undecidability of the Halting Problem}, delineates a fundamental boundary of computational capability. In this section, we will elucidate the Turing machine's components, explore the Halting Problem\index{Turing machine!halting problem}, and unravel the mathematical reasoning behind its undecidability, employing the ingenious \textit{diagonalisation technique}.
+
+
+\begin{definition}[Turing Machine]
+A Turing machine is a mathematical model of computation comprising the following components:
+\begin{itemize}
+    \item \textbf{An infinite tape:} A linear sequence of cells extending infinitely in both directions, each capable of holding a symbol (e.g., '0', '1', or a blank). The tape functions as the machine's memory, storing input, intermediate computations, and output.
+    \item \textbf{A read/write head:} A mechanism that reads the symbol in the current cell, writes a new symbol, and moves either left or right along the tape.
+    \item \textbf{A finite set of states:} The machine operates in one of a limited number of states, beginning in an \textbf{initial state} and potentially transitioning to a \textbf{halting state}, where computation ceases.
+    \item \textbf{A transition function\index{Turing machine!transition function} $\delta$:} This function governs the machine's behaviour, mapping the current state and symbol to a new state, a symbol to write, and a direction to move. Formally, $\delta : Q \times \Gamma \to Q \times \Gamma \times \{L, R\}$, where $Q$ is the set of states, $\Gamma$ is the set of tape symbols, and $\{L, R\}$ denotes left or right movement.
+\end{itemize}
+
+The machine operates iteratively: it reads the symbol under the head, consults its current state, applies the transition function to determine the new symbol to write, the direction to move, and the next state. This cycle continues until the machine enters a halting state, at which point it stops, or it may run indefinitely if no halting state is reached.
+\end{definition}
+
+The elegance of the Turing machine lies in its simplicity paired with its universality. Despite its minimalistic design, it can emulate any algorithmic process describable by a finite set of rules. If a problem is solvable by a computer program, it is solvable by a Turing machine, making it a universal model for computation.
+
+
+\subsection{The Halting Problem}
+\index{Turing machine!halting problem|(}
+
+With the Turing machine defined, we can now articulate the problem that Turing sought to address, known as the Halting Problem, which probes the limits of algorithmic predictability.
+
+\begin{definition}[Halting Problem]
+Given a Turing machine $M$ (representing a program) and an input string $w$ (representing the data fed to the program), the Halting Problem asks: Does there exist a general algorithm---itself a Turing machine---that can reliably determine whether $M$ will eventually halt (complete its computation) when executed with input $w$, or whether it will run indefinitely in an infinite loop?
+\end{definition}
+
+Turing's inquiry was whether a single, universal algorithm could resolve this question for \textit{any} Turing machine and \textit{any} input, a challenge that strikes at the heart of computational predictability.
+
+
+\subsection{Proof of Undecidability}
+\index{limits of computation!undecidability|(}
+Turing demonstrated that the Halting Problem is \textit{undecidable}, meaning no universal algorithm can exist to solve it. His proof employs a \textit{proof by contradiction}, augmented by the ingenious \textit{diagonalisation technique}, to reveal a logical impossibility. Below, we meticulously outline the proof, ensuring each step is clear and the reasoning accessible.
+
+\begin{theorem}
+There exists no Turing machine $H$ that, given the description of a Turing machine $M$ and an input $w$, can consistently determine whether $M$ halts on $w$.
+\end{theorem}
+
+\begin{proof}
+To establish this, assume, for the sake of contradiction, that such a Turing machine $H$, dubbed the ``Halting Oracle,'' exists. This hypothetical machine $H$ accepts two inputs:
+\begin{itemize}
+    \item The description of a Turing machine $M$, denoted $\langle M \rangle$, which encodes the machine's rules as a string of symbols.
+    \item An input string $w$ for $M$.
+\end{itemize}
+The behaviour of $H$ is defined as follows:
+\begin{itemize}
+    \item If $M$ halts on input $w$, then $H(M, w)$ outputs ``halt.''
+    \item If $M$ does not halt (i.e., loops indefinitely) on input $w$, then $H(M, w)$ outputs ``loop.''
+\end{itemize}
+
+Since a Turing machine's description $\langle M \rangle$ is itself a string, it can serve as an input to another machine, including $M$ itself. Thus, we can evaluate $H(M, \langle M \rangle)$, where $H$ determines whether $M$ halts when given its own description as input.
+
+\subsubsection*{Constructing a Contradictory Machine}
+Using the hypothetical Halting Oracle $H$, we construct a new Turing machine, $D$, termed the ``Diagonaliser,'' designed to challenge $H$'s predictions. Machine $D$ takes a single input: the description $\langle M \rangle$ of any Turing machine $M$. Its operation is as follows:
+\begin{enumerate}
+    \item $D$ receives $\langle M \rangle$ and invokes $H$ to evaluate $H(M, \langle M \rangle)$, determining whether $M$ halts when run with its own description.
+    \item Based on $H$'s output, $D$ behaves oppositely:
+        \begin{itemize}
+            \item If $H(M, \langle M \rangle)$ outputs ``halt'' (indicating $M$ halts on $\langle M \rangle$), then $D$ enters an infinite loop, deliberately defying the prediction.
+            \item If $H(M, \langle M \rangle)$ outputs ``loop'' (indicating $M$ does not halt on $\langle M \rangle$), then $D$ halts, again contradicting $H$'s prediction.
+        \end{itemize}
+\end{enumerate}
+Formally, the behavior of $D$ on input $\langle M \rangle$ is:
+\[
+D(\langle M \rangle) =
+\begin{cases}
+\text{loops} & \text{if } H(M, \langle M \rangle) = \text{``halt''}, \\
+\text{halts} & \text{if } H(M, \langle M \rangle) = \text{``loop''}.
+\end{cases}
+\]
+
+\subsubsection*{Diagonalisation and Contradiction}
+Now, consider the behaviour of $D$ when given its own description, $\langle D \rangle$, as input. We analyze $D(\langle D \rangle)$:
+\begin{enumerate}
+    \item $D$ invokes $H$ with inputs $D$ and $\langle D \rangle$, computing $H(D, \langle D \rangle)$.
+    \item We examine the two possible outputs of $H(D, \langle D \rangle)$:
+        \begin{itemize}
+            \item \textit{Case 1: $H(D, \langle D \rangle)$ outputs ``halt.''}
+                \begin{itemize}
+                    \item This implies $H$ predicts that $D$ halts when run with $\langle D \rangle$.
+                    \item By $D$'s definition, if $H(D, \langle D \rangle)$ outputs ``halt,'' then $D(\langle D \rangle)$ loops indefinitely.
+                    \item This creates a contradiction: $H$ predicts $D$ halts, but $D$ loops.
+                \end{itemize}
+            \item \textit{Case 2: $H(D, \langle D \rangle)$ outputs ``loop.''}
+                \begin{itemize}
+                    \item This implies $H$ predicts that $D$ loops indefinitely when run with $\langle D \rangle$.
+                    \item By $D$'s definition, if $H(D, \langle D \rangle)$ outputs ``loop,'' then $D(\langle D \rangle)$ halts.
+                    \item This also creates a contradiction: $H$ predicts $D$ loops, but $D$ halts.
+                \end{itemize}
+        \end{itemize}
+\end{enumerate}
+In both scenarios, $H$'s prediction about $D(\langle D \rangle)$ is incorrect, leading to a logical contradiction. Since assuming the existence of $H$ results in this impossibility, our assumption must be false. Therefore, no Turing machine $H$---no universal halt-checking algorithm---can exist.
+
+\textit{This concludes the proof: The Halting Problem is undecidable.}
+\end{proof}
+\index{limits of computation!undecidability|)}
+
+
+\subsection{Visualising the Proof}
+\index{Turing machine!diagonalisation|(}
+The diagonalisation technique underpinning Turing's proof can be elusive, but it is pivotal to understanding the contradiction. This method, inspired by Georg Cantor's proof that the real numbers are uncountably infinite, leverages self-reference to expose logical inconsistencies.
+
+Imagine listing all possible Turing machines ($M_1, M_2, M_3, \ldots$) and their behaviours when given their own descriptions ($\langle M_1 \rangle, \langle M_2 \rangle, \ldots$) as inputs. We could construct a table where each row corresponds to a Turing machine and each column to an input, with entries indicating whether the machine halts or loops on that input. For simplicity, we focus on the ``diagonal'' entries, where each machine $M_i$ is run on its own description $\langle M_i \rangle$:
+
+\begin{center}
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|>{\centering\arraybackslash}m{1.2cm}|
+                *{4}{>{\centering\arraybackslash}m{1.8cm}|}
+                >{\centering\arraybackslash}m{0.5cm}|}
+\hline
+\textbf{Machine} & \textbf{on $\langle M_1 \rangle$} & \textbf{on $\langle M_2 \rangle$} & \textbf{on $\langle M_3 \rangle$} & \textbf{on $\langle M_4 \rangle$} & \textbf{\dots} \\
+\hline
+$M_1$ & \textbf{Halts} & Loops & Halts & Loops & \dots \\
+\hline
+$M_2$ & Loops & \textbf{Halts} & Loops & Halts & \dots \\
+\hline
+$M_3$ & Halts & Halts & \textbf{Loops} & Halts & \dots \\
+\hline
+$M_4$ & Loops & Halts & Halts & \textbf{Halts} & \dots \\
+\hline
+\textbf{\dots} & \dots & \dots & \dots & \dots & \dots \\
+\hline
+\end{tabular}
+\endgroup
+\end{center}
+
+\vspace{0.5em}
+
+The hypothetical Halting Oracle $H$ would predict the diagonal entries: whether $M_1$ halts on $\langle M_1 \rangle$, $M_2$ on $\langle M_2 \rangle$, and so forth. Machine $D$ is crafted to examine these diagonal predictions and act contrarily:
+\begin{itemize}
+    \item If $M_1$ halts on $\langle M_1 \rangle$, $D(\langle M_1 \rangle)$ loops.
+    \item If $M_2$ halts on $\langle M_2 \rangle$, $D(\langle M_2 \rangle)$ loops.
+    \item If $M_3$ loops on $\langle M_3 \rangle$, $D(\langle M_3 \rangle)$ halts.
+    \item If $M_4$ halts on $\langle M_4 \rangle$, $D(\langle M_4 \rangle)$ loops.
+\end{itemize}
+
+Now, suppose $D$ is some machine $M_k$ in the list. When we run $D(\langle D \rangle)$, equivalent to $M_k(\langle M_k \rangle)$, $D$ must do the opposite of what $H$ predicts for $M_k(\langle M_k \rangle)$. However, since $M_k$ is $D$, this means $D(\langle D \rangle)$ must contradict its own predicted behaviour:
+\begin{itemize}
+    \item If $H$ predicts $D(\langle D \rangle)$ halts, $D$ loops.
+    \item If $H$ predicts $D(\langle D \rangle)$ loops, $D$ halts.
+\end{itemize}
+This self-referential paradox demonstrates that $D$ cannot consistently fit into the list, undermining the existence of $H$. The diagonalisation technique thus reveals that no algorithm can enumerate all computational behaviours without encountering a contradiction.
+
+
+\subsection{Implications}
+The undecidability of the Halting Problem transcends theoretical curiosity, establishing a fundamental limit with tangible implications:
+\begin{itemize}
+    \item \textit{Software Verification\index{software verification}}: No universal tool can definitively verify that all programs are free of errors or will always terminate. While specific verification techniques can succeed for particular programs, a general solution remains unattainable.
+    \item \textit{Program Analysis}: Certain program properties, such as guaranteed termination, cannot be universally assessed by algorithms, limiting the scope of automated analysis tools.
+    \item \textit{Theoretical Limits}: Alongside Gödel's incompleteness theorems, which expose limits in formal mathematical systems, Turing's result underscores inherent boundaries in computation and proof, profoundly influencing computability and complexity theory.\index{computability}\index{computational complexity theory}
+\end{itemize}
+\index{Turing machine!diagonalisation|)}
+\index{Turing machine!halting problem|)}
+
+
+\subsection{Summary}
+In 1936, Alan Turing introduced the Turing machine, a minimalist yet universal model of computation capable of simulating any algorithm. This abstraction led to a profound question: Could a machine predict whether any program would halt or loop indefinitely? This challenge, the Halting Problem, was answered through Turing's ingenious proof by contradiction. By hypothesising a Halting Oracle and constructing a machine $D$ that defies its predictions, Turing exposed a paradox via the diagonalisation technique. If $D$ halts, it loops; if it loops, it halts---rendering the oracle impossible. This result, echoing Gödel's insights into mathematical limits, established that some computational questions are inherently unanswerable, shaping the foundations of computer science and highlighting the boundaries of what machines can achieve.
+
