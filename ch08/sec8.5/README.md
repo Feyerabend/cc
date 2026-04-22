@@ -213,7 +213,7 @@ in statistics and machine learning.
 
 *Kullback-Leibler divergence*:
 
-```
+```msth
 D_KL(P ‖ Q) = Σ P(x) log₂ [P(x) / Q(x)]
 ```
 
@@ -223,7 +223,7 @@ It is not a distance metric, but it is a measure of how wrong *Q* is as a model 
 
 *Cross-entropy*:
 
-```
+```math
 H(P, Q) = -Σ P(x) log₂ Q(x) = H(P) + D_KL(P ‖ Q)
 ```
 
