@@ -213,7 +213,7 @@ in statistics and machine learning.
 
 *Kullback-Leibler divergence*:
 
-```msth
+```math
 D_KL(P ‖ Q) = Σ P(x) log₂ [P(x) / Q(x)]
 ```
 
