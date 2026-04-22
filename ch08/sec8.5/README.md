@@ -208,8 +208,8 @@ All of them are racing toward the same theoretical limit that Shannon establishe
 
 ### KL Divergence and Cross-Entropy
 
-Information theory also provides tools for comparing probability distributions--essential
-in statistics and machine learning.
+Information theory also provides tools for comparing probability
+distributions--essential in statistics and machine learning.
 
 *Kullback-Leibler divergence*:
 
@@ -217,9 +217,11 @@ in statistics and machine learning.
 D_KL(P ‖ Q) = Σ P(x) log₂ [P(x) / Q(x)]
 ```
 
-This measures the extra bits needed to encode events from *P* using a code optimised for *Q*.
-It is always non-negative (zero only when P = Q), and asymmetric — D_KL(P‖Q) ≠ D_KL(Q‖P) in general.
-It is not a distance metric, but it is a measure of how wrong *Q* is as a model for *P*.
+This measures the extra bits needed to encode events from *P* using
+a code optimised for *Q*. It is always non-negative (zero only when
+$P = Q$), and asymmetric — $D_KL(P‖Q) ≠ D_KL(Q‖P)$ in general.
+It is not a distance metric, but it is a measure of how wrong
+*Q* is as a model for *P*.
 
 *Cross-entropy*:
 
@@ -227,12 +229,14 @@ It is not a distance metric, but it is a measure of how wrong *Q* is as a model 
 H(P, Q) = -Σ P(x) log₂ Q(x) = H(P) + D_KL(P ‖ Q)
 ```
 
-Cross-entropy is what you minimise in neural network classification. The model produces a distribution
-*Q* (its predictions); the true labels define *P*. Minimising cross-entropy is equivalent to minimising
-KL divergence from *P* to *Q*, which means making the model's distribution match reality as closely as possible.
+Cross-entropy is what you minimise in neural network classification.
+The model produces a distribution *Q* (its predictions); the true
+labels define *P*. Minimising cross-entropy is equivalent to minimising
+KL divergence from *P* to *Q*, which means making the model's
+distribution match reality as closely as possible.
 
-The loss function printed out during deep learning training is Shannon's 1948 concept,
-running on GPU clusters in 2024.
+The loss function printed out during deep learning training is
+Shannon's 1948 concept, running on GPU clusters in 2024.
 
 
 
