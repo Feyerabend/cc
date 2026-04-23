@@ -183,10 +183,7 @@ __Algorithm__
    - Analyze `D` to estimate the probability distribution `P(s)` for each symbol `s`
 
 2. *Assign Code Lengths*
-   - For each symbol `s`, assign a code length:
-     ```math
-     L(s) ≈ -log2(P(s))
-     ```
+   - For each symbol `s`, assign a code length: $L(s) ≈ -log2(P(s))$
    - More frequent symbols --> shorter codes
    - Less frequent symbols --> longer codes
 
