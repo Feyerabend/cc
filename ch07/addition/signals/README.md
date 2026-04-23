@@ -990,4 +990,5 @@ the baud rate.
 
 * Digital Signal Processing: Principles, Algorithms, and Applications
   John G. Proakis, J. G., & Dimitris G. Manolakis, D. G. (2007).
-  *Digital signal processing: Principles, algorithms, and applications* (4th ed.). Pearson Education.
+  *Digital signal processing: Principles, algorithms, and applications*
+  (4th ed.). Pearson Education.
