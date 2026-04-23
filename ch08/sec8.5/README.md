@@ -133,10 +133,7 @@ the information in *$Y$*--the shared content that survives the channel.
 
 *Channel capacity* is the maximum mutual information
 over all possible input distributions:
-
-```math
-C = max_{P(x)} I(X; Y)
-```
+$C = max_{P(x)} I(X; Y)$.
 
 Shannon's *Noisy Channel Coding Theorem* then states:
 
@@ -197,7 +194,7 @@ __Algorithm__
    - Compressed bitstream + (implicitly or explicitly) the model/codebook
 
 
-The *average code length* cannot be smaller than the entropy: $H(D) = -Σ P(s) log2(P(s))$
+The *average code length* cannot be smaller than the entropy: $H(D) = -Σ P(s) log2(P(s))$.
 This is the theoretical lower bound for lossless compression.
 
 
