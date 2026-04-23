@@ -174,6 +174,42 @@ This is the fundamental theorem of lossless compression. Every compressor--gzip,
 bzip2, the PNG codec, the DEFLATE algorithm inside ZIP files--is an engineering approximation
 of this theorem.
 
+
+__Algorithm__
+
+- Data source `D` with symbols drawn from some alphabet
+
+__Steps__
+
+1. *Model the Source*
+   - Analyze `D` to estimate the probability distribution `P(s)` for each symbol `s`
+
+2. *Assign Code Lengths*
+   - For each symbol `s`, assign a code length:
+     ```math
+     L(s) ≈ -log2(P(s))
+     ```
+   - More frequent symbols --> shorter codes
+   - Less frequent symbols --> longer codes
+
+3. *Construct Prefix-Free Codes*
+   - Build a codebook where no code is a prefix of another (e.g., Huffman coding)
+
+4. *Encode Data*
+   - Replace each symbol in `D` with its corresponding code
+
+5. *Output*
+   - Compressed bitstream + (implicitly or explicitly) the model/codebook
+
+
+The *average code length* cannot be smaller than the entropy:
+```math
+H(D) = -Σ P(s) log2(P(s))
+```
+This is the theoretical lower bound for lossless compression.
+
+
+
 #### Huffman Coding
 
 Huffman coding (1952) is the simplest scheme that achieves within one bit per symbol of
