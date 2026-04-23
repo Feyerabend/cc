@@ -106,14 +106,14 @@ It has a physical unit price. Every time you delete a file, you
 are increasing the entropy of the universe by a minimum measurable amount.
 The universe keeps accounts.
 
-[^paper]: In 1997, I wrote a short essay on thermodynamics and its historical
-development ("Något om Strömer, Arrhenius och Sveberg över entropi och värmedöd")
-What I found particularly striking was its correspondance to information theory,
-which I did not have the opportunity to explore further.
-Arrhenius e.g. introduced a probabilistic view of thermodynamic processes at the molecular
-level. Taken together, their work points toward a common framework in which
-macroscopic behavior is understood via distributions over microstates--precisely
-the perspective later formalised in information theory as entropy.
+[^paper]: In 1997, I wrote a short essay on thermodynamics and its historical development
+("Något om Strömer, Arrhenius och Svedberg över entropi och värmedöd"). What I found
+particularly striking was its correspondence to information theory, which I did not have
+the opportunity to explore further. Svente Arrhenius, for example, introduced a probabilistic
+view of thermodynamic processes at the molecular level, and taken together, the work of all
+three points toward a common framework in which macroscopic behavior is understood via
+distributions over microstates--precisely the perspective later formalised in
+information theory as entropy.
 
 
 ### Channel Capacity and the Noisy Channel Coding Theorem
