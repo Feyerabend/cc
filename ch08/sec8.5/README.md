@@ -18,7 +18,9 @@ in how much *uncertainty* it resolves. This is counterintuitive but powerful.
 By bracketing semantics entirely, Shannon could apply probability theory and
 make exact statements that apply to every message over every channel.
 
-
+* Shannon, C. E. (1948). *A mathematical theory of communication.
+  Bell System Technical Journal, 27*(3), 379–423, 623–656.
+  https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf
 
 ### Information as Surprise
 
