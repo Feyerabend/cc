@@ -210,9 +210,10 @@ This is the theoretical lower bound for lossless compression.
 
 #### Huffman Coding
 
-Huffman coding (1952) is the simplest scheme that achieves within one bit per symbol of
-the entropy bound. The idea is direct: assign shorter codewords to more frequent symbols.
-Build a binary tree greedily from the bottom up, combining the two least frequent
+Huffman coding (1952) is the simplest scheme that achieves within
+one bit per symbol of the entropy bound. The idea is direct:
+assign shorter codewords to more frequent symbols. Build a binary
+tree greedily from the bottom up, combining the two least frequent
 symbols at each step.
 
 For a source with probabilities $P(a) = 0.5$, $P(b) = 0.33$, $P(c) = 0.17$:
@@ -229,17 +230,21 @@ Avg code length = 0.5×1 + 0.33×2 + 0.17×2 = 1.50 bits/symbol
 Gap from entropy = 0.041 bits/symbol
 ```
 
-The gap is always less than 1 bit per symbol. Arithmetic coding closes this gap further--it
-represents an entire message as a single real number in $[0,1)$, achieving arbitrarily close
-to the entropy limit at the cost of more complex arithmetic.
+The gap is always less than 1 bit per symbol. Arithmetic coding closes
+this gap further--it represents an entire message as a single real
+number in $[0,1)$, achieving arbitrarily close to the entropy limit
+at the cost of more complex arithmetic.
 
-Real-world compressors go beyond per-symbol codes. *LZ77* (the basis of gzip and PNG)
-exploits *sequential* structure: it encodes repeated substrings as back-references.
-This implicitly captures higher-order statistics--not just symbol frequencies but patterns.
-*bzip2* uses Burrows-Wheeler transform plus Huffman. *zstd* uses ANS (asymmetric numeral systems),
-a modern generalisation of arithmetic coding that is both near-optimal and fast.
+Real-world compressors go beyond per-symbol codes. *LZ77* (the basis
+of gzip and PNG) exploits *sequential* structure: it encodes repeated
+substrings as back-references. This implicitly captures higher-order
+statistics--not just symbol frequencies but patterns.
+*bzip2* uses Burrows-Wheeler transform plus Huffman. *zstd* uses
+ANS (asymmetric numeral systems), a modern generalisation of arithmetic
+coding that is both near-optimal and fast.
 
-All of them are racing toward the same theoretical limit that Shannon established in 1948.
+All of them are racing toward the same theoretical limit that
+Shannon established in 1948.
 
 
 
