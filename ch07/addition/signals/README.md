@@ -982,3 +982,12 @@ splitting works. Add Reed-Solomon error correction to the OFDM link and
 observe how it recovers from single-symbol errors. Add parity bits to the
 FSK modem and watch how error detection changes reliability as you increase
 the baud rate.
+
+
+### Reference
+
+![DSP](./../../assets/image/dsp.png)
+
+* Digital Signal Processing: Principles, Algorithms, and Applications
+  John G. Proakis, J. G., & Dimitris G. Manolakis, D. G. (2007).
+  *Digital signal processing: Principles, algorithms, and applications* (4th ed.). Pearson Education.

@@ -18,12 +18,14 @@ in how much *uncertainty* it resolves. This is counterintuitive but powerful.
 By bracketing semantics entirely, Shannon could apply probability theory and
 make exact statements that apply to every message over every channel.
 
-
+* Shannon, C. E. (1948). *A mathematical theory of communication.
+  Bell System Technical Journal, 27*(3), 379–423, 623–656.
+  https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf
 
 ### Information as Surprise
 
 The fundamental quantity is the *self-information* of an event.
-If event *x* has probability P(x), the information gained by observing it is:
+If event *$x$* has probability $P(x)$, the information gained by observing it is:
 
 ```math
 I(x) = -log₂ P(x)
@@ -34,11 +36,11 @@ but the unit of information. One bit is the amount of information
 in a fair coin flip.
 
 The formula is forced by a few natural requirements:
-- Certain events (P = 1) carry no information: I = 0.
-- Rare events carry more information than common ones: I is decreasing in P.
-- Independent events' information adds: I(xy) = I(x) + I(y), which requires a logarithm.
+- Certain events ($P = 1$) carry no information: $I = 0$.
+- Rare events carry more information than common ones: $I$ is decreasing in $P$.
+- Independent events' information adds: $I(xy) = I(x) + I(y)$, which requires a logarithm.
 
-So `-log₂ P(x)` is not an arbitrary choice--it is the unique function satisfying these
+So $-log₂ P(x)$ is not an arbitrary choice--it is the unique function satisfying these
 three constraints. A fair die showing a 4 carries 2.58 bits. A message that a particular 
 patient tested positive for a 1-in-a-million disease carries about 20 bits.
 
@@ -58,18 +60,18 @@ the average number of bits needed to describe one outcome.
 
 Two extremes illuminate the concept:
 
-- *Minimum entropy (H = 0)*: one outcome has probability 1. The source is deterministic;
+- *Minimum entropy ($H = 0$)*: one outcome has probability 1. The source is deterministic;
   you always know what it will say next. Zero uncertainty, zero information.
 - *Maximum entropy*: all outcomes are equally probable. This is the most uncertain source
-  possible. For a source with *n* equally likely symbols, H = log₂ n bits--exactly the
+  possible. For a source with *n* equally likely symbols, $H = log₂ n$ bits--exactly the
   number of binary questions needed to identify which symbol occurred.
 
-Entropy is always non-negative, always bounded above by log₂ n,
+Entropy is always non-negative, always bounded above by $log₂ n$,
 and achieves that bound only at the uniform distribution.
 
 
 
-### The Thermodynamic Echo
+### The Thermodynamic Echo[^paper]
 
 Shannon's entropy formula is identical in structure to
 *Boltzmann's entropy* from statistical mechanics:
@@ -97,7 +99,7 @@ He calculated that one bit of information corresponds to exactly
 *k*T ln 2 of free energy--connecting information to thermodynamics quantitatively.
 
 *Landauer's principle* (1961): Rolf Landauer proved that *erasing*
-one bit of information necessarily dissipates at least kT ln 2 joules of heat.
+one bit of information necessarily dissipates at least $kT ln 2$ joules of heat.
 Erasure is the thermodynamically irreversible act. Computation itself need
 not dissipate energy; only erasure of information does.
 
@@ -106,39 +108,47 @@ It has a physical unit price. Every time you delete a file, you
 are increasing the entropy of the universe by a minimum measurable amount.
 The universe keeps accounts.
 
-
+[^paper]: In 1997, I wrote a short essay on thermodynamics and its historical development
+("Något om Strömer, Arrhenius och Svedberg över entropi och värmedöd"). What I found
+particularly striking was its correspondence to information theory, which I did not have
+the opportunity to explore further. Svente Arrhenius, for example, applied statistical
+thinking (notably in his equation for reaction rates) of thermodynamic processes at the
+molecular level, and taken together, the work of all three points toward a common framework
+in which macroscopic behaviour is understood via
+distributions over microstates--precisely the perspective later 
+echoed in information theory's treatment of entropy.
 
 ### Channel Capacity and the Noisy Channel Coding Theorem
 
 Once information is quantified, the next question is:
 how much of it can reliably traverse a noisy channel?
 
-Shannon modelled a communication system as: Source -> Encoder -> Channel -> Decoder -> Sink.
+Shannon modelled a communication system as:
+`Source -> Encoder -> Channel -> Decoder -> Sink`.
 The channel corrupts symbols with some probability.
 The question is whether the corruption can be overcome
 by clever encoding.
 
-*Mutual information* *I(X; Y)* measures how much knowing the channel
+*Mutual information* $I(X; Y)$ measures how much knowing the channel
 output *Y* reduces uncertainty about the input *X*:
 
 ```math
 I(X; Y) = H(X) - H(X|Y)
 ```
 
-It is the overlap between the information in *X* and
-the information in *Y*--the shared content that survives the channel.
+It is the overlap between the information in $X$ and
+the information in $Y$--the shared content that survives the channel.
+
+![Overlap](./../assets/image/circle.png)
 
 *Channel capacity* is the maximum mutual information
 over all possible input distributions:
-
-```math
-C = max_{P(x)} I(X; Y)
-```
+$C = max_{P(x)} I(X; Y)$.
 
 Shannon's *Noisy Channel Coding Theorem* then states:
 
-> For any rate R < C, there exists an encoding scheme that achieves arbitrarily
-> small error probability. For any rate R > C, reliable communication is impossible
+> For any rate $R < C$, there exists an encoding scheme that achieves arbitrarily
+> small error probability. For any rate $R > C$, reliable communication is impossible
 > regardless of the encoding scheme.
 
 This is one of the most striking existence proofs in
@@ -163,22 +173,52 @@ The noisy channel theorem deals with reliable *transmission*.
 A separate set of theorems deals with efficient
 *representation*--*source coding* or, in practice, data compression.
 
-*Shannon's Source Coding Theorem* states: the minimum average number of bits per symbol
-required to represent a source without loss is its entropy H. You cannot compress below
-the entropy limit. You can always compress down to it (in the limit of long messages).
+*Shannon's Source Coding Theorem* states: the minimum average
+number of bits per symbol required to represent a source without
+loss is its entropy H. You cannot compress below the entropy limit.
+You can always compress down to it (in the limit of long messages).
 
-This is the fundamental theorem of lossless compression. Every compressor--gzip, zstd,
-bzip2, the PNG codec, the DEFLATE algorithm inside ZIP files--is an engineering approximation
-of this theorem.
+This is the fundamental theorem of lossless compression. Every
+compressor--gzip, zstd, bzip2, the PNG codec, the DEFLATE algorithm
+inside ZIP files--is an engineering approximation of this theorem.
+
+
+__Algorithm__
+
+- Data source `D` with symbols drawn from some alphabet
+
+1. *Model the Source*
+   - Analyze `D` to estimate the probability distribution `P(s)` for each symbol `s`
+
+2. *Assign Code Lengths*
+   - For each symbol `s`, assign a code length: $L(s) ≈ -log2(P(s))$
+   - More frequent symbols --> shorter codes
+   - Less frequent symbols --> longer codes
+
+3. *Construct Prefix-Free Codes*
+   - Build a codebook where no code is a prefix of another (e.g., Huffman coding)
+
+4. *Encode Data*
+   - Replace each symbol in `D` with its corresponding code
+
+5. *Output*
+   - Compressed bitstream + (implicitly or explicitly) the model/codebook
+
+
+The *average code length* cannot be smaller than the entropy: $H(D) = -Σ P(s) log2(P(s))$.
+This is the theoretical lower bound for lossless compression.
+
+
 
 #### Huffman Coding
 
-Huffman coding (1952) is the simplest scheme that achieves within one bit per symbol of
-the entropy bound. The idea is direct: assign shorter codewords to more frequent symbols.
-Build a binary tree greedily from the bottom up, combining the two least frequent
+Huffman coding (1952) is the simplest scheme that achieves within
+one bit per symbol of the entropy bound. The idea is direct:
+assign shorter codewords to more frequent symbols. Build a binary
+tree greedily from the bottom up, combining the two least frequent
 symbols at each step.
 
-For a source with probabilities P(a) = 0.5, P(b) = 0.33, P(c) = 0.17:
+For a source with probabilities $P(a) = 0.5$, $P(b) = 0.33$, $P(c) = 0.17$:
 
 ```
 Entropy = 1.459 bits/symbol
@@ -192,17 +232,21 @@ Avg code length = 0.5×1 + 0.33×2 + 0.17×2 = 1.50 bits/symbol
 Gap from entropy = 0.041 bits/symbol
 ```
 
-The gap is always less than 1 bit per symbol. Arithmetic coding closes this gap further--it
-represents an entire message as a single real number in [0,1), achieving arbitrarily close
-to the entropy limit at the cost of more complex arithmetic.
+The gap is always less than 1 bit per symbol. Arithmetic coding closes
+this gap further--it represents an entire message as a single real
+number in $[0,1)$, achieving arbitrarily close to the entropy limit
+at the cost of more complex arithmetic.
 
-Real-world compressors go beyond per-symbol codes. *LZ77* (the basis of gzip and PNG)
-exploits *sequential* structure: it encodes repeated substrings as back-references.
-This implicitly captures higher-order statistics--not just symbol frequencies but patterns.
-*bzip2* uses Burrows-Wheeler transform plus Huffman. *zstd* uses ANS (asymmetric numeral systems),
-a modern generalisation of arithmetic coding that is both near-optimal and fast.
+Real-world compressors go beyond per-symbol codes. *LZ77* (the basis
+of gzip and PNG) exploits *sequential* structure: it encodes repeated
+substrings as back-references. This implicitly captures higher-order
+statistics--not just symbol frequencies but patterns.
+*bzip2* uses Burrows-Wheeler transform plus Huffman. *zstd* uses
+ANS (asymmetric numeral systems), a modern generalisation of arithmetic
+coding that is both near-optimal and fast.
 
-All of them are racing toward the same theoretical limit that Shannon established in 1948.
+All of them are racing toward the same theoretical limit that
+Shannon established in 1948.
 
 
 
@@ -218,10 +262,10 @@ D_KL(P ‖ Q) = Σ P(x) log₂ [P(x) / Q(x)]
 ```
 
 This measures the extra bits needed to encode events from *P* using
-a code optimised for *Q*. It is always non-negative (zero only when
+a code optimised for $Q$. It is always non-negative (zero only when
 $P = Q$), and asymmetric — $D_KL(P‖Q) ≠ D_KL(Q‖P)$ in general.
 It is not a distance metric, but it is a measure of how wrong
-*Q* is as a model for *P*.
+$Q$ is as a model for $P$.
 
 *Cross-entropy*:
 
@@ -230,9 +274,9 @@ H(P, Q) = -Σ P(x) log₂ Q(x) = H(P) + D_KL(P ‖ Q)
 ```
 
 Cross-entropy is what you minimise in neural network classification.
-The model produces a distribution *Q* (its predictions); the true
-labels define *P*. Minimising cross-entropy is equivalent to minimising
-KL divergence from *P* to *Q*, which means making the model's
+The model produces a distribution $Q$ (its predictions); the true
+labels define $P$. Minimising cross-entropy is equivalent to minimising
+KL divergence from $P$ to $Q$, which means making the model's
 distribution match reality as closely as possible.
 
 The loss function printed out during deep learning training is
@@ -255,23 +299,23 @@ This bridges information theory and the Turing machine from the previous section
 
 Key facts:
 
-- *K(s) is uncomputable.* Determining the shortest program for an arbitrary
+- $K(s)$ *is uncomputable.* Determining the shortest program for an arbitrary
   string is equivalent to solving the Halting Problem. You can upper-bound $K(s)$
   for any specific string, but you can never prove you have found the minimum.
   The optimal compressor cannot be constructed.
 
-- *Most strings are incompressible.* For any length *n*, there are 2ⁿ strings
-  but only 2^(n-1) + 1 programs shorter than *n* bits. By the pigeonhole principle,
-  at least half of all *n*-bit strings have K(s) ≥ n — they cannot be compressed at all.
+- *Most strings are incompressible.* For any length *n*, there are $2ⁿ$ strings
+  but only $2^(n-1) + 1$ programs shorter than *n* bits. By the pigeonhole principle,
+  at least half of all *n*-bit strings have $K(s) ≥ n$--they cannot be compressed at all.
   "Random" strings, in the Kolmogorov sense, are maximally incompressible.
 
-- **K connects to Shannon entropy.** For strings generated by a source with entropy H,
-the expected Kolmogorov complexity is approximately H(X) per symbol. The connection
-is approximate and requires care, but the two theories are shadow images of each other:
-Shannon measures average behaviour over a distribution; Kolmogorov measures the
-worst-case complexity of individual strings.
+- $K$ *connects to Shannon entropy.* For strings generated by a source with entropy $H$,
+  the expected Kolmogorov complexity is approximately $H(X)$ per symbol. The connection
+  is approximate and requires care, but the two theories are shadow images of each other:
+  Shannon measures average behaviour over a distribution; Kolmogorov measures the
+  worst-case complexity of individual strings.
 
-The incomputability of K(s) means the "ideal" compressor--the one that achieves the
+The incomputability of $K(s)$ means the "ideal" compressor--the one that achieves the
 Kolmogorov limit--cannot be built. Every real compressor is an approximation, using
 heuristics and models to extract as much structure as it can find. The limit is real;
 reaching it is forbidden by the same argument that forbids the halting oracle.
@@ -298,7 +342,8 @@ computers separates Shannon's channel capacity from real communication systems:
 
 Real engineers work in the gap. The gap has been closing for 75 years--5G is near Shannon
 capacity, zstd is near entropy for many sources--but it has not vanished and never will,
-because the theorems about what the limit is do not tell you how to reach it with bounded resources.
+because the theorems about what the limit is do not tell you how to reach it with bounded
+resources.
 
 
 
