@@ -128,6 +128,8 @@ I(X; Y) = H(X) - H(X|Y)
 It is the overlap between the information in *X* and
 the information in *Y*--the shared content that survives the channel.
 
+![Overlap](./../assets/image/circle.png)
+
 *Channel capacity* is the maximum mutual information
 over all possible input distributions:
 
