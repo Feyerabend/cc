@@ -23,7 +23,7 @@ make exact statements that apply to every message over every channel.
 ### Information as Surprise
 
 The fundamental quantity is the *self-information* of an event.
-If event *x* has probability P(x), the information gained by observing it is:
+If event *$x$* has probability $P(x)$, the information gained by observing it is:
 
 ```math
 I(x) = -log₂ P(x)
@@ -34,11 +34,11 @@ but the unit of information. One bit is the amount of information
 in a fair coin flip.
 
 The formula is forced by a few natural requirements:
-- Certain events (P = 1) carry no information: I = 0.
-- Rare events carry more information than common ones: I is decreasing in P.
-- Independent events' information adds: I(xy) = I(x) + I(y), which requires a logarithm.
+- Certain events ($P = 1$) carry no information: $I = 0$.
+- Rare events carry more information than common ones: $I$ is decreasing in $P$.
+- Independent events' information adds: $I(xy) = I(x) + I(y)$, which requires a logarithm.
 
-So `-log₂ P(x)` is not an arbitrary choice--it is the unique function satisfying these
+So $-log₂ P(x)$ is not an arbitrary choice--it is the unique function satisfying these
 three constraints. A fair die showing a 4 carries 2.58 bits. A message that a particular 
 patient tested positive for a 1-in-a-million disease carries about 20 bits.
 
@@ -58,13 +58,13 @@ the average number of bits needed to describe one outcome.
 
 Two extremes illuminate the concept:
 
-- *Minimum entropy (H = 0)*: one outcome has probability 1. The source is deterministic;
+- *Minimum entropy ($H = 0$)*: one outcome has probability 1. The source is deterministic;
   you always know what it will say next. Zero uncertainty, zero information.
 - *Maximum entropy*: all outcomes are equally probable. This is the most uncertain source
-  possible. For a source with *n* equally likely symbols, H = log₂ n bits--exactly the
+  possible. For a source with *n* equally likely symbols, $H = log₂ n$ bits--exactly the
   number of binary questions needed to identify which symbol occurred.
 
-Entropy is always non-negative, always bounded above by log₂ n,
+Entropy is always non-negative, always bounded above by $log₂ n$,
 and achieves that bound only at the uniform distribution.
 
 
@@ -97,7 +97,7 @@ He calculated that one bit of information corresponds to exactly
 *k*T ln 2 of free energy--connecting information to thermodynamics quantitatively.
 
 *Landauer's principle* (1961): Rolf Landauer proved that *erasing*
-one bit of information necessarily dissipates at least kT ln 2 joules of heat.
+one bit of information necessarily dissipates at least $kT ln 2$ joules of heat.
 Erasure is the thermodynamically irreversible act. Computation itself need
 not dissipate energy; only erasure of information does.
 
@@ -113,12 +113,13 @@ The universe keeps accounts.
 Once information is quantified, the next question is:
 how much of it can reliably traverse a noisy channel?
 
-Shannon modelled a communication system as: Source -> Encoder -> Channel -> Decoder -> Sink.
+Shannon modelled a communication system as:
+`Source -> Encoder -> Channel -> Decoder -> Sink`.
 The channel corrupts symbols with some probability.
 The question is whether the corruption can be overcome
 by clever encoding.
 
-*Mutual information* *I(X; Y)* measures how much knowing the channel
+*Mutual information* *$I(X; Y)$* measures how much knowing the channel
 output *Y* reduces uncertainty about the input *X*:
 
 ```math
