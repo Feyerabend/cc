@@ -108,8 +108,8 @@ The universe keeps accounts.
 
 [^paper]: In 1997, I wrote a short essay on thermodynamics and its historical
 development ("Något om Strömer, Arrhenius och Sveberg över entropi och värmedöd")
- What I found particularly striking was its connection to information theory,
- which I did not have the opportunity to explore further.
+What I found particularly striking was its correspondance to information theory,
+which I did not have the opportunity to explore further.
 
 
 ### Channel Capacity and the Noisy Channel Coding Theorem
