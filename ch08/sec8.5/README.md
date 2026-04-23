@@ -179,8 +179,6 @@ __Algorithm__
 
 - Data source `D` with symbols drawn from some alphabet
 
-__Steps__
-
 1. *Model the Source*
    - Analyze `D` to estimate the probability distribution `P(s)` for each symbol `s`
 
