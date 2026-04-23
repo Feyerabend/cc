@@ -109,12 +109,12 @@ The universe keeps accounts.
 [^paper]: In 1997, I wrote a short essay on thermodynamics and its historical development
 ("Något om Strömer, Arrhenius och Svedberg över entropi och värmedöd"). What I found
 particularly striking was its correspondence to information theory, which I did not have
-the opportunity to explore further. Svente Arrhenius, for example, introduced a probabilistic
-view of thermodynamic processes at the molecular level, and taken together, the work of all
-three points toward a common framework in which macroscopic behaviour is understood via
-distributions over microstates--precisely the perspective later formalised in
-information theory as entropy.
-
+the opportunity to explore further. Svente Arrhenius, for example, applied statistical
+thinking (notably in his equation for reaction rates) of thermodynamic processes at the
+molecular level, and taken together, the work of all three points toward a common framework
+in which macroscopic behaviour is understood via
+distributions over microstates--precisely the perspective later 
+echoed in information theory's treatment of entropy.
 
 ### Channel Capacity and the Noisy Channel Coding Theorem
 
