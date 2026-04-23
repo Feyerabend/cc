@@ -127,7 +127,7 @@ I(X; Y) = H(X) - H(X|Y)
 ```
 
 It is the overlap between the information in *X* and
-the information in *Y*--the shared content that survives the channel.
+the information in *$Y$*--the shared content that survives the channel.
 
 ![Overlap](./../assets/image/circle.png)
 
@@ -140,8 +140,8 @@ C = max_{P(x)} I(X; Y)
 
 Shannon's *Noisy Channel Coding Theorem* then states:
 
-> For any rate R < C, there exists an encoding scheme that achieves arbitrarily
-> small error probability. For any rate R > C, reliable communication is impossible
+> For any rate $R < C$, there exists an encoding scheme that achieves arbitrarily
+> small error probability. For any rate $R > C$, reliable communication is impossible
 > regardless of the encoding scheme.
 
 This is one of the most striking existence proofs in
