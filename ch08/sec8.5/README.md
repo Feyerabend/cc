@@ -119,15 +119,15 @@ The channel corrupts symbols with some probability.
 The question is whether the corruption can be overcome
 by clever encoding.
 
-*Mutual information* *$I(X; Y)$* measures how much knowing the channel
+*Mutual information* $I(X; Y)$ measures how much knowing the channel
 output *Y* reduces uncertainty about the input *X*:
 
 ```math
 I(X; Y) = H(X) - H(X|Y)
 ```
 
-It is the overlap between the information in *X* and
-the information in *$Y$*--the shared content that survives the channel.
+It is the overlap between the information in $X$ and
+the information in $Y$--the shared content that survives the channel.
 
 ![Overlap](./../assets/image/circle.png)
 
@@ -163,13 +163,14 @@ The noisy channel theorem deals with reliable *transmission*.
 A separate set of theorems deals with efficient
 *representation*--*source coding* or, in practice, data compression.
 
-*Shannon's Source Coding Theorem* states: the minimum average number of bits per symbol
-required to represent a source without loss is its entropy H. You cannot compress below
-the entropy limit. You can always compress down to it (in the limit of long messages).
+*Shannon's Source Coding Theorem* states: the minimum average
+number of bits per symbol required to represent a source without
+loss is its entropy H. You cannot compress below the entropy limit.
+You can always compress down to it (in the limit of long messages).
 
-This is the fundamental theorem of lossless compression. Every compressor--gzip, zstd,
-bzip2, the PNG codec, the DEFLATE algorithm inside ZIP files--is an engineering approximation
-of this theorem.
+This is the fundamental theorem of lossless compression. Every
+compressor--gzip, zstd, bzip2, the PNG codec, the DEFLATE algorithm
+inside ZIP files--is an engineering approximation of this theorem.
 
 
 __Algorithm__
@@ -206,7 +207,7 @@ the entropy bound. The idea is direct: assign shorter codewords to more frequent
 Build a binary tree greedily from the bottom up, combining the two least frequent
 symbols at each step.
 
-For a source with probabilities P(a) = 0.5, P(b) = 0.33, P(c) = 0.17:
+For a source with probabilities $P(a) = 0.5$, $P(b) = 0.33$, $P(c) = 0.17$:
 
 ```
 Entropy = 1.459 bits/symbol
@@ -221,7 +222,7 @@ Gap from entropy = 0.041 bits/symbol
 ```
 
 The gap is always less than 1 bit per symbol. Arithmetic coding closes this gap further--it
-represents an entire message as a single real number in [0,1), achieving arbitrarily close
+represents an entire message as a single real number in $[0,1)$, achieving arbitrarily close
 to the entropy limit at the cost of more complex arithmetic.
 
 Real-world compressors go beyond per-symbol codes. *LZ77* (the basis of gzip and PNG)
@@ -246,10 +247,10 @@ D_KL(P ‖ Q) = Σ P(x) log₂ [P(x) / Q(x)]
 ```
 
 This measures the extra bits needed to encode events from *P* using
-a code optimised for *Q*. It is always non-negative (zero only when
+a code optimised for $Q$. It is always non-negative (zero only when
 $P = Q$), and asymmetric — $D_KL(P‖Q) ≠ D_KL(Q‖P)$ in general.
 It is not a distance metric, but it is a measure of how wrong
-*Q* is as a model for *P*.
+$Q$ is as a model for $P$.
 
 *Cross-entropy*:
 
@@ -258,9 +259,9 @@ H(P, Q) = -Σ P(x) log₂ Q(x) = H(P) + D_KL(P ‖ Q)
 ```
 
 Cross-entropy is what you minimise in neural network classification.
-The model produces a distribution *Q* (its predictions); the true
-labels define *P*. Minimising cross-entropy is equivalent to minimising
-KL divergence from *P* to *Q*, which means making the model's
+The model produces a distribution $Q$ (its predictions); the true
+labels define $P$. Minimising cross-entropy is equivalent to minimising
+KL divergence from $P$ to $Q$, which means making the model's
 distribution match reality as closely as possible.
 
 The loss function printed out during deep learning training is
@@ -283,23 +284,23 @@ This bridges information theory and the Turing machine from the previous section
 
 Key facts:
 
-- *K(s) is uncomputable.* Determining the shortest program for an arbitrary
-  string is equivalent to solving the Halting Problem. You can upper-bound K(s)
+- $K(s)$ *is uncomputable.* Determining the shortest program for an arbitrary
+  string is equivalent to solving the Halting Problem. You can upper-bound $K(s)$
   for any specific string, but you can never prove you have found the minimum.
   The optimal compressor cannot be constructed.
 
-- *Most strings are incompressible.* For any length *n*, there are 2ⁿ strings
-  but only 2^(n-1) + 1 programs shorter than *n* bits. By the pigeonhole principle,
-  at least half of all *n*-bit strings have K(s) ≥ n — they cannot be compressed at all.
+- *Most strings are incompressible.* For any length *n*, there are $2ⁿ$ strings
+  but only $2^(n-1) + 1$ programs shorter than *n* bits. By the pigeonhole principle,
+  at least half of all *n*-bit strings have $K(s) ≥ n$--they cannot be compressed at all.
   "Random" strings, in the Kolmogorov sense, are maximally incompressible.
 
-- **K connects to Shannon entropy.** For strings generated by a source with entropy H,
-the expected Kolmogorov complexity is approximately H(X) per symbol. The connection
+- $K$ *connects to Shannon entropy.* For strings generated by a source with entropy $H$,
+the expected Kolmogorov complexity is approximately $H(X)$ per symbol. The connection
 is approximate and requires care, but the two theories are shadow images of each other:
 Shannon measures average behaviour over a distribution; Kolmogorov measures the
 worst-case complexity of individual strings.
 
-The incomputability of K(s) means the "ideal" compressor--the one that achieves the
+The incomputability of $K(s)$ means the "ideal" compressor--the one that achieves the
 Kolmogorov limit--cannot be built. Every real compressor is an approximation, using
 heuristics and models to extract as much structure as it can find. The limit is real;
 reaching it is forbidden by the same argument that forbids the halting oracle.
@@ -326,7 +327,8 @@ computers separates Shannon's channel capacity from real communication systems:
 
 Real engineers work in the gap. The gap has been closing for 75 years--5G is near Shannon
 capacity, zstd is near entropy for many sources--but it has not vanished and never will,
-because the theorems about what the limit is do not tell you how to reach it with bounded resources.
+because the theorems about what the limit is do not tell you how to reach it with bounded
+resources.
 
 
 
