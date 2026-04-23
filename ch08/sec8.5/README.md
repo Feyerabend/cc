@@ -256,7 +256,7 @@ This bridges information theory and the Turing machine from the previous section
 Key facts:
 
 - *K(s) is uncomputable.* Determining the shortest program for an arbitrary
-  string is equivalent to solving the Halting Problem. You can upper-bound K(s)
+  string is equivalent to solving the Halting Problem. You can upper-bound $K(s)$
   for any specific string, but you can never prove you have found the minimum.
   The optimal compressor cannot be constructed.
 
