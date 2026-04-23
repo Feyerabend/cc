@@ -25,7 +25,7 @@ make exact statements that apply to every message over every channel.
 ### Information as Surprise
 
 The fundamental quantity is the *self-information* of an event.
-If event *$x$* has probability $P(x)$, the information gained by observing it is:
+If event $x$ has probability $P(x)$, the information gained by observing it is:
 
 ```math
 I(x) = -log₂ P(x)
@@ -60,7 +60,7 @@ the average number of bits needed to describe one outcome.
 
 Two extremes illuminate the concept:
 
-- *Minimum entropy ($H = 0$)*: one outcome has probability 1. The source is deterministic;
+- *Minimum entropy* ($H = 0$): one outcome has probability 1. The source is deterministic;
   you always know what it will say next. Zero uncertainty, zero information.
 - *Maximum entropy*: all outcomes are equally probable. This is the most uncertain source
   possible. For a source with *n* equally likely symbols, $H = log₂ n$ bits--exactly the
@@ -290,9 +290,9 @@ Shannon's entropy is a property of a *source*--a probability distribution.
 But what about the information content of a *single* string,
 independent of any assumed distribution?
 
-*Kolmogorov complexity* K(s) of a string *s* is the length (in bits) of
-the shortest program on a universal Turing machine that outputs *s* and
-then halts. It is the ultimate compression of *s*--the minimum description
+*Kolmogorov complexity* $K(s)$ of a string *s* is the length (in bits) of
+the shortest program on a universal Turing machine that outputs $s$ and
+then halts. It is the ultimate compression of $s$--the minimum description
 length, independent of any probabilistic model.
 
 This bridges information theory and the Turing machine from the previous section.
@@ -524,10 +524,11 @@ Shannon's theory is, like Turing's and Gödel's, a theory of limits.
 
 All three limits arise from a version of the same argument: the space of possible objects
 (proofs, computations, codes) is not large enough to cover everything we might want it to cover.
-Diagonalisation, incompressibility, and the pigeonhole principle are the same move in different languages.
+Diagonalisation, incompressibility, and the pigeonhole principle are the same move in different
+languages.
 
 The connection between Shannon and Turing runs through Kolmogorov complexity--the information
-content of a single string measured in Turing machine terms. K(s) is Shannon entropy applied to
+content of a single string measured in Turing machine terms. $K(s)$ is Shannon entropy applied to
 individual strings, and it is uncomputable for exactly the same reason the Halting Problem is
 undecidable. The optimal compressor and the halting oracle are the same impossibility wearing
 different clothes.
