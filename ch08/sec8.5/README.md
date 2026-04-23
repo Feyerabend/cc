@@ -25,7 +25,7 @@ make exact statements that apply to every message over every channel.
 The fundamental quantity is the *self-information* of an event.
 If event *x* has probability P(x), the information gained by observing it is:
 
-```
+```math
 I(x) = -log₂ P(x)
 ```
 
@@ -49,7 +49,7 @@ patient tested positive for a 1-in-a-million disease carries about 20 bits.
 A single event's information depends on which event occurred. A more useful quantity
 averages over all possible outcomes, weighted by probability. This is *Shannon entropy*:
 
-```
+```math
 H(X) = -Σ P(x) log₂ P(x)
 ```
 
@@ -74,7 +74,7 @@ and achieves that bound only at the uniform distribution.
 Shannon's entropy formula is identical in structure to
 *Boltzmann's entropy* from statistical mechanics:
 
-```
+```math
 S = -k Σ pᵢ ln pᵢ
 ```
 
@@ -121,7 +121,7 @@ by clever encoding.
 *Mutual information* *I(X; Y)* measures how much knowing the channel
 output *Y* reduces uncertainty about the input *X*:
 
-```
+```math
 I(X; Y) = H(X) - H(X|Y)
 ```
 
@@ -133,7 +133,7 @@ the information in *Y*--the shared content that survives the channel.
 *Channel capacity* is the maximum mutual information
 over all possible input distributions:
 
-```
+```math
 C = max_{P(x)} I(X; Y)
 ```
 
@@ -210,31 +210,35 @@ All of them are racing toward the same theoretical limit that Shannon establishe
 
 ### KL Divergence and Cross-Entropy
 
-Information theory also provides tools for comparing probability distributions--essential
-in statistics and machine learning.
+Information theory also provides tools for comparing probability
+distributions--essential in statistics and machine learning.
 
 *Kullback-Leibler divergence*:
 
-```
+```math
 D_KL(P ‖ Q) = Σ P(x) log₂ [P(x) / Q(x)]
 ```
 
-This measures the extra bits needed to encode events from *P* using a code optimised for *Q*.
-It is always non-negative (zero only when P = Q), and asymmetric — D_KL(P‖Q) ≠ D_KL(Q‖P) in general.
-It is not a distance metric, but it is a measure of how wrong *Q* is as a model for *P*.
+This measures the extra bits needed to encode events from *P* using
+a code optimised for *Q*. It is always non-negative (zero only when
+$P = Q$), and asymmetric — $D_KL(P‖Q) ≠ D_KL(Q‖P)$ in general.
+It is not a distance metric, but it is a measure of how wrong
+*Q* is as a model for *P*.
 
 *Cross-entropy*:
 
-```
+```math
 H(P, Q) = -Σ P(x) log₂ Q(x) = H(P) + D_KL(P ‖ Q)
 ```
 
-Cross-entropy is what you minimise in neural network classification. The model produces a distribution
-*Q* (its predictions); the true labels define *P*. Minimising cross-entropy is equivalent to minimising
-KL divergence from *P* to *Q*, which means making the model's distribution match reality as closely as possible.
+Cross-entropy is what you minimise in neural network classification.
+The model produces a distribution *Q* (its predictions); the true
+labels define *P*. Minimising cross-entropy is equivalent to minimising
+KL divergence from *P* to *Q*, which means making the model's
+distribution match reality as closely as possible.
 
-The loss function printed out during deep learning training is Shannon's 1948 concept,
-running on GPU clusters in 2024.
+The loss function printed out during deep learning training is
+Shannon's 1948 concept, running on GPU clusters in 2024.
 
 
 
