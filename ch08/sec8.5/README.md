@@ -197,10 +197,7 @@ __Algorithm__
    - Compressed bitstream + (implicitly or explicitly) the model/codebook
 
 
-The *average code length* cannot be smaller than the entropy:
-```math
-H(D) = -Σ P(s) log2(P(s))
-```
+The *average code length* cannot be smaller than the entropy: $H(D) = -Σ P(s) log2(P(s))$
 This is the theoretical lower bound for lossless compression.
 
 
