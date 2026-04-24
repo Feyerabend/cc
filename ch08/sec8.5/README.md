@@ -295,7 +295,8 @@ the shortest program on a universal Turing machine that outputs $s$ and
 then halts. It is the ultimate compression of $s$--the minimum description
 length, independent of any probabilistic model.
 
-This bridges information theory and the Turing machine from the previous section.
+This bridges information theory and the Turing machine from the
+[previous section](./../sec8.4/).
 
 Key facts:
 
