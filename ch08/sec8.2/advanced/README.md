@@ -120,22 +120,24 @@ server process is hijacked via an RCE, an attacker operating as that
 process inherits its capabilities--nothing more. The principle does
 not prevent the compromise; it limits what the attacker can do after it.
 
-In practice: run services as dedicated low-privilege users, use read-only database
-credentials where writes are not needed, restrict filesystem access with chroot or
-namespaces, use seccomp to limit the syscalls a process can make, apply IAM policies
-at the resource level rather than the role level.
+In practice: run services as dedicated low-privilege users, use read-only
+database credentials where writes are not needed, restrict filesystem access
+with chroot or namespaces, use seccomp to limit the syscalls a process
+can make, apply IAM policies at the resource level rather than the role level.
 
 #### Defence in Depth
 
-No single control is assumed to be sufficient. Multiple independent controls are layered
-so that bypassing one does not give an attacker what they want. The word *independent* is
-critical--if two controls share the same failure mode (both depend on the same key, or
-both are bypassed by the same privilege level), they are not independent.
+No single control is assumed to be sufficient. Multiple independent controls
+are layered so that bypassing one does not give an attacker what they want.
+The word *independent* is critical--if two controls share the same failure
+mode (both depend on the same key, or both are bypassed by the same privilege
+level), they are not independent.
 
-The path-traversal defence in `input_validation.py` has two independent layers: the allowlist
-regex rejects anything that doesn't look like a valid filename, and the realpath comparison
-catches anything that slips through (including symlinks, case normalization, null bytes in
-some systems). Either check alone is weaker than both together.
+The path-traversal defence in `input_validation.py` has two independent layers:
+the allowlist regex rejects anything that doesn't look like a valid filename,
+and the realpath comparison catches anything that slips through (including
+symlinks, case normalization, null bytes in some systems).
+Either check alone is weaker than both together.
 
 #### Fail-Safe Defaults
 
