@@ -8,11 +8,11 @@
 #define ORIGIN    (TAPE_SIZE / 2)
 
 typedef struct {
-    int  from;   /* current state   */
-    char read;   /* symbol read     */
-    char write;  /* symbol to write */
+    int  from;   /* current state     */
+    char read;   /* symbol read       */
+    char write;  /* symbol to write   */
     int  move;   /* -1=L, 0=stay, 1=R */
-    int  to;     /* next state      */
+    int  to;     /* next state        */
 } Rule;
 
 typedef struct {

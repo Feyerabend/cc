@@ -1,27 +1,28 @@
 
 ## Advanced Security – Designing Before You Code
 
-The examples in `../basic/code/` show individual vulnerability classes in isolation.
-This section steps back and asks a harder question: *how do you build a system that
-is unlikely to have those vulnerabilities in the first place?* Patching bugs one at
-a time is a losing strategy. The attackers only need to find one; the defenders have
-to close every one. The asymmetry is only addressed by designing security in from
-the start.
+The examples in [../basic/code/](./../basic/code/) show individual vulnerability
+classes in isolation. This section steps back and asks a harder question:
+*how do you build a system that is unlikely to have those vulnerabilities in the first place?*
+Patching bugs one at a time is a losing strategy. The attackers only need
+to find one; the defenders have to close every one. The asymmetry is only
+addressed by designing security in from the start.
 
 
 
 ### 1. Why "Bolt-On" Security Fails
 
-Security added after the fact almost always fails to cover the whole system. The
-canonical reason is that security properties are *systemic*--they depend on invariants
-that hold across component boundaries, across the call stack, and across time.
-You cannot retrofit a property that was never expressed in the design.
+Security added after the fact almost always fails to cover the whole system.
+The canonical reason is that security properties are *systemic*--they depend
+on invariants that hold across component boundaries, across the call stack,
+and across time. You cannot retrofit a property that was never expressed
+in the design.
 
-A concrete example: you cannot add authentication to a system where the internal
-services were designed to trust one another unconditionally. Adding a token check
-at the API gateway is not authentication if internal services remain reachable
-from the network without any credential. The vulnerability is architectural,
-not a missing function call.
+A concrete example: you cannot add authentication to a system where the
+internal services were designed to trust one another unconditionally.
+Adding a token check at the API gateway is not authentication if internal
+services remain reachable from the network without any credential.
+The vulnerability is architectural, not a missing function call.
 
 This is why the question "is feature X secure?" is almost always wrong.
 The right question is "under what threat model does component X maintain
@@ -32,14 +33,15 @@ what invariants?"
 ### 2. Threat Modeling
 
 Threat modeling is the practice of answering *what can go wrong* before writing
-a line of code. It produces a structured description of assets, adversaries, and
-the paths by which adversaries can reach assets. Every serious mitigation decision
-traces back to a threat model.
+a line of code. It produces a structured description of assets, adversaries,
+and the paths by which adversaries can reach assets. Every serious mitigation
+decision traces back to a threat model.
 
 #### 2.1 STRIDE
 
-Microsoft's STRIDE taxonomy names six threat categories. Applying them systematically to a design
-forces you to think about each class of attack, not just the ones that come to mind spontaneously.
+Microsoft's STRIDE taxonomy names six threat categories. Applying them
+systematically to a design forces you to think about each class of attack,
+not just the ones that come to mind spontaneously.
 
 | Letter | Threat                 | Violated property | Example                            |
 |--------|------------------------|-------------------|------------------------------------|
@@ -50,62 +52,73 @@ forces you to think about each class of attack, not just the ones that come to m
 | D      | Denial of service      | Availability      | Exhausting server memory           |
 | E      | Elevation of privilege | Authorization     | Acting as admin without permission |
 
-Apply STRIDE to every component in your data-flow diagram. For each combination of (component,
-threat class), ask: does a control exist? Is it sufficient? Is it tested?
+Apply STRIDE to every component in your data-flow diagram. For each combination
+of (component, threat class), ask:
+does a control exist?
+Is it sufficient?
+Is it tested?
 
 #### 2.2 Attack Trees
 
-An attack tree roots at an attacker goal ("exfiltrate the database") and branches into sub-goals
-the attacker must achieve to reach it. Each leaf is an atomic action. The structure reveals which
-mitigations are most valuable: a mitigation that cuts every path to the root is more valuable
-than one that cuts a single leaf.
+An attack tree roots at an attacker goal ("exfiltrate the database") and branches
+into sub-goals the attacker must achieve to reach it. Each leaf is an atomic action.
+The structure reveals which mitigations are most valuable: a mitigation that cuts
+every path to the root is more valuable than one that cuts a single leaf.
 
 ```
 Goal: read another user's private messages
-├── Exploit SQL injection in the message query        --> parameterized queries
+├── Exploit SQL injection in the message query     --> parameterized queries
 ├── Steal session token
-│   ├── XSS that reads document.cookie                --> HttpOnly flag, CSP
-│   └── Network interception                          --> TLS, HSTS
+│   ├── XSS that reads document.cookie             --> HttpOnly flag, CSP
+│   └── Network interception                       --> TLS, HSTS
 └── Compromise the server process
-    ├── RCE via dependency CVE                        --> dependency pinning, SCA
-    └── RCE via file upload + path traversal          --> allowlist extensions, jail
+    ├── RCE via dependency CVE                     --> dependency pinning, SCA
+    └── RCE via file upload + path traversal       --> allowlist extensions, jail
 ```
 
-Reading the tree, you can see that TLS and HttpOnly are complementary mitigations for the
-same sub-goal, and that parameterised queries are necessary to close the SQL path entirely.
-A denylist on filenames is a *weak* mitigation for the upload path--the allowlist +
-realpath check in `input_validation.py` is the strong form.
+Reading the tree, you can see that TLS and HttpOnly are complementary mitigations
+for the same sub-goal, and that parameterised queries are necessary to close the
+SQL path entirely. A denylist on filenames is a *weak* mitigation for the upload
+path--the allowlist + realpath check in `input_validation.py` is the strong form.
 
 #### 2.3 Data-Flow Diagrams and Trust Boundaries
 
-Draw a DFD (data-flow diagram) for your system at the component level. Every arrow crossing
-a *trust boundary*--a line between zones with different privilege levels--is a potential
-vulnerability. Inputs crossing a trust boundary should be validated; outputs crossing one
-in the other direction should be filtered to prevent data leakage.
+Draw a DFD (data-flow diagram) for your system at the component level. Every arrow
+crossing a *trust boundary*--a line between zones with different privilege
+levels--is a potential vulnerability. Inputs crossing a trust boundary should be
+validated; outputs crossing one in the other direction should be filtered to
+prevent data leakage.
 
-Common trust boundaries: internet --> load balancer, load balancer --> API service, API
-service --> database, API service --> internal microservice, user space --> kernel, browser
---> web worker. Each one is a place where an attacker operating in the less-trusted zone
+Common trust boundaries:
+internet --> load balancer,
+load balancer --> API service,
+API service --> database,
+API service --> internal microservice,
+user space --> kernel,
+browser --> web worker.
+Each one is a place where an attacker operating in the less-trusted zone
 attempts to influence behaviour in the more-trusted zone.
 
 
 
 ### 3. Security Design Principles
 
-These are the principles that recur throughout secure systems design. They are not rules
-that prevent specific bugs; they are structural properties that make bugs less likely and
-less exploitable.
+These are the principles that recur throughout secure systems design.
+They are not rules that prevent specific bugs; they are structural
+properties that make bugs less likely and less exploitable.
 
 #### Least Privilege
 
-Every component should operate with the minimum capabilities required to do its job, and
-no more. A web server process that reads a database should not be able to drop tables.
-A background job that sends email should not have network access to the payment service.
+Every component should operate with the minimum capabilities required
+to do its job, and no more. A web server process that reads a database
+should not be able to drop tables. A background job that sends email
+should not have network access to the payment service.
 A user who can view reports should not be able to modify them.
 
-Least privilege limits the *blast radius* of a compromise. If the web server process is
-hijacked via an RCE, an attacker operating as that process inherits its capabilities--nothing
-more. The principle does not prevent the compromise; it limits what the attacker can do after it.
+Least privilege limits the *blast radius* of a compromise. If the web
+server process is hijacked via an RCE, an attacker operating as that
+process inherits its capabilities--nothing more. The principle does
+not prevent the compromise; it limits what the attacker can do after it.
 
 In practice: run services as dedicated low-privilege users, use read-only database
 credentials where writes are not needed, restrict filesystem access with chroot or

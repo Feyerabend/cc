@@ -22,6 +22,7 @@ make exact statements that apply to every message over every channel.
   Bell System Technical Journal, 27*(3), 379–423, 623–656.
   https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf
 
+
 ### Information as Surprise
 
 The fundamental quantity is the *self-information* of an event.
@@ -113,10 +114,10 @@ The universe keeps accounts.
 particularly striking was its correspondence to information theory, which I did not have
 the opportunity to explore further. Svante Arrhenius, for example, applied statistical
 thinking (notably in his equation for reaction rates) of thermodynamic processes at the
-molecular level, and taken together, the work of all three points toward a common framework
-in which macroscopic behaviour is understood via distributions over microstates--precisely
-the perspective later echoed in information theory's treatment of entropy. It is 
-a stretch, but an interesting one.
+molecular level, and in some ways it points toward a framework in which macroscopic
+behaviour is understood via distributions over microstates--precisely the perspective
+later echoed in information theory's treatment of entropy. It is  a stretch,
+but an interesting one.
 
 ### Channel Capacity and the Noisy Channel Coding Theorem
 
@@ -159,11 +160,12 @@ gave no recipe for achieving it.
 
 Finding practical codes that approach this limit took
 decades. Turbo codes (1993) came within a fraction of
-a dB of the Shannon limit. LDPC codes (rediscovered in the 1990s)
-achieved similar performance. Modern 5G communications
-operate within about 1% of the theoretical maximum.
-Every wireless device in existence is, in part,
-an application of Shannon's 1948 theorem.
+a dB of the Shannon limit. LDPC codes (rediscovered in
+the 1990s) achieved similar performance. Modern 5G
+communications operate within about 1% of the
+theoretical maximum. Every wireless device in
+existence is, in part, an application of Shannon's
+1948 theorem.
 
 
 
