@@ -1,6 +1,6 @@
 
-> ![NOTE]
-> Referense of "today" in the following, means ca 2025 and maybe some years beyond.
+> [!NOTE]
+> "Today" in the following, means ca 2025 and maybe some years beyond.
 
 ## The Technological Condition
 
