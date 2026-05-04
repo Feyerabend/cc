@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Picbreeder</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: #e0e0e0;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      color: #ffffff;
+      font-weight: 300;
+    }
+    
+    .subtitle {
+      font-size: 1.1em;
+      opacity: 0.7;
+      margin-bottom: 20px;
+      font-weight: 300;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    button {
+      background: #333;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    
+    button:hover {
+      background: #444;
+      border-color: #666;
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    select {
+      padding: 8px 12px;
+      border: 1px solid #555;
+      background: #333;
+      color: #e0e0e0;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+    
+    input[type="range"] {
+      width: 100px;
+    }
+    
+    input[type="file"] {
+      display: none;
+    }
+    
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+    
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .stat-value {
+      font-weight: 600;
+      color: #ffffff;
+    }
+    
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(3, 150px);
+      gap: 10px;
+      margin: 20px 0;
+    }
+    
+    .canvas-container {
+      position: relative;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+    
+    .canvas-container:hover {
+      border-color: #555;
+    }
+    
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .canvas-container.selected {
+      border-color: #ffffff;
+    }
+    
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .control-group label {
+      font-size: 14px;
+      color: #e0e0e0;
+      min-width: 60px;
+    }
+    
+    .control-group span {
+      font-size: 12px;
+      color: #999;
+      min-width: 30px;
+    }
+    
+    @media (max-width: 768px) {
+      #grid {
+        grid-template-columns: repeat(2, 120px);
+        gap: 8px;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Picbreeder</h1>
+    <div class="subtitle">Evolve complex abstract art through selection -- Stanley inspired</div>
+  </div>
+  
+  <div class="stats">
+    <div class="stat">
+      <span>Generation:</span>
+      <span class="stat-value" id="generation">1</span>
+    </div>
+    <div class="stat">
+      <span>Selected:</span>
+      <span class="stat-value" id="selected-count">0</span>
+    </div>
+    <div class="stat">
+      <span>Total Evolved:</span>
+      <span class="stat-value" id="total-evolved">0</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="evolve">Evolve Selected</button>
+    <button id="reset">Reset Population</button>
+    <button id="upload-btn">Upload Images</button>
+    <button id="save">Save Selected</button>
+    
+    <div class="control-group">
+      <label for="mutation-rate">Mutation:</label>
+      <input type="range" id="mutation-rate" min="0.01" max="0.5" step="0.01" value="0.1">
+      <span id="mutation-value">0.1</span>
+    </div>
+    
+    <div class="control-group">
+      <label for="color-mode">Mode:</label>
+      <select id="color-mode">
+        <option value="grayscale">Grayscale</option>
+        <option value="rgb">RGB</option>
+        <option value="hsl">HSL</option>
+        <option value="plasma">Plasma</option>
+        <option value="rainbow">Rainbow</option>
+        <option value="fire">Fire</option>
+      </select>
+    </div>
+    
+    <div class="control-group">
+      <label for="complexity">Complexity:</label>
+      <select id="complexity">
+        <option value="simple">Simple</option>
+        <option value="complex" selected>Complex</option>
+        <option value="fractal">Fractal</option>
+      </select>
+    </div>
+  </div>
+  
+  <input type="file" id="image-upload" accept="image/*" multiple>
+  
+  <div id="grid"></div>
+  
+  <script>
+    const grid = document.getElementById('grid');
+    const evolveBtn = document.getElementById('evolve');
+    const resetBtn = document.getElementById('reset');
+    const saveBtn = document.getElementById('save');
+    const uploadBtn = document.getElementById('upload-btn');
+    const imageUpload = document.getElementById('image-upload');
+    const mutationRateSlider = document.getElementById('mutation-rate');
+    const mutationValueSpan = document.getElementById('mutation-value');
+    const colorModeSelect = document.getElementById('color-mode');
+    const complexitySelect = document.getElementById('complexity');
+    
+    const SIZE = 150;
+    const POP = 9;
+    let genomes = [];
+    let selected = new Set();
+    let generation = 1;
+    let totalEvolved = 0;
+    let mutationRate = 0.1;
+    let colorMode = 'grayscale';
+    let complexity = 'complex';
+    
+    function randn_bm() {
+      let u = 0, v = 0;
+      while (u === 0) u = Math.random();
+      while (v === 0) v = Math.random();
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+    
+    function randomGenome() {
+      const hiddenSize = complexity === 'fractal' ? 8 : complexity === 'complex' ? 6 : 4;
+      const layerCount = complexity === 'fractal' ? 4 : complexity === 'complex' ? 3 : 2;
+      
+      let genome = {
+
+        // Multi-layer neural network
+        layers: [],
+        
+        // Frequency parameters for multiple oscillators
+        frequencies: Array.from({length: 5}, () => Math.random() * 8 + 0.5),
+        phases: Array.from({length: 5}, () => Math.random() * Math.PI * 2),
+        amplitudes: Array.from({length: 5}, () => Math.random() * 2 + 0.5),
+        
+        // Transformation parameters
+        rotation: Math.random() * Math.PI * 2,
+        scale: Math.random() * 3 + 0.5,
+        offset: [randn_bm() * 2, randn_bm() * 2],
+        
+        // Noise parameters
+        octaves: Math.floor(Math.random() * 6) + 1,
+        persistence: Math.random() * 0.8 + 0.2,
+        lacunarity: Math.random() * 3 + 1.5,
+        
+        // Pattern mixing
+        mixMode: Math.floor(Math.random() * 6), // 0-5 for different mixing modes
+        threshold: Math.random() * 2 - 1,
+        
+        // Color evolution
+        colorShift: Math.random() * Math.PI * 2,
+        colorIntensity: Math.random() * 2 + 0.5,
+        
+        // Symmetry
+        symmetryType: Math.floor(Math.random() * 4), // 0: none, 1: horizontal, 2: vertical, 3: radial
+        symmetryOrder: Math.floor(Math.random() * 8) + 2
+      };
+      
+      // Create layers
+      let prevSize = 2; // x, y input
+      for (let i = 0; i < layerCount; i++) {
+        let currentSize = i === layerCount - 1 ? 3 : hiddenSize; // output layer has 3 neurons
+        genome.layers.push({
+          weights: Array.from({length: prevSize * currentSize}, () => randn_bm() * 0.5),
+          biases: Array.from({length: currentSize}, () => randn_bm() * 0.3)
+        });
+        prevSize = currentSize;
+      }
+      
+      return genome;
+    }
+    
+    function mutate(genome) {
+      let g = JSON.parse(JSON.stringify(genome));
+      
+      // Mutate neural network
+      g.layers.forEach(layer => {
+        layer.weights = layer.weights.map(w => w + randn_bm() * mutationRate);
+        layer.biases = layer.biases.map(b => b + randn_bm() * mutationRate);
+      });
+      
+      // Mutate parameters
+      g.frequencies = g.frequencies.map(f => Math.max(0.1, f + randn_bm() * mutationRate));
+      g.phases = g.phases.map(p => p + randn_bm() * mutationRate);
+      g.amplitudes = g.amplitudes.map(a => Math.max(0.1, a + randn_bm() * mutationRate));
+      
+      g.rotation += randn_bm() * mutationRate;
+      g.scale = Math.max(0.1, g.scale + randn_bm() * mutationRate);
+      g.offset[0] += randn_bm() * mutationRate;
+      g.offset[1] += randn_bm() * mutationRate;
+      
+      g.octaves = Math.max(1, Math.min(8, g.octaves + Math.floor(randn_bm() * mutationRate * 10)));
+      g.persistence = Math.max(0.1, Math.min(1, g.persistence + randn_bm() * mutationRate));
+      g.lacunarity = Math.max(1, g.lacunarity + randn_bm() * mutationRate);
+      
+      if (Math.random() < mutationRate) {
+        g.mixMode = Math.floor(Math.random() * 6);
+      }
+      g.threshold += randn_bm() * mutationRate;
+      
+      g.colorShift += randn_bm() * mutationRate;
+      g.colorIntensity = Math.max(0.1, g.colorIntensity + randn_bm() * mutationRate);
+      
+      if (Math.random() < mutationRate * 0.5) {
+        g.symmetryType = Math.floor(Math.random() * 4);
+        g.symmetryOrder = Math.floor(Math.random() * 8) + 2;
+      }
+      
+      return g;
+    }
+    
+    function activation(x, type = 'tanh') {
+      switch (type) {
+        case 'tanh': return Math.tanh(x);
+        case 'sin': return Math.sin(x);
+        case 'sigmoid': return 1 / (1 + Math.exp(-x));
+        case 'wave': return Math.sin(x) * Math.cos(x * 0.5);
+        default: return Math.tanh(x);
+      }
+    }
+    
+    function perlinNoise(x, y, octaves, persistence, lacunarity) {
+      let value = 0;
+      let amplitude = 1;
+      let frequency = 1;
+      
+      for (let i = 0; i < octaves; i++) {
+        value += amplitude * (Math.sin(x * frequency) * Math.cos(y * frequency) + 
+                             Math.sin(x * frequency * 0.7) * Math.sin(y * frequency * 1.3));
+        amplitude *= persistence;
+        frequency *= lacunarity;
+      }
+      
+      return value;
+    }
+    
+    function applySymmetry(x, y, type, order) {
+      switch (type) {
+        case 1: // horizontal
+          return [Math.abs(x), y];
+        case 2: // vertical
+          return [x, Math.abs(y)];
+        case 3: // radial
+          let angle = Math.atan2(y, x);
+          let radius = Math.sqrt(x * x + y * y);
+          angle = Math.floor(angle / (Math.PI * 2 / order)) * (Math.PI * 2 / order);
+          return [radius * Math.cos(angle), radius * Math.sin(angle)];
+        default:
+          return [x, y];
+      }
+    }
+    
+    function netEval(g, x, y) {
+      // Apply transformations
+      let tx = (x - g.offset[0]) * g.scale;
+      let ty = (y - g.offset[1]) * g.scale;
+      
+      // Rotate coordinates
+      let cos_r = Math.cos(g.rotation);
+      let sin_r = Math.sin(g.rotation);
+      let rx = tx * cos_r - ty * sin_r;
+      let ry = tx * sin_r + ty * cos_r;
+      
+      // Apply symmetry
+      [rx, ry] = applySymmetry(rx, ry, g.symmetryType, g.symmetryOrder);
+      
+      // Create complex input features
+      let inputs = [rx, ry];
+      
+      // Add frequency modulated inputs
+      for (let i = 0; i < g.frequencies.length; i++) {
+        inputs.push(Math.sin(rx * g.frequencies[i] + g.phases[i]) * g.amplitudes[i]);
+        inputs.push(Math.cos(ry * g.frequencies[i] + g.phases[i]) * g.amplitudes[i]);
+      }
+      
+      // Add noise
+      let noise = perlinNoise(rx, ry, g.octaves, g.persistence, g.lacunarity);
+      inputs.push(noise);
+      
+      // Add polar coordinates
+      let radius = Math.sqrt(rx * rx + ry * ry);
+      let angle = Math.atan2(ry, rx);
+      inputs.push(radius);
+      inputs.push(angle);
+      
+      // Add cross terms
+      inputs.push(rx * ry);
+      inputs.push(rx * rx - ry * ry);
+      inputs.push(Math.sin(radius) * Math.cos(angle));
+      
+      // Neural network forward pass
+      let current = inputs.slice(0, 2); // Start with just x, y for first layer
+      
+      for (let i = 0; i < g.layers.length; i++) {
+        let layer = g.layers[i];
+        let next = [];
+        
+        for (let j = 0; j < layer.biases.length; j++) {
+          let sum = layer.biases[j];
+          for (let k = 0; k < current.length; k++) {
+            sum += current[k] * layer.weights[j * current.length + k];
+          }
+          
+          // Use different activation functions for different layers
+          let actType = i === 0 ? 'sin' : i === g.layers.length - 1 ? 'tanh' : 'wave';
+          next.push(activation(sum, actType));
+        }
+        current = next;
+        
+        // Mix in complex features for hidden layers
+        if (i < g.layers.length - 1 && inputs.length > 2) {
+          let extraFeatures = inputs.slice(2, Math.min(inputs.length, current.length));
+          for (let j = 0; j < extraFeatures.length; j++) {
+            current[j % current.length] = mixValues(current[j % current.length], extraFeatures[j], g.mixMode);
+          }
+        }
+      }
+      
+      // Post-process output
+      let output = current.slice(0, 3);
+      
+      // Apply threshold
+      output = output.map(v => v > g.threshold ? v : -v);
+      
+      // Apply color shift
+      output[0] = Math.sin(output[0] + g.colorShift) * g.colorIntensity;
+      output[1] = Math.sin(output[1] + g.colorShift + Math.PI / 3) * g.colorIntensity;
+      output[2] = Math.sin(output[2] + g.colorShift + 2 * Math.PI / 3) * g.colorIntensity;
+      
+      return output;
+    }
+    
+    function mixValues(a, b, mode) {
+      switch (mode) {
+        case 0: return a * b;
+        case 1: return Math.sin(a + b);
+        case 2: return Math.max(a, b);
+        case 3: return Math.min(a, b);
+        case 4: return a + b * 0.5;
+        case 5: return Math.abs(a - b);
+        default: return a * b;
+      }
+    }
+    
+    function hslToRgb(h, s, l) {
+      h = ((h % 1) + 1) % 1;
+      s = Math.max(0, Math.min(1, s));
+      l = Math.max(0, Math.min(1, l));
+      
+      const c = (1 - Math.abs(2 * l - 1)) * s;
+      const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+      const m = l - c / 2;
+      
+      let r, g, b;
+      if (h < 1/6) { r = c; g = x; b = 0; }
+      else if (h < 2/6) { r = x; g = c; b = 0; }
+      else if (h < 3/6) { r = 0; g = c; b = x; }
+      else if (h < 4/6) { r = 0; g = x; b = c; }
+      else if (h < 5/6) { r = x; g = 0; b = c; }
+      else { r = c; g = 0; b = x; }
+      
+      return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
+    }
+    
+    function plasmaColor(t) {
+      const r = Math.sin(t * 6.28) * 0.5 + 0.5;
+      const g = Math.sin(t * 6.28 + 2.09) * 0.5 + 0.5;
+      const b = Math.sin(t * 6.28 + 4.19) * 0.5 + 0.5;
+      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+    
+    function rainbowColor(t) {
+      const hue = (t * 0.5 + 0.5) % 1;
+      return hslToRgb(hue, 0.8, 0.6);
+    }
+    
+    function fireColor(t) {
+      t = (t + 1) * 0.5; // normalize to 0-1
+      const r = Math.min(255, Math.floor(t * 255 * 2));
+      const g = Math.min(255, Math.max(0, Math.floor((t - 0.3) * 255 * 2)));
+      const b = Math.min(255, Math.max(0, Math.floor((t - 0.7) * 255 * 3)));
+      return [r, g, b];
+    }
+    
+    function render(genome, ctx) {
+      let img = ctx.createImageData(SIZE, SIZE);
+      
+      for (let j = 0; j < SIZE; j++) {
+        for (let i = 0; i < SIZE; i++) {
+          let x = (i / SIZE) * 2 - 1;
+          let y = (j / SIZE) * 2 - 1;
+          let v = netEval(genome, x, y);
+          
+          let r, g, b;
+          
+          switch (colorMode) {
+            case 'grayscale':
+              let gray = Math.floor((v[0] + 1) * 127);
+              r = g = b = Math.max(0, Math.min(255, gray));
+              break;
+              
+            case 'rgb':
+              r = Math.max(0, Math.min(255, Math.floor((v[0] + 1) * 127)));
+              g = Math.max(0, Math.min(255, Math.floor((v[1] + 1) * 127)));
+              b = Math.max(0, Math.min(255, Math.floor((v[2] + 1) * 127)));
+              break;
+              
+            case 'hsl':
+              [r, g, b] = hslToRgb(v[0] * 0.5 + 0.5, Math.abs(v[1] * 0.5 + 0.5), Math.abs(v[2] * 0.5 + 0.5));
+              break;
+              
+            case 'plasma':
+              [r, g, b] = plasmaColor(v[0] * 0.5 + 0.5);
+              break;
+              
+            case 'rainbow':
+              [r, g, b] = rainbowColor(v[0]);
+              break;
+              
+            case 'fire':
+              [r, g, b] = fireColor(v[0]);
+              break;
+          }
+          
+          let idx = (j * SIZE + i) * 4;
+          img.data[idx] = r;
+          img.data[idx+1] = g;
+          img.data[idx+2] = b;
+          img.data[idx+3] = 255;
+        }
+      }
+      
+      ctx.putImageData(img, 0, 0);
+    }
+    
+    // Image upload functionality (enhanced)
+    // give init "push"
+    function analyzeImage(imageData, width, height) {
+      const features = {
+        patterns: [],
+        colors: [],
+        textures: [],
+        gradients: [],
+        frequencies: [],
+        symmetries: []
+      };
+      
+      const sampleSize = 16;
+      for (let y = 0; y < sampleSize; y++) {
+        for (let x = 0; x < sampleSize; x++) {
+          const px = Math.floor((x / sampleSize) * width);
+          const py = Math.floor((y / sampleSize) * height);
+          const idx = (py * width + px) * 4;
+          
+          if (idx < imageData.length) {
+            const r = imageData[idx] / 255;
+            const g = imageData[idx + 1] / 255;
+            const b = imageData[idx + 2] / 255;
+            
+            const brightness = (r + g + b) / 3;
+            const hue = Math.atan2(Math.sqrt(3) * (g - b), 2 * r - g - b);
+            const saturation = Math.sqrt(r * r + g * g + b * b) / Math.sqrt(3);
+            
+            features.patterns.push(brightness * 2 - 1);
+            features.colors.push(hue);
+            features.textures.push(saturation * 2 - 1);
+            
+            // Analyze frequencies
+            const fx = Math.sin(x * 0.5) * brightness;
+            const fy = Math.cos(y * 0.5) * brightness;
+            features.frequencies.push(fx, fy);
+            
+            if (x > 0 && y > 0) {
+              const prevIdx = ((py - 1) * width + (px - 1)) * 4;
+              if (prevIdx < imageData.length) {
+                const prevR = imageData[prevIdx] / 255;
+                const gradient = Math.abs(r - prevR) * 2 - 1;
+                features.gradients.push(gradient);
+                
+                // Symmetry analysis
+                const centerX = sampleSize / 2;
+                const centerY = sampleSize / 2;
+                const dx = x - centerX;
+                const dy = y - centerY;
+                const symmetryValue = Math.sin(Math.atan2(dy, dx) * 4) * brightness;
+                features.symmetries.push(symmetryValue);
+              }
+            }
+          }
+        }
+      }
+      
+      return features;
+    }
+    
+    function createGenomeFromImage(features) {
+      const genome = randomGenome();
+      
+      if (features.patterns.length > 0) {
+        for (let i = 0; i < genome.layers.length; i++) {
+          const layer = genome.layers[i];
+          for (let j = 0; j < Math.min(layer.weights.length, features.patterns.length); j++) {
+            layer.weights[j] = features.patterns[j % features.patterns.length] * 2 + randn_bm() * 0.3;
+          }
+        }
+      }
+      
+      if (features.frequencies.length > 0) {
+        for (let i = 0; i < genome.frequencies.length; i++) {
+          genome.frequencies[i] = Math.abs(features.frequencies[i % features.frequencies.length]) * 10 + 1;
+          genome.phases[i] = features.frequencies[i % features.frequencies.length] * Math.PI;
+        }
+      }
+      
+      if (features.gradients.length > 0) {
+        const avgGradient = features.gradients.reduce((a, b) => a + b, 0) / features.gradients.length;
+        genome.octaves = Math.max(1, Math.floor(Math.abs(avgGradient) * 8));
+        genome.persistence = Math.abs(avgGradient) * 0.8 + 0.2;
+      }
+      
+      if (features.symmetries.length > 0) {
+        const avgSymmetry = features.symmetries.reduce((a, b) => a + b, 0) / features.symmetries.length;
+        genome.symmetryType = Math.floor(Math.abs(avgSymmetry) * 4);
+        genome.symmetryOrder = Math.floor(Math.abs(avgSymmetry) * 6) + 3;
+      }
+      
+      return genome;
+    }
+    
+    function loadImageAsGenome(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          const maxSize = 64;
+          const scale = Math.min(maxSize / img.width, maxSize / img.height);
+          canvas.width = Math.floor(img.width * scale);
+          canvas.height = Math.floor(img.height * scale);
+          
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const features = analyzeImage(imageData.data, canvas.width, canvas.height);
+          const genome = createGenomeFromImage(features);
+          
+          resolve(genome);
+        };
+        
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
+      });
+    }
+    
+    async function handleImageUpload(files) {
+      const uploadedGenomes = [];
+      
+      try {
+        for (const file of files) {
+          if (file.type.startsWith('image/')) {
+            const genome = await loadImageAsGenome(file);
+            uploadedGenomes.push(genome);
+          }
+        }
+        
+        if (uploadedGenomes.length > 0) {
+          genomes = [];
+          
+          for (let i = 0; i < Math.min(POP, uploadedGenomes.length); i++) {
+            genomes.push(uploadedGenomes[i]);
+          }
+          
+          while (genomes.length < POP) {
+            const baseGenome = uploadedGenomes[Math.floor(Math.random() * uploadedGenomes.length)];
+            genomes.push(mutate(baseGenome));
+          }
+          
+          selected.clear();
+          generation = 1;
+          totalEvolved = 0;
+          updateStats();
+          drawGrid();
+        }
+      } catch (error) {
+        console.error('Error processing images:', error);
+      }
+    }
+    
+    function drawGrid() {
+      grid.innerHTML = '';
+      
+      genomes.forEach((genome, idx) => {
+        let container = document.createElement('div');
+        container.className = 'canvas-container';
+        
+        let canvas = document.createElement('canvas');
+        canvas.width = SIZE;
+        canvas.height = SIZE;
+        let ctx = canvas.getContext('2d');
+        
+        render(genome, ctx);
+        
+        if (selected.has(idx)) {
+          container.classList.add('selected');
+        }
+        
+        container.addEventListener('click', () => {
+          if (selected.has(idx)) {
+            selected.delete(idx);
+          } else {
+            selected.add(idx);
+          }
+          updateStats();
+          drawGrid();
+        });
+        
+        container.appendChild(canvas);
+        grid.appendChild(container);
+      });
+    }
+
+    // Update statistics display
+    function updateStats() {
+    document.getElementById('generation').textContent = generation;
+    document.getElementById('selected-count').textContent = selected.size;
+    document.getElementById('total-evolved').textContent = totalEvolved;
+    }
+
+    // Init population
+    function initPopulation() {
+    genomes = [];
+    for (let i = 0; i < POP; i++) {
+        genomes.push(randomGenome());
+    }
+    selected.clear();
+    generation = 1;
+    totalEvolved = 0;
+    updateStats();
+    drawGrid();
+    }
+
+    // Evolve selected genomes
+    function evolvePopulation() {
+    if (selected.size === 0) {
+        alert('Please select at least one image to evolve!');
+        return;
+    }
+    
+    const selectedGenomes = Array.from(selected).map(idx => genomes[idx]);
+    const newGenomes = [];
+    
+    // Keep the best selected genomes
+    selectedGenomes.forEach(genome => {
+        newGenomes.push(JSON.parse(JSON.stringify(genome)));
+    });
+    
+    // Fill the rest with mutations and crossovers
+    while (newGenomes.length < POP) {
+        if (selectedGenomes.length > 1 && Math.random() < 0.3) {
+        // Crossover
+        const parent1 = selectedGenomes[Math.floor(Math.random() * selectedGenomes.length)];
+        const parent2 = selectedGenomes[Math.floor(Math.random() * selectedGenomes.length)];
+        newGenomes.push(crossover(parent1, parent2));
+        } else {
+        // Mutation
+        const parent = selectedGenomes[Math.floor(Math.random() * selectedGenomes.length)];
+        newGenomes.push(mutate(parent));
+        }
+    }
+    
+    genomes = newGenomes;
+    selected.clear();
+    generation++;
+    totalEvolved += POP;
+    updateStats();
+    drawGrid();
+    }
+
+    // Crossover function for breeding genomes
+    function crossover(parent1, parent2) {
+    const child = JSON.parse(JSON.stringify(parent1));
+    
+    // Mix layers
+    for (let i = 0; i < child.layers.length && i < parent2.layers.length; i++) {
+        if (Math.random() < 0.5) {
+        for (let j = 0; j < child.layers[i].weights.length; j++) {
+            if (Math.random() < 0.5 && j < parent2.layers[i].weights.length) {
+            child.layers[i].weights[j] = parent2.layers[i].weights[j];
+            }
+        }
+        for (let j = 0; j < child.layers[i].biases.length; j++) {
+            if (Math.random() < 0.5 && j < parent2.layers[i].biases.length) {
+            child.layers[i].biases[j] = parent2.layers[i].biases[j];
+            }
+        }
+        }
+    }
+    
+    // Mix other parameters
+    if (Math.random() < 0.5) child.frequencies = [...parent2.frequencies];
+    if (Math.random() < 0.5) child.phases = [...parent2.phases];
+    if (Math.random() < 0.5) child.amplitudes = [...parent2.amplitudes];
+    if (Math.random() < 0.5) child.rotation = parent2.rotation;
+    if (Math.random() < 0.5) child.scale = parent2.scale;
+    if (Math.random() < 0.5) child.offset = [...parent2.offset];
+    if (Math.random() < 0.5) child.octaves = parent2.octaves;
+    if (Math.random() < 0.5) child.persistence = parent2.persistence;
+    if (Math.random() < 0.5) child.lacunarity = parent2.lacunarity;
+    if (Math.random() < 0.5) child.mixMode = parent2.mixMode;
+    if (Math.random() < 0.5) child.threshold = parent2.threshold;
+    if (Math.random() < 0.5) child.colorShift = parent2.colorShift;
+    if (Math.random() < 0.5) child.colorIntensity = parent2.colorIntensity;
+    if (Math.random() < 0.5) child.symmetryType = parent2.symmetryType;
+    if (Math.random() < 0.5) child.symmetryOrder = parent2.symmetryOrder;
+    
+    // Apply small mutation
+    return mutate(child);
+    }
+
+    // Save selected images
+    function saveSelectedImages() {
+    if (selected.size === 0) {
+        alert('Please select at least one image to save!');
+        return;
+    }
+    
+    Array.from(selected).forEach((idx, i) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        
+        // Render at higher resolution
+        let img = ctx.createImageData(512, 512);
+        
+        for (let j = 0; j < 512; j++) {
+        for (let k = 0; k < 512; k++) {
+            let x = (k / 512) * 2 - 1;
+            let y = (j / 512) * 2 - 1;
+            let v = netEval(genomes[idx], x, y);
+            
+            let r, g, b;
+            
+            switch (colorMode) {
+            case 'grayscale':
+                let gray = Math.floor((v[0] + 1) * 127);
+                r = g = b = Math.max(0, Math.min(255, gray));
+                break;
+                
+            case 'rgb':
+                r = Math.max(0, Math.min(255, Math.floor((v[0] + 1) * 127)));
+                g = Math.max(0, Math.min(255, Math.floor((v[1] + 1) * 127)));
+                b = Math.max(0, Math.min(255, Math.floor((v[2] + 1) * 127)));
+                break;
+                
+            case 'hsl':
+                [r, g, b] = hslToRgb(v[0] * 0.5 + 0.5, Math.abs(v[1] * 0.5 + 0.5), Math.abs(v[2] * 0.5 + 0.5));
+                break;
+                
+            case 'plasma':
+                [r, g, b] = plasmaColor(v[0] * 0.5 + 0.5);
+                break;
+                
+            case 'rainbow':
+                [r, g, b] = rainbowColor(v[0]);
+                break;
+                
+            case 'fire':
+                [r, g, b] = fireColor(v[0]);
+                break;
+            }
+            
+            let imgIdx = (j * 512 + k) * 4;
+            img.data[imgIdx] = r;
+            img.data[imgIdx + 1] = g;
+            img.data[imgIdx + 2] = b;
+            img.data[imgIdx + 3] = 255;
+        }
+        }
+        
+        ctx.putImageData(img, 0, 0);
+        
+        // Download the image
+        const link = document.createElement('a');
+        link.download = `picbr_gen${generation}_${idx + 1}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+    }
+
+    // Event listeners
+    evolveBtn.addEventListener('click', evolvePopulation);
+    resetBtn.addEventListener('click', initPopulation);
+    saveBtn.addEventListener('click', saveSelectedImages);
+    uploadBtn.addEventListener('click', () => imageUpload.click());
+    imageUpload.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleImageUpload(Array.from(e.target.files));
+    }
+    });
+
+    mutationRateSlider.addEventListener('input', (e) => {
+      mutationRate = parseFloat(e.target.value);
+      mutationValueSpan.textContent = mutationRate.toFixed(2);
+    });
+
+    colorModeSelect.addEventListener('change', (e) => {
+      colorMode = e.target.value;
+      drawGrid();
+    });
+
+    complexitySelect.addEventListener('change', (e) => {
+      complexity = e.target.value;
+      // Regenerate population with new complexity
+      initPopulation();
+    });
+
+    initPopulation();
+
+
+// https://en.wikipedia.org/wiki/Kenneth_Stanley
+// Kenneth Stanley is a computer scientist known for his
+// work in evolutionary algorithms and artificial life.
+
+// This code is inspired by the work of Kenneth Stanley, particularly
+// his contributions to evolutionary algorithms and artificial life.
+// The concepts of evolving complex abstract art through selection and
+// mutation are influenced by his research in these areas.
+// The use of neural networks, oscillators, and complex transformations
+// in the genome design is also a nod to his innovative approaches.
+// The project aims to create a platform for users to explore and evolve
+// abstract art, reflecting Stanley's vision of using evolution to generate
+// complex and interesting patterns. The code is showcasing how these
+// principles can be applied to creative domains like art generation.
+// The project is not affiliated with Kenneth Stanley but draws
+// inspiration from his research and ideas in evolutionary algorithms
+// and artificial life.
+
+</script>
+
+

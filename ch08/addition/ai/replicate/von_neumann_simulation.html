@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Von Neumann Machine Simulation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    .intro {
+      background-color: #e8f4f8;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 5px;
+      border-left: 4px solid #2196F3;
+    }
+    .controls {
+      margin: 20px 0;
+      text-align: center;
+    }
+    button {
+      margin: 5px;
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+    }
+    canvas {
+      border: 2px solid #333;
+      image-rendering: pixelated;
+      display: block;
+      margin: 20px auto;
+    }
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #333;
+    }
+    .speed-control {
+      margin: 10px 0;
+      text-align: center;
+    }
+    input[type="range"] {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Von Neumann Self-Replicating Machine</h1>
+  
+  <div class="intro">
+    <h3>Welcome to the Von Neumann Machine Simulation</h3>
+    <p>This simulation demonstrates the concept of <strong>self-replicating machines</strong>
+        proposed by mathematician John von Neumann in the 1940s. These theoretical machines exhibit complex behaviours including:</p>
+    <ul>
+      <li><strong>Self-replication:</strong> Create copies of themselves, with higher success rates when consuming resources</li>
+      <li><strong>Resource consumption:</strong> Transform raw materials into useful components for reproduction</li>
+      <li><strong>Aging and mortality:</strong> Machines age over time, becoming less efficient and eventually dying</li>
+      <li><strong>Mutation and evolution:</strong> Occasionally mutate into variants with different characteristics</li>
+      <li><strong>Error handling:</strong> Failed replications and malfunctions create debris that slowly decays</li>
+    </ul>
+    <p>Watch as a single machine spreads across the grid, forming a dynamic ecosystem with birth, death, competition for
+        resources, and evolution. This demonstrates fundamental principles of artificial life, self-organization, and emergent complexity.</p>
+
+    <p>Key differences from von Neumann's original concept:
+        <ol>
+        <li><em>Construction vs. Replication</em>
+            Von Neumann's machines were supposed to be universal constructors - they would read instructions and build
+            whatever those instructions specified (including copies of themselves). This simulation uses direct cellular replication instead.</li>
+        <li><em>Missing the Instruction Tape</em>
+            Von Neumann's design included separate "instructions" that the machine would read and execute. The machine would
+            copy both itself AND the instructions. This simulation doesn't have this instruction-reading mechanism.</li>
+        <li><em>Cellular Automata vs. Physical Machines</em>
+            This is more like Conway's Game of Life with replication rules rather than actual machine construction.
+            Von Neumann originally envisioned physical machines that would manipulate matter.</li>
+        <li><em>Universal Construction</em>
+            Von Neumann's machines were meant to be capable of building ANY structure given the right instructions,
+            not just copies of themselves.</li>
+        </ol>
+    </p>
+  </div>
+
+  <div class="controls">
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn" disabled>Pause</button>
+    <button id="resetBtn">Reset</button>
+    <button id="addResourceBtn">Add Resources</button>
+  </div>
+
+  <div class="speed-control">
+    <label>Speed: </label>
+    <input type="range" id="speedSlider" min="1" max="10" value="5">
+    <span id="speedValue">5</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-value" id="machineCount">1</div>
+      <div class="stat-label">Machines</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="resourceCount">0</div>
+      <div class="stat-label">Resources</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="generation">0</div>
+      <div class="stat-label">Generation</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="deathCount">0</div>
+      <div class="stat-label">Deaths</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="efficiency">0</div>
+      <div class="stat-label">Efficiency %</div>
+    </div>
+  </div>
+
+  <canvas id="grid" width="600" height="600"></canvas>
+
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: white;"></div>
+      <span>Empty Space</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #4CAF50;"></div>
+      <span>Normal Machine</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #2196F3;"></div>
+      <span>Resource</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #FF9800;"></div>
+      <span>Mutant Machine</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #9C27B0;"></div>
+      <span>Dying Machine</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #F44336;"></div>
+      <span>Error Debris</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById("grid");
+  const ctx = canvas.getContext("2d");
+  const CELL_SIZE = 10;
+  const GRID_WIDTH = canvas.width / CELL_SIZE;
+  const GRID_HEIGHT = canvas.height / CELL_SIZE;
+  
+  // Cell types
+  const EMPTY = 0;
+  const MACHINE = 1;
+  const RESOURCE = 2;
+  const MUTANT = 3;
+  const DYING = 4;
+  const ERROR = 5;
+  
+  // Simulation state
+  let grid = [];
+  let machineAges = {};
+  let running = false;
+  let intervalId = null;
+  let generation = 0;
+  let totalReproductions = 0;
+  let successfulReproductions = 0;
+  let totalDeaths = 0;
+  let speed = 5;
+  
+  // Initialize grid
+  function initializeGrid() {
+    grid = [];
+    for (let y = 0; y < GRID_HEIGHT; y++) {
+      const row = [];
+      for (let x = 0; x < GRID_WIDTH; x++) {
+        row.push(EMPTY);
+      }
+      grid.push(row);
+    }
+    
+    // Seed machine in the center
+    const midX = Math.floor(GRID_WIDTH / 2);
+    const midY = Math.floor(GRID_HEIGHT / 2);
+    grid[midY][midX] = MACHINE;
+    
+    // Add some initial resources
+    addRandomResources(50);
+    
+    // Reset all simulation state
+    generation = 0;
+    totalReproductions = 0;
+    successfulReproductions = 0;
+    totalDeaths = 0;
+    machineAges = {};
+    
+    // Initialize age tracking for initial machine
+    machineAges[`${midX},${midY}`] = 0;
+    
+    updateStats();
+  }
+  
+  function addRandomResources(count) {
+    for (let i = 0; i < count; i++) {
+      const x = Math.floor(Math.random() * GRID_WIDTH);
+      const y = Math.floor(Math.random() * GRID_HEIGHT);
+      if (grid[y][x] === EMPTY) {
+        grid[y][x] = RESOURCE;
+      }
+    }
+  }
+  
+  function drawGrid() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    for (let y = 0; y < GRID_HEIGHT; y++) {
+      for (let x = 0; x < GRID_WIDTH; x++) {
+        let fillColor;
+        switch (grid[y][x]) {
+          case MACHINE:
+            fillColor = "#4CAF50";
+            break;
+          case RESOURCE:
+            fillColor = "#2196F3";
+            break;
+          case MUTANT:
+            fillColor = "#FF9800";
+            break;
+          case DYING:
+            fillColor = "#9C27B0";
+            break;
+          case ERROR:
+            fillColor = "#F44336";
+            break;
+          default:
+            fillColor = "white";
+        }
+        
+        ctx.fillStyle = fillColor;
+        ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        ctx.strokeStyle = "#e0e0e0";
+        ctx.strokeRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      }
+    }
+  }
+  
+  function stepSimulation() {
+    const newMachines = [];
+    const consumedResources = [];
+    const dyingMachines = [];
+    const errorCells = [];
+    const deadMachines = [];
+    
+    // Process all cells
+    for (let y = 0; y < GRID_HEIGHT; y++) {
+      for (let x = 0; x < GRID_WIDTH; x++) {
+        const key = `${x},${y}`;
+        const cellType = grid[y][x];
+        
+        if (cellType === MACHINE || cellType === MUTANT) {
+          // Initialize age if not tracked
+          if (machineAges[key] === undefined) {
+            machineAges[key] = 0;
+          }
+          machineAges[key]++;
+          
+          // Death by age
+          const maxAge = cellType === MUTANT ? 25 : 35;
+          const deathProbability = Math.min(0.3, Math.pow(machineAges[key] / maxAge, 2) * 0.15);
+          
+          if (machineAges[key] > maxAge || Math.random() < deathProbability) {
+            dyingMachines.push([x, y]);
+            continue;
+          }
+          
+          // Random malfunction
+          if (Math.random() < 0.005) {
+            errorCells.push([x, y]);
+            continue;
+          }
+          
+          // Replication attempt
+          const isMutant = cellType === MUTANT;
+          const baseReplicationRate = isMutant ? 0.3 : 0.2;
+          const mutationRate = isMutant ? 0.12 : 0.03;
+          
+          // Age reduces replication efficiency
+          const ageFactor = Math.max(0.1, 1 - (machineAges[key] / (maxAge * 1.5)));
+          const replicationRate = baseReplicationRate * ageFactor;
+          
+          // Check adjacent cells for replication
+          const directions = [
+            [0, -1], [1, 0], [0, 1], [-1, 0],
+            [-1, -1], [1, -1], [1, 1], [-1, 1]
+          ];
+          
+          // Shuffle directions for randomness
+          for (let i = directions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [directions[i], directions[j]] = [directions[j], directions[i]];
+          }
+          
+          for (const [dx, dy] of directions) {
+            const nx = x + dx;
+            const ny = y + dy;
+            
+            if (nx >= 0 && ny >= 0 && nx < GRID_WIDTH && ny < GRID_HEIGHT) {
+              const targetCell = grid[ny][nx];
+              
+              // Try to replicate
+              if (Math.random() < replicationRate) {
+                totalReproductions++;
+                
+                // Different success rates for different targets
+                let successRate = 0.5;
+                if (targetCell === RESOURCE) {
+                  successRate = 0.8;
+                  consumedResources.push([nx, ny]);
+                } else if (targetCell === EMPTY) {
+                  successRate = 0.6;
+                } else {
+                  continue; // Can't replicate into occupied cell
+                }
+                
+                if (Math.random() < successRate) {
+                  const willMutate = Math.random() < mutationRate;
+                  const newType = willMutate ? MUTANT : MACHINE;
+                  newMachines.push([nx, ny, newType]);
+                  successfulReproductions++;
+                } else {
+                  // Failed replication may create error
+                  if (Math.random() < 0.3) {
+                    errorCells.push([nx, ny]);
+                  }
+                }
+                break; // Only one replication attempt per machine per turn
+              }
+            }
+          }
+        }
+        else if (cellType === DYING) {
+          // Dying machines decay
+          if (Math.random() < 0.7) {
+            deadMachines.push([x, y]);
+            // Sometimes leave debris
+            if (Math.random() < 0.2) {
+              errorCells.push([x, y]);
+            }
+          }
+        }
+        else if (cellType === ERROR) {
+          // Error debris slowly decays
+          if (Math.random() < 0.15) {
+            deadMachines.push([x, y]);
+          }
+        }
+      }
+    }
+    
+    // Apply all changes to avoid conflicts
+    for (const [x, y] of consumedResources) {
+      if (grid[y][x] === RESOURCE) {
+        grid[y][x] = EMPTY;
+      }
+    }
+    
+    for (const [x, y] of dyingMachines) {
+      grid[y][x] = DYING;
+      totalDeaths++;
+      delete machineAges[`${x},${y}`];
+    }
+    
+    for (const [x, y] of deadMachines) {
+      grid[y][x] = EMPTY;
+      delete machineAges[`${x},${y}`];
+    }
+    
+    for (const [x, y] of errorCells) {
+      grid[y][x] = ERROR;
+      delete machineAges[`${x},${y}`];
+    }
+    
+    for (const [x, y, type] of newMachines) {
+      grid[y][x] = type;
+      machineAges[`${x},${y}`] = 0;
+    }
+    
+    // Add new resources occasionally
+    if (Math.random() < 0.25) {
+      const resourcesToAdd = Math.floor(Math.random() * 3) + 1;
+      addRandomResources(resourcesToAdd);
+    }
+    
+    generation++;
+    updateStats();
+    drawGrid();
+  }
+  
+  function updateStats() {
+    let machineCount = 0;
+    let resourceCount = 0;
+    
+    for (let y = 0; y < GRID_HEIGHT; y++) {
+      for (let x = 0; x < GRID_WIDTH; x++) {
+        const cell = grid[y][x];
+        if (cell === MACHINE || cell === MUTANT) {
+          machineCount++;
+        } else if (cell === RESOURCE) {
+          resourceCount++;
+        }
+      }
+    }
+    
+    const efficiency = totalReproductions > 0 ? 
+      Math.round((successfulReproductions / totalReproductions) * 100) : 0;
+    
+    document.getElementById('machineCount').textContent = machineCount;
+    document.getElementById('resourceCount').textContent = resourceCount;
+    document.getElementById('generation').textContent = generation;
+    document.getElementById('deathCount').textContent = totalDeaths;
+    document.getElementById('efficiency').textContent = efficiency;
+  }
+  
+  function startSimulation() {
+    if (!running) {
+      running = true;
+      const delay = Math.max(50, 1100 - (speed * 100));
+      intervalId = setInterval(stepSimulation, delay);
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('pauseBtn').disabled = false;
+    }
+  }
+  
+  function pauseSimulation() {
+    if (running) {
+      running = false;
+      clearInterval(intervalId);
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('pauseBtn').disabled = true;
+    }
+  }
+  
+  function resetSimulation() {
+    pauseSimulation();
+    initializeGrid();
+    drawGrid();
+  }
+  
+  // Event listeners
+  document.getElementById('startBtn').addEventListener('click', startSimulation);
+  document.getElementById('pauseBtn').addEventListener('click', pauseSimulation);
+  document.getElementById('resetBtn').addEventListener('click', resetSimulation);
+  document.getElementById('addResourceBtn').addEventListener('click', () => {
+    addRandomResources(15);
+    updateStats();
+    drawGrid();
+  });
+  
+  document.getElementById('speedSlider').addEventListener('input', (e) => {
+    speed = parseInt(e.target.value);
+    document.getElementById('speedValue').textContent = speed;
+    if (running) {
+      pauseSimulation();
+      startSimulation();
+    }
+  });
+  
+  // Initialize the simulation
+  initializeGrid();
+  drawGrid();
+</script>
+</body>
+</html>
