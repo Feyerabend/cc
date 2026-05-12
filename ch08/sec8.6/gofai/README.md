@@ -94,12 +94,12 @@ autoepistemic logic) and asks why they fell short in practice. This is GOFAI sel
 and the correction reveals structural limits.
 
 *[`seasons/`](./seasons/)* -- the arc of AI history. Two winters, several springs, the
-institutional pressures that shaped each turn. The account is partly personal: the author was
-present at the Second International Conference on Logic Programming in Uppsala in 1984, at the
+institutional pressures that shaped each turn. The account is partly personal: the author (me)
+was present at the Second International Conference on Logic Programming in Uppsala in 1984, at the
 height of the second spring, and watched the expectations of that moment collide with reality
-over the following decade. The section on Stig Kanger--logician, dissertation supervisor,
-and quietly prescient figure--connects the international AI story to the Swedish scientific
-tradition that ran alongside it.
+over the following decade. The section on Stig Kanger--logician, and quietly prescient
+figure--connects the international AI story to the Swedish scientific tradition that
+ran alongside it.
 
 
 ### Reading the Collection
