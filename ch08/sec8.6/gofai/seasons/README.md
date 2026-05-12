@@ -46,7 +46,7 @@ During the 1980s, there were two main directions within AI: the *classical*, sym
 AI and the emerging *connectionism*. Classical AI focused on building computers that
 could represent and reason about their environment using formal logic rules, while
 connectionism attempted to mimic the brain's neural networks:
-"*Whereas classical AI sees intelligence primarily as symbolic thinking, the connectionists emphasize learning and adaptive behavior.*" [^11]
+"*Whereas classical AI sees intelligence primarily as symbolic thinking, the connectionists emphasize learning and adaptive behavior.*"
 
 The period from 1987 to 1993 is referred to as "the second AI winter," when expectations
 for AI technology collided with reality, resulting in a decline in interest and funding.
@@ -54,7 +54,7 @@ During this time, AI researchers became more receptive to philosophical critique
 
 In *Scientific American* in 1990, two contrasting articles were published. Philosopher
 John Searle argued, through his famous "Chinese Room" thought experiment, that computers
-could never achieve true understanding but only execute operations according to rules.[^12]
+could never achieve true understanding but only execute operations according to rules.[^11][^12]
 The couple Patricia and Paul Churchland, neurophilosophers, maintained that while
 classical AI might not be able to produce conscious machines, systems that mimicked
 the brain could.[^13] However, Searle also criticised connectionism for failing to
@@ -84,7 +84,7 @@ Dag Prawitz worked on a method for automatic proofs, which he programmed with he
 from his father, Håkan Prawitz, resulting in
 *"the first experiments with general theorem provers for first-order logic were performed in Stockholm in 1958."*[^26]
 Thus, and this is important, The General Problem Solver came later in 1959. This is
-seldom, if ever, noticed in the written history of AI.  
+rarely noticed in general accounts of AI history.  
 
 A significant advancement for the field was J.A. Robinson's "unification algorithm"
 from 1965,[^28] which later became central to the development of the logic programming
@@ -152,7 +152,6 @@ graph LR
 [^4]: Wikipedia, "Moore's law", https://en.wikipedia.org/w/index.php?title=Moore%27s_law&oldid=891671193 (retrieved 2019-04-11)
 [^5]: Wikipedia, "Lisp Machines", https://en.wikipedia.org/w/index.php?title=Lisp_Machines&oldid=871717316 (retrieved 2019-04-13)
 [^6]: Wikipedia, "AI winter", https://en.wikipedia.org/w/index.php?title=AI_winter&oldid=891874138 (retrieved 2019-04-11)
-[^7]: REEFERENS TILL SAMLADE ARBETEN KANGER
 [^8]: Robert Kowalski, Logic for problem solving, North-Holland, New York, 1979.
 [^9]: Rudolf, Carnap, Meaning and necessity: a study in semantics and modal logic, 2. enl. ed., University of Chicago Press, Chicago, 1956.
 [^10]: Föreläsningsanteckningar av Sten Lindström (Notes by Sten Lindström), Filosofi och artificiell intelligens, VI, Uppsala VT92, Uppsala 1992.
@@ -167,7 +166,7 @@ Internet Encyclopedia of Philosophy, "Chinese Room Argument", https://www.iep.ut
 [^18]: Wikipedia, "Deep Blue (chess computer)", https://en.wikipedia.org/w/index.php?title=Deep_Blue_(chess_computer)&oldid=890155044 (retrieved 2019-04-11)
 [^19]: Wikipedia, "Logic Theorist", https://en.wikipedia.org/w/index.php?title=Logic_Theorist&oldid=875003976 (retrieved 2019-04-11). Wikipedia, "Dartmouth workshop", https://en.wikipedia.org/w/index.php?title=Dartmouth_workshop&oldid=878151960 (retrieved 2019-04-11). John McCarthy, et. al. "A proposal for the Dartmouth summer research project on artificial intelligence", August 31 1955, http://www-formal.stanford.edu/jmc/history/dartmouth/dartmouth.html (retrieved 2019-04-11)
 [^20]: John McCarthy, et. al. "A proposal for the Dartmouth summer research project on artificial intelligence", August 31 1955, http://www-formal.stanford.edu/jmc/history/dartmouth/dartmouth.html (retrieved 2019-04-11)
-[^21]: Wikipedia, "Chinese room", https://en.wikipedia.org/w/index.php?title=Chinese_room&oldid=891604484 (retrieved 2019-04-11). KOLLA KÄLLAN I Russell, Stuart J.; Norvig, Peter (2003), Artificial Intelligence: A Modern Approach (2nd ed.), Upper Saddle River, New Jersey: Prentice Hall, ISBN 0-13-790395-2. SIDAN 18.
+[^21]: Wikipedia, "Chinese room", https://en.wikipedia.org/w/index.php?title=Chinese_room&oldid=891604484 (retrieved 2019-04-11).
 [^22]: Wikipedia, "Logic Theorist", https://en.wikipedia.org/w/index.php?title=Logic_Theorist&oldid=875003976 (retrieved 2019-04-11)
 [^23]: Wikipedia, "General Problem Solver", https://en.wikipedia.org/w/index.php?title=General_Problem_Solver&oldid=856579631 (retrieved 2019-04-11)
 [^24]: Stig Kanger, Provability in Logic, Vol. 1 of Studies in Philosophy, Almqvist & WIksell, Stockholm 1957.
@@ -221,19 +220,19 @@ and didn't like.
 In 1984, I had only been a student for two years when I cautiously walked up the stairs to his office to
 ask how I should approach my D thesis. I knocked, still convinced that there ought to be some connection
 between the technical side of computing and philosophy, and I dared to suggest that I might read *Logic
-for Problem Solving* by Robert Kowalski. In his textbook, Kowalski shows the connection between logic
+for Problem Solving* by Robert Kowalski.[^8] In his textbook, Kowalski shows the connection between logic
 and programming through things like a particular formulation of logical statements in Horn clauses,
 inferences, matches between statements, or interpreting negation as failure of proof. Everything seemed
 practically programmable in the language Prolog.
 
 Kanger replied that he had never heard of the author and walked over to the bookshelf to quickly pull
-out a book that I should read instead. He suggested Rudolf Carnap's *Meaning and Necessity*. Somewhat
+out a book that I should read instead. He suggested Rudolf Carnap's *Meaning and Necessity*.[^9] Somewhat
 disappointed, I nonetheless fully trusted Kanger's recommendations. In hindsight, I can add that he
 was right. I read Carnap, who was a phenomenal thinker, but I couldn't say that I had anything to
 contribute.
 
 Later, however, I ended up writing about the medieval philosopher William of Ockham and assertions
-(*assertio*), also at Kanger's suggestion. Apperently he seemed to like my ideas at the time.
+(*assertio*), also at Kanger's suggestion. Apparently he seemed to like my ideas at the time.
 Even though I received the prestigious offer to begin doctoral studies with Professor Jaakko Hintikka
 at Stanford after Kanger seemed to appreciate my efforts, my interests had by then begun to lean
 more toward history and the history of philosophy--partly as an effect of having read texts by Ockham.
@@ -242,7 +241,7 @@ As noticed above, Kanger was really into something that could be interpreted as 
 interest in the 50s, a logic system that had mechanical rules which could be programmed. Actually,
 in the archive notes from 1948-1963, we can see that the "Matematikmaskinnämnden" or The Committee
 for Mathematical Machines, as it could be translated (the group that controlled and built the first
-computers in Sweden) had Stig Kangers "Handbok i Logik, del I. Logisk konsekvens"
+computers in Sweden) had Stig Kanger's "Handbok i Logik, del I. Logisk konsekvens"
 (Handbook in Logic, part I. Logic consequence) published in 1959.
 From what can be seen they didn't have really anything else close to philosophy.[^32]
 
@@ -258,7 +257,7 @@ military applications such as decrypting telecommunications, at night.[^33]
 
 So did Kanger see something that the AI researchers did not? He had actually been first with some
 particular ideas on computers and logic. But the divide, which becomes quite clear when you try to
-combine logic with computers further, as was the attempt with classic AI, did he already saw that
+combine logic with computers further, as was the attempt with classic AI, did he already see that
 at the height of Logic Programming? I never asked. So I never got an answer. He died in 1988.
 
 [^32]: https://sok.riksarkivet.se/nad?Sokord=matematikmaskinn%c3%a4mnden&EndastDigitaliserat=false&BegransaPaTitelEllerNamn=false&AvanceradSok=False&typAvLista=Standard&page=1&postid=Arkis+4a6ef5cd-9b89-11d5-a701-0002440207bb&tab=post&prependUrl=%2fnad&vol=n%2cn%2cn%2cn&s=Balder (retrieved 2025-04-06).
@@ -275,7 +274,7 @@ to be more efficient than previously known methods." Lars Svenonius review on "H
 #### The Renaissance of Modern AI
 
 By the late 1980s and early 1990s, dissatisfaction with the limitations of the strictly logical, rule-based paradigm
-of traditional AI—often referred to as "Good Old-Fashioned AI" ([GOFAI](./README.md))--led researchers to explore
+of traditional AI—often referred to as "Good Old-Fashioned AI" ([GOFAI](../README.md))--led researchers to explore
 alternative approaches. One such line of inquiry was [non-monotonic reasoning](./NONMONOTONIC.md), which attempted
 to better model human-like commonsense inference by allowing conclusions to be withdrawn in light of new information,
 a capability missing from classical logic.

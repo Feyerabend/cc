@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N-Queens Problem - GOFAI Constraint Satisfaction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fafafa;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+        .concept-box {
+            background-color: #ecf0f1;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .algorithm-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .controls {
+            text-align: center;
+            margin: 25px 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .grid {
+            display: grid;
+            gap: 2px;
+            margin: 20px 0;
+            justify-content: center;
+            background-color: #34495e;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .cell.white {
+            background-color: #ecf0f1;
+        }
+        .cell.black {
+            background-color: #bdc3c7;
+        }
+        .queen {
+            background-color: #e74c3c !important;
+            color: white;
+        }
+        .attacked {
+            background-color: #f39c12 !important;
+            color: white;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #3498db;
+            font-family: 'Courier New', monospace;
+        }
+        .solution-box {
+            background-color: #d5edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .step-explanation {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>N-Queens Problem: A Classic GOFAI Constraint Satisfaction Problem</h1>
+        
+        <div class="concept-box">
+            <h3>Objectives</h3>
+            <ul>
+                <li>Understand Constraint Satisfaction Problems (CSPs)</li>
+                <li>Learn backtracking search with constraint checking</li>
+                <li>Observe how GOFAI approaches systematic problem-solving</li>
+                <li>Analyze search efficiency and pruning techniques</li>
+            </ul>
+        </div>
+
+        <h2>Problem Definition</h2>
+        <p><strong>Goal:</strong> Place N queens on an N×N chessboard such that no two queens can attack each other.</p>
+        
+        <p><strong>Constraints:</strong></p>
+        <ul>
+            <li>No two queens in the same row</li>
+            <li>No two queens in the same column</li>
+            <li>No two queens on the same diagonal</li>
+        </ul>
+
+        <div class="algorithm-box">
+            <h3>Backtracking Algorithm</h3>
+            <p>This classic GOFAI approach uses systematic search with constraint checking:</p>
+            <ol>
+                <li><strong>Place:</strong> Try placing a queen in the next row</li>
+                <li><strong>Check:</strong> Verify all constraints are satisfied</li>
+                <li><strong>Recurse:</strong> If valid, move to next row</li>
+                <li><strong>Backtrack:</strong> If invalid or no solution found, remove queen and try next position</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Interactive Demonstration</h2>
+        
+        <div class="controls">
+            <button onclick="solveNQueens(4)">Solve 4-Queens</button>
+            <button onclick="solveNQueens(8)">Solve 8-Queens</button>
+            <button onclick="showAllSolutions(4)">All 4-Queens Solutions</button>
+            <button onclick="showSearchSteps()">Show Algorithm Steps</button>
+            <button onclick="resetBoard()">Reset Board</button>
+        </div>
+        
+        <div id="queens-grid"></div>
+        
+        <div class="stats" id="queens-stats" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-number" id="queens-solutions">0</div>
+                <div class="stat-label">Solutions Found</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="queens-backtracks">0</div>
+                <div class="stat-label">Backtracks</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="queens-nodes">0</div>
+                <div class="stat-label">Nodes Explored</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="queens-time">0</div>
+                <div class="stat-label">Time (ms)</div>
+            </div>
+        </div>
+        
+        <div id="queens-output"></div>
+    </div>
+
+    <div class="container">
+        <h2>Key GOFAI Concepts Demonstrated</h2>
+        
+        <div class="concept-box">
+            <h3>Systematic Search</h3>
+            <p>Unlike modern AI that learns patterns, GOFAI uses systematic exploration of the solution space. Every possible placement is considered in a logical order.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Constraint Propagation</h3>
+            <p>Constraints are checked immediately when placing each queen. This early detection of conflicts allows for efficient pruning of the search tree.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Backtracking</h3>
+            <p>When a constraint is violated, the algorithm systematically undoes previous decisions and tries alternatives. This ensures completeness - if a solution exists, it will be found.</p>
+        </div>
+    </div>
+
+    <script>
+        class NQueensSolver {
+            constructor(n) {
+                this.n = n;
+                this.board = new Array(n).fill(-1);
+                this.stats = {
+                    nodes: 0,
+                    backtracks: 0,
+                    solutions: 0,
+                    startTime: 0
+                };
+                this.steps = [];
+                this.allSolutions = [];
+            }
+
+            resetStats() {
+                this.stats = { nodes: 0, backtracks: 0, solutions: 0, startTime: Date.now() };
+                this.steps = [];
+                this.allSolutions = [];
+            }
+
+            isValid(row, col) {
+                for (let i = 0; i < row; i++) {
+                    const placedCol = this.board[i];
+                    
+                    // Check column conflict
+                    if (placedCol === col) {
+                        return false;
+                    }
+                    
+                    // Check diagonal conflicts
+                    if (Math.abs(i - row) === Math.abs(placedCol - col)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            solve(row = 0, findAll = false) {
+                this.stats.nodes++;
+                
+                if (row === this.n) {
+                    this.stats.solutions++;
+                    const solution = [...this.board];
+                    this.allSolutions.push(solution);
+                    this.steps.push(`Solution ${this.stats.solutions} found: [${solution.join(', ')}]`);
+                    
+                    if (!findAll) {
+                        return solution;
+                    }
+                    return;
+                }
+
+                for (let col = 0; col < this.n; col++) {
+                    this.steps.push(`Trying to place queen at row ${row}, column ${col}`);
+                    
+                    if (this.isValid(row, col)) {
+                        this.board[row] = col;
+                        this.steps.push(`Placed queen at (${row}, ${col}) - constraints satisfied`);
+                        
+                        if (findAll) {
+                            this.solve(row + 1, true);
+                        } else {
+                            const result = this.solve(row + 1, false);
+                            if (result) {
+                                return result;
+                            }
+                        }
+                        
+                        // Backtrack
+                        this.board[row] = -1;
+                        this.stats.backtracks++;
+                        this.steps.push(`Backtracking from (${row}, ${col}) - no valid solution found`);
+                    } else {
+                        this.steps.push(`Cannot place queen at (${row}, ${col}) - constraint violation`);
+                    }
+                }
+                
+                return findAll ? this.allSolutions : null;
+            }
+
+            findAllSolutions() {
+                this.resetStats();
+                this.solve(0, true);
+                return this.allSolutions;
+            }
+        }
+
+        function solveNQueens(n) {
+            const solver = new NQueensSolver(n);
+            solver.resetStats();
+            
+            const startTime = Date.now();
+            const solution = solver.solve();
+            const endTime = Date.now();
+            
+            solver.stats.time = endTime - startTime;
+            
+            displayQueensGrid(solution, n);
+            updateQueensStats(solver.stats);
+            
+            const output = document.getElementById('queens-output');
+            if (solution) {
+                output.innerHTML = `
+                    <div class="solution-box">
+                        <h3>Solution Found!</h3>
+                        <p><strong>Queen positions:</strong> ${solution.map((col, row) => `Row ${row} → Column ${col}`).join(', ')}</p>
+                        <p><strong>Representation:</strong>Each number represents the column position of the queen in that row.</p>
+                    </div>
+                `;
+            } else {
+                output.innerHTML = `<div class="solution-box"><h3>No solution exists for ${n}-Queens</h3></div>`;
+            }
+        }
+
+        function showAllSolutions(n) {
+            const solver = new NQueensSolver(n);
+            const solutions = solver.findAllSolutions();
+            
+            updateQueensStats(solver.stats);
+            
+            const output = document.getElementById('queens-output');
+            let html = `<div class="solution-box"><h3>All ${n}-Queens Solutions (${solutions.length} total)</h3>`;
+            
+            solutions.forEach((solution, index) => {
+                html += `<p><strong>Solution ${index + 1}:</strong> [${solution.join(', ')}]</p>`;
+            });
+            
+            html += `</div>`;
+            output.innerHTML = html;
+
+            // Display first solution on the board
+            if (solutions.length > 0) {
+                displayQueensGrid(solutions[0], n);
+            }
+        }
+
+        function displayQueensGrid(solution, n) {
+            const gridContainer = document.getElementById('queens-grid');
+            gridContainer.innerHTML = '';
+            gridContainer.className = 'grid';
+            gridContainer.style.gridTemplateColumns = `repeat(${n}, 50px)`;
+            
+            for (let row = 0; row < n; row++) {
+                for (let col = 0; col < n; col++) {
+                    const cell = document.createElement('div');
+                    const isWhite = (row + col) % 2 === 0;
+                    cell.className = `cell ${isWhite ? 'white' : 'black'}`;
+                    
+                    if (solution && solution[row] === col) {
+                        cell.className += ' queen';
+                        cell.textContent = '♛';
+                        cell.title = `Queen at row ${row}, column ${col}`;
+                    } else if (solution && isAttacked(row, col, solution)) {
+                        cell.className += ' attacked';
+                        cell.title = `Attacked by queen at row ${getAttackingQueen(row, col, solution)?.row}, column ${getAttackingQueen(row, col, solution)?.col}`;
+                    } else {
+                        cell.title = `Row ${row}, Column ${col}`;
+                    }
+                    
+                    gridContainer.appendChild(cell);
+                }
+            }
+        }
+
+        function isAttacked(row, col, solution) {
+            for (let r = 0; r < solution.length; r++) {
+                const c = solution[r];
+                if (r !== row && (c === col || Math.abs(r - row) === Math.abs(c - col))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function getAttackingQueen(row, col, solution) {
+            for (let r = 0; r < solution.length; r++) {
+                const c = solution[r];
+                if (r !== row && (c === col || Math.abs(r - row) === Math.abs(c - col))) {
+                    return { row: r, col: c };
+                }
+            }
+            return null;
+        }
+
+        function updateQueensStats(stats) {
+            document.getElementById('queens-stats').style.display = 'flex';
+            document.getElementById('queens-solutions').textContent = stats.solutions;
+            document.getElementById('queens-backtracks').textContent = stats.backtracks;
+            document.getElementById('queens-nodes').textContent = stats.nodes;
+            document.getElementById('queens-time').textContent = stats.time || 0;
+        }
+
+        function showSearchSteps() {
+            const solver = new NQueensSolver(4);
+            solver.solve();
+            
+            const output = document.getElementById('queens-output');
+            output.innerHTML = `
+                <div class="step-explanation">
+                    <h3>Algorithm Execution Steps</h3>
+                    <p>Watch how the backtracking algorithm systematically explores the solution space:</p>
+                    <pre>${solver.steps.slice(0, 30).join('\n')}${solver.steps.length > 30 ? '\n... (showing first 30 steps)' : ''}</pre>
+                </div>
+            `;
+        }
+
+        function resetBoard() {
+            document.getElementById('queens-grid').innerHTML = '';
+            document.getElementById('queens-stats').style.display = 'none';
+            document.getElementById('queens-output').innerHTML = '';
+        }
+
+        // Initialize with 4-Queens example
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('N-Queens GOFAI Demo Loaded');
+            solveNQueens(4);
+        });
+    </script>
+</body>
+</html>

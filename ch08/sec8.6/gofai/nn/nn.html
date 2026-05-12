@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Neural Network Learning</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f0f0f0; 
+      margin: 0; 
+      padding: 20px;
+    }
+    .container { 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      background: white; 
+      padding: 20px; 
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    canvas { 
+      background: #f9f9f9; 
+      border: 1px solid #ddd; 
+      border-radius: 3px;
+      margin: 10px 0; 
+      display: block; 
+    }
+    .controls { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+      gap: 15px; 
+      margin: 20px 0; 
+    }
+    .section { 
+      background: #f8f8f8; 
+      padding: 15px; 
+      border-radius: 3px; 
+      border: 1px solid #ddd;
+    }
+    button { 
+      padding: 8px 16px; 
+      background: #007cba; 
+      color: white; 
+      border: none; 
+      border-radius: 3px; 
+      cursor: pointer; 
+      margin: 3px;
+    }
+    button:hover { 
+      background: #005a8b; 
+    }
+    button.stop { background: #d32f2f; }
+    button.stop:hover { background: #b71c1c; }
+    input[type=number], input[type=range], select { 
+      padding: 5px; 
+      border: 1px solid #ccc; 
+      border-radius: 3px;
+      margin: 3px;
+    }
+    .stats { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); 
+      gap: 10px; 
+      margin: 20px 0; 
+    }
+    .stat-item { 
+      background: #f0f0f0; 
+      padding: 10px; 
+      border-radius: 3px; 
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #007cba;
+    }
+    h1 { 
+      color: #333; 
+      margin: 0 0 10px 0;
+    }
+    h2 { 
+      color: #555; 
+      margin: 0 0 10px 0;
+    }
+    h3 { 
+      color: #666; 
+      margin: 0 0 10px 0; 
+    }
+    .status { 
+      margin: 10px 0; 
+      padding: 10px;
+      border-radius: 3px;
+      text-align: center;
+    }
+    .status.success { background: #e8f5e8; color: #2e7d32; }
+    .status.error { background: #ffebee; color: #c62828; }
+    .status.info { background: #e3f2fd; color: #1976d2; }
+    .tabs {
+      display: flex;
+      margin-bottom: 15px;
+    }
+    .tab {
+      padding: 10px 20px;
+      background: #040000;
+      border: 1px solid #ddd;
+      border-bottom: none;
+      cursor: pointer;
+      margin-right: 2px;
+    }
+    .tab.active {
+      background: rgb(48, 0, 100);
+      border-bottom: 1px solid white;
+    }
+    .tab-content {
+      display: none;
+      background: white;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 0 3px 3px 3px;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .slider-container {
+      margin: 8px 0;
+    }
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 3px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Neural Network Learning</h1>
+    <p>Interactive demo of backpropagation and gradient descent</p>
+
+<p>This page simulates a neural network with one input layer (2 nodes), one hidden layer (adjustable nodes),
+and one output layer (1 node). It trains the network on basic logic gate datasets (XOR, AND, OR) to predict
+outputs based on two inputs. The interface shows:</p>
+
+<p>A visualisation of the network's structure, with nodes (representing neurons) and lines (representing weights,
+  where thickness shows strength and color indicates positive/negative values).</p>
+
+<ul>
+<li>A graph tracking the network's loss (error) over time as it learns.</li>
+<li>Statistics like current accuracy, best accuracy, epoch count, and loss.</li>
+<li>Controls to adjust training speed, learning rate, and the number of hidden neurons, plus options to start/stop training, reset the network, or test predictions.</li>
+</ul>
+
+<h4>How it works:</h4>
+<ul>
+<li>The neural network uses backpropagation to adjust weights and biases, minimizing prediction errors through gradient descent.</li>
+<li>Users can select a dataset (e.g., XOR), start training, and watch the network improve its predictions. The loss graph and accuracy
+    stats update in real-time.</li>
+<li>The "Testing" tab lets users input values to see the network's predictions or test the entire dataset for accuracy.</li>
+<li>The "Data" tab allows switching between logic gate datasets.</li>
+</ul>
+
+<h4>How it's used:</h4>
+<ul>
+<li>Open the HTML file in a browser to access the interactive demo.</li>
+<li>Choose a dataset (e.g., XOR) and click "Load Dataset."</li>
+<li>Adjust settings like learning rate or hidden neurons, then click "Start Training" to see the network learn. The visualisation
+   and loss graph update as training progresses.</li>
+<li>Use the "Testing" tab to input custom values or evaluate the network's performance on the dataset.</li>
+<li>Reset the network or change parameters to experiment with different configurations.</li>
+</ul>
+
+    <h2>How It Works</h2>
+    
+    <h3>Floating-Point Inputs and Outputs</h3>
+    <p>The neural network accepts floating-point inputs (e.g., 0.0, 1.0, or values like 0.3) because it's designed as a
+      general-purpose neural network using sigmoid activation functions, which operate on continuous values.
+      For the logic gate datasets (XOR, AND, OR), the training data uses binary inputs (0 or 1) and targets (0 or 1).
+      For example, XOR data includes:</p>
+    <ul>
+      <li>Input: [0, 0] → Target: [0]</li>
+      <li>Input: [0, 1] → Target: [1]</li>
+      <li>Input: [1, 0] → Target: [1]</li>
+      <li>Input: [1, 1] → Target: [0]</li>
+    </ul>
+    <p>The network processes these inputs through matrix operations and sigmoid functions, producing floating-point
+      outputs (e.g., 0.73) in the range [0, 1].</p>
+
+    <h3>Evaluating Binary Logic</h3>
+    <p>During training and testing, the network's floating-point output (e.g., 0.73) is interpreted as binary by
+      thresholding: outputs > 0.5 are treated as 1, and outputs ≤ 0.5 as 0. This is standard for neural networks
+      solving binary classification problems. For example, if the network predicts 0.73 for an XOR input [1, 0],
+      it's interpreted as 1, matching the expected binary output. The <code>predict</code> and <code>testAllData</code>
+      functions in the code explicitly use this thresholding (see code where <code>output > 0.5 ? 1 : 0</code> is used).</p>
+
+    <h3>Why Floating-Point Inputs Work for Binary Logic</h3>
+    <p>The neural network is designed to generalize, so it can handle any floating-point input, not just 0 or 1. This
+      allows users to test the network with non-binary inputs (e.g., 0.3, 0.7) in the "Testing" tab to see how the network
+      extrapolates. For training, the datasets (XOR, AND, OR) use strict binary inputs (0 or 1), so the network learns to
+      map these to binary-like outputs (close to 0 or 1 after sigmoid activation). The sigmoid function ensures outputs
+      are continuous but can approximate binary values when trained well. The loss function (mean squared error) compares
+      the floating-point output to the binary target (0 or 1), encouraging the network to produce outputs close to 0 or 1
+      for the correct binary logic.</p>
+
+    <p>The approach is useful for a neural network solving binary logic problems. Using floating-point values is standard because:</p>
+    <ul>
+      <li>Continuous values allow gradient-based optimisation (backpropagation) to work smoothly, as gradients require
+        differentiable functions like sigmoid.</li>
+      <li>The thresholding step (output > 0.5 → 1, else 0) bridges the continuous output to binary logic, which is common
+        in binary classification tasks.</li>
+    </ul>
+    <p>The code implements this by:</p>
+    <ul>
+      <li>Using sigmoid activation to produce outputs in [0, 1].</li>
+      <li>Applying backpropagation to minimize the error between predicted and target binary values.</li>
+      <li>Providing a testing interface that correctly interprets outputs as binary decisions.</li>
+    </ul>
+
+
+    <div class="main-content">
+      <div>
+        <h2>Network Visualisation</h2>
+        <canvas id="networkCanvas" width="450" height="300"></canvas>
+        <p><strong>Legend:</strong> Node brightness = activation, Line thickness = weight strength</p>
+      </div>
+      
+      <div>
+        <h2>Learning Progress</h2>
+        <canvas id="lossCanvas" width="450" height="200"></canvas>
+        <div class="stats">
+          <div class="stat-item">
+            <div class="stat-value" id="currentAccuracy">0%</div>
+            <div>Accuracy</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="bestAccuracy">0%</div>
+            <div>Best</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('training')">Training</button>
+      <button class="tab" onclick="showTab('testing')">Testing</button>
+      <button class="tab" onclick="showTab('data')">Data</button>
+    </div>
+    
+    <div id="training" class="tab-content active">
+      <div class="controls">
+        <div class="section">
+          <h3>Training Controls</h3>
+          <button id="trainBtn" onclick="toggleTraining()">Start Training</button>
+          <button onclick="resetNetwork()">Reset Network</button>
+          <button onclick="trainOneEpoch()">Train One Epoch</button>
+          <div class="slider-container">
+            <div class="slider-label">
+              <span>Speed</span>
+              <span id="speedValue">100ms</span>
+            </div>
+            <input type="range" id="trainingSpeed" min="10" max="1000" step="10" value="100">
+          </div>
+        </div>
+        
+        <div class="section">
+          <h3>Parameters</h3>
+          <div class="slider-container">
+            <div class="slider-label">
+              <span>Learning Rate</span>
+              <span id="lrValue">0.1</span>
+            </div>
+            <input type="range" id="learningRate" min="0.01" max="1.0" step="0.01" value="0.1">
+          </div>
+          <div class="slider-container">
+            <div class="slider-label">
+              <span>Hidden Neurons</span>
+              <span id="hiddenSizeValue">4</span>
+            </div>
+            <input type="range" id="hiddenSize" min="2" max="10" step="1" value="4">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="testing" class="tab-content">
+      <div class="controls">
+        <div class="section">
+          <h3>Test Input</h3>
+          <label>Input 1:</label>
+          <input type="number" id="input1" step="0.1" value="0" style="width: 80px;">
+          <label>Input 2:</label>
+          <input type="number" id="input2" step="0.1" value="0" style="width: 80px;">
+          <button onclick="predict()">Predict</button>
+          <div id="predictionResult" class="status info" style="display: none;"></div>
+        </div>
+        
+        <div class="section">
+          <h3>Test All Data</h3>
+          <button onclick="testAllData()">Test All Training Data</button>
+          <div id="testResults" style="margin-top: 10px;"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="data" class="tab-content">
+      <div class="controls">
+        <div class="section">
+          <h3>Dataset</h3>
+          <select id="datasetSelect">
+            <option value="xor">XOR Logic Gate</option>
+            <option value="and">AND Logic Gate</option>
+            <option value="or">OR Logic Gate</option>
+          </select>
+          <button onclick="loadPresetData()">Load Dataset</button>
+          <div style="margin-top: 10px;">
+            <div>Total samples: <span id="datasetSize">0</span></div>
+            <div>Training data loaded: <span id="dataStatus">None</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-value" id="epoch">0</div>
+        <div>Epoch</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="error">0.000</div>
+        <div>Loss</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="prediction">-</div>
+        <div>Prediction</div>
+      </div>
+    </div>
+    
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    // Simple Neural Network
+    class NeuralNetwork {
+      constructor(inputSize, hiddenSize, outputSize) {
+        this.inputSize = inputSize;
+        this.hiddenSize = hiddenSize;
+        this.outputSize = outputSize;
+        this.learningRate = 0.1;
+        
+        this.initializeWeights();
+      }
+      
+      initializeWeights() {
+        this.weightsIH = this.randomMatrix(this.hiddenSize, this.inputSize);
+        this.weightsHO = this.randomMatrix(this.outputSize, this.hiddenSize);
+        this.biasH = this.randomArray(this.hiddenSize);
+        this.biasO = this.randomArray(this.outputSize);
+      }
+      
+      randomMatrix(rows, cols) {
+        return Array.from({length: rows}, () => 
+          Array.from({length: cols}, () => Math.random() * 2 - 1));
+      }
+      
+      randomArray(size) {
+        return Array.from({length: size}, () => Math.random() * 2 - 1);
+      }
+      
+      sigmoid(x) {
+        return 1 / (1 + Math.exp(-Math.max(-500, Math.min(500, x))));
+      }
+      
+      dsigmoid(x) {
+        return x * (1 - x);
+      }
+      
+      predict(inputs) {
+        let hidden = new Array(this.hiddenSize);
+        for (let i = 0; i < this.hiddenSize; i++) {
+          let sum = this.biasH[i];
+          for (let j = 0; j < this.inputSize; j++) {
+            sum += this.weightsIH[i][j] * inputs[j];
+          }
+          hidden[i] = this.sigmoid(sum);
+        }
+        
+        let outputs = new Array(this.outputSize);
+        for (let i = 0; i < this.outputSize; i++) {
+          let sum = this.biasO[i];
+          for (let j = 0; j < this.hiddenSize; j++) {
+            sum += this.weightsHO[i][j] * hidden[j];
+          }
+          outputs[i] = this.sigmoid(sum);
+        }
+        
+        return { inputs, hidden, outputs };
+      }
+      
+      train(inputs, targets) {
+        let result = this.predict(inputs);
+        let { hidden, outputs } = result;
+        
+        // Calculate output errors
+        let outputErrors = [];
+        for (let i = 0; i < this.outputSize; i++) {
+          outputErrors[i] = targets[i] - outputs[i];
+        }
+        
+        // Calculate hidden errors
+        let hiddenErrors = new Array(this.hiddenSize);
+        for (let i = 0; i < this.hiddenSize; i++) {
+          let error = 0;
+          for (let j = 0; j < this.outputSize; j++) {
+            error += outputErrors[j] * this.weightsHO[j][i];
+          }
+          hiddenErrors[i] = error;
+        }
+        
+        // Update weights
+        for (let i = 0; i < this.outputSize; i++) {
+          for (let j = 0; j < this.hiddenSize; j++) {
+            this.weightsHO[i][j] += this.learningRate * outputErrors[i] * this.dsigmoid(outputs[i]) * hidden[j];
+          }
+          this.biasO[i] += this.learningRate * outputErrors[i] * this.dsigmoid(outputs[i]);
+        }
+        
+        for (let i = 0; i < this.hiddenSize; i++) {
+          for (let j = 0; j < this.inputSize; j++) {
+            this.weightsIH[i][j] += this.learningRate * hiddenErrors[i] * this.dsigmoid(hidden[i]) * inputs[j];
+          }
+          this.biasH[i] += this.learningRate * hiddenErrors[i] * this.dsigmoid(hidden[i]);
+        }
+        
+        // Calculate loss
+        let loss = 0;
+        for (let i = 0; i < this.outputSize; i++) {
+          loss += Math.pow(targets[i] - outputs[i], 2);
+        }
+        
+        return { loss: loss / this.outputSize, result };
+      }
+    }
+    
+    // Global variables
+    let network;
+    let trainingData = [];
+    let isTraining = false;
+    let trainingInterval;
+    let currentEpoch = 0;
+    let lossHistory = [];
+    let accuracyHistory = [];
+    let bestAccuracy = 0;
+    
+    // Canvas contexts
+    let networkCanvas = document.getElementById('networkCanvas');
+    let networkCtx = networkCanvas.getContext('2d');
+    let lossCanvas = document.getElementById('lossCanvas');
+    let lossCtx = lossCanvas.getContext('2d');
+    
+    // Datasets
+    const DATASETS = {
+      xor: [
+        { input: [0, 0], target: [0] },
+        { input: [0, 1], target: [1] },
+        { input: [1, 0], target: [1] },
+        { input: [1, 1], target: [0] }
+      ],
+      and: [
+        { input: [0, 0], target: [0] },
+        { input: [0, 1], target: [0] },
+        { input: [1, 0], target: [0] },
+        { input: [1, 1], target: [1] }
+      ],
+      or: [
+        { input: [0, 0], target: [0] },
+        { input: [0, 1], target: [1] },
+        { input: [1, 0], target: [1] },
+        { input: [1, 1], target: [1] }
+      ]
+    };
+    
+    // Initialize
+    function init() {
+      network = new NeuralNetwork(2, 4, 1);
+      loadPresetData();
+      updateSliderValues();
+      drawNetwork();
+      updateStatus('Network initialized');
+    }
+    
+    function updateSliderValues() {
+      document.getElementById('speedValue').textContent = document.getElementById('trainingSpeed').value + 'ms';
+      document.getElementById('lrValue').textContent = document.getElementById('learningRate').value;
+      document.getElementById('hiddenSizeValue').textContent = document.getElementById('hiddenSize').value;
+      
+      // Update network parameters
+      network.learningRate = parseFloat(document.getElementById('learningRate').value);
+    }
+    
+    function loadPresetData() {
+      let selectedDataset = document.getElementById('datasetSelect').value;
+      trainingData = DATASETS[selectedDataset];
+      document.getElementById('datasetSize').textContent = trainingData.length;
+      document.getElementById('dataStatus').textContent = selectedDataset.toUpperCase();
+      updateStatus('Dataset loaded: ' + selectedDataset.toUpperCase());
+    }
+    
+    function resetNetwork() {
+      if (isTraining) toggleTraining();
+      
+      let hiddenSize = parseInt(document.getElementById('hiddenSize').value);
+      network = new NeuralNetwork(2, hiddenSize, 1);
+      currentEpoch = 0;
+      lossHistory = [];
+      accuracyHistory = [];
+      bestAccuracy = 0;
+      
+      updateDisplay();
+      drawNetwork();
+      drawLossChart();
+      updateStatus('Network reset');
+    }
+    
+    function toggleTraining() {
+      isTraining = !isTraining;
+      let btn = document.getElementById('trainBtn');
+      
+      if (isTraining) {
+        btn.textContent = 'Stop Training';
+        btn.className = 'stop';
+        startTraining();
+      } else {
+        btn.textContent = 'Start Training';
+        btn.className = '';
+        stopTraining();
+      }
+    }
+    
+    function startTraining() {
+      let speed = parseInt(document.getElementById('trainingSpeed').value);
+      trainingInterval = setInterval(() => {
+        trainOneEpoch();
+      }, speed);
+    }
+    
+    function stopTraining() {
+      if (trainingInterval) {
+        clearInterval(trainingInterval);
+        trainingInterval = null;
+      }
+    }
+    
+    function trainOneEpoch() {
+      if (trainingData.length === 0) {
+        updateStatus('No training data loaded', 'error');
+        return;
+      }
+      
+      let totalLoss = 0;
+      let correct = 0;
+      
+      for (let data of trainingData) {
+        let result = network.train(data.input, data.target);
+        totalLoss += result.loss;
+        
+        // Check accuracy
+        let predicted = result.result.outputs[0] > 0.5 ? 1 : 0;
+        let actual = data.target[0];
+        if (predicted === actual) correct++;
+      }
+      
+      currentEpoch++;
+      let avgLoss = totalLoss / trainingData.length;
+      let accuracy = (correct / trainingData.length) * 100;
+      
+      lossHistory.push(avgLoss);
+      accuracyHistory.push(accuracy);
+      
+      if (accuracy > bestAccuracy) {
+        bestAccuracy = accuracy;
+      }
+      
+      updateDisplay();
+      drawNetwork();
+      drawLossChart();
+      
+      if (currentEpoch % 10 === 0) {
+        updateStatus(`Epoch ${currentEpoch}: Loss ${avgLoss.toFixed(4)}, Accuracy ${accuracy.toFixed(1)}%`);
+      }
+    }
+    
+    function predict() {
+      let input1 = parseFloat(document.getElementById('input1').value);
+      let input2 = parseFloat(document.getElementById('input2').value);
+      
+      let result = network.predict([input1, input2]);
+      let output = result.outputs[0];
+      let prediction = output > 0.5 ? 1 : 0;
+      
+      document.getElementById('predictionResult').style.display = 'block';
+      document.getElementById('predictionResult').innerHTML = 
+        `Input: [${input1}, ${input2}]<br>Output: ${output.toFixed(3)}<br>Prediction: ${prediction}`;
+      
+      document.getElementById('prediction').textContent = prediction;
+    }
+    
+    function testAllData() {
+      if (trainingData.length === 0) {
+        updateStatus('No training data loaded', 'error');
+        return;
+      }
+      
+      let results = [];
+      let correct = 0;
+      
+      for (let data of trainingData) {
+        let result = network.predict(data.input);
+        let output = result.outputs[0];
+        let predicted = output > 0.5 ? 1 : 0;
+        let actual = data.target[0];
+        let isCorrect = predicted === actual;
+        
+        if (isCorrect) correct++;
+        
+        results.push({
+          input: data.input,
+          predicted: predicted,
+          actual: actual,
+          output: output,
+          correct: isCorrect
+        });
+      }
+      
+      let accuracy = (correct / trainingData.length) * 100;
+      
+      let html = `<h4>Test Results (${accuracy.toFixed(1)}% accuracy)</h4>`;
+      for (let r of results) {
+        let status = r.correct ? 'correct' : 'incorrect';
+        html += `<div style="margin: 5px 0; padding: 5px; background: ${r.correct ? '#e8f5e8' : '#ffebee'}; border-radius: 3px;">
+          [${r.input.join(', ')}] → ${r.predicted} (${r.output.toFixed(3)}) | Expected: ${r.actual} | ${status}
+        </div>`;
+      }
+      
+      document.getElementById('testResults').innerHTML = html;
+    }
+    
+    function updateDisplay() {
+      document.getElementById('epoch').textContent = currentEpoch;
+      document.getElementById('error').textContent = lossHistory.length > 0 ? lossHistory[lossHistory.length - 1].toFixed(3) : '0.000';
+      document.getElementById('currentAccuracy').textContent = accuracyHistory.length > 0 ? accuracyHistory[accuracyHistory.length - 1].toFixed(1) + '%' : '0%';
+      document.getElementById('bestAccuracy').textContent = bestAccuracy.toFixed(1) + '%';
+    }
+    
+    function drawNetwork() {
+      networkCtx.clearRect(0, 0, networkCanvas.width, networkCanvas.height);
+      
+      if (!network) return;
+      
+      let layerPositions = [
+        { x: 50, y: networkCanvas.height / 2, nodes: network.inputSize },
+        { x: networkCanvas.width / 2, y: networkCanvas.height / 2, nodes: network.hiddenSize },
+        { x: networkCanvas.width - 50, y: networkCanvas.height / 2, nodes: network.outputSize }
+      ];
+      
+      // Draw connections
+      networkCtx.strokeStyle = '#ccc';
+      networkCtx.lineWidth = 1;
+      
+      // Input to hidden
+      for (let i = 0; i < network.inputSize; i++) {
+        for (let j = 0; j < network.hiddenSize; j++) {
+          let weight = network.weightsIH[j][i];
+          let thickness = Math.abs(weight) * 3;
+          networkCtx.lineWidth = Math.max(0.5, thickness);
+          networkCtx.strokeStyle = weight > 0 ? '#4CAF50' : '#f44336';
+          
+          let startY = layerPositions[0].y + (i - (network.inputSize - 1) / 2) * 40;
+          let endY = layerPositions[1].y + (j - (network.hiddenSize - 1) / 2) * 30;
+          
+          networkCtx.beginPath();
+          networkCtx.moveTo(layerPositions[0].x, startY);
+          networkCtx.lineTo(layerPositions[1].x, endY);
+          networkCtx.stroke();
+        }
+      }
+      
+      // Hidden to output
+      for (let i = 0; i < network.hiddenSize; i++) {
+        for (let j = 0; j < network.outputSize; j++) {
+          let weight = network.weightsHO[j][i];
+          let thickness = Math.abs(weight) * 3;
+          networkCtx.lineWidth = Math.max(0.5, thickness);
+          networkCtx.strokeStyle = weight > 0 ? '#4CAF50' : '#f44336';
+          
+          let startY = layerPositions[1].y + (i - (network.hiddenSize - 1) / 2) * 30;
+          let endY = layerPositions[2].y;
+          
+          networkCtx.beginPath();
+          networkCtx.moveTo(layerPositions[1].x, startY);
+          networkCtx.lineTo(layerPositions[2].x, endY);
+          networkCtx.stroke();
+        }
+      }
+      
+      // Draw nodes
+      for (let layer = 0; layer < layerPositions.length; layer++) {
+        let nodeCount = layerPositions[layer].nodes;
+        for (let i = 0; i < nodeCount; i++) {
+          let x = layerPositions[layer].x;
+          let y = layerPositions[layer].y + (i - (nodeCount - 1) / 2) * (layer === 1 ? 30 : 40);
+          
+          // Node circle
+          networkCtx.fillStyle = '#007cba';
+          networkCtx.beginPath();
+          networkCtx.arc(x, y, 15, 0, 2 * Math.PI);
+          networkCtx.fill();
+          
+          // Node label
+          networkCtx.fillStyle = 'white';
+          networkCtx.font = '12px Arial';
+          networkCtx.textAlign = 'center';
+          networkCtx.fillText(i + 1, x, y + 4);
+        }
+      }
+    }
+    
+    function drawLossChart() {
+      lossCtx.clearRect(0, 0, lossCanvas.width, lossCanvas.height);
+      
+      if (lossHistory.length === 0) return;
+      
+      let maxLoss = Math.max(...lossHistory);
+      let minLoss = Math.min(...lossHistory);
+      let range = maxLoss - minLoss || 1;
+      
+      lossCtx.strokeStyle = '#007cba';
+      lossCtx.lineWidth = 2;
+      lossCtx.beginPath();
+      
+      for (let i = 0; i < lossHistory.length; i++) {
+        let x = (i / (lossHistory.length - 1)) * (lossCanvas.width - 20) + 10;
+        let y = lossCanvas.height - 10 - ((lossHistory[i] - minLoss) / range) * (lossCanvas.height - 20);
+        
+        if (i === 0) {
+          lossCtx.moveTo(x, y);
+        } else {
+          lossCtx.lineTo(x, y);
+        }
+      }
+      
+      lossCtx.stroke();
+      
+      // Draw labels
+      lossCtx.fillStyle = '#333';
+      lossCtx.font = '12px Arial';
+      lossCtx.textAlign = 'left';
+      lossCtx.fillText('Loss: ' + (lossHistory[lossHistory.length - 1] || 0).toFixed(3), 10, 20);
+      lossCtx.fillText('Epoch: ' + currentEpoch, 10, 35);
+    }
+    
+    function showTab(tabName) {
+      // Hide all tabs
+      let tabs = document.querySelectorAll('.tab-content');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      
+      let tabButtons = document.querySelectorAll('.tab');
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      
+      // Show selected tab
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+    }
+    
+    function updateStatus(message, type = 'info') {
+      let statusDiv = document.getElementById('status');
+      statusDiv.textContent = message;
+      statusDiv.className = 'status ' + type;
+      
+      setTimeout(() => {
+        statusDiv.textContent = '';
+        statusDiv.className = 'status';
+      }, 3000);
+    }
+    
+    // Event listeners
+    document.getElementById('trainingSpeed').addEventListener('input', updateSliderValues);
+    document.getElementById('learningRate').addEventListener('input', updateSliderValues);
+    document.getElementById('hiddenSize').addEventListener('input', updateSliderValues);
+    
+    // .. on load
+    init();
+  </script>
+</body>
+</html>
