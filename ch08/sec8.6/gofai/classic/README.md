@@ -19,10 +19,11 @@ explicit if-then conditions; the engine fires applicable rules from the current 
 until no new conclusions can be drawn. This is *data-driven* reasoning: start from what
 is known, derive what follows.
 
-Forward chaining is one of two directions. The other--backward chaining, starting from
-a goal and working back to the supporting facts--is goal-directed and more efficient
-when most conclusions are irrelevant to the question at hand. Prolog uses backward
-chaining as its operational semantics.
+Forward chaining is one of two directions. The other is demonstrated in `backward.py`:
+starting from a goal and working back to the supporting facts--goal-directed and more
+efficient when most conclusions are irrelevant to the question at hand. Prolog uses
+backward chaining as its operational semantics, and `backward.py` implements exactly
+that: SLD resolution over Horn clauses with full backtracking via generators.
 
 
 ### State Space Search -- `eight.py`
@@ -56,3 +57,16 @@ steps--visible in real time.
 CSPs are among the most practical GOFAI techniques still in daily use: scheduling,
 configuration, resource allocation, and planning all reduce to constraint satisfaction
 at some level.
+
+
+### Planning -- `planning.py`
+
+A STRIPS-style forward-state-space planner on the blocks world. STRIPS (Fikes &
+Nilsson, 1971) represents actions with three components: *preconditions* (what must
+hold for the action to apply), an *add list* (what becomes true), and a *delete list*
+(what ceases to hold). Everything not mentioned is assumed unchanged--the *frame
+assumption*, which is GOFAI's simplest answer to the frame problem.
+
+The planner uses BFS over the state space to find a shortest action sequence from
+an initial configuration to a goal. Three scenarios are demonstrated: building a
+tower from scratch, rearranging a partial stack, and reversing a complete stack.
