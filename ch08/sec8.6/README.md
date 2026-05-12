@@ -1,7 +1,7 @@
 
 ## What is Machine Learning (ML)?
 
-The story of machine learning (ML) in AI begins as a divergence from what is often called [GOFAI](./../gofai/)
+The story of machine learning (ML) in AI begins as a divergence from what is often called [GOFAI](./gofai/)
 (Good Old-Fashioned Artificial Intelligence), which dominated from the 1950s through the 1980s. GOFAI relied
 on symbolic reasoning, logic, and handcrafted rules to simulate intelligent behaviour. Researchers built expert
 systems and used formal languages to model human reasoning. These systems worked well in constrained domains
