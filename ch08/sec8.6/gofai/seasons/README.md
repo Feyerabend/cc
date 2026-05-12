@@ -275,11 +275,11 @@ to be more efficient than previously known methods." Lars Svenonius review on "H
 
 By the late 1980s and early 1990s, dissatisfaction with the limitations of the strictly logical, rule-based paradigm
 of traditional AI—often referred to as "Good Old-Fashioned AI" ([GOFAI](../README.md))--led researchers to explore
-alternative approaches. One such line of inquiry was [non-monotonic reasoning](./NONMONOTONIC.md), which attempted
+alternative approaches. One such line of inquiry was non-monotonic reasoning, which attempted
 to better model human-like commonsense inference by allowing conclusions to be withdrawn in light of new information,
 a capability missing from classical logic.
 
-In parallel, a revival of interest occurred in [connectionism](./LINDSTROM.md), particularly in neural networks, which
+In parallel, a revival of interest occurred in connectionism, particularly in neural networks, which
 had largely been set aside after the limitations of single-layer perceptrons were highlighted in the late 1960s. Key
 to this revival was the rediscovery and popularisation of *backpropagation* as a viable method for training multi-layer
 neural networks. This work--especially the influential 1986 paper[^34] by Rumelhart, Hinton, and Williams--provided a new
@@ -289,7 +289,7 @@ This period marked the beginning of what would eventually grow into modern machi
 data-driven models, statistical inference, and learning from experience, rather than relying solely on handcrafted
 rules and logic.
 
-The limitations of early neural networks starting from 1957, particularly exposed by the [XOR](./XOR.md) problem
+The limitations of early neural networks starting from 1957, particularly exposed by the XOR problem
 in 1969, led to significant pushback in the 1970s. At the time, single-layer perceptrons were shown to be incapable
 of solving even simple non-linearly separable problems, as highlighted in Minsky and Papert’s influential 1969 book
 *Perceptrons*[^35]. This contributed to a period of disillusionment and reduced funding for connectionist approaches.
