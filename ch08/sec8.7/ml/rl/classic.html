@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pong - Classic AI</title>
+  <style>
+    canvas { background: #000; display: block; margin: auto; }
+    #info { width: 400px; margin: 10px auto; display: block; font-family: monospace; }
+  </style>
+</head>
+<body>
+<canvas id="game" width="400" height="300"></canvas>
+<textarea id="info" rows="6" readonly></textarea>
+
+<!--
+    reaction delay: 0-2 frames
+    precision factor: 8-12 pixels
+    5% chance to move in wrong direction
+    AI reacts 80% of the time
+    ball prediction: 3 frames ahead
+-->
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const info = document.getElementById("info");
+
+const W = canvas.width;
+const H = canvas.height;
+const PADDLE_WIDTH = 60;
+const PADDLE_HEIGHT = 10;
+const BALL_SIZE = 8;
+
+let paddle = { x: W / 2 - PADDLE_WIDTH / 2, y: H - 20 };
+let ball = { x: W / 2, y: H / 2, vx: 2, vy: -2 };
+
+let bounces = 0;
+let misses = 0;
+let aiReactionDelay = 0;
+
+function reset() {
+  ball.x = W / 2;
+  ball.y = H / 2;
+  ball.vx = Math.random() < 0.5 ? -2 : 2;
+  ball.vy = -2;
+  aiReactionDelay = Math.floor(Math.random() * 3);
+}
+
+function aiClassicMove() {
+  // react 80% of the time (simulates human delay)
+  if (aiReactionDelay > 0) {
+    aiReactionDelay--;
+    return 0;
+  }
+  
+  // reset delay randomly (between 0-2 frames)
+  aiReactionDelay = Math.random() < 0.2 ? Math.floor(Math.random() * 2) : 0;
+  
+  const center = paddle.x + PADDLE_WIDTH / 2;
+  const ballFutureX = ball.x + (ball.vx * 3); // slightly predict ball position
+  
+  // random variation
+  const precisionFactor = 8 + Math.random() * 4; // precision 8-12 pixels
+ 
+  // 5% chance to move wrong direction
+  if (Math.random() < 0.05) {
+    return center < W/2 ? 2 : -2;
+  }
+  
+  // Normal tracking with medium precision
+  if (center < ballFutureX - precisionFactor) return 2;
+  if (center > ballFutureX + precisionFactor) return -2;
+  return 0;
+}
+
+function gameStep() {
+  // "AI" controls the paddle
+  let action = aiClassicMove();
+  paddle.x += action;
+  paddle.x = Math.max(0, Math.min(W - PADDLE_WIDTH, paddle.x));
+
+  // Update ball position
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  // Ball collision with walls
+  if (ball.x < 0 || ball.x > W - BALL_SIZE) ball.vx *= -1;
+  if (ball.y < 0) ball.vy *= -1;
+
+  // Ball collision with paddle
+  if (
+    ball.y + BALL_SIZE >= paddle.y &&
+    ball.y + BALL_SIZE <= paddle.y + PADDLE_HEIGHT &&
+    ball.x + BALL_SIZE >= paddle.x &&
+    ball.x <= paddle.x + PADDLE_WIDTH
+  ) {
+    ball.y = paddle.y - BALL_SIZE;
+    ball.vy *= -1;
+    bounces++;
+  } 
+  // Ball missed paddle
+  else if (ball.y > H) {
+    misses++;
+    reset();
+  }
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "white";
+  ctx.fillRect(paddle.x, paddle.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+  ctx.fillRect(ball.x, ball.y, BALL_SIZE, BALL_SIZE);
+}
+
+function updateInfo() {
+  info.value = `Balanced Classic AI\nBounces: ${bounces}\nMisses: ${misses}\nDifficulty: Medium`;
+}
+
+function loop() {
+  gameStep();
+  render();
+  updateInfo();
+  requestAnimationFrame(loop);
+}
+
+reset();
+loop();
+</script>
+</body>
+</html>
+

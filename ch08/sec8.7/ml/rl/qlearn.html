@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>RL Pong</title>
+  <style>
+    canvas { background: #000; display: block; margin: auto; }
+    #info { width: 400px; margin: 10px auto; display: block; font-family: monospace; }
+    #controls { text-align: center; margin-top: 10px; }
+  </style>
+</head>
+<body>
+<canvas id="game" width="400" height="300"></canvas>
+<textarea id="info" rows="6" readonly></textarea>
+<div id="controls">
+  <!--
+  <button onclick="saveQ()">Save Q-table</button>
+  <button onclick="loadQ()">Load Q-table</button>
+  <button onclick="clearQ()">Clear Q-table</button>
+  -->
+</div>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const info = document.getElementById("info");
+
+const W = canvas.width;
+const H = canvas.height;
+const PADDLE_WIDTH = 60;
+const PADDLE_HEIGHT = 10;
+const BALL_SIZE = 8;
+
+let paddle = { x: W / 2 - PADDLE_WIDTH / 2, y: H - 20 };
+let ball = { x: W / 2, y: H / 2, vx: 2, vy: -2 };
+const ACTIONS = [-2, 0, 2];
+
+const BINS = 12;
+function bin(val, max) {
+  return Math.floor(BINS * val / max);
+}
+
+function getState() {
+  return [
+    bin(paddle.x, W - PADDLE_WIDTH),
+    bin(ball.x, W),
+    bin(ball.y, H),
+    ball.vx > 0 ? 1 : 0,
+    ball.vy > 0 ? 1 : 0
+  ].join(",");
+}
+
+let Q = {};
+let alpha = 0.1;
+let gamma = 0.95;
+let epsilon = 0.1;
+
+let totalReward = 0;
+let bounces = 0;
+let misses = 0;
+let episode = 0;
+
+function chooseAction(state) {
+  if (Math.random() < epsilon) return ACTIONS[Math.floor(Math.random() * 3)];
+  let qvals = ACTIONS.map(a => Q[state + "," + a] || 0);
+  return ACTIONS[qvals.indexOf(Math.max(...qvals))];
+}
+
+function updateQ(s, a, r, s2) {
+  let key = s + "," + a;
+  let maxQ = Math.max(...ACTIONS.map(a2 => Q[s2 + "," + a2] || 0));
+  Q[key] = (1 - alpha) * (Q[key] || 0) + alpha * (r + gamma * maxQ);
+}
+
+function reset() {
+  ball.x = W / 2;
+  ball.y = H / 2;
+  ball.vx = Math.random() < 0.5 ? -2 : 2;
+  ball.vy = -2;
+  episode++;
+}
+
+function gameStep() {
+  let s = getState();
+  let action = chooseAction(s);
+  paddle.x += action;
+  paddle.x = Math.max(0, Math.min(W - PADDLE_WIDTH, paddle.x));
+
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  if (ball.x < 0 || ball.x > W - BALL_SIZE) ball.vx *= -1;
+  if (ball.y < 0) ball.vy *= -1;
+
+  let reward = 0;
+  let done = false;
+
+  if (
+    ball.y + BALL_SIZE >= paddle.y &&
+    ball.y + BALL_SIZE <= paddle.y + PADDLE_HEIGHT &&
+    ball.x + BALL_SIZE >= paddle.x &&
+    ball.x <= paddle.x + PADDLE_WIDTH
+  ) {
+    // The ball can not bounce upward from below the paddle.
+    // This ensures the agent doesn’t learn to exploit bouncing
+    // from underneath. This examplify the concept of "reward shaping".
+    // If the ball is below the paddle, we reset its position.
+    ball.y = paddle.y - BALL_SIZE; // Prevent bouncing from underneath
+    ball.vy *= -1;
+    reward = 1;
+    totalReward += reward;
+    bounces++;
+  } else if (ball.y > H) {
+    reward = -1;
+    totalReward += reward;
+    misses++;
+    reset();
+    done = true;
+  }
+
+  let s2 = getState();
+  updateQ(s, action, reward, s2);
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "white";
+  ctx.fillRect(paddle.x, paddle.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+  ctx.fillRect(ball.x, ball.y, BALL_SIZE, BALL_SIZE);
+}
+
+function updateInfo() {
+  info.value = `Episode: ${episode}\nBounces: ${bounces}\nMisses: ${misses}\nTotal Reward: ${totalReward}\nQ-table size: ${Object.keys(Q).length}`;
+}
+
+function loop() {
+  for (let i = 0; i < 10; i++) gameStep();
+  render();
+  updateInfo();
+  requestAnimationFrame(loop);
+}
+
+function saveQ() {
+  localStorage.setItem("Q_table", JSON.stringify(Q));
+}
+
+function loadQ() {
+  let raw = localStorage.getItem("Q_table");
+  if (raw) Q = JSON.parse(raw);
+}
+
+function clearQ() {
+  Q = {};
+  localStorage.removeItem("Q_table");
+}
+
+reset();
+loop();
+</script>
+</body>
+</html>

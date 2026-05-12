@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>KNN CSV Visualiser</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    svg { border: 1px solid #ccc; margin-top: 1em; }
+    circle.predicted { fill-opacity: 0.2; stroke: black; stroke-width: 1; }
+  </style>
+</head>
+<body>
+  <h2>KNN CSV Visualizer</h2>
+  <input type="file" id="fileInput" accept=".csv">
+  <svg width="500" height="500"></svg>
+
+  <script>
+    const width = 500;
+    const height = 500;
+    const svg = d3.select("svg");
+
+    const xScale = d3.scaleLinear().domain([0, 200]).range([0, width]);
+    const yScale = d3.scaleLinear().domain([0, 200]).range([height, 0]);
+
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const parsed = d3.csvParse(text);
+
+        svg.selectAll("*").remove(); // clear previous data
+
+        svg.selectAll("circle")
+          .data(parsed)
+          .enter()
+          .append("circle")
+          .attr("cx", d => xScale(+d.x))
+          .attr("cy", d => yScale(+d.y))
+          .attr("r", 5)
+          .attr("class", d => d.type.startsWith("predicted") ? "predicted" : "")
+          .attr("fill", d => {
+            if (d.type.includes("apple")) return "red";
+            if (d.type.includes("orange")) return "orange";
+            return "gray";
+          });
+      };
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html>

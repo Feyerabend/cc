@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pong - Human Game</title>
+  <style>
+    canvas { background: #000; display: block; margin: auto; }
+    #info { width: 400px; margin: 10px auto; display: block; font-family: monospace; }
+  </style>
+</head>
+<body>
+<canvas id="game" width="400" height="300"></canvas>
+<textarea id="info" rows="6" readonly></textarea>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const info = document.getElementById("info");
+
+const W = canvas.width;
+const H = canvas.height;
+const PADDLE_WIDTH = 60;
+const PADDLE_HEIGHT = 10;
+const BALL_SIZE = 8;
+
+let paddle = { x: W / 2 - PADDLE_WIDTH / 2, y: H - 20 };
+let ball = { x: W / 2, y: H / 2, vx: 2, vy: -2 };
+
+let bounces = 0;
+let misses = 0;
+
+// Human controls
+let humanLeft = false;
+let humanRight = false;
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft") humanLeft = true;
+  if (e.key === "ArrowRight") humanRight = true;
+});
+document.addEventListener("keyup", e => {
+  if (e.key === "ArrowLeft") humanLeft = false;
+  if (e.key === "ArrowRight") humanRight = false;
+});
+
+function reset() {
+  ball.x = W / 2;
+  ball.y = H / 2;
+  ball.vx = Math.random() < 0.5 ? -2 : 2;
+  ball.vy = -2;
+}
+
+function gameStep() {
+  // Handle human input
+  let action = 0;
+  if (humanLeft) action = -2;
+  else if (humanRight) action = 2;
+  
+  paddle.x += action;
+  paddle.x = Math.max(0, Math.min(W - PADDLE_WIDTH, paddle.x));
+
+  // Update ball position
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  // Ball collision with walls
+  if (ball.x < 0 || ball.x > W - BALL_SIZE) ball.vx *= -1;
+  if (ball.y < 0) ball.vy *= -1;
+
+  // Ball collision with paddle
+  if (
+    ball.y + BALL_SIZE >= paddle.y &&
+    ball.y + BALL_SIZE <= paddle.y + PADDLE_HEIGHT &&
+    ball.x + BALL_SIZE >= paddle.x &&
+    ball.x <= paddle.x + PADDLE_WIDTH
+  ) {
+    ball.y = paddle.y - BALL_SIZE;
+    ball.vy *= -1;
+    bounces++;
+  } 
+  // Ball missed paddle
+  else if (ball.y > H) {
+    misses++;
+    reset();
+  }
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "white";
+  ctx.fillRect(paddle.x, paddle.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+  ctx.fillRect(ball.x, ball.y, BALL_SIZE, BALL_SIZE);
+}
+
+function updateInfo() {
+  info.value = `Human Control\nBounces: ${bounces}\nMisses: ${misses}`;
+}
+
+function loop() {
+  gameStep();
+  render();
+  updateInfo();
+  requestAnimationFrame(loop);
+}
+
+reset();
+loop();
+</script>
+</body>
+</html>
