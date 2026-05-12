@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer Sentiment Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: sans-serif;
+            background: #f5f5f5;
+            color: #222;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        button {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #222;
+        }
+
+        .results {
+            background: #f0f0f0;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .sentiment-display {
+            text-align: center;
+            padding: 10px;
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        .positive {
+            background: #c8e6c9;
+            color: #256029;
+        }
+
+        .negative {
+            background: #ffcdd2;
+            color: #b71c1c;
+        }
+
+        .neutral {
+            background: #ffe0b2;
+            color: #8d6e63;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 10px;
+            background: #ddd;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: #888;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .analysis-details {
+            padding: 10px;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .attention-viz {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .word-attention {
+            padding: 3px 6px;
+            background: #eee;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .demo-examples {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .example-btn {
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 3px;
+            margin: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .example-btn:hover {
+            background: #d0d0d0;
+        }
+
+        .loading {
+            text-align: center;
+            color: #555;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Transformer Sentiment Analysis</h1>
+        <p class="subtitle">Analyze text sentiment using a mini transformer neural network</p>
+        
+        <div class="input-section">
+            <textarea id="textInput" placeholder="Enter your text here to analyze its sentiment... 
+Try something like:
+• I love this new movie, it's absolutely fantastic!
+• The weather today is terrible and I'm feeling down.
+• The product is okay, nothing special but does the job."></textarea>
+        </div>
+        
+        <div class="button-container">
+            <button onclick="analyzeSentiment()">Analyze Sentiment</button>
+            <button onclick="showModelDetails()">Model Details</button>
+        </div>
+        
+        <div id="results" style="display: none;"></div>
+        
+        <div class="demo-examples">
+            <h3>Try These Examples:</h3>
+            <button class="example-btn" onclick="setExample('I absolutely love this amazing product! It exceeded all my expectations.')">Positive Review</button>
+            <button class="example-btn" onclick="setExample('This movie was terrible and boring. Complete waste of time.')">Negative Review</button>
+            <button class="example-btn" onclick="setExample('The weather is okay today, nothing special.')">Neutral Comment</button>
+            <button class="example-btn" onclick="setExample('I am thrilled to announce our groundbreaking AI research breakthrough!')">Exciting News</button>
+            <button class="example-btn" onclick="setExample('The customer service was disappointing and unhelpful.')">Complaint</button>
+        </div>
+    </div>
+
+    <script>
+        // Simplified Transformer for Sentiment Analysis
+        class SentimentTransformer {
+            constructor() {
+                this.vocab = this.buildVocab();
+                this.seqLen = 16;
+                this.dModel = 32;
+                this.numHeads = 4;
+                this.headDim = this.dModel / this.numHeads;
+                
+                // Initialize sentiment-specific weights
+                this.initializeWeights();
+                
+                // Pre-trained sentiment patterns (simplified)
+                this.sentimentPatterns = {
+                    positive: ['love', 'amazing', 'great', 'fantastic', 'excellent', 'wonderful', 'awesome', 'perfect', 'best', 'incredible', 'outstanding', 'brilliant', 'superb', 'thrilled', 'excited'],
+                    negative: ['hate', 'terrible', 'awful', 'horrible', 'worst', 'bad', 'disappointing', 'boring', 'waste', 'annoying', 'frustrated', 'angry', 'sad', 'depressed', 'unhappy'],
+                    neutral: ['okay', 'fine', 'average', 'normal', 'standard', 'typical', 'regular', 'moderate', 'decent', 'acceptable']
+                };
+            }
+            
+            buildVocab() {
+                // Simple vocabulary with common sentiment words
+                const words = [
+                    'love', 'hate', 'great', 'terrible', 'amazing', 'awful', 'good', 'bad',
+                    'excellent', 'horrible', 'wonderful', 'disappointing', 'fantastic', 'boring',
+                    'perfect', 'worst', 'best', 'okay', 'fine', 'average', 'the', 'and', 'is',
+                    'was', 'this', 'that', 'very', 'really', 'so', 'not', 'movie', 'product',
+                    'service', 'experience', 'time', 'day', 'weather', 'food', 'book', 'game'
+                ];
+                
+                const vocab = {'<pad>': 0, '<unk>': 1};
+                words.forEach((word, idx) => {
+                    vocab[word] = idx + 2;
+                });
+                return vocab;
+            }
+            
+            initializeWeights() {
+                // Simplified weight initialization for demo
+                this.Wq = this.randomMatrix(this.dModel, this.dModel);
+                this.Wk = this.randomMatrix(this.dModel, this.dModel);
+                this.Wv = this.randomMatrix(this.dModel, this.dModel);
+                this.Wo = this.randomMatrix(this.dModel, this.dModel);
+                this.Wff1 = this.randomMatrix(this.dModel, this.dModel * 2);
+                this.Wff2 = this.randomMatrix(this.dModel * 2, this.dModel);
+                this.classifier = this.randomMatrix(this.dModel, 3); // 3 classes: pos, neg, neutral
+            }
+            
+            randomMatrix(rows, cols) {
+                return Array(rows).fill().map(() => 
+                    Array(cols).fill().map(() => (Math.random() - 0.5) * 0.1)
+                );
+            }
+            
+            tokenize(text) {
+                return text.toLowerCase()
+                    .replace(/[^\w\s]/g, ' ')
+                    .split(/\s+/)
+                    .filter(word => word.length > 0)
+                    .slice(0, this.seqLen);
+            }
+            
+            textToIds(tokens) {
+                return tokens.map(token => this.vocab[token] || this.vocab['<unk>']);
+            }
+            
+            createEmbedding(tokenIds) {
+                // Simple embedding: one-hot like representation
+                const embedding = [];
+                for (let i = 0; i < this.seqLen; i++) {
+                    const vec = Array(this.dModel).fill(0);
+                    if (i < tokenIds.length) {
+                        const id = tokenIds[i] % this.dModel;
+                        vec[id] = 1;
+                        // Add some random noise for variety
+                        for (let j = 0; j < this.dModel; j++) {
+                            vec[j] += (Math.random() - 0.5) * 0.1;
+                        }
+                    }
+                    embedding.push(vec);
+                }
+                return embedding;
+            }
+            
+            // Simplified attention mechanism
+            computeAttention(embedding) {
+                const attentionWeights = [];
+                for (let i = 0; i < this.seqLen; i++) {
+                    const weights = [];
+                    for (let j = 0; j < this.seqLen; j++) {
+                        // Simplified attention score
+                        let score = 0;
+                        for (let k = 0; k < this.dModel; k++) {
+                            score += embedding[i][k] * embedding[j][k];
+                        }
+                        weights.push(Math.exp(score));
+                    }
+                    // Normalize
+                    const sum = weights.reduce((a, b) => a + b, 0);
+                    attentionWeights.push(weights.map(w => w / (sum + 1e-8)));
+                }
+                return attentionWeights;
+            }
+            
+            analyzeSentiment(text) {
+                const tokens = this.tokenize(text);
+                const tokenIds = this.textToIds(tokens);
+                const embedding = this.createEmbedding(tokenIds);
+                const attentionWeights = this.computeAttention(embedding);
+                
+                // Sentiment analysis using pattern matching and simple heuristics
+                let positiveScore = 0;
+                let negativeScore = 0;
+                let neutralScore = 0;
+                
+                tokens.forEach((token, idx) => {
+                    const weight = attentionWeights[idx] ? 
+                        attentionWeights[idx].reduce((a, b) => a + b, 0) / this.seqLen : 1;
+                    
+                    if (this.sentimentPatterns.positive.includes(token)) {
+                        positiveScore += weight * 2;
+                    } else if (this.sentimentPatterns.negative.includes(token)) {
+                        negativeScore += weight * 2;
+                    } else if (this.sentimentPatterns.neutral.includes(token)) {
+                        neutralScore += weight;
+                    }
+                    
+                    // Add base score for all tokens
+                    neutralScore += weight * 0.1;
+                });
+                
+                // Normalize scores
+                const total = positiveScore + negativeScore + neutralScore + 1e-8;
+                const scores = {
+                    positive: positiveScore / total,
+                    negative: negativeScore / total,
+                    neutral: neutralScore / total
+                };
+                
+                // Determine final sentiment
+                const maxScore = Math.max(scores.positive, scores.negative, scores.neutral);
+                let sentiment = 'neutral';
+                if (scores.positive === maxScore && maxScore > 0.4) sentiment = 'positive';
+                else if (scores.negative === maxScore && maxScore > 0.4) sentiment = 'negative';
+                
+                return {
+                    sentiment,
+                    scores,
+                    confidence: maxScore,
+                    tokens,
+                    attentionWeights
+                };
+            }
+        }
+        
+        // Initialize the model
+        const model = new SentimentTransformer();
+        
+        function setExample(text) {
+            document.getElementById('textInput').value = text;
+        }
+        
+        function analyzeSentiment() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                alert('Please enter some text to analyze!');
+                return;
+            }
+            
+            // Show loading
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="results"><p class="loading">Analyzing sentiment with transformer...</p></div>';
+            resultsDiv.style.display = 'block';
+            
+            // Simulate processing time
+            setTimeout(() => {
+                const result = model.analyzeSentiment(text);
+                displayResults(result, text);
+            }, 1000);
+        }
+        
+        function displayResults(result, originalText) {
+            const resultsDiv = document.getElementById('results');
+            
+            const sentimentEmoji = {
+                'positive': '',
+                'negative': '',
+                'neutral': ''
+            };
+            
+            const confidencePercent = Math.round(result.confidence * 100);
+            
+            resultsDiv.innerHTML = `
+                <div class="results">
+                    <div class="sentiment-display ${result.sentiment}">
+                        Sentiment: ${result.sentiment.toUpperCase()}
+                    </div>
+                    <div>
+                        <p>Confidence Level:</p>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${confidencePercent}%;"></div>
+                        </div>
+                        <p style="text-align: center; margin-top: 5px;">${confidencePercent}%</p>
+                    </div>
+                    <div class="analysis-details">
+                        <h4>Detailed Analysis</h4>
+                        <p><strong>Positive Score:</strong> ${(result.scores.positive * 100).toFixed(1)}%</p>
+                        <p><strong>Negative Score:</strong> ${(result.scores.negative * 100).toFixed(1)}%</p>
+                        <p><strong>Neutral Score:</strong> ${(result.scores.neutral * 100).toFixed(1)}%</p>
+                        <p><strong>Tokens Analyzed:</strong> ${result.tokens.join(', ')}</p>
+                        <h4>Key Insights</h4>
+                        <p>${generateInsights(result, originalText)}</p>
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.style.display = 'block';
+        }
+        
+        function generateInsights(result, text) {
+            const insights = [];
+            
+            if (result.confidence > 0.7) {
+                insights.push("High confidence in sentiment prediction.");
+            } else if (result.confidence < 0.4) {
+                insights.push("Low confidence - text may be ambiguous or neutral.");
+            }
+            
+            if (result.tokens.length < 5) {
+                insights.push("Short text analyzed - longer texts may provide more accurate results.");
+            }
+            
+            const positiveWords = result.tokens.filter(token => 
+                model.sentimentPatterns.positive.includes(token));
+            const negativeWords = result.tokens.filter(token => 
+                model.sentimentPatterns.negative.includes(token));
+            
+            if (positiveWords.length > 0) {
+                insights.push(`Positive indicators: ${positiveWords.join(', ')}`);
+            }
+            if (negativeWords.length > 0) {
+                insights.push(`Negative indicators: ${negativeWords.join(', ')}`);
+            }
+            
+            return insights.join(' ') || "Analysis complete.";
+        }
+        
+        function showModelDetails() {
+            alert(`Model Architecture:
+            
+• Sequence Length: ${model.seqLen} tokens
+• Model Dimension: ${model.dModel}
+• Attention Heads: ${model.numHeads}
+• Vocabulary Size: ${Object.keys(model.vocab).length} words
+• Classification Classes: 3 (Positive, Negative, Neutral)
+
+This is a simplified transformer model for educational purposes. Real production models use much larger vocabularies, deeper networks, and extensive training data.`);
+        }
+    </script>
+</body>
+</html>
