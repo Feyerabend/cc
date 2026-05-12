@@ -93,10 +93,10 @@ tools within symbolic AI.
 
 Between the late 1950s and the mid-1970s, AI made major strides in areas such as
 search, planning, pattern recognition, and learning.[^29] In parallel, an alternative
-path developed with the [perceptron](./../../../ch02/perceptron/), an early form of
+path developed with the perceptron, an early form of
 neural network, which was, however, criticised by, among others, Marvin Minsky.  
 
-The theoretical [limitations](./../../limits/) of symbolic AI were well known among
+The theoretical limitations of symbolic AI were well known among
 researchers. Many, but not all, mathematical theories can be expressed in
 first-order predicate logic and automated. A theory needs to be "decidable"
 (*Entscheidung*)[^27] for an algorithm to be able to prove all its theorems,
