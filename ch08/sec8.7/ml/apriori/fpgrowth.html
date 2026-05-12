@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FP-Growth Algorithm Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 10px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        .header {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 1em;
+            color: #666;
+        }
+
+        .controls {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-group label {
+            font-weight: normal;
+            min-width: 100px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .support-value {
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .visualization {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .section {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        .section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .transactions {
+            display: grid;
+            gap: 10px;
+        }
+
+        .transaction {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            padding: 8px;
+        }
+
+        .transaction-id {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 3px;
+            font-size: 0.9em;
+        }
+
+        .items {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .item {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+
+        .sorted-items {
+            display: grid;
+            gap: 5px;
+        }
+
+        .sorted-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #e9f7ef;
+            border: 1px solid #28a745;
+            border-radius: 3px;
+            padding: 5px 8px;
+            font-size: 0.9em;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #155724;
+        }
+
+        .item-count {
+            background: #28a745;
+            color: white;
+            padding: 1px 6px;
+            border-radius: 2px;
+            font-size: 0.8em;
+        }
+
+        .fp-tree {
+            font-family: monospace;
+            font-size: 0.85em;
+            line-height: 2;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+
+        .tree-node {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .tree-root {
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 3px;
+            margin-bottom: 5px;
+        }
+
+        .tree-level-1 { margin-left: 0px; color: #28a745; }
+        .tree-level-2 { margin-left: 15px; color: #17a2b8; }
+        .tree-level-3 { margin-left: 30px; color: #ffc107; }
+        .tree-level-4 { margin-left: 45px; color: #dc3545; }
+
+        .node-info {
+            display: inline-block;
+            background: rgba(255,255,255,0.8);
+            padding: 1px 4px;
+            border-radius: 2px;
+            margin-left: 5px;
+            font-size: 0.75em;
+        }
+
+        .algorithm-steps {
+            grid-column: 1 / -1;
+        }
+
+        .step {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            border-left: 3px solid #28a745;
+        }
+
+        .step h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .itemsets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
+        }
+
+        .itemset {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            padding: 8px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .itemset.frequent {
+            border-color: #28a745;
+            background: #f8fff8;
+        }
+
+        .itemset-items {
+            font-weight: bold;
+            margin-bottom: 3px;
+            color: #333;
+        }
+
+        .itemset-support {
+            color: #666;
+            font-size: 0.8em;
+        }
+
+        .frequent {
+            color: #28a745 !important;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #28a745;
+            transition: width 0.3s ease;
+        }
+
+        .performance-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .visualization {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-group label {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FP-Growth Algorithm Visualization <span class="performance-badge">Optimized</span></h1>
+            <p>Efficient frequent itemset mining using FP-Tree structure</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Minimum Support:</label>
+                <input type="range" id="supportSlider" min="0.1" max="1" step="0.1" value="0.3">
+                <span class="support-value" id="supportValue">30%</span>
+            </div>
+            <div class="control-group">
+                <button id="runAlgorithm">Run FP-Growth</button>
+                <button id="resetData">New Data</button>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <div class="section">
+                <h3>Transaction Database</h3>
+                <div id="transactionList" class="transactions"></div>
+            </div>
+
+            <div class="section">
+                <h3>Sorted Frequent Items</h3>
+                <div id="sortedItems" class="sorted-items"></div>
+            </div>
+
+            <div class="section">
+                <h3>FP-Tree Structure</h3>
+                <div><pre>
+                <span id="fpTree" class="fp-tree">
+                    Tree will be built here...
+                </pre></div>
+            </div>
+
+            <div class="section algorithm-steps">
+                <h3>Algorithm Progress</h3>
+                <div id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <p id="progressText">Ready to start</p>
+                </div>
+                <div id="algorithmSteps"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class FPNode {
+            constructor(item, count, parent = null) {
+                this.item = item;
+                this.count = count;
+                this.parent = parent;
+                this.children = new Map();
+                this.nodeLink = null;
+            }
+        }
+
+        class FPTree {
+            constructor() {
+                this.root = new FPNode(null, 0);
+                this.headerTable = new Map();
+                this.minSupport = 0;
+            }
+
+            insertTransaction(transaction, count = 1) {
+                let currentNode = this.root;
+                
+                for (const item of transaction) {
+                    if (currentNode.children.has(item)) {
+                        currentNode.children.get(item).count += count;
+                    } else {
+                        const newNode = new FPNode(item, count, currentNode);
+                        currentNode.children.set(item, newNode);
+                        
+                        // Update header table
+                        if (this.headerTable.has(item)) {
+                            let node = this.headerTable.get(item);
+                            while (node.nodeLink) {
+                                node = node.nodeLink;
+                            }
+                            node.nodeLink = newNode;
+                        } else {
+                            this.headerTable.set(item, newNode);
+                        }
+                    }
+                    currentNode = currentNode.children.get(item);
+                }
+            }
+
+            getConditionalPatternBase(item) {
+                const patterns = [];
+                let node = this.headerTable.get(item);
+                
+                while (node) {
+                    if (node.parent && node.parent.item !== null) {
+                        const path = [];
+                        let current = node.parent;
+                        while (current.item !== null) {
+                            path.unshift(current.item);
+                            current = current.parent;
+                        }
+                        if (path.length > 0) {
+                            patterns.push({ path, count: node.count });
+                        }
+                    }
+                    node = node.nodeLink;
+                }
+                
+                return patterns;
+            }
+
+            toString() {
+                const result = [];
+                result.push('ROOT');
+                this._toStringHelper(this.root, result, 0);
+                return result.join('\n');
+            }
+
+            _toStringHelper(node, result, level) {
+                for (const [item, child] of node.children) {
+                    const indent = '  '.repeat(level + 1);
+                    result.push(`${indent}├─ ${item} <span class="node-info">(${child.count})</span>`);
+                    this._toStringHelper(child, result, level + 1);
+                }
+            }
+        }
+
+        class FPGrowthVisualization {
+            constructor() {
+                this.transactions = [];
+                this.minSupport = 0.3;
+                this.allItems = ['Bread', 'Milk', 'Eggs', 'Butter', 'Cheese', 'Yogurt', 'Apples', 'Bananas', 'Rice', 'Pasta'];
+                this.frequentItemsets = [];
+                
+                this.initializeElements();
+                this.generateSampleData();
+                this.setupEventListeners();
+            }
+
+            initializeElements() {
+                this.supportSlider = document.getElementById('supportSlider');
+                this.supportValue = document.getElementById('supportValue');
+                this.runButton = document.getElementById('runAlgorithm');
+                this.resetButton = document.getElementById('resetData');
+                this.transactionList = document.getElementById('transactionList');
+                this.sortedItems = document.getElementById('sortedItems');
+                this.fpTree = document.getElementById('fpTree');
+                this.algorithmSteps = document.getElementById('algorithmSteps');
+                this.progressFill = document.getElementById('progressFill');
+                this.progressText = document.getElementById('progressText');
+            }
+
+            setupEventListeners() {
+                this.supportSlider.addEventListener('input', (e) => {
+                    this.minSupport = parseFloat(e.target.value);
+                    this.supportValue.textContent = Math.round(this.minSupport * 100) + '%';
+                });
+
+                this.runButton.addEventListener('click', () => this.runFPGrowth());
+                this.resetButton.addEventListener('click', () => this.generateSampleData());
+            }
+
+            generateSampleData() {
+                this.transactions = [];
+                const numTransactions = 12;
+
+                for (let i = 0; i < numTransactions; i++) {
+                    const numItems = Math.floor(Math.random() * 4) + 2;
+                    const transactionItems = [];
+                    const availableItems = [...this.allItems];
+
+                    for (let j = 0; j < numItems; j++) {
+                        const randomIndex = Math.floor(Math.random() * availableItems.length);
+                        transactionItems.push(availableItems.splice(randomIndex, 1)[0]);
+                    }
+
+                    this.transactions.push({
+                        id: `T${i + 1}`,
+                        items: transactionItems.sort()
+                    });
+                }
+
+                this.displayTransactions();
+                this.clearResults();
+            }
+
+            displayTransactions() {
+                this.transactionList.innerHTML = '';
+                this.transactions.forEach(transaction => {
+                    const transactionEl = document.createElement('div');
+                    transactionEl.className = 'transaction';
+                    
+                    const idEl = document.createElement('div');
+                    idEl.className = 'transaction-id';
+                    idEl.textContent = transaction.id;
+                    
+                    const itemsEl = document.createElement('div');
+                    itemsEl.className = 'items';
+                    
+                    transaction.items.forEach(item => {
+                        const itemEl = document.createElement('span');
+                        itemEl.className = 'item';
+                        itemEl.textContent = item;
+                        itemsEl.appendChild(itemEl);
+                    });
+                    
+                    transactionEl.appendChild(idEl);
+                    transactionEl.appendChild(itemsEl);
+                    this.transactionList.appendChild(transactionEl);
+                });
+            }
+
+            findFrequentItems() {
+                const itemCounts = {};
+                this.transactions.forEach(transaction => {
+                    transaction.items.forEach(item => {
+                        itemCounts[item] = (itemCounts[item] || 0) + 1;
+                    });
+                });
+
+                const minSupportCount = Math.ceil(this.minSupport * this.transactions.length);
+                const frequentItems = Object.entries(itemCounts)
+                    .filter(([item, count]) => count >= minSupportCount)
+                    .sort((a, b) => b[1] - a[1]);
+
+                return { frequentItems, itemCounts };
+            }
+
+            displaySortedItems(frequentItems) {
+                this.sortedItems.innerHTML = '';
+                frequentItems.forEach(([item, count]) => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'sorted-item';
+                    
+                    const nameEl = document.createElement('span');
+                    nameEl.className = 'item-name';
+                    nameEl.textContent = item;
+                    
+                    const countEl = document.createElement('span');
+                    countEl.className = 'item-count';
+                    countEl.textContent = count;
+                    
+                    itemEl.appendChild(nameEl);
+                    itemEl.appendChild(countEl);
+                    this.sortedItems.appendChild(itemEl);
+                });
+            }
+
+            buildFPTree(frequentItems) {
+                const tree = new FPTree();
+                const itemOrder = new Map(frequentItems.map(([item], index) => [item, index]));
+                
+                this.transactions.forEach(transaction => {
+                    const orderedItems = transaction.items
+                        .filter(item => itemOrder.has(item))
+                        .sort((a, b) => itemOrder.get(a) - itemOrder.get(b));
+                    
+                    if (orderedItems.length > 0) {
+                        tree.insertTransaction(orderedItems);
+                    }
+                });
+
+                return tree;
+            }
+
+            displayFPTree(tree) {
+                this.fpTree.innerHTML = tree.toString();
+            }
+
+            async runFPGrowth() {
+                this.runButton.disabled = true;
+                this.clearResults();
+                this.frequentItemsets = [];
+                
+                await this.updateProgress(10, "Finding frequent items...");
+                const { frequentItems, itemCounts } = this.findFrequentItems();
+                this.displaySortedItems(frequentItems);
+                
+                await this.sleep(1000);
+                await this.updateProgress(30, "Building FP-Tree...");
+                const fpTree = this.buildFPTree(frequentItems);
+                this.displayFPTree(fpTree);
+                
+                await this.sleep(1000);
+                await this.updateProgress(50, "Mining frequent itemsets...");
+                
+                // Add single frequent items as itemsets
+                frequentItems.forEach(([item, count]) => {
+                    this.frequentItemsets.push({
+                        items: [item],
+                        support: count / this.transactions.length,
+                        count: count
+                    });
+                });
+                
+                // Mine patterns from FP-Tree
+                await this.minePatterns(fpTree, [], frequentItems);
+                
+                await this.updateProgress(90, "Finalizing results...");
+                await this.displayResults();
+                await this.updateProgress(100, "FP-Growth complete!");
+                
+                this.runButton.disabled = false;
+            }
+
+            async minePatterns(tree, alpha, frequentItems) {
+                for (let i = frequentItems.length - 1; i >= 0; i--) {
+                    const [item, count] = frequentItems[i];
+                    const beta = [item, ...alpha];
+                    
+                    // Add this itemset to results
+                    if (alpha.length > 0) {
+                        this.frequentItemsets.push({
+                            items: [...beta],
+                            support: count / this.transactions.length,
+                            count: count
+                        });
+                    }
+                    
+                    // Get conditional pattern base
+                    const conditionalPatternBase = tree.getConditionalPatternBase(item);
+                    
+                    if (conditionalPatternBase.length > 0) {
+                        // Build conditional FP-tree
+                        const conditionalTree = this.buildConditionalTree(conditionalPatternBase);
+                        
+                        if (conditionalTree.headerTable.size > 0) {
+                            const conditionalFrequentItems = Array.from(conditionalTree.headerTable.entries())
+                                .map(([item, node]) => {
+                                    let totalCount = 0;
+                                    let current = node;
+                                    while (current) {
+                                        totalCount += current.count;
+                                        current = current.nodeLink;
+                                    }
+                                    return [item, totalCount];
+                                })
+                                .filter(([item, count]) => count >= Math.ceil(this.minSupport * this.transactions.length))
+                                .sort((a, b) => b[1] - a[1]);
+                            
+                            if (conditionalFrequentItems.length > 0) {
+                                await this.minePatterns(conditionalTree, beta, conditionalFrequentItems);
+                            }
+                        }
+                    }
+                }
+            }
+
+            buildConditionalTree(conditionalPatternBase) {
+                const tree = new FPTree();
+                
+                conditionalPatternBase.forEach(({ path, count }) => {
+                    if (path.length > 0) {
+                        tree.insertTransaction(path, count);
+                    }
+                });
+                
+                return tree;
+            }
+
+            async displayResults() {
+                const uniqueItemsets = this.frequentItemsets.filter((itemset, index, self) => {
+                    return index === self.findIndex(i => 
+                        i.items.length === itemset.items.length &&
+                        i.items.every((item, idx) => item === itemset.items[idx])
+                    );
+                });
+
+                uniqueItemsets.sort((a, b) => {
+                    if (a.items.length !== b.items.length) {
+                        return a.items.length - b.items.length;
+                    }
+                    return b.support - a.support;
+                });
+
+                this.displayStep("Frequent Itemsets Found", uniqueItemsets,
+                    `FP-Growth discovered ${uniqueItemsets.length} frequent itemsets efficiently without candidate generation.`);
+            }
+
+            displayStep(title, itemsets, description) {
+                const stepEl = document.createElement('div');
+                stepEl.className = 'step';
+                
+                const titleEl = document.createElement('h4');
+                titleEl.textContent = title;
+                
+                const descEl = document.createElement('p');
+                descEl.textContent = description;
+                descEl.style.marginBottom = '15px';
+                descEl.style.color = '#666';
+                
+                const itemsetsEl = document.createElement('div');
+                itemsetsEl.className = 'itemsets';
+                
+                if (itemsets.length === 0) {
+                    const emptyEl = document.createElement('div');
+                    emptyEl.textContent = 'No frequent itemsets found';
+                    emptyEl.style.textAlign = 'center';
+                    emptyEl.style.color = '#999';
+                    emptyEl.style.fontStyle = 'italic';
+                    itemsetsEl.appendChild(emptyEl);
+                } else {
+                    itemsets.forEach(itemset => {
+                        const itemsetEl = document.createElement('div');
+                        itemsetEl.className = 'itemset frequent';
+                        
+                        const itemsEl = document.createElement('div');
+                        itemsEl.className = 'itemset-items';
+                        itemsEl.textContent = `{${itemset.items.join(', ')}}`;
+                        
+                        const supportEl = document.createElement('div');
+                        supportEl.className = 'itemset-support frequent';
+                        supportEl.textContent = `Support: ${Math.round(itemset.support * 100)}% (${itemset.count}/${this.transactions.length})`;
+                        
+                        itemsetEl.appendChild(itemsEl);
+                        itemsetEl.appendChild(supportEl);
+                        itemsetsEl.appendChild(itemsetEl);
+                    });
+                }
+                
+                stepEl.appendChild(titleEl);
+                stepEl.appendChild(descEl);
+                stepEl.appendChild(itemsetsEl);
+                this.algorithmSteps.appendChild(stepEl);
+                
+                stepEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            async updateProgress(percentage, text) {
+                this.progressFill.style.width = percentage + '%';
+                this.progressText.textContent = text;
+                await this.sleep(300);
+            }
+
+            clearResults() {
+                this.algorithmSteps.innerHTML = '';
+                this.sortedItems.innerHTML = '';
+                this.fpTree.innerHTML = 'Tree will be built here...';
+                this.progressFill.style.width = '0%';
+                this.progressText.textContent = 'Ready to start';
+            }
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new FPGrowthVisualization();
+        });
+    </script>
+</body>
+</html>

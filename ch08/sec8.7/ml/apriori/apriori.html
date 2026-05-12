@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apriori Algorithm Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 10px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        .header {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 1em;
+            color: #666;
+        }
+
+        .controls {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-group label {
+            font-weight: normal;
+            min-width: 100px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .support-value {
+            background: #007bff;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .visualization {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .section {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        .section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .transactions {
+            display: grid;
+            gap: 10px;
+        }
+
+        .transaction {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            padding: 8px;
+        }
+
+        .transaction-id {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 3px;
+            font-size: 0.9em;
+        }
+
+        .items {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .item {
+            background: #007bff;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+
+        .algorithm-steps {
+            grid-column: 1 / -1;
+        }
+
+        .step {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            border-left: 3px solid #007bff;
+        }
+
+        .step h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .itemsets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
+        }
+
+        .itemset {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            padding: 8px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .itemset.frequent {
+            border-color: #28a745;
+            background: #f8fff8;
+        }
+
+        .itemset.infrequent {
+            border-color: #dc3545;
+            background: #fff8f8;
+            opacity: 0.8;
+        }
+
+        .itemset-items {
+            font-weight: bold;
+            margin-bottom: 3px;
+            color: #333;
+        }
+
+        .itemset-support {
+            color: #666;
+            font-size: 0.8em;
+        }
+
+        .frequent {
+            color: #4CAF50 !important;
+            font-weight: bold;
+        }
+
+        .infrequent {
+            color: #f44336 !important;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #007bff;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .visualization {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-group label {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Apriori Algorithm Visualization</h1>
+            <p>Discover frequent itemsets in market basket data</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Minimum Support:</label>
+                <input type="range" id="supportSlider" min="0.1" max="1" step="0.1" value="0.5">
+                <span class="support-value" id="supportValue">50%</span>
+            </div>
+            <div class="control-group">
+                <button id="runAlgorithm">Run Algorithm</button>
+                <button id="resetData">New Data</button>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <div class="section">
+                <h3>Transaction Database</h3>
+                <div id="transactionList" class="transactions"></div>
+            </div>
+
+            <div class="section">
+                <h3>Algorithm Progress</h3>
+                <div id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <p id="progressText">Ready to start</p>
+                </div>
+            </div>
+
+            <div class="section algorithm-steps">
+                <h3>Algorithm Steps</h3>
+                <div id="algorithmSteps"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AprioriVisualization {
+            constructor() {
+                this.transactions = [];
+                this.minSupport = 0.5;
+                this.allItems = ['Bread', 'Milk', 'Eggs', 'Butter', 'Cheese', 'Yogurt', 'Apples', 'Bananas'];
+                this.currentStep = 0;
+                this.totalSteps = 0;
+                
+                this.initializeElements();
+                this.generateSampleData();
+                this.setupEventListeners();
+            }
+
+            initializeElements() {
+                this.supportSlider = document.getElementById('supportSlider');
+                this.supportValue = document.getElementById('supportValue');
+                this.runButton = document.getElementById('runAlgorithm');
+                this.resetButton = document.getElementById('resetData');
+                this.transactionList = document.getElementById('transactionList');
+                this.algorithmSteps = document.getElementById('algorithmSteps');
+                this.progressFill = document.getElementById('progressFill');
+                this.progressText = document.getElementById('progressText');
+            }
+
+            setupEventListeners() {
+                this.supportSlider.addEventListener('input', (e) => {
+                    this.minSupport = parseFloat(e.target.value);
+                    this.supportValue.textContent = Math.round(this.minSupport * 100) + '%';
+                });
+
+                this.runButton.addEventListener('click', () => this.runAprioriAlgorithm());
+                this.resetButton.addEventListener('click', () => this.generateSampleData());
+            }
+
+            generateSampleData() {
+                this.transactions = [];
+                const numTransactions = 10;
+
+                for (let i = 0; i < numTransactions; i++) {
+                    const numItems = Math.floor(Math.random() * 4) + 2; // 2-5 items per transaction
+                    const transactionItems = [];
+                    const availableItems = [...this.allItems];
+
+                    for (let j = 0; j < numItems; j++) {
+                        const randomIndex = Math.floor(Math.random() * availableItems.length);
+                        transactionItems.push(availableItems.splice(randomIndex, 1)[0]);
+                    }
+
+                    this.transactions.push({
+                        id: `T${i + 1}`,
+                        items: transactionItems.sort()
+                    });
+                }
+
+                this.displayTransactions();
+                this.clearAlgorithmSteps();
+            }
+
+            displayTransactions() {
+                this.transactionList.innerHTML = '';
+                this.transactions.forEach(transaction => {
+                    const transactionEl = document.createElement('div');
+                    transactionEl.className = 'transaction';
+                    
+                    const idEl = document.createElement('div');
+                    idEl.className = 'transaction-id';
+                    idEl.textContent = transaction.id;
+                    
+                    const itemsEl = document.createElement('div');
+                    itemsEl.className = 'items';
+                    
+                    transaction.items.forEach(item => {
+                        const itemEl = document.createElement('span');
+                        itemEl.className = 'item';
+                        itemEl.textContent = item;
+                        itemsEl.appendChild(itemEl);
+                    });
+                    
+                    transactionEl.appendChild(idEl);
+                    transactionEl.appendChild(itemsEl);
+                    this.transactionList.appendChild(transactionEl);
+                });
+            }
+
+            async runAprioriAlgorithm() {
+                this.runButton.disabled = true;
+                this.clearAlgorithmSteps();
+                this.currentStep = 0;
+                this.totalSteps = 4; // Estimate
+                
+                await this.updateProgress(0, "Starting Apriori Algorithm...");
+                
+                // Step 1: Generate 1-itemsets
+                await this.sleep(1000);
+                const oneItemsets = await this.generateOneItemsets();
+                
+                // Step 2: Generate 2-itemsets
+                await this.sleep(1000);
+                const twoItemsets = await this.generateTwoItemsets(oneItemsets);
+                
+                // Step 3: Generate 3-itemsets (if any)
+                await this.sleep(1000);
+                const threeItemsets = await this.generateThreeItemsets(twoItemsets);
+                
+                // Step 4: Show final results
+                await this.sleep(1000);
+                await this.showFinalResults(oneItemsets, twoItemsets, threeItemsets);
+                
+                this.runButton.disabled = false;
+            }
+
+            async generateOneItemsets() {
+                await this.updateProgress(25, "Generating 1-itemsets...");
+                
+                const itemCounts = {};
+                this.transactions.forEach(transaction => {
+                    transaction.items.forEach(item => {
+                        itemCounts[item] = (itemCounts[item] || 0) + 1;
+                    });
+                });
+
+                const oneItemsets = Object.entries(itemCounts).map(([item, count]) => ({
+                    items: [item],
+                    support: count / this.transactions.length,
+                    count: count,
+                    frequent: (count / this.transactions.length) >= this.minSupport
+                }));
+
+                this.displayStep("Step 1: 1-Itemsets", oneItemsets, 
+                    "Count the frequency of each individual item in all transactions.");
+
+                return oneItemsets.filter(itemset => itemset.frequent);
+            }
+
+            async generateTwoItemsets(frequentOneItemsets) {
+                await this.updateProgress(50, "Generating 2-itemsets...");
+                
+                const candidates = [];
+                const items = frequentOneItemsets.map(itemset => itemset.items[0]);
+                
+                // Generate all possible 2-item combinations
+                for (let i = 0; i < items.length; i++) {
+                    for (let j = i + 1; j < items.length; j++) {
+                        candidates.push([items[i], items[j]].sort());
+                    }
+                }
+
+                const twoItemsets = candidates.map(candidate => {
+                    const count = this.transactions.filter(transaction => 
+                        candidate.every(item => transaction.items.includes(item))
+                    ).length;
+                    
+                    return {
+                        items: candidate,
+                        support: count / this.transactions.length,
+                        count: count,
+                        frequent: (count / this.transactions.length) >= this.minSupport
+                    };
+                });
+
+                this.displayStep("Step 2: 2-Itemsets", twoItemsets,
+                    "Generate combinations of 2 items from frequent 1-itemsets and check their support.");
+
+                return twoItemsets.filter(itemset => itemset.frequent);
+            }
+
+            async generateThreeItemsets(frequentTwoItemsets) {
+                await this.updateProgress(75, "Generating 3-itemsets...");
+                
+                if (frequentTwoItemsets.length < 2) {
+                    this.displayStep("Step 3: 3-Itemsets", [],
+                        "Not enough frequent 2-itemsets to generate 3-itemsets.");
+                    return [];
+                }
+
+                const candidates = [];
+                const items = [...new Set(frequentTwoItemsets.flatMap(itemset => itemset.items))];
+                
+                // Generate all possible 3-item combinations
+                for (let i = 0; i < items.length; i++) {
+                    for (let j = i + 1; j < items.length; j++) {
+                        for (let k = j + 1; k < items.length; k++) {
+                            candidates.push([items[i], items[j], items[k]].sort());
+                        }
+                    }
+                }
+
+                const threeItemsets = candidates.map(candidate => {
+                    const count = this.transactions.filter(transaction => 
+                        candidate.every(item => transaction.items.includes(item))
+                    ).length;
+                    
+                    return {
+                        items: candidate,
+                        support: count / this.transactions.length,
+                        count: count,
+                        frequent: (count / this.transactions.length) >= this.minSupport
+                    };
+                }).filter(itemset => itemset.count > 0); // Only show itemsets that appear at least once
+
+                this.displayStep("Step 3: 3-Itemsets", threeItemsets,
+                    "Generate combinations of 3 items and check their support.");
+
+                return threeItemsets.filter(itemset => itemset.frequent);
+            }
+
+            async showFinalResults(oneItemsets, twoItemsets, threeItemsets) {
+                await this.updateProgress(100, "Algorithm complete!");
+                
+                const allFrequent = [
+                    ...oneItemsets.filter(i => i.frequent),
+                    ...twoItemsets.filter(i => i.frequent),
+                    ...threeItemsets.filter(i => i.frequent)
+                ];
+
+                this.displayStep("Final Results: All Frequent Itemsets", allFrequent,
+                    `Found ${allFrequent.length} frequent itemsets with minimum support of ${Math.round(this.minSupport * 100)}%.`);
+            }
+
+            displayStep(title, itemsets, description) {
+                const stepEl = document.createElement('div');
+                stepEl.className = 'step';
+                
+                const titleEl = document.createElement('h4');
+                titleEl.textContent = title;
+                
+                const descEl = document.createElement('p');
+                descEl.textContent = description;
+                descEl.style.marginBottom = '15px';
+                descEl.style.color = '#666';
+                
+                const itemsetsEl = document.createElement('div');
+                itemsetsEl.className = 'itemsets';
+                
+                if (itemsets.length === 0) {
+                    const emptyEl = document.createElement('div');
+                    emptyEl.textContent = 'No itemsets found';
+                    emptyEl.style.textAlign = 'center';
+                    emptyEl.style.color = '#999';
+                    emptyEl.style.fontStyle = 'italic';
+                    itemsetsEl.appendChild(emptyEl);
+                } else {
+                    itemsets.forEach(itemset => {
+                        const itemsetEl = document.createElement('div');
+                        itemsetEl.className = `itemset ${itemset.frequent ? 'frequent' : 'infrequent'}`;
+                        
+                        const itemsEl = document.createElement('div');
+                        itemsEl.className = 'itemset-items';
+                        itemsEl.textContent = `{${itemset.items.join(', ')}}`;
+                        
+                        const supportEl = document.createElement('div');
+                        supportEl.className = `itemset-support ${itemset.frequent ? 'frequent' : 'infrequent'}`;
+                        supportEl.textContent = `Support: ${Math.round(itemset.support * 100)}% (${itemset.count}/${this.transactions.length})`;
+                        
+                        itemsetEl.appendChild(itemsEl);
+                        itemsetEl.appendChild(supportEl);
+                        itemsetsEl.appendChild(itemsetEl);
+                    });
+                }
+                
+                stepEl.appendChild(titleEl);
+                stepEl.appendChild(descEl);
+                stepEl.appendChild(itemsetsEl);
+                this.algorithmSteps.appendChild(stepEl);
+                
+                // Smooth scroll to the new step
+                stepEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            async updateProgress(percentage, text) {
+                this.progressFill.style.width = percentage + '%';
+                this.progressText.textContent = text;
+                await this.sleep(500);
+            }
+
+            clearAlgorithmSteps() {
+                this.algorithmSteps.innerHTML = '';
+                this.progressFill.style.width = '0%';
+                this.progressText.textContent = 'Ready to start';
+            }
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Initialize the visualization when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AprioriVisualization();
+        });
+    </script>
+</body>
+</html>
