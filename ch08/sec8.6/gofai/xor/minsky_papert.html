@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Perceptron - Minsky & Papert's XOR Problem</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: #333;
+        }
+
+        .subtitle {
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .network-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .network-canvas {
+            flex: 2;
+            background: #e0e0e0;
+            border: 1px solid #ccc;
+            min-height: 400px;
+        }
+
+        .controls {
+            flex: 1;
+            background: #f5f5f5;
+            border: 1px solid #ccc;
+            padding: 15px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .control-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #333;
+            font-family: inherit;
+        }
+
+        .control-group input:focus {
+            outline: 1px solid #666;
+        }
+
+        .button {
+            background: #666;
+            border: none;
+            color: #fff;
+            padding: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            margin: 5px;
+            width: calc(50% - 10px);
+        }
+
+        .button:hover {
+            background: #555;
+        }
+
+        .info-panel {
+            background: #f5f5f5;
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .info-panel h3 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 8px;
+        }
+
+        .formula {
+            background: #e0e0e0;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #666;
+        }
+
+        .status {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-item {
+            background: #e0e0e0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .status-label {
+            font-size: 0.8em;
+            color: #666;
+            display: block;
+        }
+
+        .status-value {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .training-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .training-example {
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .training-example.current {
+            border: 2px solid #666;
+        }
+
+        @media (max-width: 768px) {
+            .network-container {
+                flex-direction: column;
+            }
+            
+            .button {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Simple Perceptron</h1>
+            <div class="subtitle">Demonstrating Minsky & Papert's XOR Problem (1969) - Why Simple Perceptrons Cannot Learn XOR</div>
+        </div>
+
+        <div class="status">
+            <div class="status-item">
+                <span class="status-label">Epoch</span>
+                <span class="status-value" id="epoch">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Total Error</span>
+                <span class="status-value" id="error">0.000</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Learning Rate</span>
+                <span class="status-value" id="learning-rate-display">0.1</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Training Pattern</span>
+                <span class="status-value" id="current-pattern">-</span>
+            </div>
+        </div>
+
+        <div class="network-container">
+            <div class="network-canvas">
+                <canvas id="networkCanvas" width="600" height="400"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="learningRate">Learning Rate (η)</label>
+                    <input type="range" id="learningRate" min="0.01" max="1" step="0.01" value="0.1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="input1">Input 1</label>
+                    <input type="number" id="input1" value="1" step="0.1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="input2">Input 2</label>
+                    <input type="number" id="input2" value="1" step="0.1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="target">Target Output</label>
+                    <input type="number" id="target" value="0" step="0.1">
+                </div>
+                
+                <button class="button" onclick="trainStep()">Single Step</button>
+                <button class="button" onclick="toggleTraining()" id="trainBtn">Start Training</button>
+                <button class="button" onclick="resetNetwork()">Reset Network</button>
+                <button class="button" onclick="testNetwork()">Test Current</button>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>Training Data (XOR Problem) - Will NOT Converge!</h3>
+            <div class="training-data" id="trainingData"></div>
+        </div>
+
+        <div class="info-panel">
+            <h3>Perceptron Learning Rule (Rosenblatt, 1957)</h3>
+            <div class="formula">
+                <strong>Output Function:</strong><br>
+                output = 1 if (w₁x₁ + w₂x₂ + bias) ≥ 0, else 0
+            </div>
+            <div class="formula">
+                <strong>Weight Update Rule:</strong><br>
+                Δw = η × (target - output) × input<br>
+                w_new = w_old + Δw
+            </div>
+            <div class="formula">
+                <strong>Bias Update Rule:</strong><br>
+                Δbias = η × (target - output)<br>
+                bias_new = bias_old + Δbias
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>The Minsky & Papert Critique (1969)</h3>
+            <p><strong>Why This Fails:</strong> The XOR function is not linearly separable. A single perceptron can only learn functions that can be separated by a straight line in the input space.</p>
+            <ul>
+                <li><strong>Linear Separability:</strong> The perceptron draws a decision boundary: w₁x₁ + w₂x₂ + bias = 0</li>
+                <li><strong>XOR Problem:</strong> No single line can separate (0,1) and (1,0) from (0,0) and (1,1)</li>
+                <li><strong>Fundamental Limitation:</strong> This limitation led to the "AI Winter" of the 1970s</li>
+                <li><strong>Solution:</strong> Multi-layer networks (as in the previous example) can solve XOR</li>
+            </ul>
+        </div>
+
+        <div class="info-panel">
+            <h3>What You'll Observe</h3>
+            <p>Watch how the perceptron oscillates and never converges to a solution. The weights will keep changing but never find a configuration that correctly classifies all XOR patterns. This demonstrates the fundamental limitation that Minsky and Papert identified.</p>
+        </div>
+    </div>
+
+    <script>
+        class SimplePerceptron {
+            constructor() {
+                this.inputSize = 2;
+                
+                // Simple perceptron: just input and output layers
+                this.inputLayer = [0, 0];
+                this.outputLayer = [0];
+                
+                // Weights from inputs to output
+                this.weights = [(Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2];
+                this.bias = (Math.random() - 0.5) * 2;
+                
+                this.learningRate = 0.1;
+                this.epoch = 0;
+                this.totalError = 0;
+                this.errorSum = 0;
+                
+                this.trainingData = [
+                    {input: [0, 0], target: [0], label: "0 XOR 0 = 0"},
+                    {input: [0, 1], target: [1], label: "0 XOR 1 = 1"},
+                    {input: [1, 0], target: [1], label: "1 XOR 0 = 1"},
+                    {input: [1, 1], target: [0], label: "1 XOR 1 = 0"}
+                ];
+                this.currentPattern = 0;
+                
+                this.isTraining = false;
+                this.trainingInterval = null;
+            }
+            
+            // Step function (threshold activation)
+            stepFunction(x) {
+                return x >= 0 ? 1 : 0;
+            }
+            
+            forward(inputs) {
+                this.inputLayer = inputs.slice();
+                
+                // Calculate weighted sum
+                let sum = this.bias;
+                for (let i = 0; i < this.inputSize; i++) {
+                    sum += this.weights[i] * this.inputLayer[i];
+                }
+                
+                // Apply step function
+                this.outputLayer[0] = this.stepFunction(sum);
+                
+                return this.outputLayer.slice();
+            }
+            
+            trainSingle(inputs, targets) {
+                // Forward pass
+                const outputs = this.forward(inputs);
+                
+                // Calculate error
+                const error = targets[0] - outputs[0];
+                const errorMagnitude = Math.abs(error);
+                
+                // Perceptron learning rule
+                if (error !== 0) {
+                    // Update weights
+                    for (let i = 0; i < this.inputSize; i++) {
+                        this.weights[i] += this.learningRate * error * this.inputLayer[i];
+                    }
+                    
+                    // Update bias
+                    this.bias += this.learningRate * error;
+                }
+                
+                return errorMagnitude;
+            }
+            
+            reset() {
+                this.weights = [(Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2];
+                this.bias = (Math.random() - 0.5) * 2;
+                this.epoch = 0;
+                this.totalError = 0;
+                this.errorSum = 0;
+                this.currentPattern = 0;
+            }
+        }
+
+        const network = new SimplePerceptron();
+        let canvas, ctx;
+
+        window.onload = function() {
+            canvas = document.getElementById('networkCanvas');
+            ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            updateDisplay();
+            drawNetwork();
+            updateTrainingData();
+        };
+
+        function updateDisplay() {
+            document.getElementById('epoch').textContent = network.epoch;
+            document.getElementById('error').textContent = network.totalError.toFixed(3);
+            document.getElementById('learning-rate-display').textContent = network.learningRate.toFixed(2);
+            document.getElementById('current-pattern').textContent = network.currentPattern + 1;
+            
+            network.learningRate = parseFloat(document.getElementById('learningRate').value);
+        }
+
+        function drawNetwork() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Input nodes
+            const inputNodes = [
+                {x: centerX - 150, y: centerY - 50, value: network.inputLayer[0]},
+                {x: centerX - 150, y: centerY + 50, value: network.inputLayer[1]}
+            ];
+            
+            // Output node
+            const outputNodes = [
+                {x: centerX + 150, y: centerY, value: network.outputLayer[0]}
+            ];
+            
+            // Draw connections (weights)
+            drawConnections(inputNodes, outputNodes, network.weights);
+            
+            // Draw bias connection
+            drawBiasConnection(outputNodes[0], network.bias);
+            
+            // Draw decision boundary visualization
+            drawDecisionBoundary();
+            
+            // Draw nodes
+            drawNodes(inputNodes, 'Input', '#ff6b6b');
+            drawNodes(outputNodes, 'Output', '#4ecdc4');
+        }
+
+        function drawConnections(inputNodes, outputNodes, weights) {
+            for (let i = 0; i < inputNodes.length; i++) {
+                const weight = weights[i];
+                const color = weight > 0 ? '#4ecdc4' : '#ff6b6b';
+                const thickness = Math.abs(weight) * 2 + 1;
+                
+                ctx.beginPath();
+                ctx.moveTo(inputNodes[i].x, inputNodes[i].y);
+                ctx.lineTo(outputNodes[0].x, outputNodes[0].y);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = thickness;
+                ctx.stroke();
+                
+                // Weight label
+                const midX = (inputNodes[i].x + outputNodes[0].x) / 2;
+                const midY = (inputNodes[i].y + outputNodes[0].y) / 2;
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Courier New';
+                ctx.fillText(`w${i+1}=${weight.toFixed(2)}`, midX - 30, midY + (i === 0 ? -10 : 10));
+            }
+        }
+
+        function drawBiasConnection(outputNode, bias) {
+            // Draw bias as a separate input
+            const biasX = outputNode.x - 80;
+            const biasY = outputNode.y - 80;
+            
+            // Bias node
+            ctx.beginPath();
+            ctx.arc(biasX, biasY, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ffd93d';
+            ctx.fill();
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 10px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText('1', biasX, biasY + 3);
+            ctx.fillText('BIAS', biasX, biasY - 30);
+            
+            // Bias connection
+            const color = bias > 0 ? '#4ecdc4' : '#ff6b6b';
+            const thickness = Math.abs(bias) * 2 + 1;
+            
+            ctx.beginPath();
+            ctx.moveTo(biasX, biasY);
+            ctx.lineTo(outputNode.x, outputNode.y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = thickness;
+            ctx.stroke();
+            
+            // Bias label
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Courier New';
+            ctx.fillText(`b=${bias.toFixed(2)}`, biasX + 20, biasY + 20);
+        }
+
+        function drawDecisionBoundary() {
+            // Draw the decision boundary equation
+            ctx.fillStyle = '#333';
+            ctx.font = '14px Courier New';
+            ctx.textAlign = 'left';
+            
+            const equation = `Decision Boundary: ${network.weights[0].toFixed(2)}x₁ + ${network.weights[1].toFixed(2)}x₂ + ${network.bias.toFixed(2)} = 0`;
+            ctx.fillText(equation, 20, 30);
+            
+            // Draw XOR truth table visualization
+            const tableX = 20;
+            const tableY = 50;
+            const cellSize = 30;
+            
+            ctx.fillText('XOR Truth Table:', tableX, tableY);
+            
+            // Draw grid
+            for (let i = 0; i <= 2; i++) {
+                for (let j = 0; j <= 2; j++) {
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(tableX + i * cellSize, tableY + 10 + j * cellSize, cellSize, cellSize);
+                }
+            }
+            
+            // Fill in values
+            const tableData = [
+                ['(0,0)', '(0,1)'],
+                ['(1,0)', '(1,1)'],
+            ];
+            const xorResults = [
+                [0, 1],
+                [1, 0]
+            ];
+            
+            ctx.font = '10px Courier New';
+            ctx.textAlign = 'center';
+            
+            for (let i = 0; i < 2; i++) {
+                for (let j = 0; j < 2; j++) {
+                    const x = tableX + i * cellSize + cellSize/2;
+                    const y = tableY + 20 + j * cellSize + cellSize/2;
+                    
+                    // Input coordinates
+                    ctx.fillStyle = '#333';
+                    ctx.fillText(tableData[j][i], x, y - 5);
+                    
+                    // XOR result
+                    ctx.fillStyle = xorResults[j][i] === 1 ? '#4ecdc4' : '#ff6b6b';
+                    ctx.fillText(`→${xorResults[j][i]}`, x, y + 8);
+                }
+            }
+        }
+
+        function drawNodes(nodes, label, color) {
+            nodes.forEach((node, index) => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 25, 0, 2 * Math.PI);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 14px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.value.toString(), node.x, node.y + 5);
+                
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Courier New';
+                ctx.fillText(`${label}${index + 1}`, node.x, node.y - 35);
+            });
+        }
+
+        function trainStep() {
+            const pattern = network.trainingData[network.currentPattern];
+            const error = network.trainSingle(pattern.input, pattern.target);
+            
+            network.errorSum += error;
+            network.currentPattern = (network.currentPattern + 1) % network.trainingData.length;
+            
+            if (network.currentPattern === 0) {
+                network.epoch++;
+                network.totalError = network.errorSum / network.trainingData.length;
+                network.errorSum = 0;
+            }
+            
+            updateDisplay();
+            drawNetwork();
+            updateTrainingData();
+        }
+
+        function toggleTraining() {
+            const btn = document.getElementById('trainBtn');
+            
+            if (network.isTraining) {
+                clearInterval(network.trainingInterval);
+                network.isTraining = false;
+                btn.textContent = 'Start Training';
+                btn.style.background = '#666';
+            } else {
+                network.isTraining = true;
+                btn.textContent = 'Stop Training';
+                btn.style.background = '#28a745';
+                
+                network.trainingInterval = setInterval(() => {
+                    trainStep();
+                }, 100);
+            }
+        }
+
+        function resetNetwork() {
+            if (network.isTraining) {
+                toggleTraining();
+            }
+            
+            network.reset();
+            updateDisplay();
+            drawNetwork();
+            updateTrainingData();
+        }
+
+        function testNetwork() {
+            const input1 = parseFloat(document.getElementById('input1').value);
+            const input2 = parseFloat(document.getElementById('input2').value);
+            const target = parseFloat(document.getElementById('target').value);
+            
+            const output = network.forward([input1, input2]);
+            const error = Math.abs(target - output[0]);
+            
+            alert(`Input: [${input1}, ${input2}]\nOutput: ${output[0]}\nTarget: ${target}\nError: ${error}`);
+            
+            drawNetwork();
+        }
+
+        function updateTrainingData() {
+            const container = document.getElementById('trainingData');
+            container.innerHTML = '';
+            
+            network.trainingData.forEach((data, index) => {
+                const div = document.createElement('div');
+                div.className = 'training-example';
+                if (index === network.currentPattern) {
+                    div.classList.add('current');
+                }
+                
+                const output = network.forward(data.input);
+                const error = Math.abs(data.target[0] - output[0]);
+                
+                div.innerHTML = `
+                    <strong>${data.label}</strong><br>
+                    Input: [${data.input.join(', ')}]<br>
+                    Target: ${data.target[0]}<br>
+                    Output: ${output[0]}<br>
+                    Error: ${error}<br>
+                    <em>${error > 0 ? 'INCORRECT' : 'Correct'}</em>
+                `;
+                
+                container.appendChild(div);
+            });
+        }
+
+        window.addEventListener('resize', function() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            drawNetwork();
+        });
+    </script>
+</body>
+</html>
