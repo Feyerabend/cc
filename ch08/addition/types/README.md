@@ -1066,23 +1066,23 @@ homotopy type theory
 Many type systems correspond to *logical systems*.
 
 ```
-STLC              <--> intuitionistic logic          (Curry-Howard)
-System F          <--> second-order logic
-Linear types      <--> multiplicative linear logic   (Girard)
-Session types     <--> linear logic + π-calculus
-Dependent types   <--> higher-order logic            (Martin-Löf)
-HoTT              <--> homotopy theory               (Voevodsky)
-Cubical TT        <--> cubical sets                  (Cohen et al.)
-Modal types       <--> S4/S5 modal logic
-Staged types      <--> S4 (necessity as code)
+             STLC <--> intuitionistic logic          (Curry-Howard)
+         System F <--> second-order logic
+     Linear types <--> multiplicative linear logic   (Girard)
+    Session types <--> linear logic + π-calculus
+  Dependent types <--> higher-order logic            (Martin-Löf)
+             HoTT <--> homotopy theory               (Voevodsky)
+       Cubical TT <--> cubical sets                  (Cohen et al.)
+      Modal types <--> S4/S5 modal logic
+     Staged types <--> S4 (necessity as code)
 ```
 
 This is part of the *Curry-Howard-Lambek correspondence*:
 
 ```
-types       <-->  propositions
-programs    <-->  proofs
-evaluation  <-->  proof normalization
-categories  <-->  type theories         (Lambek)
-spaces      <-->  types                 (HoTT)
+      types <-->  propositions
+   programs <-->  proofs
+ evaluation <-->  proof normalization
+ categories <-->  type theories         (Lambek)
+     spaces <-->  types                 (HoTT)
 ```
