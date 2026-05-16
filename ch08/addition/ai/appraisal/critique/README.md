@@ -71,7 +71,7 @@ practice embedded in social interaction. His principle of charity--that we
 must assume others are largely rational and truthful when interpreting their
 utterances--reveals something crucial about how meaning works in human communication.
 
-*Holism and Context-Dependence*: Davidson emphasized that beliefs, desires, and
+*Holism and Context-Dependence*: Davidson emphasised that beliefs, desires, and
 meanings form an interconnected web. You cannot understand what someone means by
 "water" without understanding their broader beliefs about liquids, substances,
 the physical world, and countless other concepts. Meaning is not atomistic--it
@@ -83,7 +83,7 @@ that gives those words meaning for humans.
 *The Interpretive Nature of Understanding*: Davidson argued that understanding another
 person is not a matter of decoding messages but of interpretation--an active process
 of making sense of their utterances by attributing beliefs and desires that render
-their behavior rational. This is inherently social and interactive. Current AI systems,
+their behaviour rational. This is inherently social and interactive. Current AI systems,
 by contrast, do not interpret in this sense. They do not attribute mental states,
 they do not engage in the give-and-take of conversation as genuine dialogue, and
 they cannot revise their "understanding" based on negotiated meaning with an interlocutor.
@@ -114,7 +114,7 @@ This manifests in several ways:
   not just that matches and fire are frequently mentioned together
 - *Counterfactual thinking*: We can reason about what would happen
   if things were different ("If I hadn't lit the match, the fire wouldn't have started")
-- *Transfer and generalization*: We can apply knowledge from one
+- *Transfer and generalisation*: We can apply knowledge from one
   domain to another because we understand underlying principles, not just surface patterns
 - *Revision based on understanding*: We can change our beliefs when
   we understand why previous beliefs were wrong
@@ -175,13 +175,13 @@ Drawing from cognitive science, Marcus emphasises that human intelligence is bot
 (different systems handle different tasks) and compositional (we can combine elements in
 novel ways to generate infinite variations). A child who knows "jump" and "backwards" can
 immediately understand "jump backwards" even if they've never encountered that exact
-combination. This combinatorial generalization is fundamental to human cognition but
+combination. This combinatorial generalisation is fundamental to human cognition but
 remains elusive for current AI systems.
 
 Marcus points to cognitive development research showing that even infants possess core
 knowledge systems--intuitive physics, intuitive psychology, basic number sense--that
 provide scaffolding for learning. Rather than learning everything from scratch through
-pattern matching, humans build on innate cognitive architecture specialized for different
+pattern matching, humans build on innate cognitive architecture specialised for different
 domains. AI systems, Marcus argues, need similar architectural biases and structured priors.
 
 ##### Control, Transparency, and Corrigibility
@@ -240,7 +240,7 @@ This distinction matters because:
 - Systems that perform without understanding are inherently brittle--they succeed in
   familiar contexts but fail unpredictably in novel situations
 - They cannot transfer knowledge across domains in the flexible way humans do
-- They cannot recognize when they're wrong or engage in genuine error correction
+- They cannot recognise when they're wrong or engage in genuine error correction
 - They cannot ground abstract concepts in physical or social reality
 
 *The Analogy-Making Example*: Mitchell's work on analogy, exemplified in her
@@ -265,7 +265,7 @@ interaction with physical and social environments. This includes:
 
 - *Physical intuition*: Understanding that objects persist when out of sight, that
   solid objects can't pass through each other, that unsupported objects fall
-- *Social understanding*: Recognizing intentions, emotions, social norms, and contextual appropriateness
+- *Social understanding*: Recognising intentions, emotions, social norms, and contextual appropriateness
 - *Causal knowledge*: Knowing not just correlations but actual cause-and-effect relationships
 - *Contextual sensitivity*: Adapting interpretations based on situation, speaker, and purpose
 
@@ -298,7 +298,7 @@ challenge--it just creates larger versions of the same fundamentally limited arc
 Mitchell has been particularly critical of how AI progress is measured. Benchmarks
 typically test narrow capabilities in controlled settings that don't capture the
 flexibility and robustness of real intelligence. Systems can "game" benchmarks through
-memorisation or exploitation of artifacts in test sets without developing general understanding.
+memorisation or exploitation of artefacts in test sets without developing general understanding.
 
 More problematically, benchmark performance creates misleading impressions of capability.
 When a model scores 90% on a reading comprehension test, we naturally assume it comprehends
@@ -318,7 +318,7 @@ we don't know about intelligence and being honest about the limitations of curre
 This means:
 - Not overselling AI capabilities to the public or policymakers
 - Distinguishing between what systems can do and what they understand
-- Recognizing that scaling current approaches may hit fundamental limits
+- Recognising that scaling current approaches may hit fundamental limits
 - Being open to radically different approaches informed by cognitive science
 
 Mitchell's humility extends to her own proposals--she doesn't claim to have a definitive
@@ -394,11 +394,11 @@ costs of large language models:
 *Environmental Impact*:
 - Training GPT-3 reportedly emitted as much CO2 as driving a car 700,000 miles
 - The energy required for training and inference contributes significantly to climate change
-- These costs are externalized to society while profits accrue to corporations
+- These costs are externalised to society while profits accrue to corporations
 
 *Labor and Data Exploitation*:
 - Models are trained on text scraped from the internet without consent from original authors
-- Underpaid workers in the Global South perform data labeling and content moderation
+- Underpaid workers in the Global South perform data labelling and content moderation
 - Artists, writers, and creators whose work trains these systems receive no compensation
 
 *Concentration of Power*:
@@ -408,7 +408,7 @@ costs of large language models:
 
 *Bias Amplification*:
 - Models trained on internet text inherit and amplify societal biases
-- Marginalized groups bear disproportionate harms from biased outputs
+- Marginalised groups bear disproportionate harms from biased outputs
 - The scale of deployment means harms are distributed widely
 
 ##### Documentation and Accountability
@@ -434,17 +434,17 @@ distribution of harms and benefits.
 
 ##### The "Stochastic Parrots" Paper
 
-Gebru's co-authored paper "On the Dangers of Stochastic Parrots" (2021) crystallized
+Gebru's co-authored paper "On the Dangers of Stochastic Parrots" (2021) crystallised
 many concerns about large language models:
 
 *Environmental and Financial Costs*:
 - The carbon footprint of training is unsustainable
 - Financial costs exclude most researchers from frontier AI development
-- This creates a two-tier research ecosystem favoring well-funded corporations
+- This creates a two-tier research ecosystem favouring well-funded corporations
 
 *Inscrutability and Risk*:
 - Larger models are harder to understand, audit, and control
-- Unexpected behaviors emerge at scale that weren't present in smaller models
+- Unexpected behaviours emerge at scale that weren't present in smaller models
 - We don't fully understand what these systems learn or how they fail
 
 *Data Quality Issues*:
@@ -463,12 +463,12 @@ Gebru's work emphasises that technical critiques cannot be separated from
 questions of justice. When AI systems:
 - Make biased hiring decisions, they perpetuate employment discrimination
 - Generate harmful stereotypes, they reinforce oppressive social structures  
-- Fail more often for marginalized groups, they distribute harms inequitably
+- Fail more often for marginalised groups, they distribute harms inequitably
 - Are deployed without consent, they violate autonomy and dignity
 
 These aren't unfortunate side effects--they're predictable consequences of developing systems:
 - Without diverse teams whose lived experiences inform design
-- Without centering the perspectives of impacted communities
+- Without centring the perspectives of impacted communities
 - Without accountability mechanisms for addressing harms
 - Without questioning whether AI deployment serves genuine social needs
 
@@ -485,7 +485,7 @@ Gebru has challenged the institutional structures that shape AI development:
 *Academic Complicity*:
 - Universities increasingly partner with and depend on tech companies
 - Academic research agendas get shaped by available compute resources
-- Publication incentives favor impressive demos over careful evaluation
+- Publication incentives favour impressive demos over careful evaluation
 - Critical perspectives struggle for funding and institutional support
 
 *Representation Gaps*:
@@ -500,7 +500,7 @@ Gebru advocates for:
 - *Community-centered design*: Engaging impacted communities in decisions about whether and how to deploy AI
 - *Participatory research*: Involving diverse stakeholders in problem definition, not just solution implementation
 - *Labor rights*: Fair compensation for data workers and protection from exploitative practices
-- *Regulatory frameworks*: Government oversight that prioritizes public interest over corporate profit
+- *Regulatory frameworks*: Government oversight that prioritises public interest over corporate profit
 - *Alternative economic models*: Exploring public AI development, cooperatives, and non-commercial research
 - *Interdisciplinary collaboration*: Integrating humanities and social science perspectives from the start
 
@@ -512,7 +512,7 @@ Her work on *model cards* exemplifies this approach.
 
 ##### Model Cards for Model Reporting
 
-Model cards are standardized documentation that accompanies AI systems, providing:
+Model cards are standardised documentation that accompanies AI systems, providing:
 
 *Performance Characteristics*:
 - Accuracy across different demographic groups
@@ -544,7 +544,7 @@ By making this information explicit and accessible, model cards enable:
 - Comparison of systems on ethical as well as performance dimensions
 - Accountability when things go wrong
 
-##### Operationalizing Fairness
+##### Operationalising Fairness
 
 Mitchell has worked on translating abstract fairness principles
 into concrete technical practices:
@@ -556,8 +556,8 @@ into concrete technical practices:
 
 *Fairness-Aware Design*:
 - Incorporating fairness constraints into training objectives
-- Balancing performance across groups rather than optimizing for aggregate accuracy
-- Being explicit about which fairness definition is being operationalized
+- Balancing performance across groups rather than optimising for aggregate accuracy
+- Being explicit about which fairness definition is being operationalised
   (since different definitions can conflict)
 
 *Participatory Evaluation*:
@@ -597,7 +597,7 @@ that we can achieve general intelligence by simply making models bigger.
 Their reasons vary:
 
 - *Marcus*: Architectural limitations mean larger models just magnify the brittleness and opacity of smaller ones
-- *Mitchell*: Scale without structural change won't produce understanding or genuine generalization
+- *Mitchell*: Scale without structural change won't produce understanding or genuine generalisation
 - *Bender*: Larger models amplify biases, increase environmental costs, and concentrate power
 - *Gebru*: The resources devoted to scaling represent opportunity costs that crowd out alternative approaches
 
@@ -608,10 +608,10 @@ in approach, not just quantitative increases in scale.
 
 ##### 3. Opacity Is Dangerous
 
-All these critics emphasize the dangers of systems we don't understand:
+All these critics emphasise the dangers of systems we don't understand:
 
 - *Marcus*: We cannot control, correct, or safely deploy opaque systems
-- *Searle*: Opacity reveals the gap between behavior and genuine cognition
+- *Searle*: Opacity reveals the gap between behaviour and genuine cognition
 - *Bender*: Lack of transparency enables biases to hide in plain sight
 - *Gebru*: Inscrutability shields harmful systems from accountability
 - *Mitchell*: We can't improve what we don't understand or evaluate what we can't interpret
@@ -657,7 +657,7 @@ To present a balanced analysis, we should acknowledge counterarguments and limit
 
 Proponents of scaling argue that qualitatively new capabilities emerge at scale that
 weren't present in smaller models. GPT-4 exhibits reasoning abilities, in-context learning,
-and few-shot generalization that GPT-2 lacked. Perhaps intelligence is an emergent property
+and few-shot generalisation that GPT-2 lacked. Perhaps intelligence is an emergent property
 that appears at sufficient scale, even without explicit symbolic reasoning or grounding.
 
 *Response*: Critics would argue that impressive performance on benchmarks doesn't constitute
@@ -676,7 +676,7 @@ generating code, answering questions--does it matter whether it has genuine unde
 - Unreliable in novel contexts where patterns differ from training data
 - Difficult to control or align with human values
 - Prone to generating harmful biases and misinformation
-- Unable to recognize their own limitations or uncertainties
+- Unable to recognise their own limitations or uncertainties
 
 For low-stakes applications (creative writing prompts, brainstorming aids), lack of understanding
 may be acceptable. But for high-stakes domains (medical diagnosis, legal advice, autonomous vehicles),
@@ -764,7 +764,7 @@ improvement--we can only fix what we can see and understand.
 
 Taking inspiration from cognitive science about how human intelligence works:
 - Core knowledge systems that provide structured priors for learning
-- Compositional representations that enable generalization
+- Compositional representations that enable generalisation
 - Multiple timescales of learning (fast adaptation + slow consolidation)
 - Integration of perception, action, memory, and reasoning
 - Mechanisms for attention, working memory, and cognitive control
@@ -778,11 +778,11 @@ Changing institutional structures around AI:
 - Diverse teams that include perspectives from impacted communities
 - Participatory design that involves stakeholders in defining problems and evaluating solutions
 - Open research that shares methods, data, and findings rather than hoarding them
-- Regulatory frameworks that prioritize social benefit over commercial profit
+- Regulatory frameworks that prioritise social benefit over commercial profit
 - Mechanisms for redress when AI systems cause harm
 
 Technical excellence must be paired with social responsibility, and both require
-institutional structures that enable and incentivize them.
+institutional structures that enable and incentivise them.
 
 ##### Epistemic Humility
 
@@ -791,9 +791,9 @@ Acknowledging what we don't know:
 - Resisting the temptation to oversell capabilities
 - Treating AI as an ongoing scientific question, not a solved engineering problem
 - Remaining open to radically different approaches
-- Prioritizing understanding over performance metrics
+- Prioritising understanding over performance metrics
 
-Humility doesn't mean abandoning progress--it means pursuing it with care, rigor,
+Humility doesn't mean abandoning progress--it means pursuing it with care, rigour,
 and awareness of how much we still have to learn.
 
 ### Part V: Implications and Future Directions
@@ -809,7 +809,7 @@ These critiques suggest several shifts in research priorities:
 
 *From Benchmarks to Understanding*:
 - Develop evaluation methods that probe genuine understanding, not just pattern matching
-- Create tests that require transfer to novel contexts and compositional generalization
+- Create tests that require transfer to novel contexts and compositional generalisation
 - Examine failure modes to understand what systems actually know
 
 *From Single-Modal to Integrated*:
@@ -819,13 +819,13 @@ These critiques suggest several shifts in research priorities:
 
 *From Proprietary to Open*:
 - Share methods, data, and models to enable reproducibility and collective progress
-- Create public resources that democratize AI research
+- Create public resources that democratise AI research
 - Resist concentration of capability in a few corporations
 
 *From Performance to Safety*:
-- Prioritize robustness, interpretability, and controllability alongside accuracy
+- Prioritise robustness, interpretability, and controllability alongside accuracy
 - Develop methods for uncertainty quantification and failure prediction
-- Build systems that recognize and communicate their own limitations
+- Build systems that recognise and communicate their own limitations
 
 #### For AI Policy and Governance
 
@@ -862,22 +862,22 @@ These critiques also suggest how public discourse about AI should evolve:
 
 *Realistic Assessment*:
 - Distinguish between impressive performance and genuine intelligence
-- Recognize limitations alongside capabilities
-- Resist both utopian and dystopian framings in favor of careful analysis
+- Recognise limitations alongside capabilities
+- Resist both utopian and dystopian framings in favour of careful analysis
 
 *Critical Literacy*:
 - Understand how AI systems actually work at a basic level
-- Recognize when AI outputs may be unreliable or harmful
+- Recognise when AI outputs may be unreliable or harmful
 - Ask questions about who builds AI, for what purposes, and with what oversight
 
 *Democratic Participation*:
 - Demand voice in decisions about AI deployment that affects communities
-- Support policies that prioritize public benefit over corporate profit
+- Support policies that prioritise public benefit over corporate profit
 - Engage with ethical questions about AI's role in society
 
 *Nuanced Framing*:
 - Move beyond "will AI destroy humanity" or "will AI solve everything"
-- Recognize that AI is neither neutral tool nor autonomous agent--it's shaped by human choices
+- Recognise that AI is neither neutral tool nor autonomous agent--it's shaped by human choices
 - Focus on concrete harms and benefits rather than speculative scenarios
 
 
