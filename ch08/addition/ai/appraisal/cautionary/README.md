@@ -1,0 +1,8 @@
+
+
+## Hinton
+
+
+Russell
+
+(Bengio?)
