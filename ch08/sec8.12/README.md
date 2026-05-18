@@ -1,4 +1,0 @@
-
-## Property-Based Testing
-
-
