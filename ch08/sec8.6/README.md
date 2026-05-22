@@ -8,19 +8,19 @@ systems and used formal languages to model human reasoning. These systems worked
 (like theorem proving or medical diagnosis) but struggled with uncertainty, noise, and learning from data.
 
 By the 1980s, limitations of GOFAI became clear. Systems required enormous manual effort and lacked adaptability.
-At the same time, researchers in statistics and pattern recognition—fields somewhat separate from mainstream
+At the same time, researchers in statistics and pattern recognition--fields somewhat separate from mainstream
 AI--we're exploring probabilistic methods and data-driven learning. Techniques like decision trees, nearest
 neighbour methods, and early neural networks were gaining traction. These methods could learn patterns from
 data without needing explicit programming of rules.
 
 The 1990s saw a growing convergence between AI and statistical learning, sometimes called the "statistical
 revolution" in AI. Developments included:
-- Bayesian networks (e.g., Judea Pearl’s work),
+- Bayesian networks (e.g., Judea Pearl's work),
 - Support Vector Machines (SVMs),
 - boosting algorithms, and
 - the broader framework of probabilistic inference and optimisation.
 
-At this point, machine learning started to dominate practical AI applications—such as speech recognition,
+At this point, machine learning started to dominate practical AI applications--such as speech recognition,
 handwriting recognition, and web search. GOFAI faded from the center of research as its systems could not
 scale or adapt as well as ML-based approaches.
 
@@ -30,7 +30,7 @@ learning, thanks to increased computational power (GPUs), large datasets, and al
 neural networks in tasks like image recognition, kicking off an era where learning from data replaced
 rule-based reasoning as the primary method of building intelligent systems.
 
-Today, machine learning—especially deep learning—is the dominant approach in AI. However, there is a
+Today, machine learning--especially deep learning--is the dominant approach in AI. However, there is a
 growing recognition that symbolic reasoning and ML might need to be integrated, leading to hybrid approaches
 that combine structured knowledge and statistical learning, aiming to recapture the generality and
 abstraction GOFAI once sought but with the adaptability of modern ML.
@@ -143,7 +143,7 @@ to troubleshoot and improve your models.
 
 * Concept: Calculus is the mathematical study of continuous change. It's divided into differential
   calculus (dealing with rates of change and slopes) and integral calculus (dealing with accumulation).
-  In the context of ML, differential calculus is paramount, primarily used for optimisation—that is,
+  In the context of ML, differential calculus is paramount, primarily used for optimisation--that is,
   finding the "best" set of parameters that make our model as accurate as possible.  
     * Loss Functions in Machine Learning: In machine learning, every model has a loss function (or cost
       function), which quantifies how inaccurate the model's predictions are compared to the actual values.
