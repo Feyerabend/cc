@@ -45,6 +45,7 @@ static int is_reserved_name(const char *n) {
         "W", "sup", "wrec",
         "Empty", "abort",
         "Unit", "star", "unitrec",
+        "Sum", "inl", "inr", "case",
         NULL
     };
     for (int i = 0; kw[i]; i++)
@@ -1065,6 +1066,151 @@ static void run_tests(Arena *a) {
     expect_fail(a,
         "unitrec (\\_. Nat : Π(_ : Unit). Type) true star",
         "base : Bool instead of Nat = P star");
+
+    /* --- Sum types --- */
+    fflush(stdout);
+    printf("\n=== Sum types ===\n");
+
+    /* SM1: formation */
+    printf("\n[SM1] Sum Nat Bool : Type\n");
+    run_infer(a, "Sum Nat Bool");
+    printf("\n[SM1b] Sum Type Type : Type_1\n");
+    run_infer(a, "Sum Type Type");
+
+    /* SM2: inl typechecks with annotation */
+    printf("\n[SM2] (inl zero : Sum Nat Bool)\n");
+    run_infer(a, "(inl zero : Sum Nat Bool)");
+
+    /* SM3: inr typechecks with annotation */
+    printf("\n[SM3] (inr true : Sum Nat Bool)\n");
+    run_infer(a, "(inr true : Sum Nat Bool)");
+
+    /* SM4: β case on inl → left branch fires */
+    printf("\n[SM4] case β on inl: case P (λa.a) (λb.zero) (inl zero) ≡ zero\n");
+    expect_conv(a,
+        "case (\\_. Nat : Π(_ : Sum Nat Bool). Type)"
+        "     (\\a. a)"
+        "     (\\b. zero)"
+        "     (inl zero : Sum Nat Bool)",
+        "zero", 1);
+
+    /* SM5: β case on inr → right branch fires */
+    printf("\n[SM5] case β on inr: case P (λa.zero) (λb.succ zero) (inr true) ≡ succ zero\n");
+    expect_conv(a,
+        "case (\\_. Nat : Π(_ : Sum Nat Bool). Type)"
+        "     (\\a. zero)"
+        "     (\\b. succ zero)"
+        "     (inr true : Sum Nat Bool)",
+        "succ zero", 1);
+
+    /* SM6: case on neutral s stays stuck */
+    printf("\n[SM6] case on neutral s stays stuck\n");
+    run_infer(a,
+        "(\\s. case (\\_. Nat : Π(_ : Sum Nat Bool). Type)"
+        "          (\\a. a)"
+        "          (\\b. zero)"
+        "          s"
+        " : Π(s : Sum Nat Bool). Nat)");
+
+    /* SM7: conv tests for Sum and injections */
+    printf("\n[SM7] Sum/inl/inr conv tests\n");
+    expect_conv(a, "Sum Nat Bool", "Sum Nat Bool",  1);
+    expect_conv(a, "Sum Nat Bool", "Sum Bool Nat",  0);
+    expect_conv(a, "Sum Nat Bool", "Sum Nat Nat",   0);
+    expect_conv(a, "Sum Nat Bool", "Nat",           0);
+    /* inl ≡ inl with same payload */
+    expect_conv(a,
+        "(inl zero : Sum Nat Bool)",
+        "(inl zero : Sum Nat Bool)", 1);
+    /* inr ≡ inr with same payload */
+    expect_conv(a,
+        "(inr true : Sum Nat Bool)",
+        "(inr true : Sum Nat Bool)", 1);
+    /* inl ≢ inr (different constructors, same payload shape not enough) */
+    expect_conv(a,
+        "(inl zero : Sum Nat Nat)",
+        "(inr zero : Sum Nat Nat)", 0);
+    /* inl with different payloads */
+    expect_conv(a,
+        "(inl zero : Sum Nat Bool)",
+        "(inl (succ zero) : Sum Nat Bool)", 0);
+
+    /* SM8: case conv on neutral — same components equal, different unequal */
+    printf("\n[SM8] case stuck conv\n");
+    expect_conv(a,
+        "\\s. case (\\_. Nat : Π(_ : Sum Nat Bool). Type) (\\a. a) (\\b. zero) s",
+        "\\s. case (\\_. Nat : Π(_ : Sum Nat Bool). Type) (\\a. a) (\\b. zero) s", 1);
+    expect_conv(a,
+        "\\s. case (\\_. Nat : Π(_ : Sum Nat Bool). Type) (\\a. a)       (\\b. zero)     s",
+        "\\s. case (\\_. Nat : Π(_ : Sum Nat Bool). Type) (\\a. succ a) (\\b. zero)     s", 0);
+
+    /* SM9: negative tests */
+    printf("\n[SM9] negative tests\n");
+    /* inl without annotation: cannot infer type */
+    expect_fail(a, "inl zero",
+                   "cannot infer type of inl");
+    /* inr without annotation: cannot infer type */
+    expect_fail(a, "inr true",
+                   "cannot infer type of inr");
+    /* inl checked against non-Sum type */
+    expect_fail(a, "(inl zero : Nat)",
+                   "inl checked against Nat, not Sum");
+    /* inl with wrong payload type: zero : Nat but need Bool */
+    expect_fail(a, "(inl zero : Sum Bool Nat)",
+                   "zero : Nat, but Sum left type is Bool");
+    /* inr with wrong payload type: true : Bool but need Nat */
+    expect_fail(a, "(inr true : Sum Nat Nat)",
+                   "true : Bool, but Sum right type is Nat");
+    /* case with motive domain Nat instead of Sum */
+    expect_fail(a,
+        "(\\n. case (\\_. Nat : Π(_ : Nat). Type)"
+        "          (\\a. a)"
+        "          (\\b. zero)"
+        "          n"
+        " : Π(n : Nat). Nat)",
+        "motive domain Nat, not Sum");
+    /* case motive codomain not a universe */
+    expect_fail(a,
+        "case (\\_. zero : Π(_ : Sum Nat Bool). Nat)"
+        "     (\\a. a)"
+        "     (\\b. zero)"
+        "     (inl zero : Sum Nat Bool)",
+        "motive codomain Nat is not a universe");
+
+    /* SM10: dependent motive β-reduction */
+    printf("\n[SM10] dependent motive: case (λs. Id (Sum Nat Bool) s s) ... (inl zero) ≡ refl (inl zero)\n");
+    expect_conv(a,
+        "case (\\s. Id (Sum Nat Bool) s s"
+        "     : Π(s : Sum Nat Bool). Type)"
+        "     (\\a. refl (inl a : Sum Nat Bool))"
+        "     (\\b. refl (inr b : Sum Nat Bool))"
+        "     (inl zero : Sum Nat Bool)",
+        "(refl (inl zero : Sum Nat Bool)"
+        " : Id (Sum Nat Bool) (inl zero) (inl zero))",
+        1);
+    /* same but on inr branch */
+    expect_conv(a,
+        "case (\\s. Id (Sum Nat Bool) s s"
+        "     : Π(s : Sum Nat Bool). Type)"
+        "     (\\a. refl (inl a : Sum Nat Bool))"
+        "     (\\b. refl (inr b : Sum Nat Bool))"
+        "     (inr true : Sum Nat Bool)",
+        "(refl (inr true : Sum Nat Bool)"
+        " : Id (Sum Nat Bool) (inr true) (inr true))",
+        1);
+
+    /* SM11: two distinct neutral scrutinees produce unequal case terms */
+    printf("\n[SM11] distinct scrutinees: case ... s1 ≢ case ... s2\n");
+    expect_conv(a,
+        "\\s1 s2. case (\\_. Nat : Π(_ : Sum Nat Bool). Type)"
+        "             (\\a. a) (\\b. zero) s1",
+        "\\s1 s2. case (\\_. Nat : Π(_ : Sum Nat Bool). Type)"
+        "             (\\a. a) (\\b. zero) s2",
+        0);
+
+    /* SM12: decidability pattern from PLAN.md */
+    printf("\n[SM12] decidability type: Sum (Id Nat zero zero) (Id Nat zero zero → Empty)\n");
+    run_infer(a, "Sum (Id Nat zero zero) (Π(_ : Id Nat zero zero). Empty)");
 
     fflush(stdout);
     printf("\n=== Summary: %d passed, %d failed ===\n", tests_pass, tests_fail);

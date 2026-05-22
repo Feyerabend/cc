@@ -21,5 +21,6 @@ Val  *nbe_vboolrec (Arena *a, Val *motive, Val *tcase, Val *fcase, Val *b);
 Val  *nbe_vwrec    (Arena *a, Val *motive, Val *step,  Val *w);
 Val  *nbe_vabort   (Arena *a, Val *motive, Val *e);
 Val  *nbe_vunitrec (Arena *a, Val *motive, Val *base, Val *s);
+Val  *nbe_vcase    (Arena *a, Val *motive, Val *lcase, Val *rcase, Val *s);
 Term *nbe_quote(Arena *a, int   depth, Val  *v);
 Term *nbe_nf (Arena *a, Term *t);

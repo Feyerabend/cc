@@ -107,6 +107,12 @@ int conv(Arena *a, int depth, Val *u, Val *v) {
     case VL_UNIT:
     case VL_STAR:
         return 1;  /* canonical constants — equal to themselves */
+    case VL_SUM:
+        return conv(a, depth, u->pair.fst, v->pair.fst) &&
+               conv(a, depth, u->pair.snd, v->pair.snd);
+    case VL_INL:
+    case VL_INR:
+        return conv(a, depth, u->inj, v->inj);
     case VL_SUCC:
         return conv(a, depth, u->succ, v->succ);
     case VL_W: {
@@ -156,6 +162,10 @@ static int conv_spine(Arena *a, int depth, Spine *sp1, Spine *sp2) {
     } else if (sp1->kind == SP_UNITREC) {
         if (!conv(a, depth, sp1->unitrec_s.motive, sp2->unitrec_s.motive)) return 0;
         if (!conv(a, depth, sp1->unitrec_s.base,   sp2->unitrec_s.base))   return 0;
+    } else if (sp1->kind == SP_CASESPLIT) {
+        if (!conv(a, depth, sp1->casesplit_s.motive, sp2->casesplit_s.motive)) return 0;
+        if (!conv(a, depth, sp1->casesplit_s.lcase,  sp2->casesplit_s.lcase))  return 0;
+        if (!conv(a, depth, sp1->casesplit_s.rcase,  sp2->casesplit_s.rcase))  return 0;
     }
     /* SP_FST, SP_SND: no payload — kind equality (checked above) is sufficient. */
     return conv_spine(a, depth, sp1->next, sp2->next);
@@ -501,6 +511,82 @@ Val *infer(Arena *a, int depth, TCtx *tctx, Env *env, Term *t) {
         return A_val;
     }
 
+    case TM_SUM: {
+        /* Sum A B : Type_{max(i,j)} */
+        Val *Aty = infer(a, depth, tctx, env, t->sum_t.left);
+        if (!Aty) return NULL;
+        int i;
+        if (!as_universe(Aty, &i)) {
+            fprintf(stderr, "type error: Sum left type is not a type\n");
+            return NULL;
+        }
+        Val *Bty = infer(a, depth, tctx, env, t->sum_t.right);
+        if (!Bty) return NULL;
+        int j;
+        if (!as_universe(Bty, &j)) {
+            fprintf(stderr, "type error: Sum right type is not a type\n");
+            return NULL;
+        }
+        return vl_uni(a, imax(i, j));
+    }
+
+    case TM_INL:
+        fprintf(stderr,
+            "type error: cannot infer type of inl — wrap in annotation: ((inl a) : Sum A B)\n");
+        return NULL;
+
+    case TM_INR:
+        fprintf(stderr,
+            "type error: cannot infer type of inr — wrap in annotation: ((inr b) : Sum A B)\n");
+        return NULL;
+
+    case TM_CASESPLIT: {
+        /* case P fl fr s : P s
+         * P : Sum A B → Type_k
+         * fl : Π(a:A). P (inl a)
+         * fr : Π(b:B). P (inr b)
+         * s : Sum A B                             */
+        Val *P_ty = infer(a, depth, tctx, env, t->casesplit_t.motive);
+        if (!P_ty) return NULL;
+        if (P_ty->tag != VL_PI) {
+            fprintf(stderr, "type error: case: motive is not a function\n");
+            return NULL;
+        }
+        Val *Sum_ty = P_ty->pi.dom;
+        if (Sum_ty->tag != VL_SUM) {
+            fprintf(stderr, "type error: case: motive domain is not a Sum type\n");
+            return NULL;
+        }
+        Val *A = Sum_ty->pair.fst;
+        Val *B = Sum_ty->pair.snd;
+        {
+            Val *fresh = vl_neutral(a, depth, NULL);
+            Val *P_cod = nbe_eval(a, env_cons(a, fresh, P_ty->pi.env), P_ty->pi.cod);
+            int k;
+            if (!as_universe(P_cod, &k)) {
+                fprintf(stderr, "type error: case: motive codomain is not a universe\n");
+                return NULL;
+            }
+        }
+        Val *P_val = nbe_eval(a, env, t->casesplit_t.motive);
+        /* Check fl : Π(a:A). P(inl a)
+         * Synthetic Pi: cod = APP(VAR 1, INL(VAR 0)), env = [P_val]
+         * so when opened with fresh_a: VAR 0 = fresh_a, VAR 1 = P_val */
+        Val *fl_exp = vl_pi(a, "a", A,
+                            env_cons(a, P_val, NULL),
+                            tm_app(a, tm_var(a, 1), tm_inl(a, tm_var(a, 0))));
+        if (!check(a, depth, tctx, env, t->casesplit_t.lcase, fl_exp)) return NULL;
+        /* Check fr : Π(b:B). P(inr b) */
+        Val *fr_exp = vl_pi(a, "b", B,
+                            env_cons(a, P_val, NULL),
+                            tm_app(a, tm_var(a, 1), tm_inr(a, tm_var(a, 0))));
+        if (!check(a, depth, tctx, env, t->casesplit_t.rcase, fr_exp)) return NULL;
+        /* Check s : Sum A B */
+        if (!check(a, depth, tctx, env, t->casesplit_t.scrut, Sum_ty)) return NULL;
+        Val *s_val = nbe_eval(a, env, t->casesplit_t.scrut);
+        return nbe_vapp(a, P_val, s_val);
+    }
+
     case TM_W: {
         /* W(x:A).B(x) : Type_{max(i,j)} — same rule as Π/Σ */
         Val *dty = infer(a, depth, tctx, env, t->pi.dom);
@@ -697,6 +783,21 @@ int check(Arena *a, int depth, TCtx *tctx, Env *env, Term *t, Val *ty) {
         Val *fstv = nbe_eval(a, env, t->pair.fst);
         Val *sndt = nbe_eval(a, env_cons(a, fstv, ty->pi.env), ty->pi.cod);
         return check(a, depth, tctx, env, t->pair.snd, sndt);
+    }
+    /* inl/inr check against Sum */
+    if (t->tag == TM_INL) {
+        if (ty->tag != VL_SUM) {
+            fprintf(stderr, "type error: expected Sum type when checking inl\n");
+            return 0;
+        }
+        return check(a, depth, tctx, env, t->elim, ty->pair.fst);
+    }
+    if (t->tag == TM_INR) {
+        if (ty->tag != VL_SUM) {
+            fprintf(stderr, "type error: expected Sum type when checking inr\n");
+            return 0;
+        }
+        return check(a, depth, tctx, env, t->elim, ty->pair.snd);
     }
     /* Everything else: infer and convert */
     Val *ity = infer(a, depth, tctx, env, t);

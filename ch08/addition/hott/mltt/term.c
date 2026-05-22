@@ -144,6 +144,25 @@ Term *tm_unitrec(Arena *a, Term *motive, Term *base, Term *scrut) {
     t->unitrec_t.motive = motive; t->unitrec_t.base = base; t->unitrec_t.scrut = scrut;
     return t;
 }
+Term *tm_sum(Arena *a, Term *left, Term *right) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    t->tag = TM_SUM; t->sum_t.left = left; t->sum_t.right = right; return t;
+}
+Term *tm_inl(Arena *a, Term *inner) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    t->tag = TM_INL; t->elim = inner; return t;
+}
+Term *tm_inr(Arena *a, Term *inner) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    t->tag = TM_INR; t->elim = inner; return t;
+}
+Term *tm_casesplit(Arena *a, Term *motive, Term *lcase, Term *rcase, Term *scrut) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    t->tag = TM_CASESPLIT;
+    t->casesplit_t.motive = motive; t->casesplit_t.lcase = lcase;
+    t->casesplit_t.rcase  = rcase;  t->casesplit_t.scrut = scrut;
+    return t;
+}
 
 /* -- Value constructors */
 
@@ -223,6 +242,18 @@ Val *vl_star(Arena *a) {
     Val *v = (Val *)arena_alloc(a, sizeof(Val));
     *v = (Val){.tag = VL_STAR}; return v;
 }
+Val *vl_sum(Arena *a, Val *left, Val *right) {
+    Val *v = (Val *)arena_alloc(a, sizeof(Val));
+    v->tag = VL_SUM; v->pair.fst = left; v->pair.snd = right; return v;
+}
+Val *vl_inl(Arena *a, Val *inner) {
+    Val *v = (Val *)arena_alloc(a, sizeof(Val));
+    v->tag = VL_INL; v->inj = inner; return v;
+}
+Val *vl_inr(Arena *a, Val *inner) {
+    Val *v = (Val *)arena_alloc(a, sizeof(Val));
+    v->tag = VL_INR; v->inj = inner; return v;
+}
 
 /* -- Env / Spine constructors */
 
@@ -278,6 +309,13 @@ Spine *spine_unitrec(Arena *a, Val *motive, Val *base, Spine *next) {
     Spine *s = (Spine *)arena_alloc(a, sizeof(Spine));
     s->kind = SP_UNITREC;
     s->unitrec_s.motive = motive; s->unitrec_s.base = base;
+    s->next = next; return s;
+}
+Spine *spine_casesplit(Arena *a, Val *motive, Val *lcase, Val *rcase, Spine *next) {
+    Spine *s = (Spine *)arena_alloc(a, sizeof(Spine));
+    s->kind = SP_CASESPLIT;
+    s->casesplit_s.motive = motive; s->casesplit_s.lcase = lcase;
+    s->casesplit_s.rcase  = rcase;
     s->next = next; return s;
 }
 
@@ -476,6 +514,34 @@ void term_fprint_ctx(FILE *f, Term *t, Ctx *ctx, int prec) {
         term_fprint_ctx(f, t->unitrec_t.scrut,  ctx, 2);
         if (prec > 0) fprintf(f, ")");
         break;
+    case TM_SUM:
+        if (prec > 0) fprintf(f, "(");
+        fprintf(f, "Sum ");
+        term_fprint_ctx(f, t->sum_t.left,  ctx, 2); fprintf(f, " ");
+        term_fprint_ctx(f, t->sum_t.right, ctx, 2);
+        if (prec > 0) fprintf(f, ")");
+        break;
+    case TM_INL:
+        if (prec > 1) fprintf(f, "(");
+        fprintf(f, "inl ");
+        term_fprint_ctx(f, t->elim, ctx, 2);
+        if (prec > 1) fprintf(f, ")");
+        break;
+    case TM_INR:
+        if (prec > 1) fprintf(f, "(");
+        fprintf(f, "inr ");
+        term_fprint_ctx(f, t->elim, ctx, 2);
+        if (prec > 1) fprintf(f, ")");
+        break;
+    case TM_CASESPLIT:
+        if (prec > 0) fprintf(f, "(");
+        fprintf(f, "case ");
+        term_fprint_ctx(f, t->casesplit_t.motive, ctx, 2); fprintf(f, " ");
+        term_fprint_ctx(f, t->casesplit_t.lcase,  ctx, 2); fprintf(f, " ");
+        term_fprint_ctx(f, t->casesplit_t.rcase,  ctx, 2); fprintf(f, " ");
+        term_fprint_ctx(f, t->casesplit_t.scrut,  ctx, 2);
+        if (prec > 0) fprintf(f, ")");
+        break;
     default:
         fprintf(f, "<unknown term %d>", t->tag);
         break;
@@ -503,8 +569,9 @@ static void spine_print(FILE *f, Spine *sp, int depth) {
     case SP_NATREC:  fprintf(f, ".natrec(...)");  break;
     case SP_BOOLREC: fprintf(f, ".boolrec(...)"); break;
     case SP_WREC:    fprintf(f, ".wrec(...)");    break;
-    case SP_ABORT:   fprintf(f, ".abort(...)");   break;
-    case SP_UNITREC: fprintf(f, ".unitrec(...)"); break;
+    case SP_ABORT:      fprintf(f, ".abort(...)");      break;
+    case SP_UNITREC:    fprintf(f, ".unitrec(...)");    break;
+    case SP_CASESPLIT:  fprintf(f, ".case(...)");       break;
     default: fprintf(f, ".<unknown spine %d>", sp->kind); break;
     }
 }
@@ -559,6 +626,25 @@ static void val_print_inner(FILE *f, Val *v, int depth, int prec) {
     case VL_EMPTY: fprintf(f, "Empty"); break;
     case VL_UNIT:  fprintf(f, "Unit");  break;
     case VL_STAR:  fprintf(f, "star");  break;
+    case VL_SUM:
+        fprintf(f, "Sum(");
+        val_print_inner(f, v->pair.fst, depth, 0);
+        fprintf(f, ", ");
+        val_print_inner(f, v->pair.snd, depth, 0);
+        fprintf(f, ")");
+        break;
+    case VL_INL:
+        if (prec > 1) fprintf(f, "(");
+        fprintf(f, "inl ");
+        val_print_inner(f, v->inj, depth, 2);
+        if (prec > 1) fprintf(f, ")");
+        break;
+    case VL_INR:
+        if (prec > 1) fprintf(f, "(");
+        fprintf(f, "inr ");
+        val_print_inner(f, v->inj, depth, 2);
+        if (prec > 1) fprintf(f, ")");
+        break;
     case VL_SUP:
         fprintf(f, "sup(");
         val_print_inner(f, v->pair.fst, depth, 0);

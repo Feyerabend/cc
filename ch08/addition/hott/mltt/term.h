@@ -51,6 +51,10 @@ typedef enum {
     TM_UNIT,   /* Unit                unit type (⊤)        */
     TM_STAR,   /* star                sole constructor      */
     TM_UNITREC,/* unitrec P ps s      eliminator            */
+    TM_SUM,    /* Sum A B             disjoint union type   */
+    TM_INL,    /* inl a               left injection        */
+    TM_INR,    /* inr b               right injection       */
+    TM_CASESPLIT,/* case P fl fr s    eliminator            */
 } TermTag;
 
 typedef struct Term Term;
@@ -64,7 +68,7 @@ struct Term {
         int                              ulevel; /* UNI  */
         struct { Term *term; Term *type; }       ann;    /* ANN  */
         struct { Term *fst;  Term *snd;  }       pair;   /* PAIR */
-        Term                            *elim;   /* FST, SND */
+        Term                            *elim;   /* FST, SND, SUCC, INL, INR */
         struct { Term *ty; Term *lhs; Term *rhs; }       id;    /* ID   */
         Term                            *refl;           /* REFL */
         struct { Term *ty; Term *lhs; Term *motive;
@@ -78,6 +82,9 @@ struct Term {
         struct { Term *motive; Term *step; Term *scrut; }    wrec;    /* WREC    */
         struct { Term *motive; Term *scrut; }                abort_t;   /* ABORT    */
         struct { Term *motive; Term *base; Term *scrut; }    unitrec_t; /* UNITREC  */
+        struct { Term *left; Term *right; }                  sum_t;      /* SUM      */
+        struct { Term *motive; Term *lcase; Term *rcase;
+                 Term *scrut; }                              casesplit_t; /* CASESPLIT*/
     };
 };
 
@@ -96,7 +103,7 @@ struct Env {
  * Spine: sequence of eliminators applied to a neutral head.
  * head = most recently applied (outermost when quoting).
  */
-typedef enum { SP_APP, SP_FST, SP_SND, SP_J, SP_NATREC, SP_BOOLREC, SP_WREC, SP_ABORT, SP_UNITREC } SpineKind;
+typedef enum { SP_APP, SP_FST, SP_SND, SP_J, SP_NATREC, SP_BOOLREC, SP_WREC, SP_ABORT, SP_UNITREC, SP_CASESPLIT } SpineKind;
 struct Spine {
     SpineKind kind;
     union {
@@ -106,7 +113,8 @@ struct Spine {
         struct { Val *motive; Val *tcase; Val *fcase; }                      boolrec; /* SP_BOOLREC */
         struct { Val *motive; Val *step; }                                   wrec;    /* SP_WREC    */
         struct { Val *motive; }                                              abort_s;   /* SP_ABORT   */
-        struct { Val *motive; Val *base; }                                   unitrec_s; /* SP_UNITREC */
+        struct { Val *motive; Val *base; }                                   unitrec_s;   /* SP_UNITREC   */
+        struct { Val *motive; Val *lcase; Val *rcase; }                      casesplit_s; /* SP_CASESPLIT */
     };
     Spine *next;
 };
@@ -133,6 +141,9 @@ typedef enum {
     VL_EMPTY,  /* Empty type value (⊥)                 */
     VL_UNIT,   /* Unit type value (⊤)                  */
     VL_STAR,   /* star — sole element of Unit          */
+    VL_SUM,    /* Sum A B type: pair.fst=A, pair.snd=B */
+    VL_INL,    /* left injection: inj = wrapped value  */
+    VL_INR,    /* right injection: inj = wrapped value */
 } ValTag;
 
 struct Val {
@@ -146,6 +157,7 @@ struct Val {
         struct { Val *ty; Val *lhs; Val *rhs; }               id;
         Val                                                  *refl;
         Val                                                  *succ;  /* VL_SUCC: predecessor */
+        Val                                                  *inj;   /* VL_INL, VL_INR       */
     };
 };
 
@@ -184,6 +196,10 @@ Term *tm_abort  (Arena *a, Term *motive, Term *scrut);
 Term *tm_unit   (Arena *a);
 Term *tm_star   (Arena *a);
 Term *tm_unitrec(Arena *a, Term *motive, Term *base, Term *scrut);
+Term *tm_sum      (Arena *a, Term *left, Term *right);
+Term *tm_inl      (Arena *a, Term *t);
+Term *tm_inr      (Arena *a, Term *t);
+Term *tm_casesplit(Arena *a, Term *motive, Term *lcase, Term *rcase, Term *scrut);
 
 /* ── Value constructors */
 
@@ -206,6 +222,9 @@ Val  *vl_sup    (Arena *a, Val *label, Val *children);
 Val  *vl_empty  (Arena *a);
 Val  *vl_unit   (Arena *a);
 Val  *vl_star   (Arena *a);
+Val  *vl_sum    (Arena *a, Val *left, Val *right);
+Val  *vl_inl    (Arena *a, Val *v);
+Val  *vl_inr    (Arena *a, Val *v);
 
 /* ── Env / Spine constructors */
 
@@ -224,7 +243,9 @@ Spine *spine_wrec   (Arena *a, Val *motive, Val *step,
 Spine *spine_abort  (Arena *a, Val *motive,
                      Spine *next);                            /* SP_ABORT   */
 Spine *spine_unitrec(Arena *a, Val *motive, Val *base,
-                     Spine *next);                            /* SP_UNITREC */
+                     Spine *next);                            /* SP_UNITREC   */
+Spine *spine_casesplit(Arena *a, Val *motive, Val *lcase, Val *rcase,
+                       Spine *next);                          /* SP_CASESPLIT */
 
 /* ── Printing context (name list, innermost = index 0) */
 

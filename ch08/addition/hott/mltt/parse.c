@@ -238,6 +238,29 @@ static Term *parse_atom(Parser *p, NameCtx *ctx) {
             Term *scr = parse_atom(p, ctx); if (!scr) return NULL;
             return tm_unitrec(p->arena, mot, bas, scr);
         }
+        /* Sum type */
+        if (strcmp(name, "Sum") == 0) {
+            Term *left  = parse_atom(p, ctx); if (!left)  return NULL;
+            Term *right = parse_atom(p, ctx); if (!right) return NULL;
+            return tm_sum(p->arena, left, right);
+        }
+        if (strcmp(name, "inl") == 0) {
+            Term *arg = parse_atom(p, ctx);
+            if (!arg) return NULL;
+            return tm_inl(p->arena, arg);
+        }
+        if (strcmp(name, "inr") == 0) {
+            Term *arg = parse_atom(p, ctx);
+            if (!arg) return NULL;
+            return tm_inr(p->arena, arg);
+        }
+        if (strcmp(name, "case") == 0) {
+            Term *mot   = parse_atom(p, ctx); if (!mot)   return NULL;
+            Term *lcase = parse_atom(p, ctx); if (!lcase) return NULL;
+            Term *rcase = parse_atom(p, ctx); if (!rcase) return NULL;
+            Term *scr   = parse_atom(p, ctx); if (!scr)   return NULL;
+            return tm_casesplit(p->arena, mot, lcase, rcase, scr);
+        }
         /* Empty type */
         if (strcmp(name, "Empty") == 0) return tm_empty(p->arena);
         if (strcmp(name, "abort") == 0) {

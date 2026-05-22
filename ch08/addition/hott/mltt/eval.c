@@ -68,6 +68,17 @@ Val *nbe_vabort(Arena *a, Val *motive, Val *e) {
     exit(1);
 }
 
+/* ── Sum eliminator */
+
+Val *nbe_vcase(Arena *a, Val *motive, Val *lcase, Val *rcase, Val *s) {
+    if (s->tag == VL_INL)    return nbe_vapp(a, lcase, s->inj);
+    if (s->tag == VL_INR)    return nbe_vapp(a, rcase, s->inj);
+    if (s->tag == VL_NEUTRAL)
+        return vl_neutral(a, s->neutral.lvl,
+                          spine_casesplit(a, motive, lcase, rcase, s->neutral.spine));
+    fprintf(stderr, "vcase: not a Sum value\n"); exit(1);
+}
+
 /* ── Unit eliminator */
 
 Val *nbe_vunitrec(Arena *a, Val *motive, Val *base, Val *s) {
@@ -201,6 +212,19 @@ Val *nbe_eval(Arena *a, Env *env, Term *t) {
                    nbe_eval(a, env, t->unitrec_t.motive),
                    nbe_eval(a, env, t->unitrec_t.base),
                    nbe_eval(a, env, t->unitrec_t.scrut));
+    case TM_SUM:
+        return vl_sum(a, nbe_eval(a, env, t->sum_t.left),
+                         nbe_eval(a, env, t->sum_t.right));
+    case TM_INL:
+        return vl_inl(a, nbe_eval(a, env, t->elim));
+    case TM_INR:
+        return vl_inr(a, nbe_eval(a, env, t->elim));
+    case TM_CASESPLIT:
+        return nbe_vcase(a,
+                   nbe_eval(a, env, t->casesplit_t.motive),
+                   nbe_eval(a, env, t->casesplit_t.lcase),
+                   nbe_eval(a, env, t->casesplit_t.rcase),
+                   nbe_eval(a, env, t->casesplit_t.scrut));
 
     default:
         fprintf(stderr, "eval: unhandled term tag %d\n", t->tag);
@@ -251,6 +275,12 @@ static Term *quote_spine(Arena *a, int depth, Term *head, Spine *sp) {
                           quote(a, depth, sp->unitrec_s.motive),
                           quote(a, depth, sp->unitrec_s.base),
                           inner);
+    case SP_CASESPLIT:
+        return tm_casesplit(a,
+                            quote(a, depth, sp->casesplit_s.motive),
+                            quote(a, depth, sp->casesplit_s.lcase),
+                            quote(a, depth, sp->casesplit_s.rcase),
+                            inner);
     default:
         fprintf(stderr, "quote_spine: unhandled spine kind %d\n", sp->kind);
         exit(1);
@@ -315,6 +345,13 @@ static Term *quote(Arena *a, int depth, Val *v) {
         return tm_unit(a);
     case VL_STAR:
         return tm_star(a);
+    case VL_SUM:
+        return tm_sum(a, quote(a, depth, v->pair.fst),
+                         quote(a, depth, v->pair.snd));
+    case VL_INL:
+        return tm_inl(a, quote(a, depth, v->inj));
+    case VL_INR:
+        return tm_inr(a, quote(a, depth, v->inj));
     default:
         fprintf(stderr, "quote: unhandled val tag %d\n", v->tag);
         exit(1);
