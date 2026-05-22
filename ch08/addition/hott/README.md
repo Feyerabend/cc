@@ -8,7 +8,7 @@ topology entered the story later, but conceptually it is misleading. The homotop
 interpretation emerges because the identity structure already present in MLTT turns out
 to behave in a very peculiar and very rich way when one examines it carefully enough.
 
-So it is best to begin with MLTT itself.
+So it is best to begin with [MLTT](./mltt) itself.
 
 In ordinary set theory, mathematical objects are usually conceived as elements inside 
 collections. One writes something like "x belongs to S," and equality is taken as primitive.
