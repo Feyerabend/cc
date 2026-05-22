@@ -79,7 +79,7 @@ The process continues indefinitely.
 At this point one has accidentally wandered into higher-dimensional structure.
 
 This is where the homotopical interpretation enters. Mathematicians discovered that the formal
-behavior of identity types corresponds remarkably closely to the behavior of paths in topology.
+behavior of identity types corresponds remarkably closely to the behaviour of paths in topology.
 One may interpret a type as a space, a term as a point in that space, and an identity proof
 as a path connecting two points. Then equality between proofs becomes a homotopy between paths.
 Higher equalities become higher homotopies.
@@ -87,8 +87,9 @@ Higher equalities become higher homotopies.
 What is astonishing is that this is not merely poetic analogy. The formal algebraic structure
 actually matches.
 
-So HoTT emerges when one begins interpreting MLTT geometrically. Types are no longer merely
-logical collections of constructions. They become spaces of connectivity and transformation.
+So [HoTT](./code/) emerges when one begins interpreting MLTT geometrically. Types are no
+longer merely logical collections of constructions. They become spaces of connectivity
+and transformation.
 
 This changes the meaning of identity itself. Equality no longer behaves like a primitive
 logical fact. It behaves like navigability inside a structured space.
