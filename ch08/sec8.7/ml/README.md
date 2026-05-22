@@ -97,5 +97,7 @@ A few ideas recur in almost every folder and are worth holding in mind throughou
 
 ### Reference
 
+* Burkov, A. (2019). *The hundred-page machine learning book*. Andriy Burkov.
+
 ![The Hundred-Page Machine Learning Book](./../../assets/image/100.png)
 
