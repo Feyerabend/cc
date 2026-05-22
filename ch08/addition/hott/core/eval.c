@@ -58,6 +58,54 @@ Val *nbe_vboolrec(Arena *a, Val *motive, Val *tcase, Val *fcase, Val *b) {
     fprintf(stderr, "vboolrec: not a Bool\n"); exit(1);
 }
 
+/* ── Empty eliminator (ex falso) */
+
+Val *nbe_vabort(Arena *a, Val *motive, Val *e) {
+    if (e->tag == VL_NEUTRAL)
+        return vl_neutral(a, e->neutral.lvl,
+                          spine_abort(a, motive, e->neutral.spine));
+    fprintf(stderr, "vabort: scrutinee is not neutral (Empty has no constructors)\n");
+    exit(1);
+}
+
+/* ── Unit eliminator */
+
+Val *nbe_vunitrec(Arena *a, Val *motive, Val *base, Val *s) {
+    if (s->tag == VL_STAR)    return base;
+    if (s->tag == VL_NEUTRAL)
+        return vl_neutral(a, s->neutral.lvl,
+                          spine_unitrec(a, motive, base, s->neutral.spine));
+    fprintf(stderr, "vunitrec: not a Unit value\n"); exit(1);
+}
+
+/* ── W-type eliminator
+ *
+ * β-rule: wrec P s (sup a f) ≡ s a f (λb. wrec P s (f b))
+ *
+ * The IH λb. wrec P s (f b) is built as a VL_LAM whose body is a synthetic
+ * TM_WREC term.  The closure captures [children, step, motive] so that when
+ * applied to b the env is [b(0), children(1), step(2), motive(3)].
+ */
+
+Val *nbe_vwrec(Arena *a, Val *motive, Val *step, Val *w) {
+    if (w->tag == VL_SUP) {
+        Val *label    = w->pair.fst;
+        Val *children = w->pair.snd;
+        Env *captured = env_cons(a, children,
+                        env_cons(a, step,
+                        env_cons(a, motive, NULL)));
+        /* body: wrec(VAR 3, VAR 2, APP(VAR 1, VAR 0)) */
+        Term *body = tm_wrec(a, tm_var(a, 3), tm_var(a, 2),
+                             tm_app(a, tm_var(a, 1), tm_var(a, 0)));
+        Val *ih = vl_lam(a, "b", captured, body);
+        return nbe_vapp(a, nbe_vapp(a, nbe_vapp(a, step, label), children), ih);
+    }
+    if (w->tag == VL_NEUTRAL)
+        return vl_neutral(a, w->neutral.lvl,
+                          spine_wrec(a, motive, step, w->neutral.spine));
+    fprintf(stderr, "vwrec: not a W-type value\n"); exit(1);
+}
+
 /* ── J eliminator */
 
 Val *nbe_vj(Arena *a, Val *ty, Val *lhs, Val *motive,
@@ -128,6 +176,31 @@ Val *nbe_eval(Arena *a, Env *env, Term *t) {
                       nbe_eval(a, env, t->j.base),
                       nbe_eval(a, env, t->j.endpoint),
                       nbe_eval(a, env, t->j.proof));
+    case TM_W:
+        return vl_w(a, t->pi.name, nbe_eval(a, env, t->pi.dom), env, t->pi.cod);
+    case TM_SUP:
+        return vl_sup(a, nbe_eval(a, env, t->sup.label),
+                         nbe_eval(a, env, t->sup.children));
+    case TM_WREC:
+        return nbe_vwrec(a,
+                   nbe_eval(a, env, t->wrec.motive),
+                   nbe_eval(a, env, t->wrec.step),
+                   nbe_eval(a, env, t->wrec.scrut));
+    case TM_EMPTY:
+        return vl_empty(a);
+    case TM_ABORT:
+        return nbe_vabort(a,
+                   nbe_eval(a, env, t->abort_t.motive),
+                   nbe_eval(a, env, t->abort_t.scrut));
+    case TM_UNIT:
+        return vl_unit(a);
+    case TM_STAR:
+        return vl_star(a);
+    case TM_UNITREC:
+        return nbe_vunitrec(a,
+                   nbe_eval(a, env, t->unitrec_t.motive),
+                   nbe_eval(a, env, t->unitrec_t.base),
+                   nbe_eval(a, env, t->unitrec_t.scrut));
 
     default:
         fprintf(stderr, "eval: unhandled term tag %d\n", t->tag);
@@ -165,6 +238,18 @@ static Term *quote_spine(Arena *a, int depth, Term *head, Spine *sp) {
                           quote(a, depth, sp->boolrec.motive),
                           quote(a, depth, sp->boolrec.tcase),
                           quote(a, depth, sp->boolrec.fcase),
+                          inner);
+    case SP_WREC:
+        return tm_wrec(a,
+                       quote(a, depth, sp->wrec.motive),
+                       quote(a, depth, sp->wrec.step),
+                       inner);
+    case SP_ABORT:
+        return tm_abort(a, quote(a, depth, sp->abort_s.motive), inner);
+    case SP_UNITREC:
+        return tm_unitrec(a,
+                          quote(a, depth, sp->unitrec_s.motive),
+                          quote(a, depth, sp->unitrec_s.base),
                           inner);
     default:
         fprintf(stderr, "quote_spine: unhandled spine kind %d\n", sp->kind);
@@ -215,6 +300,21 @@ static Term *quote(Arena *a, int depth, Val *v) {
     case VL_BOOL:  return tm_bool(a);
     case VL_TRUE:  return tm_true(a);
     case VL_FALSE: return tm_false(a);
+    case VL_W: {
+        Term *dom   = quote(a, depth, v->pi.dom);
+        Val  *fresh = vl_neutral(a, depth, NULL);
+        Val  *cod   = nbe_eval(a, env_cons(a, fresh, v->pi.env), v->pi.cod);
+        return tm_w(a, v->pi.name, dom, quote(a, depth + 1, cod));
+    }
+    case VL_SUP:
+        return tm_sup(a, quote(a, depth, v->pair.fst),
+                         quote(a, depth, v->pair.snd));
+    case VL_EMPTY:
+        return tm_empty(a);
+    case VL_UNIT:
+        return tm_unit(a);
+    case VL_STAR:
+        return tm_star(a);
     default:
         fprintf(stderr, "quote: unhandled val tag %d\n", v->tag);
         exit(1);

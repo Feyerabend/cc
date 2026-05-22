@@ -109,6 +109,41 @@ Term *tm_global(Arena *a, int idx) {
     Term *t = (Term *)arena_alloc(a, sizeof(Term));
     t->tag = TM_GLOBAL; t->idx = idx; return t;
 }
+Term *tm_w(Arena *a, char *name, Term *dom, Term *cod) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    t->tag = TM_W; t->pi.name = name; t->pi.dom = dom; t->pi.cod = cod; return t;
+}
+Term *tm_sup(Arena *a, Term *label, Term *children) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    t->tag = TM_SUP; t->sup.label = label; t->sup.children = children; return t;
+}
+Term *tm_wrec(Arena *a, Term *motive, Term *step, Term *scrut) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    t->tag = TM_WREC;
+    t->wrec.motive = motive; t->wrec.step = step; t->wrec.scrut = scrut; return t;
+}
+Term *tm_empty(Arena *a) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    *t = (Term){.tag = TM_EMPTY}; return t;
+}
+Term *tm_abort(Arena *a, Term *motive, Term *scrut) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    t->tag = TM_ABORT; t->abort_t.motive = motive; t->abort_t.scrut = scrut; return t;
+}
+Term *tm_unit(Arena *a) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    *t = (Term){.tag = TM_UNIT}; return t;
+}
+Term *tm_star(Arena *a) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    *t = (Term){.tag = TM_STAR}; return t;
+}
+Term *tm_unitrec(Arena *a, Term *motive, Term *base, Term *scrut) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    t->tag = TM_UNITREC;
+    t->unitrec_t.motive = motive; t->unitrec_t.base = base; t->unitrec_t.scrut = scrut;
+    return t;
+}
 
 /* -- Value constructors */
 
@@ -168,6 +203,26 @@ Val *vl_false(Arena *a) {
     Val *v = (Val *)arena_alloc(a, sizeof(Val));
     *v = (Val){.tag = VL_FALSE}; return v;
 }
+Val *vl_w(Arena *a, char *name, Val *dom, Env *env, Term *cod) {
+    Val *v = (Val *)arena_alloc(a, sizeof(Val));
+    v->tag = VL_W; v->pi.name = name; v->pi.dom = dom; v->pi.env = env; v->pi.cod = cod; return v;
+}
+Val *vl_sup(Arena *a, Val *label, Val *children) {
+    Val *v = (Val *)arena_alloc(a, sizeof(Val));
+    v->tag = VL_SUP; v->pair.fst = label; v->pair.snd = children; return v;
+}
+Val *vl_empty(Arena *a) {
+    Val *v = (Val *)arena_alloc(a, sizeof(Val));
+    *v = (Val){.tag = VL_EMPTY}; return v;
+}
+Val *vl_unit(Arena *a) {
+    Val *v = (Val *)arena_alloc(a, sizeof(Val));
+    *v = (Val){.tag = VL_UNIT}; return v;
+}
+Val *vl_star(Arena *a) {
+    Val *v = (Val *)arena_alloc(a, sizeof(Val));
+    *v = (Val){.tag = VL_STAR}; return v;
+}
 
 /* -- Env / Spine constructors */
 
@@ -205,6 +260,24 @@ Spine *spine_boolrec(Arena *a, Val *motive, Val *tcase, Val *fcase, Spine *next)
     Spine *s = (Spine *)arena_alloc(a, sizeof(Spine));
     s->kind = SP_BOOLREC;
     s->boolrec.motive = motive; s->boolrec.tcase = tcase; s->boolrec.fcase = fcase;
+    s->next = next; return s;
+}
+Spine *spine_wrec(Arena *a, Val *motive, Val *step, Spine *next) {
+    Spine *s = (Spine *)arena_alloc(a, sizeof(Spine));
+    s->kind = SP_WREC;
+    s->wrec.motive = motive; s->wrec.step = step;
+    s->next = next; return s;
+}
+Spine *spine_abort(Arena *a, Val *motive, Spine *next) {
+    Spine *s = (Spine *)arena_alloc(a, sizeof(Spine));
+    s->kind = SP_ABORT;
+    s->abort_s.motive = motive;
+    s->next = next; return s;
+}
+Spine *spine_unitrec(Arena *a, Val *motive, Val *base, Spine *next) {
+    Spine *s = (Spine *)arena_alloc(a, sizeof(Spine));
+    s->kind = SP_UNITREC;
+    s->unitrec_s.motive = motive; s->unitrec_s.base = base;
     s->next = next; return s;
 }
 
@@ -354,6 +427,55 @@ void term_fprint_ctx(FILE *f, Term *t, Ctx *ctx, int prec) {
         term_fprint_ctx(f, t->boolrec.scrut,  ctx, 2);
         if (prec > 0) fprintf(f, ")");
         break;
+    case TM_W: {
+        if (prec > 0) fprintf(f, "(");
+        fprintf(f, "W(%s : ", t->pi.name);
+        term_fprint_ctx(f, t->pi.dom, ctx, 0);
+        fprintf(f, "). ");
+        Ctx cw = { t->pi.name, ctx };
+        term_fprint_ctx(f, t->pi.cod, &cw, 0);
+        if (prec > 0) fprintf(f, ")");
+        break;
+    }
+    case TM_SUP:
+        if (prec > 1) fprintf(f, "(");
+        fprintf(f, "sup ");
+        term_fprint_ctx(f, t->sup.label,    ctx, 2); fprintf(f, " ");
+        term_fprint_ctx(f, t->sup.children, ctx, 2);
+        if (prec > 1) fprintf(f, ")");
+        break;
+    case TM_WREC:
+        if (prec > 0) fprintf(f, "(");
+        fprintf(f, "wrec ");
+        term_fprint_ctx(f, t->wrec.motive, ctx, 2); fprintf(f, " ");
+        term_fprint_ctx(f, t->wrec.step,   ctx, 2); fprintf(f, " ");
+        term_fprint_ctx(f, t->wrec.scrut,  ctx, 2);
+        if (prec > 0) fprintf(f, ")");
+        break;
+    case TM_EMPTY:
+        fprintf(f, "Empty");
+        break;
+    case TM_ABORT:
+        if (prec > 1) fprintf(f, "(");
+        fprintf(f, "abort ");
+        term_fprint_ctx(f, t->abort_t.motive, ctx, 2); fprintf(f, " ");
+        term_fprint_ctx(f, t->abort_t.scrut,  ctx, 2);
+        if (prec > 1) fprintf(f, ")");
+        break;
+    case TM_UNIT:
+        fprintf(f, "Unit");
+        break;
+    case TM_STAR:
+        fprintf(f, "star");
+        break;
+    case TM_UNITREC:
+        if (prec > 0) fprintf(f, "(");
+        fprintf(f, "unitrec ");
+        term_fprint_ctx(f, t->unitrec_t.motive, ctx, 2); fprintf(f, " ");
+        term_fprint_ctx(f, t->unitrec_t.base,   ctx, 2); fprintf(f, " ");
+        term_fprint_ctx(f, t->unitrec_t.scrut,  ctx, 2);
+        if (prec > 0) fprintf(f, ")");
+        break;
     default:
         fprintf(f, "<unknown term %d>", t->tag);
         break;
@@ -380,6 +502,9 @@ static void spine_print(FILE *f, Spine *sp, int depth) {
     case SP_J:      fprintf(f, ".J(...)"); break;
     case SP_NATREC:  fprintf(f, ".natrec(...)");  break;
     case SP_BOOLREC: fprintf(f, ".boolrec(...)"); break;
+    case SP_WREC:    fprintf(f, ".wrec(...)");    break;
+    case SP_ABORT:   fprintf(f, ".abort(...)");   break;
+    case SP_UNITREC: fprintf(f, ".unitrec(...)"); break;
     default: fprintf(f, ".<unknown spine %d>", sp->kind); break;
     }
 }
@@ -428,6 +553,17 @@ static void val_print_inner(FILE *f, Val *v, int depth, int prec) {
     case VL_REFL:
         fprintf(f, "refl(");
         val_print_inner(f, v->refl, depth, 0);
+        fprintf(f, ")");
+        break;
+    case VL_W:     fprintf(f, "W(%s:...)<cod>", v->pi.name); break;
+    case VL_EMPTY: fprintf(f, "Empty"); break;
+    case VL_UNIT:  fprintf(f, "Unit");  break;
+    case VL_STAR:  fprintf(f, "star");  break;
+    case VL_SUP:
+        fprintf(f, "sup(");
+        val_print_inner(f, v->pair.fst, depth, 0);
+        fprintf(f, ", ");
+        val_print_inner(f, v->pair.snd, depth, 0);
         fprintf(f, ")");
         break;
     default: fprintf(f, "<unknown val %d>", v->tag); break;

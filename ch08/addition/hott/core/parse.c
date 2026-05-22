@@ -63,10 +63,16 @@ static char *read_ident(Parser *p) {
         return NULL;
     char buf[IDENT_MAX];
     int  n = 0;
-    while (n < IDENT_MAX - 1 &&
-           (isalnum((unsigned char)p->src[p->pos]) || p->src[p->pos] == '_' ||
-            p->src[p->pos] == '\''))
+    while (isalnum((unsigned char)p->src[p->pos]) || p->src[p->pos] == '_' ||
+           p->src[p->pos] == '\'') {
+        if (n >= IDENT_MAX - 1) {
+            buf[n] = '\0';
+            fprintf(stderr, "parse: identifier too long (max %d chars): '%.20s...'\n",
+                    IDENT_MAX - 1, buf);
+            return NULL;
+        }
         buf[n++] = p->src[p->pos++];
+    }
     buf[n] = '\0';
     return arena_strdup(p->arena, buf);
 }
@@ -171,6 +177,7 @@ static Term *parse_atom(Parser *p, NameCtx *ctx) {
     }
     if (isalpha(c) || c == '_') {
         char *name = read_ident(p);
+        if (!name) return NULL;
         /* Axioms */
         if (strcmp(name, "ua")     == 0) return tm_ua(p->arena);
         if (strcmp(name, "funext") == 0) return tm_funext(p->arena);
@@ -220,6 +227,48 @@ static Term *parse_atom(Parser *p, NameCtx *ctx) {
             Term *endpoint = parse_atom(p, ctx); if (!endpoint) return NULL;
             Term *proof    = parse_atom(p, ctx); if (!proof)    return NULL;
             return tm_j(p->arena, ty, lhs, motive, base, endpoint, proof);
+        }
+        /* W-types */
+        /* Unit type */
+        if (strcmp(name, "Unit") == 0) return tm_unit(p->arena);
+        if (strcmp(name, "star") == 0) return tm_star(p->arena);
+        if (strcmp(name, "unitrec") == 0) {
+            Term *mot = parse_atom(p, ctx); if (!mot) return NULL;
+            Term *bas = parse_atom(p, ctx); if (!bas) return NULL;
+            Term *scr = parse_atom(p, ctx); if (!scr) return NULL;
+            return tm_unitrec(p->arena, mot, bas, scr);
+        }
+        /* Empty type */
+        if (strcmp(name, "Empty") == 0) return tm_empty(p->arena);
+        if (strcmp(name, "abort") == 0) {
+            Term *mot = parse_atom(p, ctx); if (!mot) return NULL;
+            Term *scr = parse_atom(p, ctx); if (!scr) return NULL;
+            return tm_abort(p->arena, mot, scr);
+        }
+        if (strcmp(name, "W") == 0) {
+            if (!expect(p, '(')) return NULL;
+            char *wname = read_ident(p);
+            if (!wname) { fprintf(stderr, "parse: W needs a name\n"); return NULL; }
+            if (!expect(p, ':')) return NULL;
+            Term *dom = parse_expr(p, ctx);
+            if (!dom) return NULL;
+            if (!expect(p, ')')) return NULL;
+            if (!expect(p, '.')) return NULL;
+            NameCtx ext = { wname, ctx };
+            Term *cod = parse_expr(p, &ext);
+            if (!cod) return NULL;
+            return tm_w(p->arena, wname, dom, cod);
+        }
+        if (strcmp(name, "sup") == 0) {
+            Term *label    = parse_atom(p, ctx); if (!label)    return NULL;
+            Term *children = parse_atom(p, ctx); if (!children) return NULL;
+            return tm_sup(p->arena, label, children);
+        }
+        if (strcmp(name, "wrec") == 0) {
+            Term *mot  = parse_atom(p, ctx); if (!mot)  return NULL;
+            Term *step = parse_atom(p, ctx); if (!step) return NULL;
+            Term *scr  = parse_atom(p, ctx); if (!scr)  return NULL;
+            return tm_wrec(p->arena, mot, step, scr);
         }
         /* fst / snd eliminators */
         if (strcmp(name, "fst") == 0) {

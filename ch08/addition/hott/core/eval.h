@@ -18,5 +18,8 @@ Val  *nbe_vsnd (Arena *a, Val  *v);
 Val  *nbe_vj (Arena *a, Val  *ty, Val *lhs, Val *motive, Val *base, Val *endpoint, Val *proof);
 Val  *nbe_vnatrec (Arena *a, Val *motive, Val *base, Val *step, Val *n);
 Val  *nbe_vboolrec (Arena *a, Val *motive, Val *tcase, Val *fcase, Val *b);
+Val  *nbe_vwrec    (Arena *a, Val *motive, Val *step,  Val *w);
+Val  *nbe_vabort   (Arena *a, Val *motive, Val *e);
+Val  *nbe_vunitrec (Arena *a, Val *motive, Val *base, Val *s);
 Term *nbe_quote(Arena *a, int   depth, Val  *v);
 Term *nbe_nf (Arena *a, Term *t);

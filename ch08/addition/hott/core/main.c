@@ -42,6 +42,9 @@ static int is_reserved_name(const char *n) {
         "Bool", "true", "false", "boolrec",
         "Id", "refl", "J",
         "fst", "snd", "Type",
+        "W", "sup", "wrec",
+        "Empty", "abort",
+        "Unit", "star", "unitrec",
         NULL
     };
     for (int i = 0; kw[i]; i++)
@@ -52,19 +55,25 @@ static int is_reserved_name(const char *n) {
 
 /* ── built-in test suite */
 
+static int tests_pass = 0;
+static int tests_fail = 0;
+
 /* ── expect a type error (negative test) */
 
 static void expect_fail(Arena *a, const char *src, const char *reason) {
     Term *t = parse(a, src);
     if (!t) {
         printf("  [FAIL-PARSE unexpected] %s\n", src);
+        tests_fail++;
         return;
     }
     Val *ty = infer(a, 0, NULL, NULL, t);
     if (ty) {
+        tests_fail++;
         printf("  [BUG: should have failed] %s  — %s\n", src, reason);
         printf("    got type: "); term_print(nbe_quote(a, 0, ty)); printf("\n");
     } else {
+        tests_pass++;
         printf("  [REJECTED OK] %s\n", src);
     }
 }
@@ -74,19 +83,60 @@ static void expect_fail(Arena *a, const char *src, const char *reason) {
 static void expect_conv(Arena *a, const char *sa, const char *sb, int should_equal) {
     Term *ta = parse(a, sa);
     Term *tb = parse(a, sb);
-    if (!ta || !tb) { printf("  [FAIL-PARSE] %s  ~  %s\n", sa, sb); return; }
+    if (!ta || !tb) {
+        printf("  [FAIL-PARSE] %s  ~  %s\n", sa, sb);
+        tests_fail++;
+        return;
+    }
     Val *va = nbe_eval(a, NULL, ta);
     Val *vb = nbe_eval(a, NULL, tb);
     int eq = conv(a, 0, va, vb);
     if (eq == should_equal) {
+        tests_pass++;
         printf("  [OK] %s  %s  %s\n", sa, eq ? "≡" : "≢", sb);
     } else {
+        tests_fail++;
         printf("  [BUG] %s  expected %s  %s\n",
                sa, should_equal ? "≡" : "≢", sb);
     }
 }
 
+/* ── infer type and check conv-equality with an expected type */
+
+static void expect_type(Arena *a, const char *src, const char *expected_type_src) {
+    Term *t = parse(a, src);
+    if (!t) {
+        printf("  [FAIL-PARSE] %s\n", src);
+        tests_fail++;
+        return;
+    }
+    Val *ty = infer(a, 0, NULL, NULL, t);
+    if (!ty) {
+        printf("  [FAIL-INFER] %s\n", src);
+        tests_fail++;
+        return;
+    }
+    Term *et = parse(a, expected_type_src);
+    if (!et) {
+        printf("  [FAIL-PARSE expected] %s\n", expected_type_src);
+        tests_fail++;
+        return;
+    }
+    Val *ev = nbe_eval(a, NULL, et);
+    if (conv(a, 0, ty, ev)) {
+        tests_pass++;
+        printf("  [OK] type of %s  ≡  %s\n", src, expected_type_src);
+    } else {
+        tests_fail++;
+        printf("  [BUG] type of %s  expected %s\n", src, expected_type_src);
+        printf("        got: "); val_print_tctx(a, ty, 0, NULL); printf("\n");
+    }
+}
+
 static void run_tests(Arena *a) {
+    tests_pass = 0;
+    tests_fail = 0;
+
     /* --- NbE reduction --- */
     const char *nbe_tests[] = {
         "\\x. x",
@@ -603,6 +653,120 @@ static void run_tests(Arena *a) {
         "\\A a b p. sym A a b p",
         "\\A a b p. sym A a b (sym A b a p)", 0);
 
+    /* PA11: sym(sym(refl a)) ≡ refl a — J fires twice */
+    printf("\n[PA11] sym(sym(refl zero)) ≡ refl zero  (double-sym on refl)\n");
+    expect_conv(a,
+        "sym Nat zero zero (sym Nat zero zero (refl zero))",
+        "(refl zero : Id Nat zero zero)", 1);
+
+    /* PA12: transport with reflexive fibration β-reduces to its payload */
+    printf("\n[PA12] transport (λx. Id x x) (refl zero) (refl zero) ≡ refl zero\n");
+    expect_conv(a,
+        "transport Nat (\\x. Id Nat x x : Π(_ : Nat). Type) zero zero (refl zero) (refl zero)",
+        "(refl zero : Id Nat zero zero)", 1);
+
+    /* PA13: sym at a higher universe level */
+    printf("\n[PA13] sym Type_1 Type Type (refl Type) ≡ refl Type\n");
+    expect_conv(a,
+        "sym Type_1 Type Type (refl Type)",
+        "(refl Type : Id Type_1 Type Type)", 1);
+
+    /* PA14: trans is not commutative for neutral paths — J fires on different neutrals */
+    printf("\n[PA14] trans non-commutative for neutral paths\n");
+    expect_conv(a,
+        "\\p q. trans Nat zero zero zero p q",
+        "\\p q. trans Nat zero zero zero q p",
+        0);
+
+    /* PA15: trans right-refl is NOT definitionally the identity for neutral p —
+     * J fires on p (the 5th arg), and p is neutral, so the whole expression stays stuck.
+     * Contrast with PA9 (left-refl) where J fires on refl and reduces. */
+    printf("\n[PA15] trans right-refl stays stuck for neutral p  (not definitionally id)\n");
+    expect_conv(a,
+        "\\A a b p. trans A a b b p (refl b)",
+        "\\A a b p. p",
+        0);
+
+    /* PA16: ap distinguishes distinct functions even on the same neutral path */
+    printf("\n[PA16] ap succ p ≢ ap id p for neutral p  (different J motives)\n");
+    expect_conv(a,
+        "\\p. ap Nat Nat (\\n. succ n : Π(_ : Nat). Nat) zero zero p",
+        "\\p. ap Nat Nat (\\n. n      : Π(_ : Nat). Nat) zero zero p",
+        0);
+
+    /* --- Type-checking tests --- */
+    fflush(stdout);
+    printf("\n=== Type-checking tests ===\n");
+
+    /* TP1: sym applied to a concrete path type has the right return type */
+    printf("\n[TP1] sym applied to concrete path: Π(_:Id Nat zero (succ zero)). Id Nat (succ zero) zero\n");
+    expect_type(a,
+        "(\\p. sym Nat zero (succ zero) p"
+        " : Π(_ : Id Nat zero (succ zero)). Id Nat (succ zero) zero)",
+        "Π(_ : Id Nat zero (succ zero)). Id Nat (succ zero) zero");
+
+    /* TP2: ap lifts a path along a function */
+    printf("\n[TP2] ap succ : Π(_:Id Nat zero (succ zero)). Id Nat (succ zero) (succ (succ zero))\n");
+    expect_type(a,
+        "(\\p. ap Nat Nat (\\n. succ n : Π(_ : Nat). Nat) zero (succ zero) p"
+        " : Π(_ : Id Nat zero (succ zero)). Id Nat (succ zero) (succ (succ zero)))",
+        "Π(_ : Id Nat zero (succ zero)). Id Nat (succ zero) (succ (succ zero))");
+
+    /* TP3: transport changes the fibre type from P a to P b */
+    printf("\n[TP3] transport (λx. Id x zero) p : Π(_:Id Nat zero zero). Id Nat (succ zero) zero\n");
+    expect_type(a,
+        "(\\p. transport Nat (\\x. Id Nat x zero : Π(_ : Nat). Type) zero (succ zero) p"
+        " : Π(_ : Id Nat zero (succ zero)). Π(_ : Id Nat zero zero). Id Nat (succ zero) zero)",
+        "Π(_ : Id Nat zero (succ zero)). Π(_ : Id Nat zero zero). Id Nat (succ zero) zero");
+
+    /* TP4: refl of a function value has Id-of-function type */
+    printf("\n[TP4] refl (λx.x) : Id (Nat→Nat) (λx.x) (λx.x)\n");
+    expect_type(a,
+        "(refl (\\x. x : Nat → Nat)"
+        " : Id (Π(_ : Nat). Nat) (\\x. x : Nat → Nat) (\\x. x : Nat → Nat))",
+        "Id (Π(_ : Nat). Nat) (\\x. x : Nat → Nat) (\\x. x : Nat → Nat)");
+
+    /* TP5: trans at concrete Nat endpoints has the expected Π-type */
+    printf("\n[TP5] trans Nat 0 1 2 p q : Id Nat 0 2\n");
+    expect_type(a,
+        "(\\p q. trans Nat zero (succ zero) (succ (succ zero)) p q"
+        " : Π(_ : Id Nat zero (succ zero))."
+        "   Π(_ : Id Nat (succ zero) (succ (succ zero)))."
+        "   Id Nat zero (succ (succ zero)))",
+        "Π(_ : Id Nat zero (succ zero))."
+        " Π(_ : Id Nat (succ zero) (succ (succ zero)))."
+        " Id Nat zero (succ (succ zero))");
+
+    /* --- Additional negative tests --- */
+    fflush(stdout);
+    printf("\n=== Additional negative tests ===\n");
+
+    /* sym applied to a path with the wrong endpoint */
+    printf("\n[NEG-sym] sym with wrong endpoint: refl zero ≢ Id Nat zero (succ zero)\n");
+    expect_fail(a,
+        "sym Nat zero (succ zero) (refl zero)",
+        "refl zero : Id Nat zero zero but needs Id Nat zero (succ zero)");
+
+    /* transport with a non-fibration as P */
+    printf("\n[NEG-transport-P] P=Nat is not Π(_:Nat).Type\n");
+    expect_fail(a,
+        "transport Nat Nat zero zero (refl zero) zero",
+        "Nat is not a fibration Nat → Type");
+
+    /* ap with a non-function as f */
+    printf("\n[NEG-ap-f] f=zero is not Nat→Nat\n");
+    expect_fail(a,
+        "ap Nat Nat zero zero zero (refl zero)",
+        "zero is not a function Nat → Nat");
+
+    /* J with a proof argument of the wrong type */
+    printf("\n[NEG-J-proof] proof=zero : Nat, not Id Nat zero zero\n");
+    expect_fail(a,
+        "J Nat zero"
+        " (\\b _. Nat : Π(b : Nat). Π(_ : Id Nat zero b). Type)"
+        " zero zero zero",
+        "zero : Nat is not an Id proof");
+
     /* --- Negative tests (should be rejected) --- */
     fflush(stdout);
     printf("\n=== Negative tests (expected failures) ===\n");
@@ -624,6 +788,288 @@ static void run_tests(Arena *a) {
                    " (\\b _. Type_1 : Π(b : Type_2). Id Type_1 Type b → Type_2)"
                    " Type Type refl Type",
                    "J motive domain mismatch");
+
+    /* --- W-types --- */
+    fflush(stdout);
+    printf("\n=== W-types ===\n");
+
+    /* W1: formation at the right universe level */
+    printf("\n[W1] W(x:Nat).Nat : Type\n");
+    run_infer(a, "W(x:Nat).Nat");
+    printf("\n[W2] W(x:Type).x : Type_1  (dom at level 1)\n");
+    run_infer(a, "W(x:Type).x");
+
+    /* W3: alpha-equivalence and conv distinguishes different W types */
+    printf("\n[W3] W-type conv\n");
+    expect_conv(a, "W(x:Nat).Nat",  "W(y:Nat).Nat",  1);
+    expect_conv(a, "W(x:Nat).Nat",  "W(x:Bool).Nat", 0);
+    expect_conv(a, "W(x:Nat).Nat",  "W(x:Nat).Bool", 0);
+
+    /* W4: β-rule: wrec P s (sup a f) ≡ s a f (λb. wrec P s (f b))
+     * In an open context (all variables neutral) the eval still fires because
+     * TM_SUP evaluates to VL_SUP, which triggers nbe_vwrec's first branch.    */
+    printf("\n[W4] wrec β-rule: wrec P s (sup a f) ≡ s a f (λb. wrec P s (f b))\n");
+    expect_conv(a,
+        "\\P s a f. wrec P s (sup a f)",
+        "\\P s a f. s a f (\\b. wrec P s (f b))",
+        1);
+
+    /* W5: stuck wrec on neutral w — stays neutral, conv checks components */
+    printf("\n[W5] wrec on neutral w stays stuck; motive eta-expansion is transparent\n");
+    expect_conv(a, "\\P s w. wrec P s w", "\\P s w. wrec P s w", 1);
+    expect_conv(a, "\\P s w. wrec P s w", "\\P s w. wrec (\\x. P x) s w", 1);
+    expect_conv(a, "\\P s w. wrec P s w", "\\Q s w. wrec Q s w", 1);
+    expect_conv(a, "\\P s w. wrec P s w", "\\P s w. wrec s P w", 0);  /* motive/step swapped within same binders */
+
+    /* W6: type-checking wrec with constant motive P = λ_. Nat */
+    printf("\n[W6] type check: wrec with constant Nat motive  →  Π(w:W(x:Nat).Nat). Nat\n");
+    run_infer(a,
+        "(\\ w. wrec"
+        " (\\ _ . Nat : Π(_ : W(x:Nat).Nat). Type)"
+        " (\\ a f ih. zero"
+        "   : Π(a : Nat). Π(f : Π(_ : Nat). W(x:Nat).Nat)."
+        "     Π(ih : Π(_ : Nat). Nat). Nat)"
+        " w"
+        ": Π(w : W(x:Nat).Nat). Nat)");
+
+    /* W7: negative — motive domain not a W type */
+    printf("\n[W7] negative: wrec motive domain is not a W type\n");
+    expect_fail(a,
+        "(\\ w. wrec"
+        " (\\ _ . Nat : Π(_ : Nat). Type)"
+        " (\\ a f ih. zero"
+        "   : Π(a : Nat). Π(f : Π(_ : Nat). Nat)."
+        "     Π(ih : Π(_ : Nat). Nat). Nat)"
+        " w"
+        ": Π(w : Nat). Nat)",
+        "motive domain is Nat, not W");
+
+    /* W8: negative — sup checked against non-W type */
+    printf("\n[W8] negative: sup checked against non-W type\n");
+    expect_fail(a,
+        "(sup zero (\\ _ . zero : Π(_ : Nat). Nat) : Nat)",
+        "sup should be checked against W, not Nat");
+
+    /* W9: sup with unannotated lambda children (now accepted via constant Pi closure) */
+    printf("\n[W9] sup with unannotated lambda children\n");
+    run_infer(a,
+        "(\\ f. (sup zero (\\ _ . f zero) : W(x:Nat).Nat)"
+        ": Π(f : Π(_ : Nat). W(x:Nat).Nat). W(x:Nat).Nat)");
+
+    /* W10: bare sup in inference position — must give graceful error, not crash */
+    printf("\n[W10] negative: bare sup has no inferrable type\n");
+    expect_fail(a, "sup zero zero",
+        "cannot infer type of sup");
+
+    /* W11: conv on VL_SUP values */
+    printf("\n[W11] sup conv: same label/children ≡, different label ≢\n");
+    expect_conv(a, "\\a f. sup a f", "\\a f. sup a f", 1);
+    expect_conv(a, "\\a f. sup a f", "\\a f. sup (succ a) f", 0);
+
+    /* W12: negative — wrec step result type wrong (Bool instead of P(sup a f) = Nat) */
+    printf("\n[W12] negative: wrec step result type is Bool, should be P(sup a f) = Nat\n");
+    expect_fail(a,
+        "(\\ w. wrec"
+        " (\\ _ . Nat : Π(_ : W(x:Nat).Nat). Type)"
+        " (\\ a f ih. true"
+        "   : Π(a : Nat). Π(f : Π(_ : Nat). W(x:Nat).Nat)."
+        "     Π(ih : Π(_ : Nat). Nat). Bool)"
+        " w"
+        ": Π(w : W(x:Nat).Nat). Nat)",
+        "step result Bool ≠ Nat = P(sup a f)");
+
+    /* W13: negative — wrec step arg 2 domain wrong (Bool instead of B(a) = Nat) */
+    printf("\n[W13] negative: wrec step arg 2 domain is Bool, should be B(a) = Nat\n");
+    expect_fail(a,
+        "(\\ w. wrec"
+        " (\\ _ . Nat : Π(_ : W(x:Nat).Nat). Type)"
+        " (\\ a f ih. zero"
+        "   : Π(a : Nat). Π(f : Π(_ : Bool). W(x:Nat).Nat)."
+        "     Π(ih : Π(_ : Nat). Nat). Nat)"
+        " w"
+        ": Π(w : W(x:Nat).Nat). Nat)",
+        "step arg 2 domain Bool ≠ Nat");
+
+    /* W14: negative — wrec step arg 3 codomain wrong (Bool instead of P(f b) = Nat) */
+    printf("\n[W14] negative: wrec step ih codomain is Bool, should be P(f b) = Nat\n");
+    expect_fail(a,
+        "(\\ w. wrec"
+        " (\\ _ . Nat : Π(_ : W(x:Nat).Nat). Type)"
+        " (\\ a f ih. zero"
+        "   : Π(a : Nat). Π(f : Π(_ : Nat). W(x:Nat).Nat)."
+        "     Π(ih : Π(_ : Nat). Bool). Nat)"
+        " w"
+        ": Π(w : W(x:Nat).Nat). Nat)",
+        "ih codomain Bool ≠ Nat = P(f b)");
+
+    /* W15: negative — wrec step arg 2 codomain not W (returns Nat instead) */
+    printf("\n[W15] negative: wrec step arg 2 codomain is Nat, should be W\n");
+    expect_fail(a,
+        "(\\ w. wrec"
+        " (\\ _ . Nat : Π(_ : W(x:Nat).Nat). Type)"
+        " (\\ a f ih. zero"
+        "   : Π(a : Nat). Π(f : Π(_ : Nat). Nat)."
+        "     Π(ih : Π(_ : Nat). Nat). Nat)"
+        " w"
+        ": Π(w : W(x:Nat).Nat). Nat)",
+        "step arg 2 codomain Nat ≠ W");
+
+    /* --- Empty type --- */
+    fflush(stdout);
+    printf("\n=== Empty type ===\n");
+
+    /* E1: Empty is a type */
+    printf("\n[E1] Empty : Type\n");
+    run_infer(a, "Empty");
+
+    /* E2: abort gives any type when supplied a proof of Empty */
+    printf("\n[E2] abort Nat e : Empty → Nat\n");
+    run_infer(a,
+        "(\\e. abort Nat e"
+        " : Π(_ : Empty). Nat)");
+
+    /* E3: abort at a higher universe: abort Type_1 e : Empty → Type_1 */
+    printf("\n[E3] abort Type_1 e : Empty → Type_1\n");
+    run_infer(a,
+        "(\\e. abort Type_1 e"
+        " : Π(_ : Empty). Type_1)");
+
+    /* E4: dependent motive — A mentions e; here we produce Id Empty e e
+     * for any e : Empty, exercising that the motive can use the binder */
+    printf("\n[E4] dependent motive: abort (Id Empty e e) e : Π(e:Empty). Id Empty e e\n");
+    run_infer(a,
+        "(\\e. abort (Id Empty e e) e"
+        " : Π(e : Empty). Id Empty e e)");
+
+    /* E5: conv — Empty ≡ Empty, Empty ≢ Nat, Empty ≢ Bool */
+    printf("\n[E5] conv tests\n");
+    expect_conv(a, "Empty", "Empty", 1);
+    expect_conv(a, "Empty", "Nat",   0);
+    expect_conv(a, "Empty", "Bool",  0);
+
+    /* E6: two abort expressions with the same neutral proof and same
+     * motive are conv-equal; different motives are not */
+    printf("\n[E6] abort conv: same motive/neutral ≡, different motives ≢\n");
+    expect_conv(a,
+        "\\e. abort Nat  e",
+        "\\e. abort Nat  e", 1);
+    expect_conv(a,
+        "\\e. abort Nat  e",
+        "\\e. abort Bool e", 0);
+
+    /* E7a: negation type Nat → Empty is well-formed (¬Nat : Type) */
+    printf("\n[E7a] Nat → Empty : Type  (negation type)\n");
+    run_infer(a, "Nat → Empty");
+
+    /* E7b: identity on Empty — λe. e : Empty → Empty is inhabited */
+    printf("\n[E7b] (λe. e : Empty → Empty) typechecks\n");
+    run_infer(a, "(\\e. e : Empty → Empty)");
+
+    /* E7c: two distinct neutrals produce non-equal abort terms */
+    printf("\n[E7c] abort Nat e1 ≢ abort Nat e2  (different scrutinees)\n");
+    expect_conv(a,
+        "\\e1 e2. abort Nat e1",
+        "\\e1 e2. abort Nat e2",
+        0);
+
+    /* E7: negative — scrutinee is not of type Empty */
+    printf("\n[E7] negative tests\n");
+    expect_fail(a, "abort Nat zero",
+                   "zero : Nat is not Empty");
+    expect_fail(a, "abort Nat true",
+                   "true : Bool is not Empty");
+
+    /* E8: negative — first argument is not a type */
+    expect_fail(a,
+        "(\\e. abort zero e : Π(_ : Empty). Nat)",
+        "zero is not a type");
+
+    /* --- Unit type --- */
+    fflush(stdout);
+    printf("\n=== Unit type ===\n");
+
+    /* UN1: formation and constructor */
+    printf("\n[UN1] Unit : Type    star : Unit\n");
+    run_infer(a, "Unit");
+    run_infer(a, "star");
+
+    /* UN2: unitrec β — on star reduces to base case */
+    printf("\n[UN2] unitrec β: unitrec P zero star ≡ zero\n");
+    run_infer(a,
+        "unitrec (\\_. Nat : Π(_ : Unit). Type)"
+        "        zero"
+        "        star");
+
+    /* UN2b: motive at Type_1 — unitrec can return a type */
+    printf("\n[UN2b] unitrec returning a Type: P = λ_. Type, base = Nat, star → Nat\n");
+    run_infer(a,
+        "unitrec (\\_. Type : Π(_ : Unit). Type_1)"
+        "        Nat"
+        "        star");
+
+    /* UN3: unitrec on neutral s stays stuck */
+    printf("\n[UN3] unitrec on neutral s stays stuck\n");
+    run_infer(a,
+        "(\\s. unitrec (\\_. Nat : Π(_ : Unit). Type) zero s"
+        " : Π(s : Unit). Nat)");
+
+    /* UN4: conv tests */
+    printf("\n[UN4] conv tests\n");
+    expect_conv(a, "Unit", "Unit", 1);
+    expect_conv(a, "star", "star", 1);
+    expect_conv(a, "Unit", "Nat",  0);
+    expect_conv(a, "Unit", "Bool", 0);
+    expect_conv(a, "Unit", "Empty", 0);
+    expect_conv(a, "star", "zero", 0);
+    expect_conv(a, "star", "true", 0);
+    /* β-conv: unitrec P zero star ≡ zero */
+    expect_conv(a,
+        "unitrec (\\_. Nat : Π(_:Unit).Type) zero star",
+        "zero", 1);
+    /* stuck: same components → equal */
+    expect_conv(a,
+        "(\\s. unitrec (\\_. Nat : Π(_:Unit).Type) zero s : Π(s:Unit).Nat)",
+        "(\\s. unitrec (\\_. Nat : Π(_:Unit).Type) zero s : Π(s:Unit).Nat)", 1);
+    /* stuck: different base → unequal */
+    expect_conv(a,
+        "(\\s. unitrec (\\_. Nat : Π(_:Unit).Type) zero      s : Π(s:Unit).Nat)",
+        "(\\s. unitrec (\\_. Nat : Π(_:Unit).Type) (succ zero) s : Π(s:Unit).Nat)", 0);
+    /* motive eta-expansion is transparent (analogous to wrec W5) */
+    expect_conv(a,
+        "\\P b s. unitrec P b s",
+        "\\P b s. unitrec (\\x. P x) b s", 1);
+    /* two distinct neutral scrutinees produce unequal unitrec terms */
+    expect_conv(a,
+        "\\s1 s2. unitrec (\\_. Nat : Π(_:Unit).Type) zero s1",
+        "\\s1 s2. unitrec (\\_. Nat : Π(_:Unit).Type) zero s2", 0);
+
+    /* UN5: dependent motive — P s where s : Unit is in the type */
+    printf("\n[UN5] dependent motive: unitrec (λs. Id Unit s star) (refl star) star\n");
+    run_infer(a,
+        "unitrec"
+        " (\\s. Id Unit s star : Π(s : Unit). Type)"
+        " (refl star)"
+        " star");
+
+    /* UN6: negative tests */
+    printf("\n[UN6] negative tests\n");
+    /* scrutinee is not Unit */
+    expect_fail(a,
+        "unitrec (\\_. Nat : Π(_ : Unit). Type) zero zero",
+        "zero : Nat is not Unit");
+    /* motive domain is not Unit */
+    expect_fail(a,
+        "unitrec (\\_. Nat : Π(_ : Nat). Type) zero star",
+        "motive domain is Nat not Unit");
+    /* base has wrong type: P star = Nat, but giving Bool */
+    expect_fail(a,
+        "unitrec (\\_. Nat : Π(_ : Unit). Type) true star",
+        "base : Bool instead of Nat = P star");
+
+    fflush(stdout);
+    printf("\n=== Summary: %d passed, %d failed ===\n", tests_pass, tests_fail);
+    if (tests_fail > 0)
+        printf("  *** FAILURES DETECTED ***\n");
 }
 
 int main(int argc, char **argv) {

@@ -103,9 +103,22 @@ int conv(Arena *a, int depth, Val *u, Val *v) {
     case VL_BOOL:
     case VL_TRUE:
     case VL_FALSE:
+    case VL_EMPTY:
+    case VL_UNIT:
+    case VL_STAR:
         return 1;  /* canonical constants — equal to themselves */
     case VL_SUCC:
         return conv(a, depth, u->succ, v->succ);
+    case VL_W: {
+        if (!conv(a, depth, u->pi.dom, v->pi.dom)) return 0;
+        Val *fresh = vl_neutral(a, depth, NULL);
+        Val *uc = nbe_eval(a, env_cons(a, fresh, u->pi.env), u->pi.cod);
+        Val *vc = nbe_eval(a, env_cons(a, fresh, v->pi.env), v->pi.cod);
+        return conv(a, depth + 1, uc, vc);
+    }
+    case VL_SUP:
+        return conv(a, depth, u->pair.fst, v->pair.fst) &&
+               conv(a, depth, u->pair.snd, v->pair.snd);
     case VL_LAM:
     case VL_PAIR:
         return 0;  /* unreachable: handled by eta cases above */
@@ -135,6 +148,14 @@ static int conv_spine(Arena *a, int depth, Spine *sp1, Spine *sp2) {
         if (!conv(a, depth, sp1->j.motive,   sp2->j.motive))   return 0;
         if (!conv(a, depth, sp1->j.base,     sp2->j.base))     return 0;
         if (!conv(a, depth, sp1->j.endpoint, sp2->j.endpoint)) return 0;
+    } else if (sp1->kind == SP_WREC) {
+        if (!conv(a, depth, sp1->wrec.motive, sp2->wrec.motive)) return 0;
+        if (!conv(a, depth, sp1->wrec.step,   sp2->wrec.step))   return 0;
+    } else if (sp1->kind == SP_ABORT) {
+        if (!conv(a, depth, sp1->abort_s.motive, sp2->abort_s.motive)) return 0;
+    } else if (sp1->kind == SP_UNITREC) {
+        if (!conv(a, depth, sp1->unitrec_s.motive, sp2->unitrec_s.motive)) return 0;
+        if (!conv(a, depth, sp1->unitrec_s.base,   sp2->unitrec_s.base))   return 0;
     }
     /* SP_FST, SP_SND: no payload — kind equality (checked above) is sufficient. */
     return conv_spine(a, depth, sp1->next, sp2->next);
@@ -429,6 +450,181 @@ Val *infer(Arena *a, int depth, TCtx *tctx, Env *env, Term *t) {
         return nbe_vapp(a, P_val, nbe_eval(a, env, t->boolrec.scrut));
     }
 
+    case TM_UNIT:
+        return vl_uni(a, 0);  /* Unit : Type */
+
+    case TM_STAR:
+        return vl_unit(a);    /* star : Unit */
+
+    case TM_UNITREC: {
+        /* unitrec P ps s : P s
+         * P : Unit → Type_i,  ps : P star,  s : Unit         */
+        Val *P_ty = infer(a, depth, tctx, env, t->unitrec_t.motive);
+        if (!P_ty) return NULL;
+        if (P_ty->tag != VL_PI) {
+            fprintf(stderr, "type error: unitrec: motive is not a function\n");
+            return NULL;
+        }
+        if (!conv(a, depth, P_ty->pi.dom, vl_unit(a))) {
+            fprintf(stderr, "type error: unitrec: motive domain is not Unit\n");
+            return NULL;
+        }
+        Val *fresh = vl_neutral(a, depth, NULL);
+        Val *P_cod = nbe_eval(a, env_cons(a, fresh, P_ty->pi.env), P_ty->pi.cod);
+        int i;
+        if (!as_universe(P_cod, &i)) {
+            fprintf(stderr, "type error: unitrec: motive does not map into a universe\n");
+            return NULL;
+        }
+        Val *P_val = nbe_eval(a, env, t->unitrec_t.motive);
+        if (!check(a, depth, tctx, env, t->unitrec_t.base,
+                   nbe_vapp(a, P_val, vl_star(a)))) return NULL;
+        if (!check(a, depth, tctx, env, t->unitrec_t.scrut, vl_unit(a))) return NULL;
+        return nbe_vapp(a, P_val, nbe_eval(a, env, t->unitrec_t.scrut));
+    }
+
+    case TM_EMPTY:
+        return vl_uni(a, 0);  /* Empty : Type */
+
+    case TM_ABORT: {
+        /* abort A e : A
+         * A : Type_i  (any level),  e : Empty              */
+        Val *Aty = infer(a, depth, tctx, env, t->abort_t.motive);
+        if (!Aty) return NULL;
+        int i;
+        if (!as_universe(Aty, &i)) {
+            fprintf(stderr, "type error: abort: first argument is not a type\n");
+            return NULL;
+        }
+        Val *A_val = nbe_eval(a, env, t->abort_t.motive);
+        if (!check(a, depth, tctx, env, t->abort_t.scrut, vl_empty(a))) return NULL;
+        return A_val;
+    }
+
+    case TM_W: {
+        /* W(x:A).B(x) : Type_{max(i,j)} — same rule as Π/Σ */
+        Val *dty = infer(a, depth, tctx, env, t->pi.dom);
+        if (!dty) return NULL;
+        int i;
+        if (!as_universe(dty, &i)) {
+            fprintf(stderr, "type error: W domain is not a type\n");
+            return NULL;
+        }
+        Val *domv  = nbe_eval(a, env, t->pi.dom);
+        Val *fresh = vl_neutral(a, depth, NULL);
+        TCtx ext   = { t->pi.name, domv, tctx };
+        Val *cty   = infer(a, depth + 1, &ext, env_cons(a, fresh, env), t->pi.cod);
+        if (!cty) return NULL;
+        int j;
+        if (!as_universe(cty, &j)) {
+            fprintf(stderr, "type error: W codomain is not a type\n");
+            return NULL;
+        }
+        return vl_uni(a, imax(i, j));
+    }
+
+    case TM_WREC: {
+        /* wrec P s w : P w
+         * P : W(x:A).B(x) → Type_k
+         * s : Π(a:A). Π(f:B(a)→W). Π(ih:Π(b:B(a)).P(f b)). P(sup a f)
+         * w : W(x:A).B(x)
+         */
+        Val *P_ty = infer(a, depth, tctx, env, t->wrec.motive);
+        if (!P_ty) return NULL;
+        if (P_ty->tag != VL_PI) {
+            fprintf(stderr, "type error: wrec: motive is not a function\n");
+            return NULL;
+        }
+        Val *W_ty = P_ty->pi.dom;
+        if (W_ty->tag != VL_W) {
+            fprintf(stderr, "type error: wrec: motive domain is not a W type\n");
+            return NULL;
+        }
+        {
+            Val *fresh = vl_neutral(a, depth, NULL);
+            Val *pcod  = nbe_eval(a, env_cons(a, fresh, P_ty->pi.env), P_ty->pi.cod);
+            int kk;
+            if (!as_universe(pcod, &kk)) {
+                fprintf(stderr, "type error: wrec: motive codomain is not a universe\n");
+                return NULL;
+            }
+        }
+        Val *P_val = nbe_eval(a, env, t->wrec.motive);
+        Val *A     = W_ty->pi.dom;
+
+        /* Check step s structurally */
+        Val *s_ity = infer(a, depth, tctx, env, t->wrec.step);
+        if (!s_ity) return NULL;
+        if (s_ity->tag != VL_PI) {
+            fprintf(stderr, "type error: wrec: step is not a function\n");
+            return NULL;
+        }
+        if (!conv(a, depth, s_ity->pi.dom, A)) {
+            fprintf(stderr, "type error: wrec: step domain is not A\n");
+            return NULL;
+        }
+        int d = depth;
+        Val *fa    = vl_neutral(a, d++, NULL);   /* fa : A */
+        Val *B_fa  = nbe_eval(a, env_cons(a, fa, W_ty->pi.env), W_ty->pi.cod);
+        Val *s_cod1 = nbe_eval(a, env_cons(a, fa, s_ity->pi.env), s_ity->pi.cod);
+
+        /* s_cod1 : Π(f: B(fa)→W). ... */
+        if (s_cod1->tag != VL_PI) {
+            fprintf(stderr, "type error: wrec: step second argument missing\n");
+            return NULL;
+        }
+        Val *f_ty = s_cod1->pi.dom;
+        if (f_ty->tag != VL_PI) {
+            fprintf(stderr, "type error: wrec: step arg 2 is not B(a)→W\n");
+            return NULL;
+        }
+        if (!conv(a, d, f_ty->pi.dom, B_fa)) {
+            fprintf(stderr, "type error: wrec: step arg 2 domain is not B(a)\n");
+            return NULL;
+        }
+        Val *fb1   = vl_neutral(a, d++, NULL);   /* fb1 : B(fa) — opens f_ty cod */
+        Val *f_cod = nbe_eval(a, env_cons(a, fb1, f_ty->pi.env), f_ty->pi.cod);
+        if (!conv(a, d, f_cod, W_ty)) {
+            fprintf(stderr, "type error: wrec: step arg 2 codomain is not W\n");
+            return NULL;
+        }
+        Val *ff    = vl_neutral(a, d++, NULL);   /* ff : B(fa)→W */
+        Val *s_cod2 = nbe_eval(a, env_cons(a, ff, s_cod1->pi.env), s_cod1->pi.cod);
+
+        /* s_cod2 : Π(ih: Π(b:B(fa)).P(ff b)). ... */
+        if (s_cod2->tag != VL_PI) {
+            fprintf(stderr, "type error: wrec: step third argument missing\n");
+            return NULL;
+        }
+        Val *ih_ty = s_cod2->pi.dom;
+        if (ih_ty->tag != VL_PI) {
+            fprintf(stderr, "type error: wrec: step arg 3 is not Π(b:B(a)).P(f b)\n");
+            return NULL;
+        }
+        if (!conv(a, d, ih_ty->pi.dom, B_fa)) {
+            fprintf(stderr, "type error: wrec: step arg 3 domain is not B(a)\n");
+            return NULL;
+        }
+        Val *fb2    = vl_neutral(a, d++, NULL);   /* fb2 : B(fa) — opens ih cod */
+        Val *ih_cod = nbe_eval(a, env_cons(a, fb2, ih_ty->pi.env), ih_ty->pi.cod);
+        if (!conv(a, d, ih_cod, nbe_vapp(a, P_val, nbe_vapp(a, ff, fb2)))) {
+            fprintf(stderr, "type error: wrec: step arg 3 codomain is not P(f b)\n");
+            return NULL;
+        }
+        Val *fih    = vl_neutral(a, d++, NULL);   /* fih : ih type */
+        Val *s_res  = nbe_eval(a, env_cons(a, fih, s_cod2->pi.env), s_cod2->pi.cod);
+        Val *sup_af = vl_sup(a, fa, ff);
+        if (!conv(a, d, s_res, nbe_vapp(a, P_val, sup_af))) {
+            fprintf(stderr, "type error: wrec: step result is not P(sup a f)\n");
+            return NULL;
+        }
+
+        /* Check w : W(x:A).B(x) */
+        if (!check(a, depth, tctx, env, t->wrec.scrut, W_ty)) return NULL;
+        Val *w_val = nbe_eval(a, env, t->wrec.scrut);
+        return nbe_vapp(a, P_val, w_val);
+    }
+
     case TM_UA:
         return get_ua_type();
 
@@ -447,6 +643,12 @@ Val *infer(Arena *a, int depth, TCtx *tctx, Env *env, Term *t) {
     case TM_PAIR:
         fprintf(stderr,
             "type error: cannot infer type of pair — wrap in annotation: ((a, b) : Σ(x:A). B)\n");
+        return NULL;
+
+    case TM_SUP:
+        fprintf(stderr,
+            "type error: cannot infer type of sup — wrap in annotation: "
+            "((sup a f) : W(x:A). B)\n");
         return NULL;
 
     default:
@@ -468,6 +670,22 @@ int check(Arena *a, int depth, TCtx *tctx, Env *env, Term *t, Val *ty) {
         Val *codv  = nbe_eval(a, env_cons(a, fresh, ty->pi.env), ty->pi.cod);
         TCtx ext   = { t->lam.name, ty->pi.dom, tctx };
         return check(a, depth + 1, &ext, env_cons(a, fresh, env), t->lam.body, codv);
+    }
+    /* sup checks against W */
+    if (t->tag == TM_SUP) {
+        if (ty->tag != VL_W) {
+            fprintf(stderr, "type error: expected W type when checking sup\n");
+            return 0;
+        }
+        Val *A = ty->pi.dom;
+        if (!check(a, depth, tctx, env, t->sup.label, A)) return 0;
+        Val *a_val = nbe_eval(a, env, t->sup.label);
+        Val *B_a   = nbe_eval(a, env_cons(a, a_val, ty->pi.env), ty->pi.cod);
+        /* Build expected type for children: Π(_:B(a)). W(x:A).B(x)
+         * Closure env = [ty], body = TM_VAR(1) — so VAR(1) in [b, ty] = ty.
+         * This constant codomain lets unannotated lambdas be accepted.       */
+        Val *f_exp_ty = vl_pi(a, "_", B_a, env_cons(a, ty, NULL), tm_var(a, 1));
+        return check(a, depth, tctx, env, t->sup.children, f_exp_ty);
     }
     /* Pair checks against Sigma */
     if (t->tag == TM_PAIR) {

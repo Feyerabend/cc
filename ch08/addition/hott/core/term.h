@@ -43,6 +43,14 @@ typedef enum {
     TM_FALSE, /* false               false constructor   */
     TM_BOOLREC,/* boolrec P pt pf b  eliminator          */
     TM_GLOBAL, /* global def (index into def table)       */
+    TM_W,      /* W(x : A). B x     well-founded tree type */
+    TM_SUP,    /* sup label children  constructor          */
+    TM_WREC,   /* wrec P s w          eliminator           */
+    TM_EMPTY,  /* Empty               empty type (⊥)       */
+    TM_ABORT,  /* abort A e           ex falso              */
+    TM_UNIT,   /* Unit                unit type (⊤)        */
+    TM_STAR,   /* star                sole constructor      */
+    TM_UNITREC,/* unitrec P ps s      eliminator            */
 } TermTag;
 
 typedef struct Term Term;
@@ -65,6 +73,11 @@ struct Term {
                  Term *scrut; }                              natrec;  /* NATREC  */
         struct { Term *motive; Term *tcase; Term *fcase;
                  Term *scrut; }                              boolrec; /* BOOLREC */
+        /* TM_W  reuses  pi.{name,dom,cod}  (same layout as TM_PI/TM_SIG)       */
+        struct { Term *label; Term *children; }              sup;     /* SUP     */
+        struct { Term *motive; Term *step; Term *scrut; }    wrec;    /* WREC    */
+        struct { Term *motive; Term *scrut; }                abort_t;   /* ABORT    */
+        struct { Term *motive; Term *base; Term *scrut; }    unitrec_t; /* UNITREC  */
     };
 };
 
@@ -83,7 +96,7 @@ struct Env {
  * Spine: sequence of eliminators applied to a neutral head.
  * head = most recently applied (outermost when quoting).
  */
-typedef enum { SP_APP, SP_FST, SP_SND, SP_J, SP_NATREC, SP_BOOLREC } SpineKind;
+typedef enum { SP_APP, SP_FST, SP_SND, SP_J, SP_NATREC, SP_BOOLREC, SP_WREC, SP_ABORT, SP_UNITREC } SpineKind;
 struct Spine {
     SpineKind kind;
     union {
@@ -91,6 +104,9 @@ struct Spine {
         struct { Val *ty; Val *lhs; Val *motive; Val *base; Val *endpoint; } j;       /* SP_J       */
         struct { Val *motive; Val *base; Val *step; }                        natrec;  /* SP_NATREC  */
         struct { Val *motive; Val *tcase; Val *fcase; }                      boolrec; /* SP_BOOLREC */
+        struct { Val *motive; Val *step; }                                   wrec;    /* SP_WREC    */
+        struct { Val *motive; }                                              abort_s;   /* SP_ABORT   */
+        struct { Val *motive; Val *base; }                                   unitrec_s; /* SP_UNITREC */
     };
     Spine *next;
 };
@@ -110,6 +126,13 @@ typedef enum {
     VL_BOOL,   /* Bool type                            */
     VL_TRUE,   /* true                                 */
     VL_FALSE,  /* false                                */
+    /* VL_W reuses pi.{name,dom,env,cod} (same layout as VL_PI, VL_SIGMA)      */
+    VL_W,      /* W(x:A).B type value                  */
+    /* VL_SUP reuses pair.{fst,snd} as {label,children}                        */
+    VL_SUP,    /* sup(label, children) value           */
+    VL_EMPTY,  /* Empty type value (⊥)                 */
+    VL_UNIT,   /* Unit type value (⊤)                  */
+    VL_STAR,   /* star — sole element of Unit          */
 } ValTag;
 
 struct Val {
@@ -153,6 +176,14 @@ Term *tm_true   (Arena *a);
 Term *tm_false  (Arena *a);
 Term *tm_boolrec(Arena *a, Term *motive, Term *tcase, Term *fcase, Term *scrut);
 Term *tm_global (Arena *a, int idx);
+Term *tm_w      (Arena *a, char *name, Term *dom, Term *cod);
+Term *tm_sup    (Arena *a, Term *label, Term *children);
+Term *tm_wrec   (Arena *a, Term *motive, Term *step, Term *scrut);
+Term *tm_empty  (Arena *a);
+Term *tm_abort  (Arena *a, Term *motive, Term *scrut);
+Term *tm_unit   (Arena *a);
+Term *tm_star   (Arena *a);
+Term *tm_unitrec(Arena *a, Term *motive, Term *base, Term *scrut);
 
 /* ── Value constructors */
 
@@ -170,6 +201,11 @@ Val  *vl_succ   (Arena *a, Val *pred);
 Val  *vl_bool   (Arena *a);
 Val  *vl_true   (Arena *a);
 Val  *vl_false  (Arena *a);
+Val  *vl_w      (Arena *a, char *name, Val *dom, Env *env, Term *cod);
+Val  *vl_sup    (Arena *a, Val *label, Val *children);
+Val  *vl_empty  (Arena *a);
+Val  *vl_unit   (Arena *a);
+Val  *vl_star   (Arena *a);
 
 /* ── Env / Spine constructors */
 
@@ -183,6 +219,12 @@ Spine *spine_natrec (Arena *a, Val *motive, Val *base, Val *step,
                      Spine *next);                            /* SP_NATREC  */
 Spine *spine_boolrec(Arena *a, Val *motive, Val *tcase, Val *fcase,
                      Spine *next);                            /* SP_BOOLREC */
+Spine *spine_wrec   (Arena *a, Val *motive, Val *step,
+                     Spine *next);                            /* SP_WREC    */
+Spine *spine_abort  (Arena *a, Val *motive,
+                     Spine *next);                            /* SP_ABORT   */
+Spine *spine_unitrec(Arena *a, Val *motive, Val *base,
+                     Spine *next);                            /* SP_UNITREC */
 
 /* ── Printing context (name list, innermost = index 0) */
 
