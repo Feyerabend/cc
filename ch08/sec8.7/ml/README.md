@@ -97,5 +97,5 @@ A few ideas recur in almost every folder and are worth holding in mind throughou
 
 ### Reference
 
-![The Hundred-Page Machine Learning Book](./../../assets/image/100.jpeg)
+![The Hundred-Page Machine Learning Book](./../../assets/image/100.png)
 
