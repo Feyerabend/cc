@@ -16,7 +16,7 @@ static NodeRef force(Heap *h, Arena *a, NodeRef r);
  * node and instantiates the body at force time.
  *
  * TM_APP arguments become ND_THUNK nodes - not forced until demanded.
- * */
+ */
 NodeRef term_to_node(Heap *h, Arena *a, Term *t, NodeRef env) {
     if (!t) { fprintf(stderr, "term_to_node: NULL\n"); exit(1); }
     switch (t->tag) {
@@ -212,16 +212,16 @@ NodeRef term_to_node(Heap *h, Arena *a, Term *t, NodeRef env) {
  * force - bring a node to WHNF.
  *
  * Reduction rules:
- *   β:  APP(LAM(env, body), arg) → instantiate body with env+arg
- *   δ:  APP(GLOBAL(idx), arg)    → unfold global via core's nbe_quote
- *   θ:  THUNK(expr, env)         → translate expr with env, then force
+ *   β:  APP(LAM(env, body), arg) --> instantiate body with env+arg
+ *   δ:  APP(GLOBAL(idx), arg)    --> unfold global via core's nbe_quote
+ *   θ:  THUNK(expr, env)         --> translate expr with env, then force
  *   ι:  eliminators on matching constructors (natrec/boolrec/fst/snd/
  *       case/unitrec/J/S1rec/truncrec)
  *
  * Stuck nodes (scrutinee is a sentinel or open neutral) are marked
  * WHNF in-place without overwriting with ND_REF (r2 == r would be
  * a self-referential indirection).
- * */
+ */
 static NodeRef force(Heap *h, Arena *a, NodeRef r) {
     r = node_deref(h, r);
     if (r == NULL_REF) { fprintf(stderr, "force: NULL_REF\n"); exit(1); }
