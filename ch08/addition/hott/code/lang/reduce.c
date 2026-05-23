@@ -8,6 +8,17 @@
 /* Forward declaration (force <-> term_to_node are in the same file) */
 static NodeRef force(Heap *h, Arena *a, NodeRef r);
 
+/* Walk the scrutinee chain of a stuck eliminator to find its head sentinel.
+ * Returns the ND_VAR or ND_LOOP NodeRef, or NULL_REF if not a neutral chain. */
+static __attribute__((unused)) NodeRef find_sentinel(Heap *h, NodeRef r) {
+    r = node_deref(h, r);
+    if (r == NULL_REF) return NULL_REF;
+    NodeTag tag = (NodeTag)h->nodes[r].tag;
+    if (tag == ND_LOOP || tag == ND_VAR) return r;
+    if (!node_is_elim_tag(tag))          return NULL_REF;
+    return find_sentinel(h, node_scrut_of(h, r));
+}
+
 /* 
  * term_to_node - translate a core Term into heap nodes.
  *
@@ -16,7 +27,7 @@ static NodeRef force(Heap *h, Arena *a, NodeRef r);
  * node and instantiates the body at force time.
  *
  * TM_APP arguments become ND_THUNK nodes - not forced until demanded.
- */
+ * */
 NodeRef term_to_node(Heap *h, Arena *a, Term *t, NodeRef env) {
     if (!t) { fprintf(stderr, "term_to_node: NULL\n"); exit(1); }
     switch (t->tag) {
@@ -212,16 +223,16 @@ NodeRef term_to_node(Heap *h, Arena *a, Term *t, NodeRef env) {
  * force - bring a node to WHNF.
  *
  * Reduction rules:
- *   β:  APP(LAM(env, body), arg) --> instantiate body with env+arg
- *   δ:  APP(GLOBAL(idx), arg)    --> unfold global via core's nbe_quote
- *   θ:  THUNK(expr, env)         --> translate expr with env, then force
+ *   β:  APP(LAM(env, body), arg) → instantiate body with env+arg
+ *   δ:  APP(GLOBAL(idx), arg)    → unfold global via core's nbe_quote
+ *   θ:  THUNK(expr, env)         → translate expr with env, then force
  *   ι:  eliminators on matching constructors (natrec/boolrec/fst/snd/
  *       case/unitrec/J/S1rec/truncrec)
  *
  * Stuck nodes (scrutinee is a sentinel or open neutral) are marked
  * WHNF in-place without overwriting with ND_REF (r2 == r would be
  * a self-referential indirection).
- */
+ * */
 static NodeRef force(Heap *h, Arena *a, NodeRef r) {
     r = node_deref(h, r);
     if (r == NULL_REF) { fprintf(stderr, "force: NULL_REF\n"); exit(1); }
@@ -488,6 +499,7 @@ void nf(Heap *h, Arena *a, NodeRef root) {
     /* Two children */
     case ND_PAIR:
     case ND_SUM:
+    case ND_SUP:
     case ND_ABORT:
         nf(h, a, h->nodes[r].ch[0]);
         nf(h, a, h->nodes[r].ch[1]);

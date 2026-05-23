@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../core/arena.h"
 
 /* Node reference */
 typedef uint32_t NodeRef;
@@ -156,12 +157,18 @@ struct SpineFrame {
     SpineFrame  *next;  /* towards head (inner frame) */
 };
 
+/* Sentinel level for PI/SIGMA/W binder variables during cod serialization.
+ * Must not collide with real open-variable levels (≥ 0) or core axiom
+ * sentinels (-994 … -999).  Each mk_var(h, BINDER_LVL) call creates a
+ * distinct heap node; NodeRef identity distinguishes nested binders. */
+#define BINDER_LVL (-10001)
+
 /* Neutral helpers (public for reduce.c and conv) */
 int     node_is_elim_tag(NodeTag t);
 NodeRef node_scrut_of   (Heap *h, NodeRef r);
 
 /* Convertibility */
-int node_conv(Heap *h, NodeRef r1, NodeRef r2);
+int node_conv(Heap *h, Arena *a, NodeRef r1, NodeRef r2);
 
 /* Printer */
 void node_print     (Heap *h, NodeRef r, int depth, int prec);

@@ -113,6 +113,22 @@ static void load_stdlib(void) {
             "   Π(a : A). Π(b : A). Π(_ : Id A a b). Id B (f a) (f b))");
 }
 
+/* ── Shared result printer ───────────────────────────────────────────
+ * Type-former nodes (PI/SIGMA/W/ID/SUM) have unforced cod thunks;
+ * route them through bridge for term_fprint.  Others use node_print.
+ * ──────────────────────────────────────────────────────────────────── */
+static void print_result_node(Heap *h, NodeRef r, Arena *a) {
+    NodeTag rtag = (NodeTag)h->nodes[r].tag;
+    if (rtag == ND_PI || rtag == ND_SIGMA || rtag == ND_W ||
+        rtag == ND_ID || rtag == ND_SUM) {
+        Term *nt = node_to_term(h, r, a);
+        if (nt) term_fprint(stdout, nt);
+        else    node_print(h, r, 0, 0);
+    } else {
+        node_print(h, r, 0, 0);
+    }
+}
+
 /* REPL */
 
 int main(int argc, char **argv) {
@@ -122,12 +138,13 @@ int main(int argc, char **argv) {
 
     load_stdlib();
 
-    printf("llang  (graph reduction, Phase 3: β + ι + neutrals + :type)\n");
+    printf("llang  (graph reduction, Phase 3: β + ι + neutrals + :type + :conv)\n");
     printf("  Lambda:  fn x. body  |  \\x. body  |  λx. body\n");
     printf("  Pi:      Pi(x:A). B  |  Π(x:A). B\n");
     printf("  Sigma:   Sg(x:A). B  |  Σ(x:A). B\n");
     printf("  Arrow:   A -> B      |  A → B\n");
-    printf("  :type <expr>  — reduce and show type\n");
+    printf("  :type <expr>       — reduce and show type\n");
+    printf("  :conv e1 ; e2      — check convertibility\n");
     printf("  Quit:    Ctrl-D\n\n");
 
 #ifndef HAVE_READLINE
@@ -160,11 +177,48 @@ int main(int argc, char **argv) {
         }
 
         int         is_type = (strncmp(raw, ":type ", 6) == 0);
+        int         is_conv = (strncmp(raw, ":conv ", 6) == 0);
         const char *expr    = is_type ? raw + 6 : raw;
 
         Arena a = {NULL};
         Heap  h;
         heap_init(&h);
+
+        /* ── :conv e1 ; e2 ── */
+        if (is_conv) {
+            const char *rest = raw + 6;
+            const char *semi = strchr(rest, ';');
+            if (!semi) {
+                printf("  usage  : :conv e1 ; e2\n");
+#ifdef HAVE_READLINE
+                free((void *)raw);
+#endif
+                heap_free(&h); arena_free_all(&a); continue;
+            }
+            size_t llen = (size_t)(semi - rest);
+            while (llen > 0 && (rest[llen-1] == ' ' || rest[llen-1] == '\t')) llen--;
+            char *lbuf = (char *)arena_alloc(&a, llen + 1);
+            memcpy(lbuf, rest, llen); lbuf[llen] = '\0';
+            const char *rhs_raw = semi + 1;
+            while (*rhs_raw == ' ' || *rhs_raw == '\t') rhs_raw++;
+            const char *src1 = preprocess(&a, lbuf);
+            const char *src2 = preprocess(&a, rhs_raw);
+#ifdef HAVE_READLINE
+            free((void *)raw);
+#endif
+            Term *t1 = parse(&a, src1);
+            Term *t2 = parse(&a, src2);
+            if (!t1 || !t2) { heap_free(&h); arena_free_all(&a); continue; }
+            NodeRef nr1 = term_to_node(&h, &a, t1, NULL_REF);
+            NodeRef nr2 = term_to_node(&h, &a, t2, NULL_REF);
+            nf(&h, &a, nr1); nf(&h, &a, nr2);
+            NodeRef res1 = node_deref(&h, nr1);
+            NodeRef res2 = node_deref(&h, nr2);
+            printf("  lhs    : "); print_result_node(&h, res1, &a); printf("\n");
+            printf("  rhs    : "); print_result_node(&h, res2, &a); printf("\n");
+            printf("  conv   : %s\n", node_conv(&h, &a, res1, res2) ? "yes" : "no");
+            heap_free(&h); arena_free_all(&a); continue;
+        }
 
         const char *src = preprocess(&a, expr);
         Term       *t   = parse(&a, src);
@@ -190,18 +244,7 @@ int main(int argc, char **argv) {
         }
 
         printf("  normal : ");
-        /* Type-former nodes store children as un-forced thunks : use bridge
-         * to serialize back to Term and print via core's pretty-printer.
-         * All other nodes (values, neutrals) use the graph printer. */
-        NodeTag rtag = (NodeTag)h.nodes[result].tag;
-        if (rtag == ND_PI || rtag == ND_SIGMA || rtag == ND_W ||
-            rtag == ND_ID || rtag == ND_SUM) {
-            Term *nt = node_to_term(&h, result, &a);
-            if (nt) term_fprint(stdout, nt);
-            else    node_print(&h, result, 0, 0);
-        } else {
-            node_print(&h, result, 0, 0);
-        }
+        print_result_node(&h, result, &a);
         printf("\n");
 
         if (is_type) {

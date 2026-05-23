@@ -8,12 +8,9 @@
  *
  * Precondition: r must be in full normal form (nf() already called).
  *
- * Correctness note: ND_THUNK nodes are returned as their stored Term*
- * (aux field) without evaluating the env chain.  This is exact for
- * structural thunks (PI/SIGMA/W/ID cod: de Bruijn indices are valid in
- * the output context).  Stuck-APP arg thunks with captured environments
- * are similarly returned as-is; callers must ensure these thunks do not
- * contain free de Bruijn references before relying on the result.
+ * PI/SIGMA/W cod thunks are forced with a fresh BINDER_LVL sentinel to
+ * recover the correct de Bruijn term.  Other ND_THUNK nodes (rare after
+ * nf()) are returned as their raw stored Term*.
  *
  * Returns NULL on failure (LAM with captured env, open VAR, etc.).
  */
