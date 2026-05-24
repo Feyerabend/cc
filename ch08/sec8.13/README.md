@@ -17,7 +17,7 @@
 
 #### Two Personal Memories of Per Martin-Löf
 
-*An "executable calculus".*
+__An "executable calculus".__
 I remember that during the years when I was exploring and trying to understand the world of logic
 programming--especially Prolog--I once overheard some younger participants at a seminar discussing
 the work of Per Martin-Löf. They spoke about how he had developed an intuitionistic calculus that
@@ -49,7 +49,7 @@ science and mathematical logic.
 
 
 
-*Mathematical thinking.*
+__Mathematical thinking.__
 Another memory comes from around the year 2000. I believe it was a seminar in Stockholm devoted to the
 work of Willard Van Orman Quine, held sometime after his death.
 
