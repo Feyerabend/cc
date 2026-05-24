@@ -9,7 +9,7 @@
 #include "check.h"
 #include "defs.h"
 
-/* ── normalize and print */
+/* normalize and print */
 
 static void run(Arena *a, const char *src) {
     Term *t = parse(a, src);
@@ -19,7 +19,7 @@ static void run(Arena *a, const char *src) {
     printf("  normal : "); term_print(nf); printf("\n");
 }
 
-/* ── infer type and print */
+/* infer type and print */
 
 static void run_infer(Arena *a, const char *src) {
     Term *t = parse(a, src);
@@ -33,7 +33,7 @@ static void run_infer(Arena *a, const char *src) {
     printf("  normal : "); term_print(nf); printf("\n");
 }
 
-/* ── reserved keyword list (parse.c checks these before name_lookup) */
+/* reserved keyword list (parse.c checks these before name_lookup) */
 
 static int is_reserved_name(const char *n) {
     static const char *kw[] = {
@@ -56,12 +56,12 @@ static int is_reserved_name(const char *n) {
     return 0;
 }
 
-/* ── built-in test suite */
+/* built-in test suite */
 
 static int tests_pass = 0;
 static int tests_fail = 0;
 
-/* ── expect a type error (negative test) */
+/* expect a type error (negative test) */
 
 static void expect_fail(Arena *a, const char *src, const char *reason) {
     Term *t = parse(a, src);
@@ -81,7 +81,7 @@ static void expect_fail(Arena *a, const char *src, const char *reason) {
     }
 }
 
-/* ── conv equality check */
+/* conv equality check */
 
 static void expect_conv(Arena *a, const char *sa, const char *sb, int should_equal) {
     Term *ta = parse(a, sa);
@@ -104,7 +104,7 @@ static void expect_conv(Arena *a, const char *sa, const char *sb, int should_equ
     }
 }
 
-/* ── infer type and check conv-equality with an expected type */
+/* infer type and check conv-equality with an expected type */
 
 static void expect_type(Arena *a, const char *src, const char *expected_type_src) {
     Term *t = parse(a, src);

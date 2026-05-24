@@ -39,9 +39,7 @@ static const char *preprocess(Arena *a, const char *src) {
     size_t i = 0, j = 0;
 
     while (i < n) {
-        int at_id_boundary = (i == 0) ||
-                             !(isalnum((unsigned char)src[i-1]) ||
-                               src[i-1] == '_' || src[i-1] == '\'');
+        int at_id_boundary = (i == 0) || !(isalnum((unsigned char)src[i-1]) || src[i-1] == '_' || src[i-1] == '\'');
         /* fn → \ */
         if (at_id_boundary &&
             src[i] == 'f' && i+1 < n && src[i+1] == 'n' &&
@@ -113,10 +111,10 @@ static void load_stdlib(void) {
             "   Π(a : A). Π(b : A). Π(_ : Id A a b). Id B (f a) (f b))");
 }
 
-/* ── Shared result printer ───────────────────────────────────────────
+/* Shared result printer 
  * Type-former nodes (PI/SIGMA/W/ID/SUM) have unforced cod thunks;
  * route them through bridge for term_fprint.  Others use node_print.
- * ──────────────────────────────────────────────────────────────────── */
+ */
 static void print_result_node(Heap *h, NodeRef r, Arena *a) {
     NodeTag rtag = (NodeTag)h->nodes[r].tag;
     if (rtag == ND_PI || rtag == ND_SIGMA || rtag == ND_W ||
@@ -176,15 +174,15 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        int         is_type = (strncmp(raw, ":type ", 6) == 0);
-        int         is_conv = (strncmp(raw, ":conv ", 6) == 0);
-        const char *expr    = is_type ? raw + 6 : raw;
+        int is_type = (strncmp(raw, ":type ", 6) == 0);
+        int is_conv = (strncmp(raw, ":conv ", 6) == 0);
+        const char *expr = is_type ? raw + 6 : raw;
 
         Arena a = {NULL};
         Heap  h;
         heap_init(&h);
 
-        /* ── :conv e1 ; e2 ── */
+        /*  :conv e1 ; e2  */
         if (is_conv) {
             const char *rest = raw + 6;
             const char *semi = strchr(rest, ';');
