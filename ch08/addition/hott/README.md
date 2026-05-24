@@ -156,3 +156,8 @@ a long time to absorb fully:
 __Equality is not merely a yes-or-no fact. Equality itself has internal structure.__
 
 Almost everything else in HoTT unfolds from taking that idea completely seriously.
+
+### Reference
+
+A fun introdution to [HoTT](https://www8.cs.fau.de/ext/teaching/sose2021/hott/mltt-intro.pdf)
+
