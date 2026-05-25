@@ -1,0 +1,27 @@
+{
+  "type": "bar",
+  "data": {
+    "labels": ["Set-Based", "Node-Based", "Array-Based"],
+    "datasets": [{
+      "label": "Insertion Time (ms)",
+      "data": [0.5, 0.7, 0.6],
+      "backgroundColor": ["#36A2EB", "#FF6384", "#FFCE56"],
+      "borderColor": ["#2A8ABF", "#D81B60", "#F4B400"],
+      "borderWidth": 1
+    }]
+  },
+  "options": {
+    "scales": {
+      "y": {
+        "beginAtZero": true,
+        "title": { "display": true, "text": "Time (ms)" }
+      },
+      "x": {
+        "title": { "display": true, "text": "Implementation" }
+      }
+    },
+    "plugins": {
+      "title": { "display": true, "text": "BST Implementation Comparison" }
+    }
+  }
+}

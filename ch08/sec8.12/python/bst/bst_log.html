@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>BST Property-Based Test Visualisation</title>
+<style>
+  body { font-family: sans-serif; }
+  .case { margin-bottom: 2em; border: 1px solid #ccc; padding: 0.5em; }
+  .state { margin-left: 1em; }
+</style>
+</head>
+<body>
+
+<h1>BST Test Runs</h1>
+<div id="output"></div>
+
+<script>
+fetch("bst_test_log.jsonl")
+  .then(res => res.text())
+  .then(text => {
+    const output = document.getElementById("output");
+    text.trim().split("\n").forEach((line, idx) => {
+      const entry = JSON.parse(line);
+      const caseDiv = document.createElement("div");
+      caseDiv.className = "case";
+      caseDiv.innerHTML = `<strong>Case ${idx+1}</strong>: Generated values: [${entry.generated_values.join(", ")}]`;
+      entry.states.forEach((s, step) => {
+        const st = document.createElement("div");
+        st.className = "state";
+        st.textContent = `Step ${step+1}: inserted ${s.inserted}, traversal: [${s.current_traversal.join(", ")}]`;
+        caseDiv.appendChild(st);
+      });
+      output.appendChild(caseDiv);
+    });
+  });
+</script>
+
+</body>
+</html>

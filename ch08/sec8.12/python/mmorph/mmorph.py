@@ -120,6 +120,19 @@ class MetamorphicTestSuite:
         
         return results
 
+# Custom relation that checks element preservation against the original input,
+# rather than comparing two outputs (which would be identical with identity transform).
+class SameElementsRelation(MetamorphicRelation):
+    """Verifies that func's output is a permutation of its input."""
+    def test(self, func: Callable, original_input: Any) -> bool:
+        try:
+            from collections import Counter
+            output = func(original_input)
+            return Counter(output) == Counter(original_input)
+        except Exception:
+            return False
+
+
 # Example: Metamorphic testing for sorting algorithms
 def create_sorting_metamorphic_suite() -> MetamorphicTestSuite:
     """Create metamorphic test suite for sorting functions"""
@@ -143,18 +156,14 @@ def create_sorting_metamorphic_suite() -> MetamorphicTestSuite:
         same_result_relation
     ))
     
-    # Relation 2: Addition property
-    # Elements in sort(A) should be the same as elements in A (just reordered)
-    def identity_transform(lst):
-        return lst
-    
-    def same_elements_relation(original_input, sorted_output):
-        return sorted(original_input) == sorted_output
-    
-    suite.add_relation(MetamorphicRelation(
+    # Relation 2: Element preservation
+    # The sorted output must be a permutation of the input — no elements added or dropped.
+    # Uses SameElementsRelation (custom subclass) because the standard MetamorphicRelation
+    # only compares two *outputs*; here we need to compare the output against the *input*.
+    suite.add_relation(SameElementsRelation(
         "Same Elements Property",
-        identity_transform,
-        lambda orig_input, sorted_out: same_elements_relation(orig_input, sorted_out)
+        lambda lst: lst,       # dummy transform — not used by the overridden test()
+        lambda o1, o2: True    # dummy relation — not used by the overridden test()
     ))
     
     # Relation 3: Duplication property
@@ -199,78 +208,53 @@ def create_sorting_metamorphic_suite() -> MetamorphicTestSuite:
     
     return suite
 
-# Advanced metamorphic testing for mathematical functions
-def create_mathematical_metamorphic_suite() -> MetamorphicTestSuite:
-    """Create metamorphic relations for mathematical functions"""
+# Module-level custom relation classes for mathematical properties.
+# They override test() directly so they can access the original *input*,
+# not just the two outputs that the standard MetamorphicRelation exposes.
+
+class SqrtScalingRelation(MetamorphicRelation):
+    """sqrt(k²·x) = k·sqrt(x) for any k > 0 and x ≥ 0."""
+    def test(self, func: Callable, original_input: Any) -> bool:
+        try:
+            x = abs(original_input)          # ensure non-negative
+            original_output = func(x)
+            k = random.uniform(1, 10)
+            scaled_output = func(k * k * x)
+            return abs(scaled_output - k * original_output) < 1e-9
+        except Exception:
+            return False
+
+
+class LogAdditionRelation(MetamorphicRelation):
+    """log(a) + log(b) = log(a·b) for a, b > 0."""
+    def test(self, func: Callable, original_input: Any) -> bool:
+        try:
+            a = abs(original_input) if original_input <= 0 else original_input
+            b = random.uniform(1, 100)
+            return abs(func(a) + func(b) - func(a * b)) < 1e-9
+        except Exception:
+            return False
+
+
+def create_sqrt_metamorphic_suite() -> MetamorphicTestSuite:
+    """Metamorphic suite for square-root functions: sqrt(k²·x) = k·sqrt(x)."""
     suite = MetamorphicTestSuite()
-    
-    # Relation: Scaling property for square root
-    # sqrt(k²*x) = k*sqrt(x) for k > 0, x >= 0
-    def sqrt_scaling_transform(x):
-        if x < 0:
-            return abs(x)  # Make it positive for sqrt
-        k = random.uniform(1, 10)  # Positive scaling factor
-        return (k * k * x, k)  # Return (scaled_input, expected_factor)
-    
-    def sqrt_scaling_relation(original_result, transformed_data):
-        if isinstance(transformed_data, tuple) and len(transformed_data) == 2:
-            scaled_input, k = transformed_data
-            try:
-                scaled_result = math.sqrt(scaled_input)
-                expected = k * original_result
-                return abs(scaled_result - expected) < 1e-10
-            except:
-                return False
-        return False
-    
-    # This relation needs a custom test method since we need both inputs
-    class SqrtScalingRelation(MetamorphicRelation):
-        def test(self, func, original_input):
-            try:
-                if original_input < 0:
-                    original_input = abs(original_input)
-                
-                original_output = func(original_input)
-                k = random.uniform(1, 10)
-                scaled_input = k * k * original_input
-                scaled_output = func(scaled_input)
-                expected = k * original_output
-                
-                return abs(scaled_output - expected) < 1e-10
-            except:
-                return False
-    
     suite.add_relation(SqrtScalingRelation(
         "Square Root Scaling Property",
-        lambda x: x,  # Dummy transform
-        lambda x, y: True  # Dummy relation
+        lambda x: x,       # dummy — overridden by test()
+        lambda x, y: True  # dummy — overridden by test()
     ))
-    
-    # Relation: Addition property for logarithms
-    # log(a) + log(b) = log(a*b)
-    class LogAdditionRelation(MetamorphicRelation):
-        def test(self, func, original_input):
-            try:
-                if original_input <= 0:
-                    original_input = abs(original_input) + 1
-                
-                # Generate second positive number
-                b = random.uniform(1, 100)
-                
-                log_a = func(original_input)
-                log_b = func(b)
-                log_ab = func(original_input * b)
-                
-                return abs(log_a + log_b - log_ab) < 1e-10
-            except:
-                return False
-    
+    return suite
+
+
+def create_log_metamorphic_suite() -> MetamorphicTestSuite:
+    """Metamorphic suite for logarithm functions: log(a) + log(b) = log(a·b)."""
+    suite = MetamorphicTestSuite()
     suite.add_relation(LogAdditionRelation(
         "Logarithm Addition Property",
-        lambda x: x,  # Dummy transform
-        lambda x, y: True  # Dummy relation
+        lambda x: x,       # dummy — overridden by test()
+        lambda x, y: True  # dummy — overridden by test()
     ))
-    
     return suite
 
 # String processing metamorphic relations
@@ -322,17 +306,11 @@ def correct_sort(lst):
     return sorted(lst)
 
 def buggy_sort(lst):
-    """Buggy sorting implementation that fails on certain inputs"""
+    """Buggy sorting implementation that silently drops duplicate elements"""
     if len(lst) <= 1:
         return lst
-    # Bug: doesn't handle duplicates correctly
-    result = []
-    remaining = lst.copy()
-    while remaining:
-        min_val = min(remaining)
-        result.append(min_val)
-        remaining.remove(min_val)  # Only removes first occurrence
-    return result
+    # Bug: converts to set() before sorting, which removes all duplicate values
+    return sorted(set(lst))
 
 def safe_sqrt(x):
     """Safe square root that handles edge cases"""
@@ -377,18 +355,30 @@ if __name__ == "__main__":
         if results['failures'] > 0:
             print(f"  → Found {results['failures']} failures!")
     
-    # Test 3: Mathematical functions
+    # Test 3: Mathematical functions — each function paired with its own suite
     print("\n\n3. Testing mathematical functions:")
     print("-" * 40)
-    math_suite = create_mathematical_metamorphic_suite()
-    math_results = math_suite.test_function(
+
+    sqrt_suite = create_sqrt_metamorphic_suite()
+    sqrt_results = sqrt_suite.test_function(
         safe_sqrt,
         FloatStrategy(0.1, 100.0),
         num_tests=30
     )
-    
+
+    log_suite = create_log_metamorphic_suite()
+    log_results = log_suite.test_function(
+        safe_log,
+        FloatStrategy(0.1, 100.0),
+        num_tests=30
+    )
+
     print("\nRESULTS - Square Root Function:")
-    for relation_name, results in math_results.items():
+    for relation_name, results in sqrt_results.items():
+        print(f"{relation_name}: {results['success_rate']:.2%} success rate")
+
+    print("\nRESULTS - Logarithm Function:")
+    for relation_name, results in log_results.items():
         print(f"{relation_name}: {results['success_rate']:.2%} success rate")
     
     # Test 4: String functions

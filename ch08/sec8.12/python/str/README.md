@@ -2,7 +2,7 @@
 > [!WARNING]
 > The scripts requires besides Hypothesis, also installation of pytest.
 
-## PBT: Comparations
+## PBT: Comparisons
 
 These scripts showcase the difference between traditional example-based testing and
 property-based testing:
@@ -78,7 +78,7 @@ specification.
 higher confidence that your code works correctly across the entire domain of possible inputs.
 
 
-### Comparation: Hypothesis and classic testing approaches
+### Comparison: Hypothesis and Classic Testing Approaches
 
 Below shows how property-based testing can be more thorough and require less manual
 effort to achieve better coverage of the problem space.

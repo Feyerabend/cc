@@ -28,3 +28,8 @@ def test_sort_properties(lst):
 def sort(lst):
     """Simple sorting function for demonstration"""
     return sorted(lst)
+
+
+if __name__ == "__main__":
+    test_sort_properties()
+    print("All property-based tests passed!")

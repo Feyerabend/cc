@@ -21,3 +21,8 @@ def test_string_concatenation_length(a, b):
     assert len(concatenated) == len(a) + len(b), \
         "Length additivity violated"
 
+
+if __name__ == "__main__":
+    import pytest
+    pytest.main([__file__])
+

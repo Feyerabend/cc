@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property-Based Testing Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #444;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        
+        .demo-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background: #fafafa;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #005a87;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .test-result {
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            font-family: monospace;
+            border-left: 3px solid;
+        }
+        
+        .pass {
+            background: #e8f5e8;
+            color: #2d5a2d;
+            border-left-color: #4caf50;
+        }
+        
+        .fail {
+            background: #fdeaea;
+            color: #721c24;
+            border-left-color: #f44336;
+        }
+        
+        .generated-tests {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .test-case {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .test-case:hover {
+            background: #f0f0f0;
+        }
+        
+        .test-case.failing {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+        
+        .test-case.shrinking {
+            border-color: #ff9800;
+            background: #fff8e1;
+        }
+        
+        .shrink-path {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px dashed #999;
+        }
+        
+        .shrink-step {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px 8px;
+            background: white;
+            border: 1px solid #ddd;
+            font-family: monospace;
+        }
+        
+        .shrink-step.current {
+            background: #fff3cd;
+            border-color: #ff9800;
+        }
+        
+        .property-explanation {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat {
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        
+        select, input {
+            padding: 5px 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        
+        .code-block {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 15px;
+            font-family: monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .property-test-case {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border: 1px solid #ddd;
+            margin: 5px 0;
+            padding: 10px;
+            font-family: monospace;
+        }
+        
+        .property-test-case.violation {
+            border-left: 4px solid #f44336;
+            background: #ffebee;
+        }
+        
+        .property-test-case.pass {
+            border-left: 4px solid #4caf50;
+            background: #e8f5e8;
+        }
+        
+        .test-expression {
+            flex: 1;
+        }
+        
+        .test-result-badge {
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .badge-pass {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .badge-fail {
+            background: #f44336;
+            color: white;
+        }
+        
+        .property-summary {
+            background: #f0f0f0;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Property-Based Testing Interactive Demo</h1>
+        
+        <div class="property-explanation">
+            <h3>What is Property-Based Testing?</h3>
+            <p>Property-based testing generates hundreds of random test cases and verifies that certain properties hold true for all inputs. When a test fails, it automatically "shrinks" the input to find the simplest failing case.</p>
+        </div>
+
+        <h2>1. Test Generation</h2>
+        <div class="demo-section">
+            <p>Let's test the property: <strong>"Reversing a list twice returns the original list"</strong></p>
+            
+            <div class="controls">
+                <button onclick="generateTests()">Generate Random Tests</button>
+                <label>
+                    Count: <input type="number" id="testCount" value="20" min="5" max="100">
+                </label>
+                <label>
+                    Array Size: <input type="number" id="arraySize" value="5" min="1" max="10">
+                </label>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="totalTests">0</div>
+                    <div class="stat-label">Total Tests</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="passedTests">0</div>
+                    <div class="stat-label">Passed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="failedTests">0</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+            </div>
+            
+            <div id="generatedTests" class="generated-tests"></div>
+            <div id="testResults"></div>
+        </div>
+
+        <h2>2. Property Verification</h2>
+        <div class="demo-section">
+            <p>Now let's test a <strong>buggy function</strong> to see how property-based testing finds edge cases:</p>
+            
+            <div class="code-block">
+                <span class="highlight">// Buggy sort function</span><br>
+                function buggySort(arr) {<br>
+                &nbsp;&nbsp;// Bug: doesn't handle negative numbers correctly<br>
+                &nbsp;&nbsp;return arr.sort((a, b) => a - b);<br>
+                }
+            </div>
+            
+            <div class="controls">
+                <button onclick="testBuggyFunction()">Test Buggy Sort</button>
+                <select id="propertyType">
+                    <option value="sorted">Property: Result should be sorted</option>
+                    <option value="length">Property: Length should be preserved</option>
+                    <option value="elements">Property: Same elements should be present</option>
+                </select>
+            </div>
+            
+            <div id="buggyResults"></div>
+        </div>
+
+        <h2>3. Shrinking Process</h2>
+        <div class="demo-section">
+            <p>When a test fails, shrinking finds the <strong>minimal failing case</strong>:</p>
+            
+            <div class="controls">
+                <button onclick="demonstrateShrinking()">Start Shrinking Demo</button>
+                <button onclick="stepShrinking()" id="stepButton" disabled>Next Step</button>
+                <button onclick="resetShrinking()">Reset</button>
+            </div>
+            
+            <div class="property-explanation">
+                <strong>Shrinking Strategy:</strong> Remove elements, make numbers smaller, simplify structure
+            </div>
+            
+            <div id="shrinkingDemo">
+                <div class="shrink-path">
+                    <strong>Shrinking Path:</strong>
+                    <div id="shrinkPath"></div>
+                </div>
+                <div id="shrinkResults"></div>
+            </div>
+        </div>
+
+        <h2>4. Advanced Properties</h2>
+        <div class="demo-section">
+            <p>Test more complex properties with visual examples:</p>
+            
+            <div class="controls">
+                <button onclick="testAdvancedProperties()">Test Advanced Properties</button>
+                <select id="advancedProperty">
+                    <option value="idempotent">Idempotent: Abs(Abs(x)) = Abs(x)</option>
+                    <option value="commutative">Commutative: Division a÷b = b÷a</option>
+                    <option value="associative">Associative: Subtraction (a-b)-c = a-(b-c)</option>
+                    <option value="inverse">Inverse: sqrt(x²) = x</option>
+                    <option value="monotonic">Monotonic: Sort preserves relative order</option>
+                </select>
+            </div>
+            
+            <div id="advancedResults"></div>
+            <div id="propertyVisualization"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simple random generators
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function randomArray(size, min = -50, max = 50) {
+            return Array.from({length: size}, () => randomInt(min, max));
+        }
+
+        function randomString(length = 5) {
+            const chars = 'abcdefghijklmnopqrstuvwxyz';
+            return Array.from({length}, () => chars[randomInt(0, chars.length - 1)]).join('');
+        }
+
+        // Test the reverse property
+        function testReverseProperty(arr) {
+            const reversed = [...arr].reverse();
+            const doubleReversed = [...reversed].reverse();
+            return JSON.stringify(arr) === JSON.stringify(doubleReversed);
+        }
+
+        // Buggy sort function for demonstration
+        function buggySort(arr) {
+            // Intentional bug: doesn't work well with mixed positive/negative numbers
+            return [...arr].sort((a, b) => {
+                if (a < 0 && b >= 0) return 1; // Bug: negative numbers go to end
+                if (a >= 0 && b < 0) return -1;
+                return a - b;
+            });
+        }
+
+        function isSorted(arr) {
+            for (let i = 1; i < arr.length; i++) {
+                if (arr[i] < arr[i-1]) return false;
+            }
+            return true;
+        }
+
+        function hasSameElements(arr1, arr2) {
+            const sorted1 = [...arr1].sort((a, b) => a - b);
+            const sorted2 = [...arr2].sort((a, b) => a - b);
+            return JSON.stringify(sorted1) === JSON.stringify(sorted2);
+        }
+
+        let shrinkingState = {
+            current: null,
+            steps: [],
+            currentStep: 0,
+            isRunning: false
+        };
+
+        function generateTests() {
+            const count = parseInt(document.getElementById('testCount').value);
+            const size = parseInt(document.getElementById('arraySize').value);
+            
+            const testsDiv = document.getElementById('generatedTests');
+            const resultsDiv = document.getElementById('testResults');
+            
+            testsDiv.innerHTML = '';
+            resultsDiv.innerHTML = '';
+            
+            let passed = 0, failed = 0;
+            
+            for (let i = 0; i < count; i++) {
+                const testArray = randomArray(randomInt(1, size));
+                const testDiv = document.createElement('div');
+                testDiv.className = 'test-case';
+                testDiv.innerHTML = `<strong>Test ${i + 1}</strong><br>${JSON.stringify(testArray)}`;
+                
+                const result = testReverseProperty(testArray);
+                if (result) {
+                    passed++;
+                    testDiv.style.borderColor = '#28a745';
+                    testDiv.style.background = '#d4edda';
+                } else {
+                    failed++;
+                    testDiv.classList.add('failing');
+                }
+                
+                testDiv.addEventListener('click', () => {
+                    const resultText = result ? 'PASS' : 'FAIL';
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = `test-result ${result ? 'pass' : 'fail'}`;
+                    resultDiv.innerHTML = `
+                        <strong>Test Case:</strong> ${JSON.stringify(testArray)}<br>
+                        <strong>Reversed:</strong> ${JSON.stringify([...testArray].reverse())}<br>
+                        <strong>Double Reversed:</strong> ${JSON.stringify([...[...testArray].reverse()].reverse())}<br>
+                        <strong>Result:</strong> ${resultText}
+                    `;
+                    resultsDiv.appendChild(resultDiv);
+                });
+                
+                testsDiv.appendChild(testDiv);
+            }
+            
+            document.getElementById('totalTests').textContent = count;
+            document.getElementById('passedTests').textContent = passed;
+            document.getElementById('failedTests').textContent = failed;
+        }
+
+        function testBuggyFunction() {
+            const propertyType = document.getElementById('propertyType').value;
+            const resultsDiv = document.getElementById('buggyResults');
+            resultsDiv.innerHTML = '';
+            
+            let testsPassed = 0;
+            const totalTests = 50;
+            
+            for (let i = 0; i < totalTests; i++) {
+                const testArray = randomArray(randomInt(3, 8), -20, 20);
+                const sorted = buggySort(testArray);
+                
+                let passed = false;
+                let errorMessage = '';
+                
+                switch (propertyType) {
+                    case 'sorted':
+                        passed = isSorted(sorted);
+                        if (!passed) errorMessage = 'Result is not properly sorted';
+                        break;
+                    case 'length':
+                        passed = testArray.length === sorted.length;
+                        if (!passed) errorMessage = 'Length changed after sorting';
+                        break;
+                    case 'elements':
+                        passed = hasSameElements(testArray, sorted);
+                        if (!passed) errorMessage = 'Elements were lost or changed';
+                        break;
+                }
+                
+                if (passed) {
+                    testsPassed++;
+                } else {
+                    // Found a failing case - display it prominently
+                    const failDiv = document.createElement('div');
+                    failDiv.className = 'test-result fail';
+                    failDiv.innerHTML = `
+                        <strong>PROPERTY VIOLATION FOUND!</strong><br>
+                        <strong>Input:</strong> ${JSON.stringify(testArray)}<br>
+                        <strong>Output:</strong> ${JSON.stringify(sorted)}<br>
+                        <strong>Error:</strong> ${errorMessage}<br>
+                        <strong>Property:</strong> ${document.getElementById('propertyType').selectedOptions[0].text}
+                    `;
+                    resultsDiv.appendChild(failDiv);
+                    
+                    // Start shrinking process for this failing case
+                    if (!shrinkingState.isRunning) {
+                        shrinkingState.current = testArray;
+                        shrinkingState.steps = generateShrinkingSteps(testArray);
+                        shrinkingState.currentStep = 0;
+                    }
+                    break;
+                }
+            }
+            
+            if (testsPassed === totalTests) {
+                const passDiv = document.createElement('div');
+                passDiv.className = 'test-result pass';
+                passDiv.innerHTML = `
+                    <strong>All ${totalTests} tests passed!</strong><br>
+                    Property holds for all generated test cases.
+                `;
+                resultsDiv.appendChild(passDiv);
+            }
+        }
+
+        function generateShrinkingSteps(failingCase) {
+            const steps = [failingCase];
+            let current = [...failingCase];
+            
+            // Step 1: Try removing elements
+            while (current.length > 1) {
+                const smaller = current.slice(0, -1);
+                const sorted = buggySort(smaller);
+                if (!isSorted(sorted)) {
+                    steps.push([...smaller]);
+                    current = smaller;
+                } else {
+                    break;
+                }
+            }
+            
+            // Step 2: Try making numbers smaller (absolute value)
+            for (let i = 0; i < current.length; i++) {
+                if (Math.abs(current[i]) > 1) {
+                    const attempt = [...current];
+                    attempt[i] = Math.sign(current[i]) * Math.floor(Math.abs(current[i]) / 2);
+                    const sorted = buggySort(attempt);
+                    if (!isSorted(sorted)) {
+                        steps.push([...attempt]);
+                        current = attempt;
+                    }
+                }
+            }
+            
+            return steps;
+        }
+
+        function demonstrateShrinking() {
+            if (shrinkingState.steps.length === 0) {
+                // Generate a failing case first
+                const failingCase = [-5, 10, -3, 7]; // Known to fail with buggySort
+                shrinkingState.current = failingCase;
+                shrinkingState.steps = generateShrinkingSteps(failingCase);
+            }
+            
+            shrinkingState.currentStep = 0;
+            shrinkingState.isRunning = true;
+            document.getElementById('stepButton').disabled = false;
+            
+            displayShrinkingStep();
+        }
+
+        function displayShrinkingStep() {
+            const pathDiv = document.getElementById('shrinkPath');
+            const resultsDiv = document.getElementById('shrinkResults');
+            
+            pathDiv.innerHTML = '';
+            
+            shrinkingState.steps.forEach((step, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'shrink-step';
+                if (index === shrinkingState.currentStep) {
+                    stepDiv.classList.add('current');
+                }
+                stepDiv.textContent = JSON.stringify(step);
+                pathDiv.appendChild(stepDiv);
+            });
+            
+            if (shrinkingState.currentStep < shrinkingState.steps.length) {
+                const currentCase = shrinkingState.steps[shrinkingState.currentStep];
+                const sorted = buggySort(currentCase);
+                const isValid = isSorted(sorted);
+                
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `test-result ${isValid ? 'pass' : 'fail'}`;
+                resultDiv.innerHTML = `
+                    <strong>Step ${shrinkingState.currentStep + 1}:</strong> Testing ${JSON.stringify(currentCase)}<br>
+                    <strong>Sorted result:</strong> ${JSON.stringify(sorted)}<br>
+                    <strong>Is sorted?</strong> ${isValid ? 'Yes' : 'No'}<br>
+                    ${!isValid ? '<strong>Found minimal failing case!</strong>' : ''}
+                `;
+                resultsDiv.innerHTML = '';
+                resultsDiv.appendChild(resultDiv);
+            }
+        }
+
+        function stepShrinking() {
+            if (shrinkingState.currentStep < shrinkingState.steps.length - 1) {
+                shrinkingState.currentStep++;
+                displayShrinkingStep();
+            } else {
+                document.getElementById('stepButton').disabled = true;
+                shrinkingState.isRunning = false;
+            }
+        }
+
+        function resetShrinking() {
+            shrinkingState = {
+                current: null,
+                steps: [],
+                currentStep: 0,
+                isRunning: false
+            };
+            document.getElementById('shrinkPath').innerHTML = '';
+            document.getElementById('shrinkResults').innerHTML = '';
+            document.getElementById('stepButton').disabled = true;
+        }
+
+        function testAdvancedProperties() {
+            const property = document.getElementById('advancedProperty').value;
+            const resultsDiv = document.getElementById('advancedResults');
+            const visualDiv = document.getElementById('propertyVisualization');
+            resultsDiv.innerHTML = '';
+            visualDiv.innerHTML = '';
+            
+            let violations = [];
+            let passes = [];
+            const totalTests = 20;
+            
+            for (let i = 0; i < totalTests; i++) {
+                let passed = true;
+                let errorMessage = '';
+                let testCase = '';
+                let leftSide = '';
+                let rightSide = '';
+                
+                switch (property) {
+                    case 'idempotent':
+                        // Test absolute value (this should always pass)
+                        const num = randomInt(-50, 50);
+                        const abs1 = Math.abs(num);
+                        const abs2 = Math.abs(abs1);
+                        passed = abs1 === abs2;
+                        leftSide = `abs(abs(${num})) = ${abs2}`;
+                        rightSide = `abs(${num}) = ${abs1}`;
+                        testCase = `${num}`;
+                        errorMessage = 'Absolute value is not idempotent';
+                        break;
+                        
+                    case 'commutative':
+                        // Test division (this will fail!)
+                        const a = randomInt(1, 20);
+                        const b = randomInt(1, 20);
+                        const div1 = a / b;
+                        const div2 = b / a;
+                        passed = Math.abs(div1 - div2) < 0.0001;
+                        leftSide = `${a} ÷ ${b} = ${div1.toFixed(2)}`;
+                        rightSide = `${b} ÷ ${a} = ${div2.toFixed(2)}`;
+                        testCase = `${a}, ${b}`;
+                        errorMessage = 'Division is not commutative';
+                        break;
+                        
+                    case 'associative':
+                        // Test subtraction (this will fail!)
+                        const x = randomInt(1, 20);
+                        const y = randomInt(1, 20);
+                        const z = randomInt(1, 20);
+                        const sub1 = (x - y) - z;
+                        const sub2 = x - (y - z);
+                        passed = sub1 === sub2;
+                        leftSide = `(${x} - ${y}) - ${z} = ${sub1}`;
+                        rightSide = `${x} - (${y} - ${z}) = ${sub2}`;
+                        testCase = `${x}, ${y}, ${z}`;
+                        errorMessage = 'Subtraction is not associative';
+                        break;
+                        
+                    case 'inverse':
+                        // Test square root of square (fails for negative numbers)
+                        const val = randomInt(-10, 10);
+                        const squared = val * val;
+                        const sqrtResult = Math.sqrt(squared);
+                        passed = Math.abs(val - sqrtResult) < 0.0001;
+                        leftSide = `sqrt(${val}²) = sqrt(${squared}) = ${sqrtResult}`;
+                        rightSide = `${val}`;
+                        testCase = `${val}`;
+                        errorMessage = 'Square root of square is not always the original (negative numbers)';
+                        break;
+                        
+                    case 'monotonic':
+                        // Test if sorting preserves relative order of equal elements
+                        const arr = [randomInt(1, 5), randomInt(1, 5), randomInt(1, 5)];
+                        const withIndex = arr.map((val, idx) => ({val, originalIndex: idx}));
+                        const sorted = withIndex.sort((a, b) => a.val - b.val);
+                        
+                        // Check if equal elements maintain relative order
+                        let monotonic = true;
+                        for (let j = 1; j < sorted.length; j++) {
+                            if (sorted[j].val === sorted[j-1].val && sorted[j].originalIndex < sorted[j-1].originalIndex) {
+                                monotonic = false;
+                                break;
+                            }
+                        }
+                        passed = monotonic;
+                        leftSide = `Original: [${arr.join(', ')}]`;
+                        rightSide = `Sorted: [${sorted.map(x => x.val).join(', ')}]`;
+                        testCase = JSON.stringify(arr);
+                        errorMessage = 'Sorting did not preserve stable order';
+                        break;
+                }
+                
+                const result = {
+                    passed,
+                    testCase,
+                    leftSide,
+                    rightSide,
+                    errorMessage
+                };
+                
+                if (passed) {
+                    passes.push(result);
+                } else {
+                    violations.push(result);
+                }
+            }
+            
+            // Create visual representation
+            const allResults = [...violations, ...passes.slice(0, 5)]; // Show violations + some passes
+            
+            allResults.forEach((result, index) => {
+                const testDiv = document.createElement('div');
+                testDiv.className = `property-test-case ${result.passed ? 'pass' : 'violation'}`;
+                
+                testDiv.innerHTML = `
+                    <div class="test-expression">
+                        <div><strong>Test ${index + 1}:</strong> ${result.testCase}</div>
+                        <div>${result.leftSide}</div>
+                        <div>${result.rightSide}</div>
+                    </div>
+                    <div class="test-result-badge ${result.passed ? 'badge-pass' : 'badge-fail'}">
+                        ${result.passed ? 'PASS' : 'FAIL'}
+                    </div>
+                `;
+                
+                visualDiv.appendChild(testDiv);
+            });
+            
+            // Add summary
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'property-summary';
+            summaryDiv.innerHTML = `
+                <strong>Property Test Results:</strong><br>
+                <strong>Total Tests:</strong> ${totalTests}<br>
+                <strong>Passed:</strong> ${passes.length}<br>
+                <strong>Failed:</strong> ${violations.length}<br>
+                <strong>Success Rate:</strong> ${((passes.length / totalTests) * 100).toFixed(1)}%
+            `;
+            resultsDiv.appendChild(summaryDiv);
+            
+            if (violations.length > 0) {
+                const violationSummary = document.createElement('div');
+                violationSummary.className = 'test-result fail';
+                violationSummary.innerHTML = `
+                    <strong>Property Violated!</strong><br>
+                    The property "${document.getElementById('advancedProperty').selectedOptions[0].text}" 
+                    does not hold universally. Found ${violations.length} counterexamples.
+                `;
+                resultsDiv.appendChild(violationSummary);
+            } else {
+                const successSummary = document.createElement('div');
+                successSummary.className = 'test-result pass';
+                successSummary.innerHTML = `
+                    <strong>Property Holds!</strong><br>
+                    All ${totalTests} tests passed for "${document.getElementById('advancedProperty').selectedOptions[0].text}".
+                `;
+                resultsDiv.appendChild(successSummary);
+            }
+        }
+
+        // Initialize with some tests
+        window.addEventListener('load', () => {
+            generateTests();
+        });
+    </script>
+</body>
+</html>

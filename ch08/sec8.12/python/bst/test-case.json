@@ -1,0 +1,27 @@
+{
+  "type": "bar",
+  "data": {
+    "labels": ["Test 1", "Test 2", "Test 3", "Test 4", "Test 5", "Test 6", "Test 7", "Test 8", "Test 9", "Test 10"],
+    "datasets": [{
+      "label": "Number of Values",
+      "data": [0, 1, 4, 13, 6, 2, 2, 11, 4, 9],
+      "backgroundColor": ["#36A2EB", "#FF6384", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40", "#66BB6A", "#FF5722", "#3F51B5", "#009688"],
+      "borderColor": ["#2A8ABF", "#D81B60", "#F4B400", "#3AA8A8", "#7E57C2", "#EF6C00", "#4CAF50", "#D84315", "#283593", "#00796B"],
+      "borderWidth": 1
+    }]
+  },
+  "options": {
+    "scales": {
+      "y": {
+        "beginAtZero": true,
+        "title": { "display": true, "text": "Number of Values" }
+      },
+      "x": {
+        "title": { "display": true, "text": "Test Case" }
+      }
+    },
+    "plugins": {
+      "title": { "display": true, "text": "Test Case Value Counts" }
+    }
+  }
+}
