@@ -469,7 +469,47 @@ static NodeRef force(Heap *h, Arena *a, NodeRef r) {
     }
 
     /* ND_ABORT: always stuck (Empty has no constructors) */
-    /* ND_WREC on SUP: deferred - requires synthetic lambda (Phase 3+) */
+
+    if (tag == ND_WREC) {
+        NodeRef motive = h->nodes[r].ch[0];
+        NodeRef step   = h->nodes[r].ch[1];
+        NodeRef scrut  = force(h, a, h->nodes[r].ch[2]);
+        if (h->nodes[scrut].tag == ND_SUP) {
+            NodeRef label    = h->nodes[scrut].ch[0];  /* a : A */
+            NodeRef children = h->nodes[scrut].ch[1];  /* f : B(a) → W(A,B) */
+
+            /* Build IH = λx. WREC(P, s, APP(f, x))
+             *
+             * Capture P, s, f in an env chain so no serialization is needed.
+             * When IH is applied to argument x, env = [x, P, s, f]:
+             *   VAR(0) = x  (IH argument)
+             *   VAR(1) = P  (motive)
+             *   VAR(2) = s  (step)
+             *   VAR(3) = f  (children function)
+             */
+            Term *ih_body = tm_wrec(a,
+                                    tm_var(a, 1),
+                                    tm_var(a, 2),
+                                    tm_app(a, tm_var(a, 3), tm_var(a, 0)));
+            NodeRef cap3   = mk_env(h, children, NULL_REF);
+            NodeRef cap2   = mk_env(h, step,     cap3);
+            NodeRef cap1   = mk_env(h, motive,   cap2);
+            NodeRef ih     = mk_lam(h, "x",      cap1, ih_body);
+
+            /* APP(APP(APP(step, label), children), IH) */
+            NodeRef app1 = mk_app(h, step,             label);
+            NodeRef app2 = mk_app(h, app1,             children);
+            NodeRef app3 = mk_app(h, app2,             ih);
+
+            h->nodes[r].tag   = ND_REF;
+            h->nodes[r].flags = NF_WHNF;
+            h->nodes[r].ch[0] = app3;
+            h->nodes[r].aux   = NULL;
+            return force(h, a, app3);
+        }
+        h->nodes[r].flags = (h->nodes[r].flags & ~NF_BLACKHOLE) | NF_WHNF;
+        return r;
+    }
 
     /* Unrecognized or stuck node */
     h->nodes[r].flags = (h->nodes[r].flags & ~NF_BLACKHOLE) | NF_WHNF;

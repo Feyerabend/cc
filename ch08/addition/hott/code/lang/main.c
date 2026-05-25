@@ -39,7 +39,9 @@ static const char *preprocess(Arena *a, const char *src) {
     size_t i = 0, j = 0;
 
     while (i < n) {
-        int at_id_boundary = (i == 0) || !(isalnum((unsigned char)src[i-1]) || src[i-1] == '_' || src[i-1] == '\'');
+        int at_id_boundary = (i == 0) ||
+                             !(isalnum((unsigned char)src[i-1]) ||
+                               src[i-1] == '_' || src[i-1] == '\'');
         /* fn → \ */
         if (at_id_boundary &&
             src[i] == 'f' && i+1 < n && src[i+1] == 'n' &&
@@ -111,7 +113,7 @@ static void load_stdlib(void) {
             "   Π(a : A). Π(b : A). Π(_ : Id A a b). Id B (f a) (f b))");
 }
 
-/* Shared result printer 
+/* Shared result printer
  * Type-former nodes (PI/SIGMA/W/ID/SUM) have unforced cod thunks;
  * route them through bridge for term_fprint.  Others use node_print.
  */
@@ -136,13 +138,15 @@ int main(int argc, char **argv) {
 
     load_stdlib();
 
-    printf("llang  (graph reduction, Phase 3: β + ι + neutrals + :type + :conv)\n");
-    printf("  Lambda:  fn x. body  |  \\x. body  |  λx. body\n");
-    printf("  Pi:      Pi(x:A). B  |  Π(x:A). B\n");
-    printf("  Sigma:   Sg(x:A). B  |  Σ(x:A). B\n");
-    printf("  Arrow:   A -> B      |  A → B\n");
-    printf("  :type <expr>       — reduce and show type\n");
-    printf("  :conv e1 ; e2      — check convertibility\n");
+    printf("llang\n");
+    printf("  Lambda:  fn x. body          |  \\x. body  |  λx. body\n");
+    printf("  Pi:      Pi(x:A). B          |  Π(x:A). B\n");
+    printf("  Sigma:   Sg(x:A). B          |  Σ(x:A). B\n");
+    printf("  Arrow:   A -> B              |  A → B\n");
+    printf("  let name = expr              — bind global\n");
+    printf("  let name : type = expr       — bind with type annotation\n");
+    printf("  :type <expr>                 — reduce and show type\n");
+    printf("  :conv e1 ; e2               — check convertibility\n");
     printf("  Quit:    Ctrl-D\n\n");
 
 #ifndef HAVE_READLINE
@@ -174,15 +178,93 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        int is_type = (strncmp(raw, ":type ", 6) == 0);
-        int is_conv = (strncmp(raw, ":conv ", 6) == 0);
-        const char *expr = is_type ? raw + 6 : raw;
+        int         is_type = (strncmp(raw, ":type ", 6) == 0);
+        int         is_conv = (strncmp(raw, ":conv ", 6) == 0);
+        int         is_let  = (strncmp(raw, "let", 3) == 0 &&
+                               (raw[3] == ' ' || raw[3] == '\t'));
+        const char *expr    = is_type ? raw + 6 : raw;
 
         Arena a = {NULL};
         Heap  h;
         heap_init(&h);
 
-        /*  :conv e1 ; e2  */
+        /* ── let name [: type] = expr ── */
+        if (is_let) {
+            const char *rest = raw + 4;
+            while (*rest == ' ' || *rest == '\t') rest++;
+
+            /* extract name */
+            const char *name_start = rest;
+            while (*rest && *rest != ' ' && *rest != '\t' &&
+                   *rest != ':' && *rest != '=') rest++;
+            size_t name_len = (size_t)(rest - name_start);
+            if (name_len == 0) {
+                printf("  usage  : let name [: type] = expr\n");
+#ifdef HAVE_READLINE
+                free((void *)raw);
+#endif
+                heap_free(&h); arena_free_all(&a); continue;
+            }
+            char *lname = (char *)arena_alloc(&a, name_len + 1);
+            memcpy(lname, name_start, name_len);
+            lname[name_len] = '\0';
+
+            while (*rest == ' ' || *rest == '\t') rest++;
+
+            const char *type_start = NULL;
+            size_t      type_len   = 0;
+
+            if (*rest == ':') {
+                rest++;
+                while (*rest == ' ' || *rest == '\t') rest++;
+                const char *eq = strchr(rest, '=');
+                if (!eq) {
+                    printf("  usage  : let name [: type] = expr\n");
+#ifdef HAVE_READLINE
+                    free((void *)raw);
+#endif
+                    heap_free(&h); arena_free_all(&a); continue;
+                }
+                type_start = rest;
+                type_len   = (size_t)(eq - rest);
+                while (type_len > 0 && (type_start[type_len-1] == ' ' ||
+                                        type_start[type_len-1] == '\t'))
+                    type_len--;
+                rest = eq + 1;
+            } else if (*rest == '=') {
+                rest++;
+            } else {
+                printf("  usage  : let name [: type] = expr\n");
+#ifdef HAVE_READLINE
+                free((void *)raw);
+#endif
+                heap_free(&h); arena_free_all(&a); continue;
+            }
+            while (*rest == ' ' || *rest == '\t') rest++;
+
+#ifdef HAVE_READLINE
+            free((void *)raw);
+#endif
+
+            /* preprocess both sides and register without type-checking */
+            const char *pp_type = NULL;
+            if (type_start && type_len > 0) {
+                char *tbuf = (char *)arena_alloc(&a, type_len + 1);
+                memcpy(tbuf, type_start, type_len);
+                tbuf[type_len] = '\0';
+                pp_type = preprocess(&a, tbuf);
+            }
+            const char *pp_expr = preprocess(&a, rest);
+
+            int idx = def_define_nocheck(lname, pp_type, pp_expr);
+            if (idx < 0)
+                printf("  error  : could not define '%s'\n", lname);
+            else
+                printf("  defined: %s\n", lname);
+            heap_free(&h); arena_free_all(&a); continue;
+        }
+
+        /* ── :conv e1 ; e2 ── */
         if (is_conv) {
             const char *rest = raw + 6;
             const char *semi = strchr(rest, ';');
