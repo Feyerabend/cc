@@ -723,7 +723,7 @@ the core is more complete (W-types, sum, empty, unit, J).
 The following features are present in mature proof assistants but absent here:
 
 | Feature                       | Notes                                                     |
-s|-------------------------------|-----------------------------------------------------------|
+|-------------------------------|-----------------------------------------------------------|
 | *Termination checking*        | Recursive definitions can diverge                         |
 | *Universe polymorphism*       | Only `Type` and `Type_1`                                  |
 | *Pattern matching*            | Must use eliminators explicitly                           |
