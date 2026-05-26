@@ -15,3 +15,5 @@ Getting there requires indexed inductive families, a module system, and
 eventually implicit arguments.
 
 .. eventually.
+
+Originally built on code from [HoTT](./../hott/), but many things have been altered.
