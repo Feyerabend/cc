@@ -49,7 +49,7 @@ for abstraction and application.
 The untyped lambda calculus proved extraordinarily expressive, but it also reproduced paradoxical
 phenomena related to self-application. Church therefore introduced typed lambda calculi. Here the
 meaning of type changed. Rather than merely serving as a hierarchy preventing contradiction, types
-became classifications of computational behavior. A function from numbers to numbers had a distinct
+became classifications of computational behaviour. A function from numbers to numbers had a distinct
 type from a proposition or a higher-order function.
 
 This shift marked the emergence of modern type theory.
@@ -88,7 +88,7 @@ into types, set theory restricted which sets may be formed. Mathematics largely 
 especially in the twentieth century, and for many mathematicians set theory became the standard foundation.
 
 The relationship between set theory and type theory has remained both cooperative and competitive.
-Set theory tends to emphasize collections and membership. Type theory emphasizes construction and
+Set theory tends to emphasise collections and membership. Type theory emphasises construction and
 inhabitation. In set theory, one asks whether an element belongs to a set. In type theory, one asks
 whether a term inhabits a type.
 
@@ -113,7 +113,7 @@ to vary with arguments:
 Π(x:A).B(x)
 ```
 
-This generalization is mathematically powerful because propositions can depend on values and
+This generalisation is mathematically powerful because propositions can depend on values and
 proofs can express rich specifications.
 
 Dependent type theory enabled formal verification and proof assistants. Systems such as Coq, Agda,
@@ -146,7 +146,7 @@ familiar than set-theoretic reasoning. Others note that formal proof development
 substantial engineering effort.
 
 There are also alternative foundational programs beyond both type theory and set theory. Category
-theory, particularly through topos theory and categorical logic, offers another viewpoint emphasizing
+theory, particularly through topos theory and categorical logic, offers another viewpoint emphasising
 relationships and morphisms rather than membership or syntax. Structuralism in philosophy of mathematics
 often resonates with categorical approaches. Some researchers pursue pluralism, arguing that
 no single foundation should dominate and that different mathematical domains benefit from different frameworks.
