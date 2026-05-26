@@ -70,6 +70,7 @@ typedef enum {
     TM_INDTYPE,  /* inductive type former applied to params+indices   */
     TM_INDCON,   /* inductive constructor applied to args             */
     TM_INDREC,   /* inductive eliminator                             */
+    TM_FIX,      /* fix f          general fixpoint (trusted)        */
 } TermTag;
 
 typedef struct Term Term;
@@ -107,6 +108,7 @@ struct Term {
         struct { int fam_idx; int n_args;  Term **args;  }               indtype; /* TM_INDTYPE */
         struct { int fam_idx; int ctor_idx; int n_args; Term **args;  }  indcon;  /* TM_INDCON  */
         struct { int fam_idx; Term *motive; int n_cases; Term **cases; Term *scrut; }  indrec;  /* TM_INDREC  */
+        struct { Term *body; }                                                        fix;     /* TM_FIX     */
     };
 };
 
@@ -173,6 +175,7 @@ typedef enum {
     VL_BASE,   /* base point of S¹ (canonical)        */
     VL_INDTYPE, /* inductive type former value          */
     VL_INDCON,  /* inductive constructor value          */
+    VL_FIX,     /* fix f  — fixpoint (fun not applied)  */
 } ValTag;
 
 struct Val {
@@ -189,6 +192,7 @@ struct Val {
         Val                                                  *inj;   /* VL_INL, VL_INR       */
         struct { int fam_idx; int n_args; Val **args; }               indtype; /* VL_INDTYPE */
         struct { int fam_idx; int ctor_idx; int n_args; Val **args; } indcon;  /* VL_INDCON  */
+        Val                                                          *fix_fun; /* VL_FIX     */
     };
 };
 
@@ -242,6 +246,7 @@ Term *tm_circrec  (Arena *a, Term *motive, Term *base_case, Term *loop_case, Ter
 Term *tm_indtype  (Arena *a, int fam_idx, int n_args,  Term **args);
 Term *tm_indcon   (Arena *a, int fam_idx, int ctor_idx, int n_args, Term **args);
 Term *tm_indrec   (Arena *a, int fam_idx, Term *motive, int n_cases, Term **cases, Term *scrut);
+Term *tm_fix      (Arena *a, Term *body);
 
 /* ── Value constructors */
 
@@ -271,6 +276,7 @@ Val  *vl_circle (Arena *a);
 Val  *vl_base   (Arena *a);
 Val  *vl_indtype(Arena *a, int fam_idx, int n_args,   Val **args);
 Val  *vl_indcon (Arena *a, int fam_idx, int ctor_idx, int n_args, Val **args);
+Val  *vl_fix    (Arena *a, Val *fun);
 
 /* ── Env / Spine constructors */
 

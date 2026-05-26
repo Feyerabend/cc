@@ -219,6 +219,9 @@ Val *nbe_vapp(Arena *a, Val *fun, Val *arg) {
     case VL_NEUTRAL:
         return vl_neutral(a, fun->neutral.lvl,
                           spine_cons(a, arg, fun->neutral.spine));
+    case VL_FIX:
+        /* (fix f) arg → (f (fix f)) arg  — unfold one step */
+        return nbe_vapp(a, nbe_vapp(a, fun->fix_fun, vl_fix(a, fun->fix_fun)), arg);
     default:
         fprintf(stderr, "vapp: not a function\n"); exit(1);
     }
@@ -352,6 +355,9 @@ Val *nbe_eval(Arena *a, Env *env, Term *t) {
         Val *scrut = nbe_eval(a, env, t->indrec.scrut);
         return nbe_vindrec(a, fam_idx, motive, cases, scrut);
     }
+
+    case TM_FIX:
+        return vl_fix(a, nbe_eval(a, env, t->fix.body));
 
     default:
         fprintf(stderr, "eval: unhandled term tag %d\n", t->tag);
@@ -516,6 +522,8 @@ static Term *quote(Arena *a, int depth, Val *v) {
         for (int i = 0; i < n; i++) args[i] = quote(a, depth, v->indcon.args[i]);
         return tm_indcon(a, v->indcon.fam_idx, v->indcon.ctor_idx, n, args);
     }
+    case VL_FIX:
+        return tm_fix(a, quote(a, depth, v->fix_fun));
     default:
         fprintf(stderr, "quote: unhandled val tag %d\n", v->tag);
         exit(1);

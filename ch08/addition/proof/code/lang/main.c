@@ -223,8 +223,19 @@ static int process_line(const char *raw, const char *origin, int quiet) {
 
     int is_type = (strncmp(raw, ":type ", 6) == 0);
     int is_conv = (strncmp(raw, ":conv ", 6) == 0);
-    int is_let  = (strncmp(raw, "let",  3) == 0 && (raw[3] == ' ' || raw[3] == '\t'));
     int is_data = (strncmp(raw, "data", 4) == 0 && (raw[4] == ' ' || raw[4] == '\t'));
+
+    /* let rec: desugar to   let name [: T] = fix (\name. body)
+     * Detect "let rec " (with optional extra spaces after "rec"). */
+    int is_letrec = 0;
+    if (strncmp(raw, "let", 3) == 0 && (raw[3] == ' ' || raw[3] == '\t')) {
+        const char *p = raw + 3;
+        while (*p == ' ' || *p == '\t') p++;
+        if (strncmp(p, "rec", 3) == 0 && (p[3] == ' ' || p[3] == '\t'))
+            is_letrec = 1;
+    }
+    int is_let  = !is_letrec &&
+                  (strncmp(raw, "let",  3) == 0 && (raw[3] == ' ' || raw[3] == '\t'));
     const char *expr = is_type ? raw + 6 : raw;
 
     Arena a = {NULL};
@@ -248,6 +259,80 @@ static int process_line(const char *raw, const char *origin, int quiet) {
         }
         heap_free(&h); arena_free_all(&a);
         return fam_idx >= 0 ? 0 : -1;
+    }
+
+    /* ── let rec name [: type] = body
+     *  Desugars to:  let name [: type] = fix (\name. body)
+     * ── */
+    if (is_letrec) {
+        /* Skip "let rec " */
+        const char *rest = raw + 3;
+        while (*rest == ' ' || *rest == '\t') rest++;
+        rest += 3; /* skip "rec" */
+        while (*rest == ' ' || *rest == '\t') rest++;
+
+        /* Extract name */
+        const char *name_start = rest;
+        while (*rest && *rest != ' ' && *rest != '\t' &&
+               *rest != ':' && *rest != '=') rest++;
+        size_t name_len = (size_t)(rest - name_start);
+        if (name_len == 0 || name_len > 256) {
+            if (!origin) printf("  usage  : let rec name [: type] = body\n");
+            heap_free(&h); arena_free_all(&a);
+            return -1;
+        }
+        char lname[257];
+        memcpy(lname, name_start, name_len);
+        lname[name_len] = '\0';
+
+        while (*rest == ' ' || *rest == '\t') rest++;
+
+        /* Optional type annotation */
+        const char *type_src = NULL;
+        if (*rest == ':') {
+            rest++;
+            while (*rest == ' ' || *rest == '\t') rest++;
+            const char *eq = strchr(rest, '=');
+            if (!eq) {
+                if (!origin) printf("  usage  : let rec name [: type] = body\n");
+                heap_free(&h); arena_free_all(&a);
+                return -1;
+            }
+            size_t tlen = (size_t)(eq - rest);
+            while (tlen > 0 && (rest[tlen-1] == ' ' || rest[tlen-1] == '\t')) tlen--;
+            char *tbuf = (char *)arena_alloc(&a, tlen + 1);
+            memcpy(tbuf, rest, tlen); tbuf[tlen] = '\0';
+            type_src = preprocess(&a, tbuf);
+            rest = eq + 1;
+        } else if (*rest == '=') {
+            rest++;
+        } else {
+            if (!origin) printf("  usage  : let rec name [: type] = body\n");
+            heap_free(&h); arena_free_all(&a);
+            return -1;
+        }
+        while (*rest == ' ' || *rest == '\t') rest++;
+
+        /* Build "fix (\name. body)" as a string */
+        const char *body_pp = preprocess(&a, rest);
+        size_t blen = strlen(body_pp);
+        /* "fix (\name. " + body + ")" */
+        size_t fix_len = 7 + name_len + 2 + blen + 1 + 1;
+        char *fix_src = (char *)arena_alloc(&a, fix_len);
+        snprintf(fix_src, fix_len, "fix (\\%s. %s)", lname, body_pp);
+
+        int idx = def_define_nocheck(lname, type_src, fix_src);
+        if (idx < 0) {
+            if (origin)
+                fprintf(stderr, "%s: could not define '%s'\n", origin, lname);
+            else
+                printf("  error  : could not define '%s'\n", lname);
+            heap_free(&h); arena_free_all(&a);
+            return -1;
+        }
+        if (!quiet) printf("  defined: %s\n", lname);
+        heap_free(&h); arena_free_all(&a);
+        return 0;
     }
 
     /* ── let name [: type] = expr ── */

@@ -79,6 +79,9 @@ typedef enum {
     ND_INDTYPE,      /* lvl=fam_idx; ch[0..n_params-1]=param thunks */
     ND_INDCON,       /* lvl=(fam_idx<<16)|ctor_idx; ch[0..n_total-1]=arg thunks */
     ND_INDREC,       /* lvl=fam_idx; ch[0]=scrut, ch[1]=motive, ch[2+i]=cases[i] */
+
+    /* Fixpoint (Phase M3) */
+    ND_FIX,          /* ch[0]=fun  (unapplied fixpoint — WHNF) */
 } NodeTag;
 
 /* Node */

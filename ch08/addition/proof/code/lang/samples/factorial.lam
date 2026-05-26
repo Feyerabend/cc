@@ -1,0 +1,21 @@
+-- factorial.lam
+-- Demonstrates genuine self-reference via let rec / fix.
+--
+-- fact n = if iszero n then 1 else n * fact (n-1)
+-- The body calls fact by name; desugars to: fix (\fact. \n. ...)
+--
+-- Load with:  :load "samples/factorial.lam"
+
+import "../lib/nat.lam"
+
+let rec fact : Nat -> Nat = \
+  \n. boolrec (\b. Nat) (succ zero) (mult n (fact (pred n))) (iszero n)
+
+-- fact 0 = 1
+fact zero
+
+-- fact 4 = 24
+fact (succ (succ (succ (succ zero))))
+
+-- fact 5 = 120
+fact (succ (succ (succ (succ (succ zero)))))

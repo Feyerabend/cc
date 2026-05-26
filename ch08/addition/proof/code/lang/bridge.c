@@ -348,6 +348,11 @@ static Term *node_to_term_ctx(Heap *h, NodeRef r, Arena *a, SentCtx *ctx) {
         return tm_indrec(a, fam_idx, motive, n, cases, scrut);
     }
 
+    case ND_FIX: {
+        Term *body = node_to_term_ctx(h, h->nodes[r].ch[0], a, ctx);
+        return body ? tm_fix(a, body) : NULL;
+    }
+
     /* Cannot serialize */
     case ND_ENV:
     case ND_BLACKHOLE_TAG:

@@ -186,6 +186,8 @@ int conv(Arena *a, int depth, Val *u, Val *v) {
         for (int i = 0; i < u->indcon.n_args; i++)
             if (!conv(a, depth, u->indcon.args[i], v->indcon.args[i])) return 0;
         return 1;
+    case VL_FIX:
+        return conv(a, depth, u->fix_fun, v->fix_fun);
     case VL_LAM:
     case VL_PAIR:
         return 0;  /* unreachable: handled by eta cases above */
@@ -1186,6 +1188,18 @@ Val *infer(Arena *a, int depth, TCtx *tctx, Env *env, Term *t) {
         return ret;
     }
 
+    case TM_FIX: {
+        /* Infer mode: infer body type and return its domain as the result type.
+         * Annotation is recommended: (fix body : T) for non-trivial cases. */
+        Val *body_ty = infer(a, depth, tctx, env, t->fix.body);
+        if (!body_ty) return NULL;
+        if (body_ty->tag != VL_PI) {
+            fprintf(stderr, "type error: 'fix': body must have function type\n");
+            return NULL;
+        }
+        return body_ty->pi.dom;
+    }
+
     default:
         fprintf(stderr, "infer: unhandled term tag %d\n", t->tag);
         exit(1);
@@ -1205,6 +1219,11 @@ int check(Arena *a, int depth, TCtx *tctx, Env *env, Term *t, Val *ty) {
         Val *codv  = nbe_eval(a, env_cons(a, fresh, ty->pi.env), ty->pi.cod);
         TCtx ext   = { t->lam.name, ty->pi.dom, tctx };
         return check(a, depth + 1, &ext, env_cons(a, fresh, env), t->lam.body, codv);
+    }
+    /* fix body : ty   requires   body : ty -> ty */
+    if (t->tag == TM_FIX) {
+        Val *fn_ty = vl_pi(a, "_", ty, env_cons(a, ty, NULL), tm_var(a, 1));
+        return check(a, depth, tctx, env, t->fix.body, fn_ty);
     }
     /* sup checks against W */
     if (t->tag == TM_SUP) {

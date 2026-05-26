@@ -223,6 +223,11 @@ Term *tm_indrec(Arena *a, int fam_idx, Term *motive, int n_cases, Term **cases, 
     return t;
 }
 
+Term *tm_fix(Arena *a, Term *body) {
+    Term *t = (Term *)arena_alloc(a, sizeof(Term));
+    t->tag = TM_FIX; t->fix.body = body; return t;
+}
+
 /* -- Value constructors */
 
 Val *vl_lam(Arena *a, char *name, Env *env, Term *body) {
@@ -333,6 +338,11 @@ Val *vl_indcon(Arena *a, int fam_idx, int ctor_idx, int n_args, Val **args) {
     v->indcon.fam_idx = fam_idx; v->indcon.ctor_idx = ctor_idx;
     v->indcon.n_args  = n_args;  v->indcon.args     = args;
     return v;
+}
+
+Val *vl_fix(Arena *a, Val *fun) {
+    Val *v = (Val *)arena_alloc(a, sizeof(Val));
+    v->tag = VL_FIX; v->fix_fun = fun; return v;
 }
 
 /* -- Env / Spine constructors */
@@ -707,6 +717,12 @@ void term_fprint_ctx(FILE *f, Term *t, Ctx *ctx, int prec) {
         if (prec > 0) fprintf(f, ")");
         break;
     }
+    case TM_FIX:
+        if (prec > 0) fprintf(f, "(");
+        fprintf(f, "fix ");
+        term_fprint_ctx(f, t->fix.body, ctx, 2);
+        if (prec > 0) fprintf(f, ")");
+        break;
     default:
         fprintf(f, "<unknown term %d>", t->tag);
         break;
@@ -848,6 +864,12 @@ static void val_print_inner(FILE *f, Val *v, int depth, int prec) {
         fprintf(f, ", ");
         val_print_inner(f, v->pair.snd, depth, 0);
         fprintf(f, ")");
+        break;
+    case VL_FIX:
+        if (prec > 0) fprintf(f, "(");
+        fprintf(f, "fix ");
+        val_print_inner(f, v->fix_fun, depth, 2);
+        if (prec > 0) fprintf(f, ")");
         break;
     default: fprintf(f, "<unknown val %d>", v->tag); break;
     }

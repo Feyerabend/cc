@@ -223,6 +223,7 @@ static const char *tag_name(NodeTag t) {
     case ND_INDTYPE:      return "INDTYPE";
     case ND_INDCON:       return "INDCON";
     case ND_INDREC:       return "INDREC";
+    case ND_FIX:          return "FIX";
     default:              return "?";
     }
 }
@@ -523,6 +524,14 @@ void node_print(Heap *h, NodeRef r, int depth, int prec) {
         }
         break;
     }
+    case ND_FIX: {
+        int wrap = (prec >= 2);
+        if (wrap) printf("(");
+        printf("fix ");
+        node_print(h, h->nodes[r].ch[0], depth, 2);
+        if (wrap) printf(")");
+        break;
+    }
     default:
         printf("<%s>", tag_name(tag));
         break;
@@ -641,6 +650,8 @@ static int term_eq(const Term *t1, const Term *t2) {
             if (!term_eq(t1->indrec.cases[i], t2->indrec.cases[i])) return 0;
         return 1;
     }
+    case TM_FIX:
+        return term_eq(t1->fix.body, t2->fix.body);
     default: return 0;
     }
 }
@@ -783,6 +794,8 @@ int node_conv(Heap *h, Arena *a, NodeRef r1, NodeRef r2) {
             if (!node_conv(h, a, h->nodes[r1].ch[2+i], h->nodes[r2].ch[2+i])) return 0;
         return 1;
     }
+    case ND_FIX:
+        return node_conv(h, a, h->nodes[r1].ch[0], h->nodes[r2].ch[0]);
     default: return 0;
     }
 }

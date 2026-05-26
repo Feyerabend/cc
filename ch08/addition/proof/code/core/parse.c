@@ -208,6 +208,10 @@ static Term *parse_atom(Parser *p, NameCtx *ctx) {
             Term *scr  = parse_atom(p, ctx); if (!scr)  return NULL;
             return tm_natrec(p->arena, mot, base, step, scr);
         }
+        if (strcmp(name, "fix") == 0) {
+            Term *body = parse_atom(p, ctx); if (!body) return NULL;
+            return tm_fix(p->arena, body);
+        }
         /* Identity type keywords */
         if (strcmp(name, "Id") == 0) {
             Term *ty  = parse_atom(p, ctx); if (!ty)  return NULL;
@@ -548,6 +552,7 @@ static int term_not_occurs(int gidx, Term *t) {
         for (int i = 0; i < t->indrec.n_cases; i++)
             if (!term_not_occurs(gidx, t->indrec.cases[i])) return 0;
         return 1;
+    case TM_FIX:   return term_not_occurs(gidx, t->fix.body);
     default:
         return 0;  /* conservative: unknown tag — assume F might appear */
     }

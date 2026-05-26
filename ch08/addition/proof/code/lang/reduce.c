@@ -260,13 +260,21 @@ NodeRef term_to_node(Heap *h, Arena *a, Term *t, NodeRef env) {
         return r2;
     }
 
+    case TM_FIX: {
+        NodeRef r2 = heap_alloc(h);
+        h->nodes[r2].tag   = ND_FIX;
+        h->nodes[r2].flags = 0;
+        h->nodes[r2].ch[0] = mk_thunk(h, t->fix.body, env);
+        return r2;
+    }
+
     default:
         fprintf(stderr, "term_to_node: unhandled tag %d\n", (int)t->tag);
         exit(1);
     }
 }
 
-/* 
+/*
  * force - bring a node to WHNF.
  *
  * Reduction rules:
@@ -343,7 +351,24 @@ static NodeRef force(Heap *h, Arena *a, NodeRef r) {
             return r2;
         }
 
-        /* Stuck: fun is not a LAM or unfoldable GLOBAL */
+        if (ftag == ND_FIX) {
+            /* ι-rule: (fix f) arg → (f (fix f)) arg */
+            NodeRef f    = h->nodes[fun].ch[0];
+            NodeRef self = heap_alloc(h);
+            h->nodes[self].tag   = ND_FIX;
+            h->nodes[self].flags = 0;
+            h->nodes[self].ch[0] = f;
+            NodeRef app1 = mk_app(h, f, self);       /* f (fix f) */
+            NodeRef app2 = mk_app(h, app1, arg_ref);  /* (f (fix f)) arg */
+            NodeRef r2   = force(h, a, app2);
+            h->nodes[r].tag   = ND_REF;
+            h->nodes[r].flags = NF_WHNF;
+            h->nodes[r].ch[0] = r2;
+            h->nodes[r].aux   = NULL;
+            return r2;
+        }
+
+        /* Stuck: fun is not a LAM or unfoldable GLOBAL or FIX */
         h->nodes[r].flags = (h->nodes[r].flags & ~NF_BLACKHOLE) | NF_WHNF;
         return r;
     }
@@ -738,6 +763,9 @@ void nf(Heap *h, Arena *a, NodeRef root) {
             nf(h, a, h->nodes[r].ch[2+i]);
         break;
     }
+    case ND_FIX:
+        nf(h, a, h->nodes[r].ch[0]);  /* normalize the body */
+        break;
     default:
         break;
     }
