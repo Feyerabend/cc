@@ -526,9 +526,29 @@ may be made precise enough to trust, communicate, and even mechanize.
 
 
 
+## Per Martin-Löf and type theory
 
+Martin-Löf Type Theory, usually called MLTT, was developed during the 1970s by Per Martin-Löf.
+It arose from efforts to connect logic, mathematics, and computation within a single formal framework.
+Earlier type theories had mainly addressed paradox and logical structure.
+MLTT extended these ideas into a constructive foundation for mathematics and reasoning.
 
-[MLTT](./../addition/hott/mltt/)
+Its roots lie partly in the intuitionist tradition of Luitzen Egbertus Jan Brouwer.
+Brouwer viewed mathematics not as the discovery of abstract truths, but as the construction of mathematical objects.
+MLTT gave this constructive outlook a precise formal form. It also drew on the typed lambda calculus
+of Alonzo Church and the Curry-Howard correspondence.
+
+The central idea in MLTT is the use of *dependent types*. In earlier systems, types classify terms.
+In MLTT, types may depend on values. This allows types to express richer mathematical and computational
+structure. Proofs and programs become closely connected, and correctness can be expressed directly within the type system.
+
+MLTT differs from classical set theory in both style and philosophy. Set theory is based on collections and membership.
+MLTT is based on constructions and inhabitation. Mathematical existence is understood constructively:
+*to prove that something exists is to provide a witness or construction*.
+For this reason, MLTT became highly influential in proof assistants and dependently typed languages,
+where logic and computation are treated as parts of the same formal activity.
+
+An implementation in C: [MLTT](./../addition/hott/mltt/)
 
 
 
