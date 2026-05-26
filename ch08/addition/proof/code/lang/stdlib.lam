@@ -1,0 +1,5 @@
+-- stdlib.lam  —  standard library entry point
+-- Import with:  import "stdlib.lam"  or  :load "stdlib.lam"
+
+import "vec.lam"
+import "fin.lam"

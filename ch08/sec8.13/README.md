@@ -428,10 +428,7 @@ whether logic describes reality, thought, or merely symbolic convention.
 Some philosophers treat logical laws as objective features of rational structure. Others regard
 them as linguistic or formal frameworks chosen for convenience.
 
-Classical logic traditionally accepts principles such as the law of excluded middle:
-```text
-P ∨ ¬P
-```
+Classical logic traditionally accepts principles such as the law of excluded middle: $P ∨ ¬P$
 according to which every proposition is either true or false.
 
 Yet alternative logics challenge this assumption.

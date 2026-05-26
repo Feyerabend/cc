@@ -1,0 +1,6 @@
+-- fin.lam  —  bounded natural numbers (finite sets)
+-- Load with:  :load "fin.lam"
+
+data Fin : Nat -> Type where \
+  fzero : Pi(n : Nat). Fin (succ n) ; \
+  fsucc : Pi(n : Nat). Fin n -> Fin (succ n)

@@ -1,0 +1,24 @@
+-- vec.lam  —  length-indexed vectors
+-- Load with:  :load "vec.lam"
+
+-- Parameterised by element type A, indexed by length n.
+data Vec (A : Type) : Nat -> Type where \
+  vnil  : Vec A zero ; \
+  vcons : Pi(n : Nat). A -> Vec A n -> Vec A (succ n)
+
+-- Forget the vector, return its length.
+let vlength : Pi(A : Type). Pi(n : Nat). Vec A n -> Nat = \
+  \A. \n. \v. \
+    indrec Vec (\n. \v. Nat) \
+      zero \
+      (\n. \a. \v. \ih. succ ih) \
+      v
+
+-- Map a function over every element.
+let vmap : Pi(A : Type). Pi(B : Type). Pi(n : Nat). \
+           (A -> B) -> Vec A n -> Vec B n = \
+  \A. \B. \n. \f. \v. \
+    indrec Vec (\n. \v. Vec B n) \
+      (vnil B) \
+      (\n. \a. \v. \ih. vcons B n (f a) ih) \
+      v

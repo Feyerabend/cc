@@ -1,0 +1,43 @@
+-- proofs.lam  —  arithmetic identities proved inside the type theory
+-- Load with:  :load "lib/proofs.lam"
+-- Requires:   lib/nat.lam  (plus)
+
+import "nat.lam"
+
+-- plus_zero_l : plus zero n = n
+-- Holds definitionally — no induction needed.
+let plus_zero_l : Pi(n : Nat). Id Nat (plus zero n) n = \
+  \n. refl n
+
+-- plus_zero_r : plus n zero = n
+-- Requires induction on n because plus recurses on its first argument.
+let plus_zero_r : Pi(n : Nat). Id Nat (plus n zero) n = \
+  \n. natrec \
+    (\n. Id Nat (plus n zero) n) \
+    (refl zero) \
+    (\k. \ih. ap Nat Nat (\x. succ x) (plus k zero) k ih) \
+    n
+
+-- plus_succ_r : plus m (succ n) = succ (plus m n)
+-- Induction on m; definitional on the zero case.
+let plus_succ_r : Pi(m : Nat). Pi(n : Nat). Id Nat (plus m (succ n)) (succ (plus m n)) = \
+  \m. \n. natrec \
+    (\m. Id Nat (plus m (succ n)) (succ (plus m n))) \
+    (refl (succ n)) \
+    (\k. \ih. ap Nat Nat (\x. succ x) (plus k (succ n)) (succ (plus k n)) ih) \
+    m
+
+-- plus_comm : plus m n = plus n m
+-- Follows from plus_zero_r and plus_succ_r by induction on m.
+let plus_comm : Pi(m : Nat). Pi(n : Nat). Id Nat (plus m n) (plus n m) = \
+  \m. \n. natrec \
+    (\m. Id Nat (plus m n) (plus n m)) \
+    (sym Nat n (plus n zero) (plus_zero_r n)) \
+    (\k. \ih. trans Nat \
+                (plus (succ k) n) \
+                (succ (plus k n)) \
+                (plus n (succ k)) \
+                (ap Nat Nat (\x. succ x) (plus k n) (plus n k) ih) \
+                (sym Nat (plus n (succ k)) (succ (plus n k)) \
+                  (plus_succ_r n k))) \
+    m
