@@ -159,5 +159,7 @@ Almost everything else in HoTT unfolds from taking that idea completely seriousl
 
 ### Reference
 
-A fun introdution to [MLTT/HoTT](https://www8.cs.fau.de/ext/teaching/sose2021/hott/mltt-intro.pdf)
+* [The HoTT Book](https://homotopytypetheory.org/book/)
+
+* A fun introdution to [MLTT/HoTT](https://www8.cs.fau.de/ext/teaching/sose2021/hott/mltt-intro.pdf)
 
