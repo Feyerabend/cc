@@ -181,9 +181,9 @@ This reinterpretation transformed the philosophical status of type systems. Earl
 types primarily as machine-oriented classifications. Modern views increasingly regard them as
 semantic contracts or specifications.
 
-A function typed as `String -> Int`
-does more than constrain memory layout. It declares a relation between inputs and outputs.
-Richer type systems may specify far more elaborate properties, describing protocols, resources, or invariants.
+A function typed as `String -> Int` does more than constrain memory layout.
+It declares a relation between inputs and outputs. Richer type systems may specify far
+more elaborate properties, describing protocols, resources, or invariants.
 
 This development culminates in dependent typing and proof-carrying code.
 Here types may express logical properties of values themselves.
@@ -329,10 +329,10 @@ then study properties such as consistency and completeness.
 A formal system may be understood as consisting of symbols, formation rules specifying legitimate
 expressions, axioms accepted as starting points, and inference rules governing valid derivation.
 
-A typical deductive judgment appears: $Γ ⊢ φ$ meaning that proposition (φ) is derivable from assumptions (Γ).
+A typical deductive judgment appears: $Γ ⊢ φ$ meaning that proposition ($φ$) is derivable from assumptions ($Γ$).
 
 Inference rules determine how derivations proceed. One classical example is modus ponens:
-```text
+```math
 φ
 φ → ψ
 ------
