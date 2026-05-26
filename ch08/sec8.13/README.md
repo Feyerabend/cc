@@ -332,7 +332,7 @@ expressions, axioms accepted as starting points, and inference rules governing v
 A typical deductive judgment appears: $Γ ⊢ φ$ meaning that proposition ($φ$) is derivable from assumptions ($Γ$).
 
 Inference rules determine how derivations proceed. One classical example is modus ponens:
-```math
+```text
 φ
 φ → ψ
 ------
