@@ -1,6 +1,12 @@
 
 ## Type Systems and Formal Reasoning
 
+This book and repository have developed from code upward toward increasing levels
+of abstraction. We began early with types, and it is interesting to see how 
+strongly they influence computer science and many other fields. In some cases,
+they are fundamental. It's time for some reflection and recapitulation.
+
+
 ### Type Systems
 
 Type systems grew out of the same intellectual soil as [type theory](TYPETHEORY.md),
@@ -30,13 +36,16 @@ distinctions improves reliability.
 At first, types were viewed largely as pragmatic engineering devices. A compiler needed
 to know how many bits an object occupied, which machine instructions to use, and how memory
 should be organized. Types were therefore connected to representation and efficiency
- An integer and a floating-point number required different operations, and the language
- needed a way to encode this distinction.
+An integer and a floating-point number required different operations, and the language
+needed a way to encode this distinction.
+
+
+#### Abstractions comes to life ..
 
 Yet deeper logical ideas soon entered programming language design. The influence of lambda
 calculus, formal logic, and early type theory became increasingly visible, especially through
 functional programming languages and research into language semantics. What had begun
-as a practical mechanism for organizing memory evolved into a sophisticated mathematical
+as a practical mechanism for organising memory evolved into a sophisticated mathematical
 discipline.
 
 A type system may be described mathematically as a collection of rules assigning classifications
@@ -54,6 +63,9 @@ may be rejected because the operation lacks meaning under the language's typing 
 This elementary example hides considerable conceptual depth. The type system is performing
 a limited form of logical analysis. It is determining not whether the program is useful
 or correct in every sense but whether it respects certain structural constraints.
+
+
+#### Typing
 
 The historical development of type systems reflects a continuing tension between expressive
 power and safety. Languages that permit unrestricted operations may be flexible but error-prone.
@@ -83,8 +95,11 @@ values or reinterpret memory contents in ways that risk confusion. Strong typing
 prevent such ambiguities.
 
 These design choices reflect different assumptions about programmers and machines. Weak typing
-often prioritizes convenience, interoperability, or low-level control. Strong typing prioritizes
+often prioritises convenience, interoperability, or low-level control. Strong typing prioritises
 predictability and formal guarantees.
+
+
+#### Semantics
 
 During the 1960s and 1970s, type systems became increasingly sophisticated through research into
 language semantics and functional programming. Languages began supporting compound types such as
@@ -107,6 +122,9 @@ Shape =
 
 Such constructions allowed programs to model real-world structures with increasing precision.
 
+
+#### Type inference
+
 An especially influential development was type inference, pioneered largely through work associated
 with the ML family of languages and the Hindley-Milner system. Earlier languages often required
 programmers to specify types explicitly. Type inference allowed compilers to reconstruct many
@@ -126,6 +144,9 @@ This development had both practical and theoretical significance. It showed that
 typing need not impose unbearable syntactic burden. More profoundly, it revealed that typing
 could itself become an algorithmic problem.
 
+
+#### Polymorphism
+
 The Hindley-Milner system achieved an elegant balance between expressiveness and tractable
 inference. Polymorphism became possible through universally quantified type variables.
 A function such as identity:
@@ -142,22 +163,31 @@ Polymorphism represented a major conceptual leap. Programs could be generic with
 safety. Instead of writing separate implementations for integers, strings, or lists, programmers
 could describe general computational patterns.
 
+
+#### Subtyping
+
 Research then moved toward richer and more expressive systems. Object-oriented languages introduced
 subtyping and inheritance. If one type represents a subtype of another, programs may treat specialised
-objects as instances of more general categories. A Dog may be treated as an Animal.
+objects as instances of more general categories. A `Dog` may be treated as an `Animal`.
 
 Subtyping introduced flexibility but also subtle complications. Questions arose concerning variance,
 inheritance hierarchies, and behavioral substitutability. The so-called Liskov substitution principle,
 associated with Barbara Liskov, attempted to articulate when such substitution remains semantically sound.
 
+
+#### More types
+
 Meanwhile, functional languages explored higher-order types, modules, and increasingly expressive
-forms of polymorphism. System F generalized polymorphism explicitly, while dependent type systems
+forms of polymorphism. System F generalised polymorphism explicitly, while dependent type systems
 blurred the boundary between types and values.
 
 This convergence between programming and logic eventually revealed a remarkable unity. Through the
 the frequently here cited Curry-Howard correspondence, already influential in type theory, programs
 and proofs became closely linked. A type system was no longer merely a debugging aid or compiler
 convenience. It became a logical discipline governing computational meaning.
+
+
+#### Checking out types
 
 Under this perspective, type checking resembles proof checking. A program inhabiting a type demonstrates
 that certain computational claims hold. The compiler becomes a limited theorem prover.
@@ -166,10 +196,7 @@ This reinterpretation transformed the philosophical status of type systems. Earl
 types primarily as machine-oriented classifications. Modern views increasingly regard them as
 semantic contracts or specifications.
 
-A function typed as
-```text
-String -> Int
-```
+A function typed as $String -> Int$
 does more than constrain memory layout. It declares a relation between inputs and outputs.
 Richer type systems may specify far more elaborate properties, describing protocols, resources, or invariants.
 
@@ -177,13 +204,10 @@ This development culminates in dependent typing and proof-carrying code.
 Here types may express logical properties of values themselves.
 
 A vector type, for example, may include its length:
-```text
-Vector A n
-```
-meaning a vector of elements of type (A) and length (n).
+$Vector A n$ meaning a vector of elements of type (A) and length (n).
 
 Then concatenation may guarantee correct size by construction.
-Programs satisfying such types cannot violate the encoded properties.
+*Programs satisfying such types cannot violate the encoded properties.*
 
 The practical implications are substantial. Bugs associated with array bounds, protocol violations,
 or invalid states may become impossible rather than merely unlikely.
@@ -194,9 +218,12 @@ difficult to understand. Programmers may experience tension between expressive p
 
 Language design therefore involves continual compromise.
 
+
+#### Type philosophies
+
 This has produced diverse language philosophies. Some languages emphasize minimal typing and programmer freedom.
-Others embrace maximal static guarantees. Languages such as C traditionally prioritize control and performance,
-tolerating potentially unsafe operations. Languages such as Haskell emphasize semantic clarity and strong abstraction.
+Others embrace maximal static guarantees.
+Languages such as C traditionally prioritize control and performance, tolerating potentially unsafe operations. Languages such as Haskell emphasize semantic clarity and strong abstraction.
 Languages such as Rust pursue safety without garbage collection through ownership and borrowing disciplines encoded in the type system.
 
 The emergence of ownership types and linear types represents another significant chapter.
@@ -215,6 +242,9 @@ In the second, they are central to computational meaning.
 This philosophical divide partly explains why discussions about typing often become emotionally charged.
 Debates about static versus dynamic typing, explicit versus inferred types, or permissive versus
 restrictive systems are rarely only technical. They concern competing visions of programming itself.
+
+
+#### Alternatives
 
 Alternatives to conventional type systems also exist. Some languages rely heavily on runtime contracts
 or testing rather than static guarantees. Formal specification systems may supplement or replace
@@ -269,16 +299,16 @@ traditions. Yet its expressive power was limited. Mathematical reasoning increas
 symbolic tools than syllogistic forms could provide. The scientific revolution and the rise of algebraic
 methods intensified pressure for more precise logical systems.
 
+
+#### Modern approach
+
 A decisive transformation occurred during the nineteenth century. Logic began to move from verbal analysis
 toward symbolic formalization. Figures such as George Boole and Gottlob Frege developed systems in which
 reasoning could be represented symbolically and manipulated according to explicit rules.
 
 Boole treated logical propositions algebraically, showing that logical operations resemble symbolic calculation.
 Frege went further by creating predicate logic, vastly extending logical expressive power.
-Predicate logic allowed quantification and relations:
-```text
-∀x Human(x) → Mortal(x)
-```
+Predicate logic allowed quantification and relations: $∀x Human(x) → Mortal(x)$
 rather than merely categorical syllogisms.
 
 This innovation made logic suitable for mathematics. Relations, functions, and generality could
@@ -287,8 +317,11 @@ now be expressed systematically.
 Formal reasoning thus entered a new era. Logic ceased to be merely a philosophical discipline
 and became a mathematical one.
 
+
+#### Reduce mathematics to logic?
+
 The late nineteenth and early twentieth centuries witnessed growing optimism that mathematics
-itself might be formalized. If reasoning could be reduced to explicit symbolic rules, perhaps
+itself might be formalised. If reasoning could be reduced to explicit symbolic rules, perhaps
 all mathematical truth could be derived mechanically from foundational principles.
 
 This ambition motivated the logicist program associated with thinkers such as Gottlob Frege,
@@ -304,14 +337,13 @@ by axiomatization and metamathematical analysis. The idea was not merely to reas
 to reason about formal reasoning itself. One would specify axioms and inference rules precisely,
 then study properties such as consistency and completeness.
 
+
+#### Formal system
+
 A formal system may be understood as consisting of symbols, formation rules specifying legitimate
 expressions, axioms accepted as starting points, and inference rules governing valid derivation.
 
-A typical deductive judgment appears:
-```text
-Γ ⊢ φ
-```
-meaning that proposition (φ) is derivable from assumptions (Γ).
+A typical deductive judgment appears: $Γ ⊢ φ$ meaning that proposition (φ) is derivable from assumptions (Γ).
 
 Inference rules determine how derivations proceed. One classical example is modus ponens:
 ```text
@@ -327,9 +359,12 @@ Such rules may appear trivial, yet they embody an extraordinary philosophical cl
 Reasoning itself can be represented as formal transformation.
 
 This perspective encouraged comparisons between reasoning and calculation. Just as arithmetic
-manipulates symbols through explicit rules, perhaps logic and proof could be mechanized.
+manipulates symbols through explicit rules, perhaps logic and proof could be mechanised.
 
-The dream of mechanized reasoning encountered profound limitations through the work of Kurt Gödel.
+
+#### Limitations
+
+The dream of mechanised reasoning encountered profound limitations through the work of Kurt Gödel.
 Gödel's incompleteness theorems, published in 1931, demonstrated that sufficiently expressive formal
 systems cannot simultaneously achieve completeness and prove their own consistency,
 assuming they are consistent.
@@ -352,15 +387,14 @@ and Alan Turing showed that effective procedures could themselves be formalized.
 Turing machines and lambda calculus provided mathematical models of computation. The boundary between
 proof and computation grew increasingly porous.
 
+
+### Curry-Howard correspondence
+
 This connection became explicit through the Curry-Howard correspondence. Logical propositions correspond
 to types, while proofs correspond to programs. Under this view, formal reasoning is not merely symbolic
 derivation but computational construction.
 
-A proof of implication:
-```text
-A → B
-```
-is understood as a function transforming evidence for (A) into evidence for (B).
+A proof of implication: $A → B$ is understood as a function transforming evidence for (A) into evidence for (B).
 
 Formal reasoning thus acquired executable character.
 
@@ -400,27 +434,28 @@ Semantics concerns interpretation and truth.
 This distinction allows rigorous analysis of reasoning systems. One may ask whether derivability
 corresponds appropriately to truth.
 
+
+#### Properties: soundness and completeness
+
 Two central metatheoretical properties arise.
 
-Soundness means that formally derivable statements are semantically valid:
-
+*Soundness* means that formally derivable statements are semantically valid:
 ```text
-Γ ⊢ φ
-⇒
-Γ ⊨ φ
+Γ ⊢ φ   ⇒    Γ ⊨ φ
 ```
 
-Completeness means semantically valid conclusions are formally derivable:
+*Completeness* means semantically valid conclusions are formally derivable:
 ```text
-Γ ⊨ φ
-⇒
-Γ ⊢ φ
+Γ ⊨ φ    ⇒    Γ ⊢ φ
 ```
 
 Soundness ensures formal reasoning does not prove falsehoods. Completeness ensures the system is
 sufficiently expressive to capture semantic consequence.
 
 These notions became foundational to modern logic.
+
+
+#### Reasoning
 
 Formal reasoning also intersects with philosophy in profound ways. One central question concerns
 whether logic describes reality, thought, or merely symbolic convention.
@@ -446,6 +481,9 @@ Fuzzy logics allow graded truth rather than binary truth values.
 
 These developments reveal that formal reasoning is not monolithic but pluralistic.
 
+
+#### Automated resoning
+
 The rise of automated reasoning further expanded the field.
 Since formal reasoning consists of explicit symbolic rules,
 computers can participate in proof construction and verification.
@@ -460,6 +498,9 @@ Their use in mathematics and software verification reflects a growing confidence
 that formal reasoning can provide unusually strong guarantees.
 
 Yet formal reasoning also has limitations and critics.
+
+
+#### Critics
 
 Some philosophers argue that mathematical creativity and scientific discovery depend
 heavily on intuition, analogy, and conceptual insight not reducible to formal derivation.
@@ -476,7 +517,7 @@ Formal reasoning therefore occupies an ambiguous position.
 It is neither the whole of rationality nor merely a technical instrument.
 It provides disciplined frameworks within which inference becomes transparent, reproducible, and open to scrutiny.
 
-Its historical trajectory runs from ancient logic through symbolic formalization,
+Its historical trajectory runs from ancient logic through symbolic formalisation,
 foundational crises, computability theory, and modern proof assistants. What began
 as an attempt to codify valid argument evolved into a general theory of inferential structure itself.
 Today formal reasoning underlies mathematics, programming languages, verification, and artificial intelligence,
@@ -486,22 +527,23 @@ may be made precise enough to trust, communicate, and even mechanize.
 
 
 
+
 [MLTT](./../addition/hott/mltt/)
 
 
 
-### References MLTT
+#### References MLTT
 
 * --
 
 
-### References Per Martin-Löf
+#### References Per Martin-Löf
 
 * [Papers on GitHub](https://github.com/michaelt/martin-lof)
 * [Wikipedia](https://en.wikipedia.org/wiki/Per_Martin-Löf)
 
 
-#### Two Personal Memories of Per Martin-Löf
+##### Two Personal Memories of Per Martin-Löf
 
 __An "executable calculus".__
 I remember that during the years when I was exploring and trying to understand the world of logic
