@@ -538,9 +538,6 @@ An implementation in C: [MLTT](./../addition/hott/mltt/)
 
 
 
-#### References MLTT
-
-* --
 
 
 #### References Per Martin-Löf
