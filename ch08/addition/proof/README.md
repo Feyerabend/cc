@@ -25,17 +25,17 @@ polymorphism, and implicit arguments - all of which are present.
 
 ```
 code/
-  core/     The mathematical kernel: parser, bidirectional type checker,
-            NbE evaluator, elaborator. REPL: lcore.
-  lang/     A call-by-need graph reducer using the same surface syntax
-            and type checker. REPL: llang.
+  core/                   The mathematical kernel: parser, bidirectional type checker,
+                          NbE evaluator, elaborator. REPL: lcore.
+  lang/                   A call-by-need graph reducer using the same surface syntax
+                          and type checker. REPL: llang.
 docs/
-  01.md     Orientation: what the system is, how to build it, a quick tour
-  02.md     First read: tracing one expression end to end through the code
-  03.md     Terms and Values: the two-representation design and why it works
-  04.md     Normalisation by Evaluation: eval, quote, eliminators, neutrals
+  01.md                   Orientation: what the system is, how to build it, a quick tour
+  02.md                   First read: tracing one expression end to end through the code
+  03.md                   Terms and Values: the two-representation design and why it works
+  04.md                   Normalisation by Evaluation: eval, quote, eliminators, neutrals
   exercises/
-    01_add_lmax.md      Medium exercise: add lmax (maximum of two levels)
+    01_add_lmax.md        Medium exercise: add lmax (maximum of two levels)
     02_quotient_types.md  Large exercise: add quotient types as a HIT
 ```
 
@@ -76,13 +76,13 @@ cd code/lang && make && ./llang
 
 ### What the system demonstrates
 
-**Types as propositions, terms as proofs.** The same syntax that writes
+*Types as propositions, terms as proofs.* The same syntax that writes
 `plus : Nat → Nat → Nat` also writes `plus_comm : Π(m n : Nat). Id Nat (plus m n) (plus n m)`.
 They are checked by the same checker and run by the same evaluator.
 `plus_comm 2 3` reduces to `refl 5` - a concrete witness that both sides
 compute to the same number.
 
-**Length-indexed vectors.** `head` on an empty vector is a type error, not
+*Length-indexed vectors.* `head` on an empty vector is a type error, not
 a runtime crash. The length is part of the type; the type checker enforces
 bounds statically.
 
@@ -92,11 +92,11 @@ data Vec (A : Type) : Nat → Type where
   vcons : Π(n : Nat). A → Vec A n → Vec A (succ n)
 ```
 
-**Proofs that compute.** Identity type proofs are programs. Run them and they
+*Proofs that compute.* Identity type proofs are programs. Run them and they
 reduce. `plus_comm (succ (succ zero)) (succ (succ (succ zero)))` normalises
 to `refl (succ (succ (succ (succ (succ zero)))))`.
 
-**Universe polymorphism.** Definitions can be quantified over universe
+*Universe polymorphism.* Definitions can be quantified over universe
 levels so they work at `Type_0`, `Type_1`, or any `Type_ℓ`:
 
 ```
@@ -105,7 +105,7 @@ id _ Nat zero       -- level inferred as 0
 id _ Type Nat       -- level inferred as 1
 ```
 
-**Implicit arguments.** Underscores `_` are holes the elaborator fills by
+*Implicit arguments.* Underscores `_` are holes the elaborator fills by
 unification:
 
 ```
@@ -152,11 +152,11 @@ library.
 
 The `docs/exercises/` folder contains guided extensions to the system:
 
-- **Add `lmax`** (`01_add_lmax.md`): Implement the maximum of two universe
+- *Add `lmax`* (`01_add_lmax.md`): Implement the maximum of two universe
   levels. Medium difficulty, around 80 lines across 5 files. Covers the full
   pipeline: parsing, evaluation, type checking, quoting, and conversion.
 
-- **Quotient types** (`02_quotient_types.md`): Add `A / R` as a higher
+- *Quotient types* (`02_quotient_types.md`): Add `A / R` as a higher
   inductive type. Large exercise, around 300 lines. Covers path constructors,
   the coherence condition in the eliminator, and the connection between
   quotients and the univalence axiom.
