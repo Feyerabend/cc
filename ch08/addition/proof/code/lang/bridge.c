@@ -353,6 +353,18 @@ static Term *node_to_term_ctx(Heap *h, NodeRef r, Arena *a, SentCtx *ctx) {
         return body ? tm_fix(a, body) : NULL;
     }
 
+    /* Phase M1 — level terms */
+    case ND_LEVEL: return tm_level(a);
+    case ND_LZERO: return tm_lzero(a);
+    case ND_LSUC: {
+        Term *pred = node_to_term_ctx(h, h->nodes[r].ch[0], a, ctx);
+        return pred ? tm_lsuc(a, pred) : NULL;
+    }
+    case ND_UNI_V: {
+        Term *lvl = node_to_term_ctx(h, h->nodes[r].ch[0], a, ctx);
+        return lvl ? tm_uni_v(a, lvl) : NULL;
+    }
+
     /* Cannot serialize */
     case ND_ENV:
     case ND_BLACKHOLE_TAG:

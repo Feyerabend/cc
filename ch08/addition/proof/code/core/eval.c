@@ -1,3 +1,25 @@
+/*
+ * eval.c — Normalisation by Evaluation (NbE)
+ *
+ * The idea: instead of defining reduction rules on syntax (rewrite trees),
+ * we evaluate terms into a semantic domain (Val) using the *host language's*
+ * function application for beta reduction, then "quote" back to syntax.
+ *
+ *   nbe_eval : Env -> Term -> Val     (Term → semantic value)
+ *   nbe_vapp : Val  -> Val  -> Val    (semantic function application)
+ *   nbe_quote: depth -> Val -> Term   (semantic value → normal form)
+ *
+ * The key insight: a VL_LAM closure IS a function in C. Applying it is just
+ * evaluating its body in an extended environment. No substitution needed.
+ *
+ * Normal forms: a term is in normal form when nbe_eval followed by nbe_quote
+ * produces the same tree.  nbe_nf(a,t) = nbe_quote(a,0, nbe_eval(a,NULL,t)).
+ *
+ * Neutrals: when a eliminator (natrec, case, fst, ...) is applied to a
+ * variable (not a constructor), it cannot fire.  We build a VL_NEUTRAL value
+ * that records the head variable and the accumulated eliminators (the spine).
+ * nbe_quote replays the spine back to syntax.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "eval.h"
@@ -212,6 +234,18 @@ Val *nbe_vindrec(Arena *a, int fam_idx, Val *motive, Val **cases, Val *scrut) {
 
 /* ── Eval */
 
+/*
+ * nbe_vapp — semantic function application.
+ *
+ * Three cases:
+ *   VL_LAM   : beta-reduce by evaluating the body in an extended environment.
+ *              This is the entire substitution mechanism: push arg onto env,
+ *              evaluate body.  No traversal of the term tree needed.
+ *   VL_NEUTRAL: the function is stuck (it is a variable or an unapplied axiom).
+ *              Record the argument on the spine so quote can reproduce the app.
+ *   VL_FIX   : unfold one step — (fix f) arg → (f (fix f)) arg.
+ *              The fix is not unrolled until applied; this keeps recursion lazy.
+ */
 Val *nbe_vapp(Arena *a, Val *fun, Val *arg) {
     switch (fun->tag) {
     case VL_LAM:
@@ -227,6 +261,23 @@ Val *nbe_vapp(Arena *a, Val *fun, Val *arg) {
     }
 }
 
+/*
+ * nbe_eval — evaluate a Term to a Val.
+ *
+ * env is a linked list of Val*s; de Bruijn index k → env->val after k .next
+ * hops.  Every compound term evaluates its sub-terms and builds a Val.
+ *
+ * Notable cases:
+ *   TM_VAR   : variable lookup in env.
+ *   TM_LAM   : capture the current env in a closure (do NOT evaluate the body
+ *              yet — that happens lazily in nbe_vapp when an argument arrives).
+ *   TM_APP   : evaluate both sides, then call nbe_vapp for beta reduction.
+ *   TM_ANN   : annotations are type-only; evaluation erases them.
+ *   TM_PI/SIG: keep the codomain as an unevaluated Term plus the current env,
+ *              just like TM_LAM.  The cod is only opened when checked or applied.
+ *   TM_NATREC: delegate to nbe_vnatrec which fires or builds a neutral.
+ *   TM_GLOBAL: retrieve the pre-evaluated Val stored in the global def table.
+ */
 Val *nbe_eval(Arena *a, Env *env, Term *t) {
     switch (t->tag) {
     case TM_VAR:  return env_lookup(a, env, t->idx, t->idx);
@@ -358,6 +409,21 @@ Val *nbe_eval(Arena *a, Env *env, Term *t) {
 
     case TM_FIX:
         return vl_fix(a, nbe_eval(a, env, t->fix.body));
+    case TM_LEVEL: return vl_level(a);
+    case TM_LZERO: return vl_lzero(a);
+    case TM_LSUC:  return vl_lsuc(a, nbe_eval(a, env, t->elim));
+    case TM_UNI_V: {
+        Val *lv = nbe_eval(a, env, t->uni_v_lvl);
+        /* Concrete level: collapse to VL_UNI */
+        int n = 0; Val *cur = lv;
+        while (cur->tag == VL_LSUC) { n++; cur = cur->succ; }
+        if (cur->tag == VL_LZERO) return vl_uni(a, n);
+        return vl_uni_v(a, lv);  /* neutral level */
+    }
+
+    case TM_HOLE:
+        fprintf(stderr, "eval: TM_HOLE reached — term not elaborated\n");
+        exit(1);
 
     default:
         fprintf(stderr, "eval: unhandled term tag %d\n", t->tag);
@@ -524,6 +590,17 @@ static Term *quote(Arena *a, int depth, Val *v) {
     }
     case VL_FIX:
         return tm_fix(a, quote(a, depth, v->fix_fun));
+    case VL_LEVEL: return tm_level(a);
+    case VL_LZERO: return tm_lzero(a);
+    case VL_LSUC:  return tm_lsuc(a, quote(a, depth, v->succ));
+    case VL_UNI_V:
+        if (!v->uni_v_lvl) {
+            /* VL_UNI_V(NULL) is the checker's omega sentinel; nbe_eval never
+               produces it, so quote should never see it with closed terms. */
+            fprintf(stderr, "quote: internal error: VL_UNI_V with NULL level\n");
+            exit(1);
+        }
+        return tm_uni_v(a, quote(a, depth, v->uni_v_lvl));
     default:
         fprintf(stderr, "quote: unhandled val tag %d\n", v->tag);
         exit(1);

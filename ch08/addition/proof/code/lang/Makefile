@@ -5,7 +5,7 @@ TARGET  = llang
 TARGET_RL = llang-rl
 
 CORE_SRCS = ../core/term.c ../core/eval.c ../core/parse.c \
-            ../core/check.c ../core/defs.c
+            ../core/check.c ../core/defs.c ../core/elab.c
 
 LANG_SRCS = main.c node.c reduce.c bridge.c
 

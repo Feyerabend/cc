@@ -179,6 +179,8 @@ static Term *parse_atom(Parser *p, NameCtx *ctx) {
     if (isalpha(c) || c == '_') {
         char *name = read_ident(p);
         if (!name) return NULL;
+        /* Phase M2: bare '_' is an implicit-argument hole */
+        if (strcmp(name, "_") == 0) return tm_hole(p->arena, -1);
         /* Axioms */
         if (strcmp(name, "ua")     == 0) return tm_ua(p->arena);
         if (strcmp(name, "funext") == 0) return tm_funext(p->arena);
@@ -211,6 +213,13 @@ static Term *parse_atom(Parser *p, NameCtx *ctx) {
         if (strcmp(name, "fix") == 0) {
             Term *body = parse_atom(p, ctx); if (!body) return NULL;
             return tm_fix(p->arena, body);
+        }
+        /* Phase M1 — level terms */
+        if (strcmp(name, "Level") == 0) return tm_level(p->arena);
+        if (strcmp(name, "lzero") == 0) return tm_lzero(p->arena);
+        if (strcmp(name, "lsuc")  == 0) {
+            Term *arg = parse_atom(p, ctx); if (!arg) return NULL;
+            return tm_lsuc(p->arena, arg);
         }
         /* Identity type keywords */
         if (strcmp(name, "Id") == 0) {
@@ -356,20 +365,93 @@ static Term *parse_atom(Parser *p, NameCtx *ctx) {
             if (!scrut) return NULL;
             return tm_indrec(p->arena, fam_idx, motive, n, cases, scrut);
         }
-        /* Type[_N]: handles "Type", "Type_N" (read as one token), "Type" + "_N" */
+        /* Type[_N|_ident|_(expr)]: universe at concrete or variable level */
         if (strncmp(name, "Type", 4) == 0) {
             int level = 0;
             const char *rest = name + 4;
-            if (*rest == '_' && isdigit((unsigned char)rest[1])) {
-                /* validate all remaining chars are digits */
-                const char *d = rest + 1;
-                while (isdigit((unsigned char)*d)) d++;
-                if (*d != '\0') goto lookup;  /* e.g. "Type_1abc" */
-                level = atoi(rest + 1);
+            if (*rest == '_') {
+                const char *suffix = rest + 1;
+                if (*suffix == '\0') {
+                    /* "Type_" in token buffer — peek stream for rest */
+                    int c2 = peek(p);
+                    if (isdigit((unsigned char)c2)) {
+                        int level = 0;
+                        while (isdigit((unsigned char)p->src[p->pos]))
+                            level = level * 10 + (p->src[p->pos++] - '0');
+                        return tm_uni(p->arena, level);
+                    }
+                    if (isalpha((unsigned char)c2) || c2 == '_') {
+                        char *lname = read_ident(p);
+                        if (!lname) return NULL;
+                        int idx = name_lookup(ctx, lname);
+                        if (idx < 0) {
+                            int gidx = def_lookup(lname);
+                            if (gidx >= 0) return tm_uni_v(p->arena, tm_global(p->arena, gidx));
+                            fprintf(stderr, "parse: unbound level variable '%s'\n", lname);
+                            return NULL;
+                        }
+                        return tm_uni_v(p->arena, tm_var(p->arena, idx));
+                    }
+                    if (c2 == '(') {
+                        p->pos++;
+                        Term *lvl = parse_expr(p, ctx);
+                        if (!lvl) return NULL;
+                        if (!expect(p, ')')) return NULL;
+                        return tm_uni_v(p->arena, lvl);
+                    }
+                    return tm_uni(p->arena, 0);
+                }
+                if (isdigit((unsigned char)*suffix)) {
+                    /* "Type_N" — digits only */
+                    const char *d = suffix;
+                    while (isdigit((unsigned char)*d)) d++;
+                    if (*d != '\0') goto lookup;  /* "Type_1abc" → variable */
+                    return tm_uni(p->arena, atoi(suffix));
+                }
+                if (isalpha((unsigned char)*suffix) || *suffix == '_') {
+                    /* "Type_ident" — level variable baked into token */
+                    int idx = name_lookup(ctx, suffix);
+                    if (idx < 0) {
+                        int gidx = def_lookup(suffix);
+                        if (gidx >= 0) return tm_uni_v(p->arena, tm_global(p->arena, gidx));
+                        fprintf(stderr, "parse: unbound level variable '%s'\n", suffix);
+                        return NULL;
+                    }
+                    return tm_uni_v(p->arena, tm_var(p->arena, idx));
+                }
+                goto lookup;  /* unrecognised suffix */
             } else if (*rest == '\0' && peek(p) == '_') {
-                p->pos++;
-                while (isdigit((unsigned char)p->src[p->pos]))
-                    level = level * 10 + (p->src[p->pos++] - '0');
+                p->pos++;  /* consume '_' */
+                int c2 = peek(p);
+                if (isdigit((unsigned char)c2)) {
+                    /* "Type" then "_N" */
+                    while (isdigit((unsigned char)p->src[p->pos]))
+                        level = level * 10 + (p->src[p->pos++] - '0');
+                    return tm_uni(p->arena, level);
+                }
+                if (isalpha((unsigned char)c2) || c2 == '_') {
+                    /* "Type" then "_ident" */
+                    char *lname = read_ident(p);
+                    if (!lname) return NULL;
+                    int idx = name_lookup(ctx, lname);
+                    if (idx < 0) {
+                        int gidx = def_lookup(lname);
+                        if (gidx >= 0) return tm_uni_v(p->arena, tm_global(p->arena, gidx));
+                        fprintf(stderr, "parse: unbound level variable '%s'\n", lname);
+                        return NULL;
+                    }
+                    return tm_uni_v(p->arena, tm_var(p->arena, idx));
+                }
+                if (c2 == '(') {
+                    /* "Type_(expr)" — complex level expression */
+                    p->pos++;  /* consume '(' */
+                    Term *lvl = parse_expr(p, ctx);
+                    if (!lvl) return NULL;
+                    if (!expect(p, ')')) return NULL;
+                    return tm_uni_v(p->arena, lvl);
+                }
+                /* Bare "Type_" with nothing → Type_0 */
+                return tm_uni(p->arena, 0);
             } else if (*rest != '\0') {
                 goto lookup;  /* "Types" etc — treat as variable */
             }
@@ -478,6 +560,7 @@ static int term_not_occurs(int gidx, Term *t) {
     case TM_CIRCLE: case TM_BASE: case TM_LOOP:
     case TM_UA: case TM_FUNEXT:
     case TM_TRUNC: case TM_TRINT: case TM_SQUASH:
+    case TM_LEVEL: case TM_LZERO:
         return 1;
     case TM_GLOBAL:  return t->idx != gidx;
     case TM_APP:     return term_not_occurs(gidx, t->app.fun) &&
@@ -553,6 +636,9 @@ static int term_not_occurs(int gidx, Term *t) {
             if (!term_not_occurs(gidx, t->indrec.cases[i])) return 0;
         return 1;
     case TM_FIX:   return term_not_occurs(gidx, t->fix.body);
+    case TM_LSUC:  return term_not_occurs(gidx, t->elim);
+    case TM_UNI_V: return term_not_occurs(gidx, t->uni_v_lvl);
+    case TM_HOLE:  return 1;  /* holes never contain a global */
     default:
         return 0;  /* conservative: unknown tag — assume F might appear */
     }

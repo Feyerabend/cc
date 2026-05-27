@@ -268,6 +268,24 @@ NodeRef term_to_node(Heap *h, Arena *a, Term *t, NodeRef env) {
         return r2;
     }
 
+    /* Phase M1 — level terms (WHNF constants, never reduce) */
+    case TM_LEVEL: { NodeRef r2 = heap_alloc(h); h->nodes[r2].tag = ND_LEVEL; h->nodes[r2].flags = NF_WHNF | NF_NF; return r2; }
+    case TM_LZERO: { NodeRef r2 = heap_alloc(h); h->nodes[r2].tag = ND_LZERO; h->nodes[r2].flags = NF_WHNF | NF_NF; return r2; }
+    case TM_LSUC: {
+        NodeRef r2 = heap_alloc(h);
+        h->nodes[r2].tag   = ND_LSUC;
+        h->nodes[r2].flags = NF_WHNF;
+        h->nodes[r2].ch[0] = mk_thunk(h, t->elim, env);
+        return r2;
+    }
+    case TM_UNI_V: {
+        NodeRef r2 = heap_alloc(h);
+        h->nodes[r2].tag   = ND_UNI_V;
+        h->nodes[r2].flags = NF_WHNF;
+        h->nodes[r2].ch[0] = mk_thunk(h, t->uni_v_lvl, env);
+        return r2;
+    }
+
     default:
         fprintf(stderr, "term_to_node: unhandled tag %d\n", (int)t->tag);
         exit(1);
@@ -765,6 +783,10 @@ void nf(Heap *h, Arena *a, NodeRef root) {
     }
     case ND_FIX:
         nf(h, a, h->nodes[r].ch[0]);  /* normalize the body */
+        break;
+    case ND_LSUC:
+    case ND_UNI_V:
+        nf(h, a, h->nodes[r].ch[0]);
         break;
     default:
         break;

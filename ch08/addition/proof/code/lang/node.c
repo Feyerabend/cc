@@ -224,6 +224,10 @@ static const char *tag_name(NodeTag t) {
     case ND_INDCON:       return "INDCON";
     case ND_INDREC:       return "INDREC";
     case ND_FIX:          return "FIX";
+    case ND_LEVEL:        return "LEVEL";
+    case ND_LZERO:        return "LZERO";
+    case ND_LSUC:         return "LSUC";
+    case ND_UNI_V:        return "UNI_V";
     default:              return "?";
     }
 }
@@ -532,6 +536,21 @@ void node_print(Heap *h, NodeRef r, int depth, int prec) {
         if (wrap) printf(")");
         break;
     }
+    case ND_LEVEL: printf("Level"); break;
+    case ND_LZERO: printf("lzero"); break;
+    case ND_LSUC: {
+        int wrap = (prec >= 2);
+        if (wrap) printf("(");
+        printf("lsuc ");
+        node_print(h, h->nodes[r].ch[0], depth, 2);
+        if (wrap) printf(")");
+        break;
+    }
+    case ND_UNI_V:
+        printf("Type_(");
+        node_print(h, h->nodes[r].ch[0], depth, 0);
+        printf(")");
+        break;
     default:
         printf("<%s>", tag_name(tag));
         break;
@@ -652,6 +671,13 @@ static int term_eq(const Term *t1, const Term *t2) {
     }
     case TM_FIX:
         return term_eq(t1->fix.body, t2->fix.body);
+    case TM_LEVEL:
+    case TM_LZERO:
+        return 1;
+    case TM_LSUC:
+        return term_eq(t1->elim, t2->elim);
+    case TM_UNI_V:
+        return term_eq(t1->uni_v_lvl, t2->uni_v_lvl);
     default: return 0;
     }
 }
@@ -795,6 +821,12 @@ int node_conv(Heap *h, Arena *a, NodeRef r1, NodeRef r2) {
         return 1;
     }
     case ND_FIX:
+        return node_conv(h, a, h->nodes[r1].ch[0], h->nodes[r2].ch[0]);
+    case ND_LEVEL:
+    case ND_LZERO:
+        return 1;
+    case ND_LSUC:
+    case ND_UNI_V:
         return node_conv(h, a, h->nodes[r1].ch[0], h->nodes[r2].ch[0]);
     default: return 0;
     }

@@ -1,3 +1,40 @@
+/*
+ * check.c — Bidirectional type checker and conversion test.
+ *
+ * Two entry points:
+ *
+ *   infer(a, depth, tctx, env, t) → Val*
+ *     Synthesise the type of t.  Returns NULL on error.
+ *     Works for: TM_APP, TM_FST/SND, TM_ANN, TM_PI/SIG, TM_ID, TM_REFL,
+ *                TM_NAT/ZERO/SUCC/NATREC, TM_BOOL/TRUE/FALSE/BOOLREC, etc.
+ *     Fails for: TM_LAM, TM_PAIR, TM_INL/INR, TM_SUP — these are check-only.
+ *     To infer the type of a lambda, annotate it: (\x. body : Π(x:A). B).
+ *
+ *   check(a, depth, tctx, env, t, ty) → int (1 = ok, 0 = error)
+ *     Verify that t has type ty.  Falls back to infer+conv for most terms.
+ *     Special bidirectional cases (these CANNOT go through infer):
+ *       TM_LAM → needs expected type to be VL_PI
+ *       TM_PAIR → needs VL_SIGMA; uses first component to instantiate codomain
+ *       TM_INL/INR → needs VL_SUM
+ *       TM_SUP → needs VL_W
+ *       TM_FIX → needs any ty; checks body : ty → ty
+ *
+ *   conv(a, depth, u, v) → int
+ *     Definitional equality on already-evaluated Vals.  Structural comparison
+ *     with eta expansion: two functions are equal iff equal on a fresh argument;
+ *     two pairs are equal iff both components are equal.
+ *
+ * tctx (TCtx*) maps de Bruijn indices → types (Val*), innermost first.
+ * env  (Env*)  maps de Bruijn indices → values (Val*), innermost first.
+ * depth = number of bound variables in scope = next fresh de Bruijn level.
+ *   vl_neutral(a, depth, NULL) creates a fresh variable that conv can tell
+ *   apart from all previous ones.
+ *
+ * How dependent types work here: the type of a Pi codomain depends on the
+ * argument.  When the checker needs the codomain type for a specific argument v,
+ * it calls  nbe_eval(a, env_cons(v, pi->env), pi->cod).  The codomain is kept
+ * as an unevaluated Term + the env at the point the Pi was formed.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "check.h"
@@ -188,6 +225,15 @@ int conv(Arena *a, int depth, Val *u, Val *v) {
         return 1;
     case VL_FIX:
         return conv(a, depth, u->fix_fun, v->fix_fun);
+    case VL_LEVEL:
+    case VL_LZERO:
+        return 1;
+    case VL_LSUC:
+        return conv(a, depth, u->succ, v->succ);
+    case VL_UNI_V:
+        /* Type_(l1) ≡ Type_(l2)  iff  l1 ≡ l2;  NULL means omega (≡ itself) */
+        if (!u->uni_v_lvl || !v->uni_v_lvl) return u->uni_v_lvl == v->uni_v_lvl;
+        return conv(a, depth, u->uni_v_lvl, v->uni_v_lvl);
     case VL_LAM:
     case VL_PAIR:
         return 0;  /* unreachable: handled by eta cases above */
@@ -253,10 +299,18 @@ static int conv_spine(Arena *a, int depth, Spine *sp1, Spine *sp2) {
 /* ── Helpers */
 
 static int as_universe(Val *v, int *level) {
-    if (!v || v->tag != VL_UNI) return 0;
-    *level = v->ulevel; return 1;
+    if (!v) return 0;
+    if (v->tag == VL_UNI)   { *level = v->ulevel; return 1; }
+    if (v->tag == VL_UNI_V) { *level = -1;        return 1; }  /* variable level */
+    return 0;
 }
-static int imax(int a, int b) { return a > b ? a : b; }
+static int imax(int a, int b) {
+    if (a < 0 || b < 0) return -1;  /* -1 = variable level, dominates */
+    return a > b ? a : b;
+}
+static Val *uni_at(Arena *a, int level) {
+    return level >= 0 ? vl_uni(a, level) : vl_uni_v(a, NULL);
+}
 
 /* ── Infer */
 
@@ -297,7 +351,7 @@ Val *infer(Arena *a, int depth, TCtx *tctx, Env *env, Term *t) {
                     t->tag == TM_PI ? "Π" : "Σ");
             return NULL;
         }
-        return vl_uni(a, imax(i, j));
+        return uni_at(a, imax(i, j));
     }
 
     case TM_APP: {
@@ -360,7 +414,7 @@ Val *infer(Arena *a, int depth, TCtx *tctx, Env *env, Term *t) {
         Val *A_val = nbe_eval(a, env, t->id.ty);
         if (!check(a, depth, tctx, env, t->id.lhs, A_val)) return NULL;
         if (!check(a, depth, tctx, env, t->id.rhs, A_val)) return NULL;
-        return vl_uni(a, i);
+        return uni_at(a, i);
     }
 
     case TM_REFL: {
@@ -606,7 +660,7 @@ Val *infer(Arena *a, int depth, TCtx *tctx, Env *env, Term *t) {
             fprintf(stderr, "type error: Sum right type is not a type\n");
             return NULL;
         }
-        return vl_uni(a, imax(i, j));
+        return uni_at(a, imax(i, j));
     }
 
     case TM_INL:
@@ -685,7 +739,7 @@ Val *infer(Arena *a, int depth, TCtx *tctx, Env *env, Term *t) {
             fprintf(stderr, "type error: W codomain is not a type\n");
             return NULL;
         }
-        return vl_uni(a, imax(i, j));
+        return uni_at(a, imax(i, j));
     }
 
     case TM_WREC: {
@@ -1199,6 +1253,30 @@ Val *infer(Arena *a, int depth, TCtx *tctx, Env *env, Term *t) {
         }
         return body_ty->pi.dom;
     }
+
+    /* Phase M1 — level terms */
+    case TM_LEVEL:
+        return vl_uni(a, 0);  /* Level : Type_0 */
+    case TM_LZERO:
+        return vl_level(a);   /* lzero : Level */
+    case TM_LSUC:
+        if (!check(a, depth, tctx, env, t->elim, vl_level(a))) return NULL;
+        return vl_level(a);   /* lsuc ℓ : Level */
+    case TM_UNI_V: {
+        /* Type_ℓ : Type_(lsuc ℓ) — collapse to VL_UNI(n) if ℓ is concrete */
+        if (!check(a, depth, tctx, env, t->uni_v_lvl, vl_level(a))) return NULL;
+        Val *lv = nbe_eval(a, env, t->uni_v_lvl);
+        Val *succ_lv = vl_lsuc(a, lv);
+        int n = 0; Val *cur = succ_lv;
+        while (cur->tag == VL_LSUC) { n++; cur = cur->succ; }
+        if (cur->tag == VL_LZERO) return vl_uni(a, n);
+        return vl_uni_v(a, succ_lv);
+    }
+
+    case TM_HOLE:
+        fprintf(stderr, "infer: TM_HOLE reached — term not elaborated; "
+                        "use (expr : type) annotation or elab_infer\n");
+        return NULL;
 
     default:
         fprintf(stderr, "infer: unhandled term tag %d\n", t->tag);

@@ -345,6 +345,19 @@ Val *vl_fix(Arena *a, Val *fun) {
     v->tag = VL_FIX; v->fix_fun = fun; return v;
 }
 
+/* Phase M1 — level terms */
+Term *tm_level(Arena *a) { Term *t = (Term *)arena_alloc(a, sizeof(Term)); t->tag = TM_LEVEL; return t; }
+Term *tm_lzero(Arena *a) { Term *t = (Term *)arena_alloc(a, sizeof(Term)); t->tag = TM_LZERO; return t; }
+Term *tm_lsuc (Arena *a, Term *body) { Term *t = (Term *)arena_alloc(a, sizeof(Term)); t->tag = TM_LSUC; t->elim = body; return t; }
+Term *tm_uni_v(Arena *a, Term *lvl)  { Term *t = (Term *)arena_alloc(a, sizeof(Term)); t->tag = TM_UNI_V; t->uni_v_lvl = lvl; return t; }
+Val  *vl_level(Arena *a) { Val *v = (Val *)arena_alloc(a, sizeof(Val)); v->tag = VL_LEVEL; return v; }
+Val  *vl_lzero(Arena *a) { Val *v = (Val *)arena_alloc(a, sizeof(Val)); v->tag = VL_LZERO; return v; }
+Val  *vl_lsuc (Arena *a, Val *pred) { Val *v = (Val *)arena_alloc(a, sizeof(Val)); v->tag = VL_LSUC; v->succ = pred; return v; }
+Val  *vl_uni_v(Arena *a, Val *lvl)  { Val *v = (Val *)arena_alloc(a, sizeof(Val)); v->tag = VL_UNI_V; v->uni_v_lvl = lvl; return v; }
+
+/* Phase M2 — holes */
+Term *tm_hole(Arena *a, int id) { Term *t = (Term *)arena_alloc(a, sizeof(Term)); t->tag = TM_HOLE; t->idx = id; return t; }
+
 /* -- Env / Spine constructors */
 
 Env *env_cons(Arena *a, Val *val, Env *next) {
@@ -723,6 +736,24 @@ void term_fprint_ctx(FILE *f, Term *t, Ctx *ctx, int prec) {
         term_fprint_ctx(f, t->fix.body, ctx, 2);
         if (prec > 0) fprintf(f, ")");
         break;
+    case TM_LEVEL: fprintf(f, "Level"); break;
+    case TM_LZERO: fprintf(f, "lzero"); break;
+    case TM_LSUC:
+        if (prec > 1) fprintf(f, "(");
+        fprintf(f, "lsuc ");
+        term_fprint_ctx(f, t->elim, ctx, 2);
+        if (prec > 1) fprintf(f, ")");
+        break;
+    case TM_UNI_V:
+        fprintf(f, "Type_(");
+        if (t->uni_v_lvl) term_fprint_ctx(f, t->uni_v_lvl, ctx, 0);
+        else fprintf(f, "?");
+        fprintf(f, ")");
+        break;
+    case TM_HOLE:
+        if (t->idx < 0) fprintf(f, "_");
+        else fprintf(f, "?%d", t->idx);
+        break;
     default:
         fprintf(f, "<unknown term %d>", t->tag);
         break;
@@ -870,6 +901,20 @@ static void val_print_inner(FILE *f, Val *v, int depth, int prec) {
         fprintf(f, "fix ");
         val_print_inner(f, v->fix_fun, depth, 2);
         if (prec > 0) fprintf(f, ")");
+        break;
+    case VL_LEVEL: fprintf(f, "Level"); break;
+    case VL_LZERO: fprintf(f, "lzero"); break;
+    case VL_LSUC:
+        if (prec > 1) fprintf(f, "(");
+        fprintf(f, "lsuc ");
+        val_print_inner(f, v->succ, depth, 2);
+        if (prec > 1) fprintf(f, ")");
+        break;
+    case VL_UNI_V:
+        fprintf(f, "Type_(");
+        if (v->uni_v_lvl) val_print_inner(f, v->uni_v_lvl, depth, 0);
+        else fprintf(f, "?");
+        fprintf(f, ")");
         break;
     default: fprintf(f, "<unknown val %d>", v->tag); break;
     }

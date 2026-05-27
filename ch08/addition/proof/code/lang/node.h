@@ -82,6 +82,12 @@ typedef enum {
 
     /* Fixpoint (Phase M3) */
     ND_FIX,          /* ch[0]=fun  (unapplied fixpoint — WHNF) */
+
+    /* Level terms (Phase M1) */
+    ND_LEVEL,        /* the type Level — WHNF constant */
+    ND_LZERO,        /* level zero   — WHNF constant */
+    ND_LSUC,         /* ch[0]=pred   — successor level */
+    ND_UNI_V,        /* ch[0]=lvl    — Type_(lvl) */
 } NodeTag;
 
 /* Node */

@@ -8,12 +8,19 @@
 #include "parse.h"
 #include "check.h"
 #include "defs.h"
+#include "elab.h"
 
 /* ── normalize and print */
 
 static void run(Arena *a, const char *src) {
     Term *t = parse(a, src);
     if (!t) return;
+    if (term_has_holes(t)) {
+        ElabCtx e; elab_init(&e, a);
+        if (!elab_infer(&e, a, 0, NULL, NULL, t)) return;
+        t = elab_subst(&e, a, 0, t);
+        if (!t) return;
+    }
     printf("  parsed : "); term_print(t); printf("\n");
     Term *nf = nbe_nf(a, t);
     printf("  normal : "); term_print(nf); printf("\n");
@@ -24,11 +31,16 @@ static void run(Arena *a, const char *src) {
 static void run_infer(Arena *a, const char *src) {
     Term *t = parse(a, src);
     if (!t) return;
+    if (term_has_holes(t)) {
+        ElabCtx e; elab_init(&e, a);
+        if (!elab_infer(&e, a, 0, NULL, NULL, t)) return;
+        t = elab_subst(&e, a, 0, t);
+        if (!t) return;
+    }
     printf("  term   : "); term_print(t); printf("\n");
     Val *ty = infer(a, 0, NULL, NULL, t);
     if (!ty) return;
     printf("  type   : "); val_print_tctx(a, ty, 0, NULL); printf("\n");
-    /* also normalize the term itself */
     Term *nf = nbe_nf(a, t);
     printf("  normal : "); term_print(nf); printf("\n");
 }
@@ -133,6 +145,43 @@ static void expect_type(Arena *a, const char *src, const char *expected_type_src
         tests_fail++;
         printf("  [BUG] type of %s  expected %s\n", src, expected_type_src);
         printf("        got: "); val_print_tctx(a, ty, 0, NULL); printf("\n");
+    }
+}
+
+/* ── M2: elab test — infer type of a term with holes, compare after forcing metas */
+
+static void expect_elab(Arena *a, const char *src, const char *expected_type_src) {
+    Term *t = parse(a, src);
+    if (!t) {
+        printf("  [FAIL-PARSE] %s\n", src);
+        tests_fail++; return;
+    }
+    ElabCtx e; elab_init(&e, a);
+    Val *ty = elab_infer(&e, a, 0, NULL, NULL, t);
+    if (!ty) {
+        printf("  [FAIL-ELAB-INFER] %s\n", src);
+        tests_fail++; return;
+    }
+    ty = elab_force(&e, ty);
+    t = elab_subst(&e, a, 0, t);
+    if (!t) {
+        printf("  [FAIL-ELAB-SUBST] %s\n", src);
+        tests_fail++; return;
+    }
+    Term *et = parse(a, expected_type_src);
+    if (!et) {
+        printf("  [FAIL-PARSE-EXPECTED] %s\n", expected_type_src);
+        tests_fail++; return;
+    }
+    Val *ev = nbe_eval(a, NULL, et);
+    if (conv(a, 0, ty, ev)) {
+        tests_pass++;
+        printf("  [OK-M2] type of  %s  ≡  %s\n", src, expected_type_src);
+    } else {
+        tests_fail++;
+        printf("  [BUG-M2] type of %s\n", src);
+        printf("           expected: %s\n", expected_type_src);
+        printf("           got: "); val_print_tctx(a, ty, 0, NULL); printf("\n");
     }
 }
 
@@ -2261,6 +2310,119 @@ static void run_tests(Arena *a) {
     }
 
 #undef IND_OK
+
+    /* ── Phase M1: Universe Polymorphism ─────────────────────────────────── */
+
+    printf("\n=== M1: Universe Polymorphism ===\n");
+
+    /* [M1-1] Level : Type_0 */
+    printf("\n[M1-1] Level : Type_0\n");
+    expect_type(a, "Level", "Type");
+
+    /* [M1-2] lzero : Level */
+    printf("\n[M1-2] lzero : Level\n");
+    expect_type(a, "lzero", "Level");
+
+    /* [M1-3] lsuc lzero : Level */
+    printf("\n[M1-3] lsuc lzero : Level\n");
+    expect_type(a, "lsuc lzero", "Level");
+
+    /* [M1-4] Type_0 = Type (concrete collapse) */
+    printf("\n[M1-4] Type_0 ≡ Type  (conv)\n");
+    expect_conv(a, "Type_0", "Type", 1);
+
+    /* [M1-5] Type_1 level — concrete */
+    printf("\n[M1-5] Type_(lsuc lzero) ≡ Type_1  (concrete collapse)\n");
+    expect_conv(a, "Type_(lsuc lzero)", "Type_1", 1);
+
+    /* [M1-6] Type_2 — two successors */
+    printf("\n[M1-6] Type_(lsuc (lsuc lzero)) ≡ Type_2\n");
+    expect_conv(a, "Type_(lsuc (lsuc lzero))", "Type_2", 1);
+
+    /* [M1-7] lsuc must be applied to a Level — negative test */
+    printf("\n[M1-7] lsuc Nat → type error (Nat is not Level)\n");
+    expect_fail(a, "lsuc Nat", "Nat is not Level");
+
+    /* [M1-8] identity at Level 0 infers correctly */
+    printf("\n[M1-8] (\\l A x. x : Π(l:Level). Π(A:Type_l). A → A) lzero Nat zero : Nat\n");
+    expect_type(a,
+        "(\\l A x. x : Π(l : Level). Π(A : Type_l). A → A) lzero Nat zero",
+        "Nat");
+
+    /* [M1-9] identity at Level 1: A=Type (which is Type_0 : Type_1) */
+    printf("\n[M1-9] id (lsuc lzero) Type Nat : Type\n");
+    expect_type(a,
+        "(\\l A x. x : Π(l : Level). Π(A : Type_l). A → A) (lsuc lzero) Type Nat",
+        "Type");
+
+    /* [M1-10] Type_(lzero) has type Type_1 (concrete level collapse in checker) */
+    printf("\n[M1-10] Type_(lzero) : Type_1\n");
+    expect_type(a, "Type_(lzero)", "Type_1");
+
+    /* [M1-11] lsuc conv: lsuc lzero ≡ lsuc lzero, lsuc lzero ≢ lzero */
+    printf("\n[M1-11] lsuc lzero ≡ lsuc lzero; lsuc lzero ≢ lzero\n");
+    expect_conv(a, "lsuc lzero", "lsuc lzero", 1);
+    expect_conv(a, "lsuc lzero", "lzero",      0);
+
+    /* [M1-12] negative: (lzero : Type) should fail (lzero has type Level) */
+    printf("\n[M1-12] (lzero : Type) → type error (Level ≠ Type)\n");
+    expect_fail(a, "(lzero : Type)", "lzero has type Level, not Type");
+
+    /* ── Phase M2: implicit arguments via elaboration ── */
+
+    /* [M2-1] polymorphic id: A inferred from zero : Nat */
+    printf("\n[M2-1] id _ zero : Nat  (A=Nat inferred)\n");
+    expect_elab(a,
+        "(\\A x. x : Π(A : Type). A → A) _ zero",
+        "Nat");
+
+    /* [M2-2] polymorphic id: A inferred from true : Bool */
+    printf("\n[M2-2] id _ true : Bool  (A=Bool inferred)\n");
+    expect_elab(a,
+        "(\\A x. x : Π(A : Type). A → A) _ true",
+        "Bool");
+
+    /* [M2-3] const combinator: two holes inferred */
+    printf("\n[M2-3] const _ _ zero true : Nat  (A=Nat,B=Bool inferred)\n");
+    expect_elab(a,
+        "(\\A B x y. x : Π(A : Type). Π(B : Type). A → B → A) _ _ zero true",
+        "Nat");
+
+    /* [M2-4] const with swapped arguments */
+    printf("\n[M2-4] const _ _ true zero : Bool  (A=Bool,B=Nat inferred)\n");
+    expect_elab(a,
+        "(\\A B x y. x : Π(A : Type). Π(B : Type). A → B → A) _ _ true zero",
+        "Bool");
+
+    /* [M2-5] apply combinator: A=Bool, B=Nat inferred from (\\x. zero) and true */
+    printf("\n[M2-5] apply _ _ (\\x. zero) true : Nat  (A=Bool,B=Nat inferred)\n");
+    expect_elab(a,
+        "(\\A B f x. f x : Π(A : Type). Π(B : Type). (A → B) → A → B) _ _ (\\x. zero) true",
+        "Nat");
+
+    /* [M2-6] PAIR bidirectional: pair against Sigma — first component solves A */
+    printf("\n[M2-6] fst _ (zero,zero) : Nat  (PAIR case solves A=Nat from first component)\n");
+    expect_elab(a,
+        "(\\A p. fst p : Π(A : Type). Π(_ : Σ(x : A). A). A) _ (zero, zero)",
+        "Nat");
+
+    /* [M2-7] TM_ANN in elab_infer: annotation wrapping a holey expression */
+    printf("\n[M2-7] ((id _ zero) : Nat) : Nat  (ANN routes holes through elab_check)\n");
+    expect_elab(a,
+        "((\\A x. x : Π(A : Type). A → A) _ zero : Nat)",
+        "Nat");
+
+    /* [M2-8] id applied to annotated inl: TM_ANN + INL bidirectional path */
+    printf("\n[M2-8] id _ (inl zero : Sum Nat Bool) : Sum Nat Bool\n");
+    expect_elab(a,
+        "(\\A x. x : Π(A : Type). A → A) _ (inl zero : Sum Nat Bool)",
+        "Sum Nat Bool");
+
+    /* [M2-9] id applied to annotated inr: INR bidirectional path */
+    printf("\n[M2-9] id _ (inr zero : Sum Bool Nat) : Sum Bool Nat\n");
+    expect_elab(a,
+        "(\\A x. x : Π(A : Type). A → A) _ (inr zero : Sum Bool Nat)",
+        "Sum Bool Nat");
 
     fflush(stdout);
     printf("\n=== Summary: %d passed, %d failed ===\n", tests_pass, tests_fail);

@@ -15,6 +15,7 @@
 #include "../core/parse.h"
 #include "../core/check.h"
 #include "../core/defs.h"
+#include "../core/elab.h"
 #include "node.h"
 #include "reduce.h"
 #include "bridge.h"
@@ -444,6 +445,16 @@ static int process_line(const char *raw, const char *origin, int quiet) {
     if (!t) {
         heap_free(&h); arena_free_all(&a);
         return -1;
+    }
+
+    if (term_has_holes(t)) {
+        ElabCtx ec; elab_init(&ec, &a);
+        if (!elab_infer(&ec, &a, 0, NULL, NULL, t)) {
+            heap_free(&h); arena_free_all(&a);
+            return -1;
+        }
+        t = elab_subst(&ec, &a, 0, t);
+        if (!t) { heap_free(&h); arena_free_all(&a); return -1; }
     }
 
     NodeRef root   = term_to_node(&h, &a, t, NULL_REF);

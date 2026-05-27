@@ -1,3 +1,42 @@
+/*
+ * term.h — The two central data types: Term and Val.
+ *
+ * TERM (syntax, de Bruijn representation)
+ *   A Term is the abstract syntax tree of an expression.  Variables are
+ *   de Bruijn *indices*: TM_VAR(0) refers to the innermost enclosing binder.
+ *   Terms are built by the parser and consumed by the type checker and
+ *   evaluator.  They are never modified after creation (arena-allocated,
+ *   single-assignment).
+ *
+ *   All TermTags beginning TM_ are listed below.  The large union holds the
+ *   payload for each tag.  Many structurally similar forms share a union field:
+ *     TM_PI, TM_SIG, TM_W all use   t->pi.{name,dom,cod}
+ *     TM_FST, TM_SND, TM_SUCC, TM_INL, TM_INR all use   t->elim
+ *
+ * VAL (semantics, NbE representation)
+ *   A Val is a value in the semantic domain.  Variables are de Bruijn *levels*:
+ *   the outermost binder has level 0; fresh variables get increasing levels.
+ *   Vals are produced by nbe_eval and consumed by conv and nbe_quote.
+ *
+ *   The key cases:
+ *     VL_LAM(name, env, body)   — a closure: body is an unevaluated Term;
+ *                                  env holds the values of free variables.
+ *                                  Applied by evaluating body with arg pushed.
+ *     VL_PI(name, dom, env, cod) — a Pi type; dom is evaluated, cod is lazy
+ *                                  (same reason as VL_LAM: it is dependent).
+ *     VL_NEUTRAL(lvl, spine)    — a stuck computation: variable at level `lvl`
+ *                                  with a sequence of eliminators in `spine`.
+ *                                  Cannot reduce further without knowing lvl's value.
+ *
+ *   Neutral levels < META_LVL_BASE (defined in elab.h) are meta variables
+ *   (holes from implicit argument elaboration).
+ *
+ * ENV and SPINE
+ *   Env: linked list of Val*, innermost first.  Index k → k hops via .next.
+ *   Spine: linked list of eliminators applied to a neutral head, outermost
+ *          first (head of list = most recently applied).  Quoting replays
+ *          the spine from tail to head to rebuild the syntax tree.
+ */
 #pragma once
 #include "arena.h"
 
@@ -71,6 +110,13 @@ typedef enum {
     TM_INDCON,   /* inductive constructor applied to args             */
     TM_INDREC,   /* inductive eliminator                             */
     TM_FIX,      /* fix f          general fixpoint (trusted)        */
+    /* Phase M1 — universe polymorphism */
+    TM_LEVEL,    /* Level          the type of universe levels        */
+    TM_LZERO,    /* lzero          level zero                        */
+    TM_LSUC,     /* lsuc ℓ         level successor; uses t->elim     */
+    TM_UNI_V,    /* Type_ℓ         universe at a level expression    */
+    /* Phase M2 — implicit arguments via elaboration */
+    TM_HOLE,     /* _              hole; idx = meta id (-1 = unassigned, ≥0 = assigned) */
 } TermTag;
 
 typedef struct Term Term;
@@ -109,6 +155,7 @@ struct Term {
         struct { int fam_idx; int ctor_idx; int n_args; Term **args;  }  indcon;  /* TM_INDCON  */
         struct { int fam_idx; Term *motive; int n_cases; Term **cases; Term *scrut; }  indrec;  /* TM_INDREC  */
         struct { Term *body; }                                                        fix;     /* TM_FIX     */
+        Term                                                                         *uni_v_lvl; /* TM_UNI_V */
     };
 };
 
@@ -176,6 +223,11 @@ typedef enum {
     VL_INDTYPE, /* inductive type former value          */
     VL_INDCON,  /* inductive constructor value          */
     VL_FIX,     /* fix f  — fixpoint (fun not applied)  */
+    /* Phase M1 — universe polymorphism */
+    VL_LEVEL,   /* Level type value                     */
+    VL_LZERO,   /* level zero                           */
+    VL_LSUC,    /* lsuc v  — successor level; uses succ */
+    VL_UNI_V,   /* Type at variable level               */
 } ValTag;
 
 struct Val {
@@ -192,7 +244,9 @@ struct Val {
         Val                                                  *inj;   /* VL_INL, VL_INR       */
         struct { int fam_idx; int n_args; Val **args; }               indtype; /* VL_INDTYPE */
         struct { int fam_idx; int ctor_idx; int n_args; Val **args; } indcon;  /* VL_INDCON  */
-        Val                                                          *fix_fun; /* VL_FIX     */
+        Val                                                          *fix_fun;    /* VL_FIX     */
+        Val                                                          *uni_v_lvl; /* VL_UNI_V   */
+        /* VL_LSUC reuses succ (same layout: single Val*) */
     };
 };
 
@@ -247,6 +301,11 @@ Term *tm_indtype  (Arena *a, int fam_idx, int n_args,  Term **args);
 Term *tm_indcon   (Arena *a, int fam_idx, int ctor_idx, int n_args, Term **args);
 Term *tm_indrec   (Arena *a, int fam_idx, Term *motive, int n_cases, Term **cases, Term *scrut);
 Term *tm_fix      (Arena *a, Term *body);
+Term *tm_level    (Arena *a);
+Term *tm_lzero    (Arena *a);
+Term *tm_lsuc     (Arena *a, Term *t);
+Term *tm_uni_v    (Arena *a, Term *lvl);
+Term *tm_hole     (Arena *a, int id);
 
 /* ── Value constructors */
 
@@ -277,6 +336,10 @@ Val  *vl_base   (Arena *a);
 Val  *vl_indtype(Arena *a, int fam_idx, int n_args,   Val **args);
 Val  *vl_indcon (Arena *a, int fam_idx, int ctor_idx, int n_args, Val **args);
 Val  *vl_fix    (Arena *a, Val *fun);
+Val  *vl_level  (Arena *a);
+Val  *vl_lzero  (Arena *a);
+Val  *vl_lsuc   (Arena *a, Val *pred);
+Val  *vl_uni_v  (Arena *a, Val *lvl);
 
 /* ── Env / Spine constructors */
 
