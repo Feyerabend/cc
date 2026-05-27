@@ -345,7 +345,7 @@ Val *vl_fix(Arena *a, Val *fun) {
     v->tag = VL_FIX; v->fix_fun = fun; return v;
 }
 
-/* Phase M1 — level terms */
+/* Level terms (universe polymorphism) */
 Term *tm_level(Arena *a) { Term *t = (Term *)arena_alloc(a, sizeof(Term)); t->tag = TM_LEVEL; return t; }
 Term *tm_lzero(Arena *a) { Term *t = (Term *)arena_alloc(a, sizeof(Term)); t->tag = TM_LZERO; return t; }
 Term *tm_lsuc (Arena *a, Term *body) { Term *t = (Term *)arena_alloc(a, sizeof(Term)); t->tag = TM_LSUC; t->elim = body; return t; }
@@ -355,7 +355,7 @@ Val  *vl_lzero(Arena *a) { Val *v = (Val *)arena_alloc(a, sizeof(Val)); v->tag =
 Val  *vl_lsuc (Arena *a, Val *pred) { Val *v = (Val *)arena_alloc(a, sizeof(Val)); v->tag = VL_LSUC; v->succ = pred; return v; }
 Val  *vl_uni_v(Arena *a, Val *lvl)  { Val *v = (Val *)arena_alloc(a, sizeof(Val)); v->tag = VL_UNI_V; v->uni_v_lvl = lvl; return v; }
 
-/* Phase M2 — holes */
+/* Holes (implicit arguments) */
 Term *tm_hole(Arena *a, int id) { Term *t = (Term *)arena_alloc(a, sizeof(Term)); t->tag = TM_HOLE; t->idx = id; return t; }
 
 /* -- Env / Spine constructors */

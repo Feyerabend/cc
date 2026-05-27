@@ -687,7 +687,7 @@ int main(int argc, char **argv) {
 
     load_stdlib();
 
-    printf("llang  (graph reduction, Phase N3: β + ι + neutrals + :type + :conv + let + :load)\n");
+    printf("llang  (graph reduction: β + ι + neutrals + :type + :conv + let + :load)\n");
     printf("  Lambda:  fn x. body          |  \\x. body  |  λx. body\n");
     printf("  Pi:      Pi(x:A). B          |  Π(x:A). B\n");
     printf("  Sigma:   Sg(x:A). B          |  Σ(x:A). B\n");

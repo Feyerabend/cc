@@ -3,7 +3,7 @@
 #include "check.h"
 
 /*
- * Phase M2: Implicit arguments via first-order pattern unification.
+ * Implicit arguments via first-order pattern unification.
  *
  * Underscores '_' in source parse to TM_HOLE(-1).  The elaborator
  * processes a term top-down, creating metavariables for each hole and

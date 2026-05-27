@@ -179,7 +179,7 @@ static Term *parse_atom(Parser *p, NameCtx *ctx) {
     if (isalpha(c) || c == '_') {
         char *name = read_ident(p);
         if (!name) return NULL;
-        /* Phase M2: bare '_' is an implicit-argument hole */
+        /* bare '_' is an implicit-argument hole */
         if (strcmp(name, "_") == 0) return tm_hole(p->arena, -1);
         /* Axioms */
         if (strcmp(name, "ua")     == 0) return tm_ua(p->arena);
@@ -214,7 +214,7 @@ static Term *parse_atom(Parser *p, NameCtx *ctx) {
             Term *body = parse_atom(p, ctx); if (!body) return NULL;
             return tm_fix(p->arena, body);
         }
-        /* Phase M1 — level terms */
+        /* Level terms (universe polymorphism) */
         if (strcmp(name, "Level") == 0) return tm_level(p->arena);
         if (strcmp(name, "lzero") == 0) return tm_lzero(p->arena);
         if (strcmp(name, "lsuc")  == 0) {
@@ -678,7 +678,7 @@ static int term_strictly_positive(int gidx, Term *t) {
  * parse_data(src)  src is the text AFTER the "data" keyword (already
  * preprocessed: fn→\, Pi→Π, ->→→).
  *
- * Grammar (Phase N2 — indexed inductive families):
+ * Grammar (indexed inductive families):
  *   data_decl ::= IDENT ['(' IDENT ':' type [',' IDENT ':' type]* ')']
  *                      [':' Π-chain '→' 'Type'] 'where'
  *                 (IDENT ':' type [';'])*

@@ -56,7 +56,7 @@ typedef enum {
     /* Sentinels (permanently stuck) */
     ND_LOOP,
 
-    /* Eliminators (Phase 1+) */
+    /* Eliminators */
     ND_FST,          /* ch[0]=scrut */
     ND_SND,          /* ch[0]=scrut */
     ND_NATREC,       /* ch[0]=motive, ch[1]=base, ch[2]=step, ch[3]=scrut */
@@ -72,18 +72,18 @@ typedef enum {
     /* Global definition reference */
     ND_GLOBAL,       /* lvl=def_index (negative = axiom constant) */
 
-    /* Bridge to core (Phase 3) */
+    /* Bridge to core */
     ND_CORE,         /* aux=Val* from core NbE */
 
-    /* Inductive types (Phase 3+) */
+    /* Inductive types */
     ND_INDTYPE,      /* lvl=fam_idx; ch[0..n_params-1]=param thunks */
     ND_INDCON,       /* lvl=(fam_idx<<16)|ctor_idx; ch[0..n_total-1]=arg thunks */
     ND_INDREC,       /* lvl=fam_idx; ch[0]=scrut, ch[1]=motive, ch[2+i]=cases[i] */
 
-    /* Fixpoint (Phase M3) */
+    /* Fixpoint */
     ND_FIX,          /* ch[0]=fun  (unapplied fixpoint — WHNF) */
 
-    /* Level terms (Phase M1) */
+    /* Level terms (universe polymorphism) */
     ND_LEVEL,        /* the type Level — WHNF constant */
     ND_LZERO,        /* level zero   — WHNF constant */
     ND_LSUC,         /* ch[0]=pred   — successor level */

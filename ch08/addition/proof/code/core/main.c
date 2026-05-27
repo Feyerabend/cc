@@ -1976,7 +1976,7 @@ static void run_tests(Arena *a) {
         }
     }
 
-    /* ── Phase 2 — Type checker for inductive families ─────────────────────
+    /* ── Type checker for inductive families ────────────────────────────────
      *
      * We register three families with complete telescopes so the checker can
      * walk argument types:
@@ -2311,9 +2311,9 @@ static void run_tests(Arena *a) {
 
 #undef IND_OK
 
-    /* ── Phase M1: Universe Polymorphism ─────────────────────────────────── */
+    /* ── Universe Polymorphism ────────────────────────────────────────────── */
 
-    printf("\n=== M1: Universe Polymorphism ===\n");
+    printf("\n=== Universe Polymorphism ===\n");
 
     /* [M1-1] Level : Type_0 */
     printf("\n[M1-1] Level : Type_0\n");
@@ -2368,7 +2368,7 @@ static void run_tests(Arena *a) {
     printf("\n[M1-12] (lzero : Type) → type error (Level ≠ Type)\n");
     expect_fail(a, "(lzero : Type)", "lzero has type Level, not Type");
 
-    /* ── Phase M2: implicit arguments via elaboration ── */
+    /* ── Implicit arguments via elaboration ── */
 
     /* [M2-1] polymorphic id: A inferred from zero : Nat */
     printf("\n[M2-1] id _ zero : Nat  (A=Nat inferred)\n");

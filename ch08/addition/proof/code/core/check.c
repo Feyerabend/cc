@@ -1254,7 +1254,7 @@ Val *infer(Arena *a, int depth, TCtx *tctx, Env *env, Term *t) {
         return body_ty->pi.dom;
     }
 
-    /* Phase M1 — level terms */
+    /* Level terms (universe polymorphism) */
     case TM_LEVEL:
         return vl_uni(a, 0);  /* Level : Type_0 */
     case TM_LZERO:

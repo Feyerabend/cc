@@ -110,12 +110,12 @@ typedef enum {
     TM_INDCON,   /* inductive constructor applied to args             */
     TM_INDREC,   /* inductive eliminator                             */
     TM_FIX,      /* fix f          general fixpoint (trusted)        */
-    /* Phase M1 — universe polymorphism */
+    /* Universe polymorphism */
     TM_LEVEL,    /* Level          the type of universe levels        */
     TM_LZERO,    /* lzero          level zero                        */
     TM_LSUC,     /* lsuc ℓ         level successor; uses t->elim     */
     TM_UNI_V,    /* Type_ℓ         universe at a level expression    */
-    /* Phase M2 — implicit arguments via elaboration */
+    /* Implicit arguments via elaboration */
     TM_HOLE,     /* _              hole; idx = meta id (-1 = unassigned, ≥0 = assigned) */
 } TermTag;
 
@@ -223,7 +223,7 @@ typedef enum {
     VL_INDTYPE, /* inductive type former value          */
     VL_INDCON,  /* inductive constructor value          */
     VL_FIX,     /* fix f  — fixpoint (fun not applied)  */
-    /* Phase M1 — universe polymorphism */
+    /* Universe polymorphism */
     VL_LEVEL,   /* Level type value                     */
     VL_LZERO,   /* level zero                           */
     VL_LSUC,    /* lsuc v  — successor level; uses succ */

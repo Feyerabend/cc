@@ -1,5 +1,5 @@
 -- polymorphism.lam
--- Demonstrates Phase M1: universe polymorphism via Level / Type_l.
+-- Demonstrates universe polymorphism via Level / Type_l.
 --
 -- A definition with  Π(l : Level). Π(A : Type_l). ...  works at
 -- any universe level.  lzero = level 0,  lsuc lzero = level 1, etc.

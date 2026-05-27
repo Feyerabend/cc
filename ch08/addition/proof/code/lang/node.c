@@ -446,7 +446,7 @@ void node_print(Heap *h, NodeRef r, int depth, int prec) {
     case ND_TRUNC: printf("trunc"); break;
     case ND_TRINT: printf("trint"); break;
     case ND_LAM:
-        /* Lambda in result — print body as raw term (Phase 0 approximation) */
+        /* Lambda in result — print body as raw term (approximation) */
         printf("<fn>");
         break;
     case ND_VAR:
@@ -557,7 +557,7 @@ void node_print(Heap *h, NodeRef r, int depth, int prec) {
     }
 }
 
-/* ── Convertibility (Phase 3d) ──────────────────────────────────────
+/* ── Convertibility ──────────────────────────────────────────────────
  *
  * node_conv: structural α-equivalence of two NF (or WHNF) heap nodes.
  *

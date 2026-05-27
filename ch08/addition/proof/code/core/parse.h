@@ -20,7 +20,7 @@ Term *parse(Arena *a, const char *src);
  * Parse and register a data declaration.  src is the text AFTER the "data"
  * keyword, already preprocessed (fn→\, Pi→Π, ->→→).
  *
- * Grammar (Phase 3 — no value indices):
+ * Grammar (data declarations, no value indices):
  *   IDENT ['(' IDENT ':' type [',' ...]* ')'] 'where'
  *   (IDENT ':' type [';'])*
  *

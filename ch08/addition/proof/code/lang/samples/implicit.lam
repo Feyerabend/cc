@@ -1,4 +1,4 @@
--- Phase M2: implicit arguments via elaboration
+-- Implicit arguments via elaboration
 --
 -- Underscores '_' in expression position are holes that the elaborator
 -- fills in by first-order pattern unification.  The type information

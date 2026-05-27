@@ -268,7 +268,7 @@ NodeRef term_to_node(Heap *h, Arena *a, Term *t, NodeRef env) {
         return r2;
     }
 
-    /* Phase M1 — level terms (WHNF constants, never reduce) */
+    /* Level terms — WHNF constants, never reduce */
     case TM_LEVEL: { NodeRef r2 = heap_alloc(h); h->nodes[r2].tag = ND_LEVEL; h->nodes[r2].flags = NF_WHNF | NF_NF; return r2; }
     case TM_LZERO: { NodeRef r2 = heap_alloc(h); h->nodes[r2].tag = ND_LZERO; h->nodes[r2].flags = NF_WHNF | NF_NF; return r2; }
     case TM_LSUC: {

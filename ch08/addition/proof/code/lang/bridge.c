@@ -353,7 +353,7 @@ static Term *node_to_term_ctx(Heap *h, NodeRef r, Arena *a, SentCtx *ctx) {
         return body ? tm_fix(a, body) : NULL;
     }
 
-    /* Phase M1 — level terms */
+    /* Level terms (universe polymorphism) */
     case ND_LEVEL: return tm_level(a);
     case ND_LZERO: return tm_lzero(a);
     case ND_LSUC: {
