@@ -427,7 +427,7 @@ Two central metatheoretical properties arise.
 
 *Soundness* means that formally derivable statements are semantically valid:
 ```text
-Γ ⊢ φ   ⇒    Γ ⊨ φ
+Γ ⊢ φ    ⇒    Γ ⊨ φ
 ```
 
 *Completeness* (direction goes in the other way) means semantically valid conclusions are formally derivable:
