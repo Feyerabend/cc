@@ -39,7 +39,7 @@ docs/
     02_quotient_types.md  Large exercise: add quotient types as a HIT
 ```
 
-Start with `[docs/01.md](docs/01.md)`.
+Start with [docs/01.md](docs/01.md).
 
 
 
