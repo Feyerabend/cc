@@ -127,10 +127,10 @@ require external documentation. Read the source files in this order:
 4. `code/core/parse.c` - `parse_term`, `parse_atom`, de Bruijn conversion.
 5. `code/core/elab.c` - Hole filling. Only relevant when you write `_`.
 
-The standard library in `code/lang/lib/` shows the system in use: programs
-and proofs written in the same language, running through the same machinery.
-`code/lang/lib/README.md` is a detailed walkthrough of everything in the
-library.
+The standard library in [code/lang/lib/](./code/lang/lib) shows the system
+in use: programs and proofs written in the same language, running through
+the same machinery. [code/lang/lib/README.md](./code/lang/lib/README.md)
+is a detailed walkthrough of everything in the library.
 
 
 
