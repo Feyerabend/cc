@@ -2,8 +2,8 @@
 ## A Proof Checker for Homotopy Type Theory, Written in C
 
 This repository is a programming language laboratory for students studying
-dependent type theory and Homotopy Type Theory (HoTT). It implements
-Martin-Löf Type Theory extended with HoTT features - identity types,
+dependent type theory and Homotopy Type Theory ([HoTT](./../hott)).
+It implements Martin-Löf Type Theory extended with HoTT features--identity types,
 univalence, higher inductive types, universe polymorphism, and inductive
 families - in around 4 000 lines of C source that you can read, run, and
 extend.
@@ -11,13 +11,13 @@ extend.
 The central idea: a term `t : A` is simultaneously a *program* of type `A`,
 a *proof* that `A` is inhabited, and a *computation* that the evaluator can
 normalise. The type checker is the proof checker. The normaliser is the
-operational semantics. These are not analogies - they are the same object
+operational semantics. These are not analogies--they are the same object
 seen from different angles.
 
 The concrete goal of the repository is to write the type soundness proof for
 a small typed language *inside the system itself*, as an inhabitant of a
 dependent type. Getting there requires indexed inductive families, universe
-polymorphism, and implicit arguments - all of which are present.
+polymorphism, and implicit arguments--all of which are present.
 
 
 
@@ -39,7 +39,7 @@ docs/
     02_quotient_types.md  Large exercise: add quotient types as a HIT
 ```
 
-Start with `docs/01.md`.
+Start with `[docs/01.md](docs/01.md)`.
 
 
 
