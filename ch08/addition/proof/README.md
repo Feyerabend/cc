@@ -150,7 +150,8 @@ is a detailed walkthrough of everything in the library.
 
 ### Exercises
 
-The `docs/exercises/` folder contains guided extensions to the system:
+The [docs/exercises/](./docs/exercises/) folder contains
+guided extensions to the system:
 
 - *Add `lmax`* (`01_add_lmax.md`): Implement the maximum of two universe
   levels. Medium difficulty, around 80 lines across 5 files. Covers the full
