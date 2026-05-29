@@ -13,19 +13,19 @@ logic meets computer systems and works inward toward the specific algorithms and
 
 Classical propositional and first-order logic are *atemporal*. A sentence is true or false in a
 structure, full stop. There is no room for "it was true", "it will be true", "it is necessarily
-true", "it could have been otherwise." This is appropriate for mathematics — the Pythagorean theorem
-does not become true on Tuesdays — but it is inadequate for reasoning about processes, programs,
+true", "it could have been otherwise." This is appropriate for mathematics--the Pythagorean theorem
+does not become true on Tuesdays--but it is inadequate for reasoning about processes, programs,
 protocols, or anything that changes over time.
 
 The philosophical problem of tense had been noticed long before formal logic made it precise.
 Aristotle's sea-battle argument (*De Interpretatione*, ch. 9) wrestles with whether a statement
 about a future contingent event is presently true or false. If "there will be a sea-battle tomorrow"
-is already determinately true, it seems to follow that the outcome is predetermined — a conclusion
+is already determinately true, it seems to follow that the outcome is predetermined--a conclusion
 Aristotle found troubling. The argument turns on whether truth is timeless or indexed to a moment.
 
 The formal answer, developed in the twentieth century, is to *index* truth to a point of evaluation.
 Just as Kripke semantics for modal logic indexes truth to a possible world, temporal logic indexes
-truth to a moment in time — a *time point* within a *temporal structure*. The operators of temporal
+truth to a moment in time--a *time point* within a *temporal structure*. The operators of temporal
 logic then quantify over time points accessible from the current one, in much the way that □ and ◇
 quantify over possible worlds accessible via the accessibility relation.
 
@@ -52,15 +52,15 @@ foundational question immediately arose: what is the structure of time in a comp
 
 **Linear time** treats the future as a single sequence. At each moment there is one successor.
 Non-determinism in a program is resolved by choosing a particular execution path; a temporal
-formula is then evaluated along that single path. This gives **Linear Temporal Logic (LTL)**,
+formula is then evaluated along that single path. This gives *Linear Temporal Logic (LTL)*,
 developed by Amir Pnueli (1977, Turing Award 2000), who was the first to propose temporal logic
 as a framework for specifying and verifying concurrent programs.
 
 **Branching time** treats the future as a *tree*: at each moment, multiple possible successors
 may exist, representing the different choices an environment or scheduler could make. A temporal
 formula is then evaluated over the entire tree of possibilities, and path quantifiers (∀ paths,
-∃ path) become first-class operators. This gives **Computation Tree Logic (CTL)**, developed by
-Edmund Clarke and E. Allen Emerson (1981–1982), and the more expressive **CTL*** by Emerson and
+∃ path) become first-class operators. This gives *Computation Tree Logic (CTL)*, developed by
+Edmund Clarke and E. Allen Emerson (1981–1982), and the more expressive CTL* by Emerson and
 Judy Halpert (1986), which subsumes both LTL and CTL.
 
 The debate between these two views was not merely technical. It concerned what kind of object a
@@ -93,7 +93,7 @@ The semantic foundation of CTL is the **Kripke structure**, inherited directly f
 1963 semantics for modal logic (see the parent README for the broader history). In the
 computational setting, a Kripke structure is a tuple:
 
-> **M = (S, S₀, R, L)**
+> *M = <S, S₀, R, L>*
 
 where:
 - **S** is a finite set of *states*, each representing a snapshot of the system's memory.
@@ -111,7 +111,7 @@ for the semantics of globally-quantified formulas like AG and EG to be well-defi
 
 Conceptually, think of states as rows in a truth table for the system's variables, transitions as
 arrows between rows, and the labeling as which propositions are checked-off in each row. The
-Kripke structure is then the "meaning" of the system — exactly what Tarski meant by a *model*.
+Kripke structure is then the "meaning" of the system--exactly what Tarski meant by a *model*.
 
 
 
@@ -120,11 +120,11 @@ Kripke structure is then the "meaning" of the system — exactly what Tarski mea
 CTL formulas are built from atomic propositions using boolean connectives and a set of *compound
 temporal operators*, each consisting of a *path quantifier* paired with a *state operator*.
 
-**Path quantifiers:**
+*Path quantifiers:*
 - **A** (*for All paths*): the property must hold on every path from the current state.
 - **E** (*there Exists a path*): the property holds on at least one path from the current state.
 
-**State operators:**
+*State operators:*
 - **X** (*neXt*): the property holds in the immediately next state.
 - **F** (*Future / eventually*): the property holds at some future state on the path.
 - **G** (*Globally / always*): the property holds at every future state on the path.
@@ -137,19 +137,19 @@ allows path quantifiers to scope over arbitrarily nested formulas.
 **Semantics.** CTL formulas are evaluated at states in a Kripke structure. Write M, s ⊨ φ to mean
 "formula φ holds at state s in structure M." The evaluation rules:
 
-| Formula | Holds at s iff … |
-|---------|------------------|
-| M, s ⊨ p | p ∈ L(s) |
-| M, s ⊨ ¬φ | not M, s ⊨ φ |
-| M, s ⊨ φ ∧ ψ | M, s ⊨ φ and M, s ⊨ ψ |
-| M, s ⊨ EX φ | some successor t of s satisfies φ |
-| M, s ⊨ AX φ | every successor t of s satisfies φ |
-| M, s ⊨ EF φ | some state on some path from s satisfies φ |
-| M, s ⊨ AF φ | every path from s reaches a φ-state |
-| M, s ⊨ EG φ | some infinite path from s satisfies φ at every step |
-| M, s ⊨ AG φ | every path from s satisfies φ at every step |
-| M, s ⊨ E[φ U ψ] | some path from s has φ holding until ψ is reached |
-| M, s ⊨ A[φ U ψ] | every path from s has φ holding until ψ is reached |
+| Formula         | Holds at s iff ...                                  |
+|-----------------|-----------------------------------------------------|
+| M, s ⊨ p        | p ∈ L(s)                                            |
+| M, s ⊨ ¬φ       | not M, s ⊨ φ                                        |
+| M, s ⊨ φ ∧ ψ    | M, s ⊨ φ and M, s ⊨ ψ                               |
+| M, s ⊨ EX φ     | some successor t of s satisfies φ                   |
+| M, s ⊨ AX φ     | every successor t of s satisfies φ                  |
+| M, s ⊨ EF φ     | some state on some path from s satisfies φ          |
+| M, s ⊨ AF φ     | every path from s reaches a φ-state                 |
+| M, s ⊨ EG φ     | some infinite path from s satisfies φ at every step |
+| M, s ⊨ AG φ     | every path from s satisfies φ at every step         |
+| M, s ⊨ E[φ U ψ] | some path from s has φ holding until ψ is reached   |
+| M, s ⊨ A[φ U ψ] | every path from s has φ holding until ψ is reached  |
 
 A full set of expressible properties:
 
@@ -172,8 +172,8 @@ iterative sequence over the (finite) powerset of states. This is a consequence o
 **Knaster–Tarski fixpoint theorem**: on a complete lattice, every monotone function has a least
 fixpoint (lfp) and a greatest fixpoint (gfp), both reachable by iteration.
 
-The state powerset (2^S, ⊆) is a complete lattice. The semantic operators — Pre∃ (existential
-predecessor) and Pre∀ (universal predecessor) — are monotone on this lattice. So every temporal
+The state powerset (2^S, ⊆) is a complete lattice. The semantic operators--Pre∃ (existential
+predecessor) and Pre∀ (universal predecessor)--are monotone on this lattice. So every temporal
 operator has a fixpoint characterisation:
 
 **Least fixpoints** (computed upward from ∅):
@@ -202,7 +202,7 @@ operator has a fixpoint characterisation:
 For a finite structure with n states, the least fixpoint is reached in at most n iterations (each
 iteration adds at least one state or stops). The greatest fixpoint is reached in at most n
 iterations (each removes at least one or stops). Hence every CTL formula is computable in
-O(|S| · |φ|) time — polynomial.
+O(|S| · |φ|) time--polynomial.
 
 This fixpoint view connects CTL model checking to the **modal μ-calculus** (Kozen 1983), the most
 expressive modal fixpoint logic, in which lfp (μ) and gfp (ν) are explicit binding operators.
@@ -243,9 +243,9 @@ The properties typically verified by model checking fall into two broad categori
 originating in the work of Lamport (1977) and given a topological characterisation by Alpern and
 Schneider (1985):
 
-**Safety properties** say that *something bad never happens*. Formally, a safety property defines
+*Safety properties* say that *something bad never happens*. Formally, a safety property defines
 a set of "bad" traces, and the system must produce no trace in that set. In CTL, safety properties
-typically take the form AG(¬bad) or AG(p → q). They are *invariants* — they must hold at every
+typically take the form AG(¬bad) or AG(p → q). They are *invariants*--they must hold at every
 reachable state. If a safety property is violated, there is a *finite* counterexample: the shortest
 path to the bad state.
 
@@ -255,8 +255,8 @@ Examples:
 - `AG(¬(mutex_a ∧ mutex_b))` — mutual exclusion: the two processes are never both in the
   critical section.
 
-**Liveness properties** say that *something good eventually happens*. They cannot be violated by
-any finite prefix of an execution — every finite trace is consistent with the property holding,
+*Liveness properties* say that *something good eventually happens*. They cannot be violated by
+any finite prefix of an execution--every finite trace is consistent with the property holding,
 because the good thing might still happen later. In CTL, liveness properties typically involve
 AF or AG(... → AF ...). If a liveness property is violated, the counterexample is an *infinite*
 path (or a cycle) that avoids the good thing forever.
@@ -268,7 +268,7 @@ Examples:
 
 The distinction matters for verification strategy. Safety violations are found by reachability
 analysis (has the bad state been visited?). Liveness violations require detecting *trapping
-cycles* — strongly connected components of non-halting, non-serving, or otherwise "stuck"
+cycles*--strongly connected components of non-halting, non-serving, or otherwise "stuck"
 states from which the good event is unreachable.
 
 
@@ -281,7 +281,6 @@ states from which the good event is unreachable.
 
 Stores states as strings (easy to read and debug), transitions as a dictionary of sets, and labels
 as a dictionary of sets. Key methods:
-
 - `add_state(s, props)` — adds state s and labels it with the given propositions.
 - `add_transition(s, t)` — adds the directed edge s → t, checking that both states exist.
 - `ensure_total_relation()` — adds self-loops to any state with no outgoing transitions,
@@ -298,7 +297,7 @@ Formulas are represented as trees of Python objects:
 ```
 Atom('p')                      — atomic proposition p
 Not(φ)                         — ¬φ
-And(φ, ψ), Or(φ, ψ)           — φ ∧ ψ, φ ∨ ψ
+And(φ, ψ), Or(φ, ψ)            — φ ∧ ψ, φ ∨ ψ
 Implies(φ, ψ)                  — φ → ψ
 EX(φ), AX(φ)                   — EX φ, AX φ
 EF(φ), AF(φ)                   — EF φ, AF φ
@@ -371,7 +370,7 @@ Transition relation (deterministic cycle):
 This is a Kripke structure with a single strongly connected component — every state is reachable
 from every other, and the computation tree is an infinite unwinding of the same four-state cycle.
 
-**Properties verified:**
+*Properties verified:*
 
 1. `AG(EF(green))` — from every state, green is eventually reachable.
    *Result: HOLDS.* Since the transition relation is a cycle through all four states, every
@@ -431,9 +430,9 @@ The transition relation models realistic elevator behavior:
 - A moving elevator arrives at the next floor and becomes idle.
 - Doors close after opening.
 
-**Properties verified:**
+__Properties verified:__
 
-**Safety — both hold:**
+*Safety — both hold:*
 
 1. `AG((moving_up ∨ moving_down) → doors_closed)` — doors are always closed while moving.
    *Result: HOLDS.* No state in the model has both a direction flag and `doors_open`; the
@@ -442,7 +441,7 @@ The transition relation models realistic elevator behavior:
 2. `AG(¬(floor1 ∧ (floor2 ∨ floor3)))` — the elevator cannot be on two floors at once.
    *Result: HOLDS.* Each state is labeled with exactly one floor proposition.
 
-**Liveness — both fail (model gap):**
+*Liveness — both fail (model gap):*
 
 3. `AG(request_pending → AF(doors_open))` — every request is eventually served.
    *Result: FAILS.* The model is non-deterministic: from a state like `2_i_c_r` (floor 2,
@@ -461,7 +460,7 @@ The transition relation models realistic elevator behavior:
 6. `AG((moving ∧ request_pending) → AF(doors_open))` — even while moving, a pending request
    is eventually served. *Result: FAILS* for the same reason as property 3.
 
-**Other properties — both hold:**
+__Other properties — both hold:__
 
 4. `AG(EF(floor2)) ∧ AG(EF(floor1)) ∧ AG(EF(floor3))` — every floor is reachable from
    every state. *Result: HOLDS.* The single strongly connected component of the model
@@ -475,7 +474,7 @@ The transition relation models realistic elevator behavior:
    a state at floor 3 with a direct one-step transition back to floor 1, which no three-floor
    elevator would have.)
 
-**Structural analysis:**
+*Structural analysis:*
 
 The strongly connected component (SCC) analysis reports a single SCC containing all 17 states.
 This means the model is strongly connected: every state is reachable from every other. This is
@@ -495,20 +494,20 @@ intended use of model checking: to discover gaps between the model and the inten
 
 In industrial practice, such a result would prompt one of three responses:
 
-1. **Refine the model** to add the missing constraint (remove the non-deterministic choice that
+1. *Refine the model* to add the missing constraint (remove the non-deterministic choice that
    allows the elevator to leave without serving the request).
-2. **Add a fairness assumption**: assert that the system is fair — if a transition is infinitely
+2. *Add a fairness assumption*: assert that the system is fair--if a transition is infinitely
    often enabled, it is infinitely often taken. Under a strong fairness assumption, the liveness
    properties can hold even in the non-deterministic model. LTL is better suited to expressing
    fairness assumptions than plain CTL.
-3. **Accept the gap**: acknowledge that the model abstracts away the scheduling policy, and verify
+3. *Accept the gap*: acknowledge that the model abstracts away the scheduling policy, and verify
    only the properties that hold under *all* schedulers (which are precisely the ones that hold
    here).
 
 The traffic light example holds all its properties because it is a deterministic model: each state
 has exactly one successor, so every path is the same path and non-determinism plays no role. Moving
 from a deterministic to a non-deterministic model is where the branching structure of CTL becomes
-essential — and where model checking earns its keep.
+essential--and where model checking earns its keep.
 
 
 
