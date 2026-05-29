@@ -2,7 +2,7 @@
 ## Model Theory and Model Checking
 
 The word *model* appears in two traditions that converge here. In mathematical logic, a model is a
-mathematical structure that makes a set of sentences true — it is the semantic counterpart of an
+mathematical structure that makes a set of sentences true--it is the semantic counterpart of an
 axiomatic system. In computer science, *model checking* is an automated technique for verifying that
 a finite-state system satisfies a specification written in temporal logic. The connection between them
 is not merely terminological. Model checking is an application of model-theoretic ideas to the
@@ -17,35 +17,33 @@ and the mathematical structures that interpret them. Its central concept is *sat
 structure M and a sentence φ in some formal language, either M satisfies φ (written M ⊨ φ) or it does
 not. A *model* of a theory T is any structure that satisfies every sentence in T.
 
-A structure in the model-theoretic sense is a tuple M = (D, I) where:
-
+A structure in the model-theoretic sense is a tuple M = <D, I> where:
 - **D** is a non-empty *domain* (the universe of objects the language talks about).
 - **I** is an *interpretation function* that assigns to each constant symbol a member of D, to each
   function symbol a function on D, and to each relation symbol a relation on D.
 
 Truth in M is then defined recursively. An atomic formula R(t₁, …, tₙ) is true in M iff the
-interpretations of t₁, …, tₙ stand in the relation assigned to R. The logical connectives and
+interpretations of t₁, ..., tₙ stand in the relation assigned to R. The logical connectives and
 quantifiers extend this in the obvious way: ∀x φ is true in M iff φ is true when x ranges over
-every element of D. This is Tarski's recursive definition of truth — the cornerstone of modern
+every element of D. This is Tarski's recursive definition of truth--the cornerstone of modern
 semantics, published in Polish in 1933 and in German in 1936 as *Der Wahrheitsbegriff in den
 formalisierten Sprachen*.
 
 The power of this framework lies in what it enables:
-
-- **Satisfiability**: φ is satisfiable if some model M exists such that M ⊨ φ.
-- **Validity**: φ is valid (logically true) if every structure satisfies it.
-- **Logical consequence**: φ follows from T if every model of T also satisfies φ.
-- **Completeness**: a proof system is complete if every valid sentence is provable. Gödel's
+- *Satisfiability*: φ is satisfiable if some model M exists such that M ⊨ φ.
+- *Validity*: φ is valid (logically true) if every structure satisfies it.
+- *Logical consequence*: φ follows from T if every model of T also satisfies φ.
+- *Completeness*: a proof system is complete if every valid sentence is provable. Gödel's
   Completeness Theorem (1929) established that first-order logic has this property.
-- **Compactness**: if every finite subset of T has a model, then T itself has a model. This
+- *Compactness*: if every finite subset of T has a model, then T itself has a model. This
   seemingly technical result has far-reaching consequences, including the existence of
-  non-standard models of arithmetic — structures satisfying all first-order truths about the
+  non-standard models of arithmetic--structures satisfying all first-order truths about the
   natural numbers but containing infinite elements.
-- **Löwenheim–Skolem**: if T has an infinite model, it has models of every infinite cardinality.
+- *Löwenheim–Skolem*: if T has an infinite model, it has models of every infinite cardinality.
 
 These results reveal a fundamental tension in formal foundations: no first-order theory with an
 infinite model can be *categorical* (i.e., have only one model up to isomorphism). The real numbers
-as an ordered field cannot be pinned down by first-order sentences alone — there are non-Archimedean
+as an ordered field cannot be pinned down by first-order sentences alone--there are non-Archimedean
 fields satisfying exactly the same first-order truths. This is not a failure of the theory but a
 deep structural fact about the expressive limits of first-order logic.
 
@@ -73,7 +71,7 @@ a mathematical structure.
 **Gottlob Frege** (1879, *Begriffsschrift*) introduced the quantifier notation that made modern
 predicate logic possible. For the first time, sentences like "every natural number has a successor"
 could be expressed in a formal language with the full apparatus of universal and existential
-quantification. Frege's aim was to show that arithmetic was reducible to logic — logicism. Russell's
+quantification. Frege's aim was to show that arithmetic was reducible to logic--logicism. Russell's
 paradox (1902) undermined the specific system, but the formal machinery survived.
 
 **David Hilbert** responded to the foundational crisis with formalism: mathematics should be
@@ -85,13 +83,13 @@ Hilbert's programme sought a finitary proof that arithmetic was both consistent 
 showed that first-order logic is complete: every semantically valid sentence is syntactically
 derivable. His Incompleteness Theorems (1931) showed that any consistent formal system strong enough
 to express basic arithmetic is either incomplete (contains true statements that cannot be proved) or
-its consistency cannot be proved within the system itself. The gap between proof and truth — between
-syntax and semantics — is ineliminable.
+its consistency cannot be proved within the system itself. The gap between proof and truth--between
+syntax and semantics--is ineliminable.
 
 **Alfred Tarski** (1933–1936) gave the problem its proper semantic framework. His recursive
 definition of truth made it possible to speak precisely about when a sentence is *true in a structure*,
 bypassing the paradoxes of self-reference that had plagued earlier attempts. Model theory as a
-discipline — the systematic study of the relationship between theories and their models — took shape
+discipline--the systematic study of the relationship between theories and their models--took shape
 in the 1950s in the work of Tarski, Abraham Robinson, Leon Henkin, and others.
 
 
@@ -109,7 +107,7 @@ static treatment:
 - *Obligation*: something may be permitted in one normative context but not another.
 
 These *modalities* require a different semantic framework. Instead of a single structure, we need a
-*family* of structures — possible worlds, epistemic states, time points, or system states — together
+*family* of structures--possible worlds, epistemic states, time points, or system states--together
 with a relation specifying which are accessible from which.
 
 **Stig Kanger** (Stockholm, 1957) was among the first to give rigorous relational semantics for
@@ -120,22 +118,23 @@ sets* and later *possible worlds*. Both worked independently but drew on the sam
 operators quantify over alternatives.
 
 **Saul Kripke**, then a teenager in Omaha, published a series of papers from 1959 to 1963 that
-systematised this approach with particular clarity and generality. His key move was to parameterise
+systematised this approach with particular clarity and generality.[^sk] His key move was to parameterise
 truth: a sentence φ is true *at world w in model M*, written M, w ⊨ φ. The necessity operator □φ
 is true at w iff φ is true at every world accessible from w; the possibility operator ◇φ is true at
 w iff φ is true at some accessible world. Different constraints on the accessibility relation
 (reflexivity, transitivity, symmetry, seriality) correspond to different modal logics (T, S4, S5, D).
 
-A **Kripke model** is therefore a triple M = (W, R, V) where:
+A **Kripke model** is therefore a triple M = <W, R, V> where:
 - W is a non-empty set of *possible worlds* (or states, points, situations).
 - R ⊆ W × W is the *accessibility relation*.
 - V : W → 2^{Prop} is a *valuation function* mapping each world to the set of propositions true there.
 
-This is a model in the full Tarskian sense — a mathematical structure interpreting a formal language.
+This is a model in the full Tarskian sense--a mathematical structure interpreting a formal language.
 The difference from classical first-order models is that truth is *indexed*: every semantic judgment
 carries a world parameter. The language no longer describes a single fixed domain; it describes how
 things vary across a family of alternatives.
 
+[^sk]: Kripke also visited Kanger when he was still very young.
 
 
 ### IV. Kripke Structures in Computer Science
@@ -151,7 +150,7 @@ systems. Clarke, Emerson, and Sifakis shared the 2007 Turing Award for their fou
 model checking.
 
 In this computer-science setting, the Kripke model becomes a **Kripke structure**: a tuple
-M = (S, S₀, R, L) where:
+M = <S, S₀, R, L> where:
 - S is a finite set of *states* (replacing possible worlds).
 - S₀ ⊆ S is the set of *initial states*.
 - R ⊆ S × S is a *total transition relation* (every state has at least one successor, replacing
@@ -161,7 +160,7 @@ M = (S, S₀, R, L) where:
 
 The model-checking problem is then: given a Kripke structure M and a temporal logic formula φ, does
 M ⊨ φ hold? That is, does the structure satisfy the formula? The question is the same as in
-classical model theory — is this a model of that sentence? — but now it is algorithmically decidable
+classical model theory--is this a model of that sentence?--but now it is algorithmically decidable
 for finite structures and temporal logic specifications.
 
 The key insight is that temporal operators can be computed as *fixpoints* over the state space. For
@@ -175,7 +174,7 @@ a finite structure, these fixpoint computations always terminate:
 - **EU**, **AU** follow similar fixpoint schemes.
 
 The completeness of this fixpoint semantics over finite state spaces is what makes model checking
-both correct and terminating — a direct consequence of the Knaster–Tarski fixpoint theorem, which
+both correct and terminating--a direct consequence of the Knaster–Tarski fixpoint theorem, which
 itself belongs to order-theoretic mathematics that Tarski contributed to.
 
 
@@ -205,7 +204,7 @@ Examples:
 - `EG(p)` — there *exists* an infinite path along which p holds *forever*.
 
 CTL is strictly less expressive than LTL in some respects and more expressive in others; neither
-subsumes the other. **CTL*** is a superset combining both, allowing arbitrary nesting of path
+subsumes the other. CTL* is a superset combining both, allowing arbitrary nesting of path
 quantifiers and temporal operators.
 
 
@@ -214,29 +213,28 @@ quantifiers and temporal operators.
 
 A system is modeled as a Kripke structure. The model-checking algorithm then exhaustively explores
 all reachable states to determine whether the specification holds. For CTL, the complexity is
-O(|S| × |φ|) in both the structure size and formula size — polynomial, and therefore tractable for
+O(|S| × |φ|) in both the structure size and formula size--polynomial, and therefore tractable for
 moderately sized systems.
 
 The principal challenge is *state explosion*: for a system with n boolean variables, the state space
 has 2ⁿ states. A concurrent system of k processes each with m states has up to mᵏ global states.
 Techniques to combat this include:
 
-- **Symbolic model checking**: representing sets of states as binary decision diagrams (BDDs) rather
+- *Symbolic model checking*: representing sets of states as binary decision diagrams (BDDs) rather
   than enumerating them explicitly. Introduced by McMillan (1992), this enabled verification of
   circuits with 10²⁰ states.
-- **Partial-order reduction**: exploiting the commutativity of independent concurrent transitions to
+- *Partial-order reduction*: exploiting the commutativity of independent concurrent transitions to
   avoid exploring all interleavings.
-- **Abstraction and refinement**: replacing the concrete system with a smaller abstract system and
+- *Abstraction and refinement*: replacing the concrete system with a smaller abstract system and
   checking that. If the property fails in the abstraction, check whether the counterexample is real
   (CEGAR: counterexample-guided abstraction refinement).
-- **Bounded model checking**: using SAT solvers to check properties up to a fixed execution depth.
+- *Bounded model checking*: using SAT solvers to check properties up to a fixed execution depth.
 
----
+
 
 ### VII. The C Implementation: `vmmodel.c`
 
 `vmmodel.c` implements an explicit-state model checker for a simple virtual machine. The VM has:
-
 - A program counter (PC) bounded by the program length.
 - A single register R with a bounded range (0 to MAX\_REGISTER\_VALUE).
 - An instruction set: INC, DEC, SET, ADD, SUB, JNZ, HALT.
@@ -245,10 +243,10 @@ The VM's state space is the set of all reachable triples (PC, R, halted). Since 
 bounded, this space is finite and the model checker is guaranteed to terminate.
 
 The checker uses:
-- A **hash table** (FNV-1a hash, chained buckets) to store the visited state set in O(1) expected
+- A *hash table* (FNV-1a hash, chained buckets) to store the visited state set in O(1) expected
   time per lookup.
-- A **dynamic stack** (heap-allocated, doubling capacity) for depth-first exploration.
-- **Clamping** on register arithmetic to keep R within bounds, ensuring no arithmetic operation
+- A *dynamic stack* (heap-allocated, doubling capacity) for depth-first exploration.
+- *Clamping* on register arithmetic to keep R within bounds, ensuring no arithmetic operation
   escapes the defined state space.
 
 The property checked is a safety property: the PC never goes out of bounds and no invalid
@@ -281,7 +279,7 @@ check over the finite state graph.
 
 The `ctl/` subdirectory contains a full CTL model checker in Python. It implements:
 
-- A `KripkeStructure` class representing M = (S, S₀, R, L) with validation, SCC computation
+- A `KripkeStructure` class representing M = <S, S₀, R, L> with validation, SCC computation
   (Tarjan's algorithm), and predecessor computation.
 - An abstract syntax tree for CTL formulas (`Atom`, `Not`, `And`, `Or`, `Implies`, `EX`, `AX`,
   `EU`, `AU`, `EG`, `AG`, `EF`, `AF`).
@@ -318,4 +316,4 @@ contributed a conceptual tool that the next step required:
 Model checking, rooted in the modal logic semantics of the 1950s–60s, is now a standard component
 of hardware and software development toolchains. The Turing Award citation (2007) noted that model
 checking tools had been used to find errors in microprocessor designs at Intel and IBM and in
-communication protocols at Bell Labs — errors that would not have been caught by testing alone.
+communication protocols at Bell Labs--errors that would not have been caught by testing alone.
