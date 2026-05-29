@@ -56,7 +56,7 @@ nineteenth and twentieth centuries.
 
 **Aristotle** identified the first formal system of inference in the *Prior Analytics*: the
 syllogistic. A syllogism does not say that this particular argument is valid because of its content,
-but because of its *form* — the pattern of subject-predicate relations. This is already a gesture
+but because of its *form*--the pattern of subject-predicate relations. This is already a gesture
 toward the separation of syntax from semantics, of form from meaning.
 
 **Leibniz** dreamed of a *characteristica universalis*, a universal symbolic language in which all
