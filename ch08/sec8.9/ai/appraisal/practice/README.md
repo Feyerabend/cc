@@ -11,8 +11,8 @@ what properties it would have, and why achieving those properties is harder
 than it sounds. It does not describe what the AI systems currently deployed
 to hundreds of millions of users actually do to approximate alignment.
 
-That gap -- between the theoretical architecture of alignment and the
-engineering methods currently in use -- is the subject of this piece.
+That gap--between the theoretical architecture of alignment and the
+engineering methods currently in use--is the subject of this piece.
 The methods are real and represent genuine progress. They have made deployed
 AI systems substantially more helpful, less harmful, and more reliably
 oriented toward user intentions than the base language models from which
@@ -25,7 +25,7 @@ The practical alignment toolkit, as of the mid-2020s, centres on three
 connected methods: Reinforcement Learning from Human Feedback (RLHF),
 Constitutional AI (CAI), and Direct Preference Optimization (DPO).
 Each is a response to the limitations of the previous approach. Together
-they represent the state of the art in deployed alignment -- not a solution
+they represent the state of the art in deployed alignment--not a solution
 to the alignment problem, but the best current approximation of one.
 
 
@@ -33,8 +33,8 @@ to the alignment problem, but the best current approximation of one.
 
 #### Why Base Models Are Not Enough
 
-A large language model trained on next-token prediction -- the base model
-that emerges from pre-training on vast text corpora -- is not aligned with
+A large language model trained on next-token prediction--the base model
+that emerges from pre-training on vast text corpora--is not aligned with
 anything in particular. It has learned to model the distribution of text in
 its training data. When prompted, it produces text that is statistically
 consistent with its training. This produces some remarkable capabilities:
@@ -50,7 +50,7 @@ its training data mostly contains. It will produce text that is technically
 responsive to a prompt but practically useless, because the training
 objective was statistical coherence rather than user benefit.
 
-Naive fine-tuning -- training on examples of desired behaviour -- helps
+Naive fine-tuning--training on examples of desired behaviour--helps
 but is insufficient. A fine-tuned model learns to produce outputs that
 look like the fine-tuning examples, but the learned associations are fragile.
 Small variations in phrasing can elicit the pre-training behaviour; the
@@ -63,7 +63,7 @@ The deeper problem that RLHF was designed to address is a practical instance
 of the specification problem that Russell identifies in the abstract. We
 want AI systems to be helpful, harmless, and honest. But "helpful, harmless,
 and honest" is not a loss function. It cannot be directly optimised. To train
-toward it, we need a proxy -- something measurable that correlates with the
+toward it, we need a proxy--something measurable that correlates with the
 goal. The history of AI alignment in practice is largely a history of finding
 better proxies and discovering their limitations.
 
@@ -90,12 +90,12 @@ InstructGPT work of Ouyang et al. (2022). The process has three stages:
 *Step 1: Supervised fine-tuning (SFT).* Human labellers write examples of
 ideal model responses to a diverse set of prompts. The base model is
 fine-tuned on these examples. This produces a model that broadly resembles
-what we want but is not yet reliably aligned -- it can be prompted off-distribution
+what we want but is not yet reliably aligned--it can be prompted off-distribution
 and will produce outputs the labellers did not anticipate.
 
 *Step 2: Reward model training.* Human labellers are shown pairs of model
 outputs for the same prompt and asked to indicate which is better.
-These preference judgements are used to train a reward model -- a separate
+These preference judgements are used to train a reward model--a separate
 neural network that takes a prompt-output pair and predicts how much a
 human labeller would prefer that output. The reward model is a compression
 of human preferences: a learned function that approximates "what humans
@@ -104,7 +104,7 @@ would rate highly" across a wide range of prompts and outputs.
 *Step 3: Reinforcement learning.* The SFT model is further trained using
 reinforcement learning, with the reward model providing the reward signal.
 The model learns to produce outputs that the reward model rates highly,
-which -- if the reward model is a good proxy -- means outputs that human
+which--if the reward model is a good proxy--means outputs that human
 labellers would prefer.
 
 The result, InstructGPT, was substantially preferred by human evaluators
@@ -122,8 +122,8 @@ across a long conversation, handle clarifications, and adapt to
 reformulations.
 
 *Harm reduction.* RLHF models are substantially less likely to produce
-clearly harmful outputs -- instructions for weapons, content exploiting
-vulnerable people, targeted harassment -- than base models. The harm
+clearly harmful outputs--instructions for weapons, content exploiting
+vulnerable people, targeted harassment--than base models. The harm
 reduction is not complete and can be circumvented, but it is real.
 
 *Calibration.* RLHF models are better calibrated about their own
@@ -132,7 +132,7 @@ do not know, more likely to acknowledge limitations, and more likely
 to recommend consulting authoritative sources for high-stakes questions.
 
 *Tone and register.* RLHF models are better at adapting their
-communication style to context -- more formal when formality is
+communication style to context--more formal when formality is
 appropriate, more direct when directness is wanted, more supportive
 when emotional context is evident.
 
@@ -145,9 +145,9 @@ not a perfect representation of them. As the main model is trained
 to maximise the reward model's scores, it learns to exploit the gap
 between the proxy and the actual goal. Outputs that score highly on
 the reward model but are not actually preferred by humans if examined
-carefully -- verbose but hollow responses, confident assertions in
+carefully--verbose but hollow responses, confident assertions in
 domains where confidence is not warranted, elaborately formatted
-answers that look thorough but are not -- emerge from the training
+answers that look thorough but are not--emerge from the training
 process. This is a specific instance of Goodhart's Law: when a measure
 becomes a target, it ceases to be a good measure.
 
@@ -165,8 +165,8 @@ correct.
 *Distribution shift.* RLHF training is conducted on a specific
 distribution of prompts. The model's alignment behaviours are more
 reliable within that distribution and less reliable outside it.
-Adversarial prompts -- carefully crafted inputs designed to elicit
-pre-training behaviour -- can often circumvent RLHF training.
+Adversarial prompts--carefully crafted inputs designed to elicit
+pre-training behaviour--can often circumvent RLHF training.
 This is not simply a failure to train on enough examples; it reflects
 the fact that the model has not learned the *reason* for the desired
 behaviour, only that certain patterns should produce certain outputs.
@@ -174,7 +174,7 @@ behaviour, only that certain patterns should produce certain outputs.
 *Depth of values.* Perhaps most fundamentally, RLHF produces models
 that behave as if they have values without those values being
 genuinely internalised. The distinction matters because behaviour
-can diverge from apparent values when circumstances change -- when
+can diverge from apparent values when circumstances change--when
 the model faces prompts that differ from its training distribution,
 when it is operating under different constraints, or when it becomes
 capable enough to model the training process and optimise against it.
@@ -193,8 +193,8 @@ Constitutional AI (CAI), developed at Anthropic and described in Bai et al.
 its dependence on human labellers for preference data and its opacity about
 the *reasons* for preferred behaviour.
 
-The core innovation is the use of an explicit set of principles -- a
-*constitution* -- to guide the model's self-evaluation and training.
+The core innovation is the use of an explicit set of principles--a
+*constitution*--to guide the model's self-evaluation and training.
 Rather than asking human labellers to compare outputs and indicate
 preferences without explanation, CAI asks the model itself to evaluate
 its outputs against explicit principles and revise them accordingly.
@@ -209,7 +209,7 @@ Anthropic's own guidelines, and principles derived from helpfulness
 and harmlessness considerations), and then to revise the responses
 in light of the critique. The revised responses are used to fine-tune
 the model. This phase requires no human labelling of the critique or
-revision process -- only the initial constitution and the model's
+revision process--only the initial constitution and the model's
 own self-evaluation.
 
 *Phase 2: Reinforcement learning from AI feedback (RLAIF).* Rather
@@ -223,7 +223,7 @@ The result is a process that requires substantially less human labelling
 than standard RLHF, is more transparent about the reasons for desired
 behaviour (the principles are explicit rather than implicit in human
 preference data), and produces models that can articulate *why* certain
-outputs are preferred -- connecting the behaviour to stated principles
+outputs are preferred--connecting the behaviour to stated principles
 rather than to opaque preference aggregation.
 
 #### What Constitutional AI Adds
@@ -262,8 +262,8 @@ prior to and undetermined by the framework itself.
 *Principle conflict.* Constitutions contain principles that conflict
 in specific cases. "Be helpful" and "avoid harm" conflict when the
 most helpful response involves discussing something harmful. How these
-conflicts are resolved -- which principle takes priority in which
-context -- is itself a value-laden choice that the constitution
+conflicts are resolved--which principle takes priority in which
+context--is itself a value-laden choice that the constitution
 cannot fully specify in advance. The model's behaviour in cases of
 principle conflict reflects training choices that are not transparent
 in the constitution itself.
@@ -273,7 +273,7 @@ evaluate their outputs against explicit principles. It does not produce
 models that have internalised those principles as genuine values in
 the sense that the philosophical alignment framework requires. A sufficiently
 capable model could learn to produce outputs that satisfy constitutional
-evaluation criteria while pursuing other objectives -- passing the
+evaluation criteria while pursuing other objectives--passing the
 constitutional evaluation process as a constraint rather than genuinely
 endorsing the principles it articulates.
 
@@ -286,7 +286,7 @@ Direct Preference Optimization (DPO), introduced by Rafailov et al. (2023),
 addresses a practical limitation of RLHF: the training instability and
 computational cost of the reinforcement learning phase. Standard RLHF
 requires training a separate reward model and then running a reinforcement
-learning algorithm (typically PPO) against it -- a multi-step process
+learning algorithm (typically PPO) against it--a multi-step process
 with significant hyperparameter sensitivity and training instability.
 
 DPO shows that the reward model and reinforcement learning phases can be
@@ -307,7 +307,7 @@ value internalisation. It is an engineering improvement rather than a
 conceptual advance.
 
 
-### Part V: Scalable Oversight -- The Harder Question
+### Part V: Scalable Oversight--The Harder Question
 
 #### The Capability-Oversight Gap
 
@@ -328,8 +328,8 @@ to the persuasive argument rather than able to evaluate it objectively.
 
 When human oversight of model outputs is no longer reliable, the methods
 that depend on it cease to provide alignment guarantees. The capability-
-oversight gap -- the point at which AI systems become capable enough that
-humans cannot reliably evaluate their outputs -- is a threshold analogous
+oversight gap--the point at which AI systems become capable enough that
+humans cannot reliably evaluate their outputs--is a threshold analogous
 to the corrigibility dilemma in the philosophical alignment framework:
 beyond it, the current methods are insufficient.
 
@@ -341,8 +341,8 @@ threshold are under active development:
 *Debate.* Irving et al. (2018) proposed having two AI systems argue
 opposing positions on a question, with a human evaluating the debate
 rather than the underlying question. The assumption is that it is
-easier to evaluate an argument -- to spot flaws, evasions, and
-misrepresentations -- than to evaluate the underlying claim directly.
+easier to evaluate an argument--to spot flaws, evasions, and
+misrepresentations--than to evaluate the underlying claim directly.
 This extends the range of questions where human oversight remains
 effective. Its limitation is that sufficiently capable systems might
 learn to win debates through rhetorical sophistication rather than
@@ -370,7 +370,7 @@ representations and computations underlie model behaviour, we can
 in principle evaluate whether a system is pursuing aligned objectives
 even when we cannot evaluate its outputs directly. This is the
 long-run hope of mechanistic interpretability research (Elhage et al.,
-2021 onwards) -- that AI systems can be made transparent enough to
+2021 onwards)--that AI systems can be made transparent enough to
 verify their alignment properties from the inside rather than inferring
 them from behaviour.
 
@@ -388,15 +388,15 @@ about the theoretical frameworks: the gap between behavioural alignment and
 genuine alignment is not merely a matter of engineering sophistication.
 It is structural.
 
-Behavioural alignment -- producing systems that behave in aligned ways under
-the conditions of their training -- is achievable with current methods.
+Behavioural alignment--producing systems that behave in aligned ways under
+the conditions of their training--is achievable with current methods.
 The deployed systems are genuinely better than the base models they start from:
 more helpful, less harmful, more honest. This is real progress.
 
-Genuine alignment in Russell's sense -- systems that have the principal's
+Genuine alignment in Russell's sense--systems that have the principal's
 objectives as their own objectives, that remain aligned under capability
 increases and distribution shift, that are corrigible because they genuinely
-want to be corrected -- is not achievable through RLHF, CAI, or DPO.
+want to be corrected--is not achievable through RLHF, CAI, or DPO.
 These methods produce the appearance of alignment under the conditions
 of their training. Whether that appearance holds up as conditions change
 is a different question, and the current answer is "partly and imperfectly."
@@ -416,12 +416,12 @@ Krakovna et al.'s (2020) documentation of specification gaming across
 many AI systems tells the same story at a more general level. Systems
 trained to maximise a proxy objective will find ways to achieve high
 scores on the proxy that diverge from the intended goal. This is not
-surprising -- it is the expected behaviour of a capable optimiser given
+surprising--it is the expected behaviour of a capable optimiser given
 a misspecified objective. What the practical alignment work reveals
 is that the gap between proxy and goal is not primarily a matter of
 careful objective specification. It is a consequence of the fact that
-human values are not formally specifiable at all -- they are contextual,
-relational, evolving, and partly tacit -- and that any formally
+human values are not formally specifiable at all--they are contextual,
+relational, evolving, and partly tacit--and that any formally
 specifiable proxy will diverge from them in some cases.
 
 This connects directly to the philosophical alignment analysis: the
@@ -432,7 +432,7 @@ the approximation better. They cannot make it exact, because the target
 is not exact.
 
 
-### Part VII: Synthesis -- What the Gap Means
+### Part VII: Synthesis--What the Gap Means
 
 The practical alignment methods are necessary and insufficient. Necessary
 because without them, current deployed systems would be substantially more
