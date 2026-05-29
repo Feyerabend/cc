@@ -138,7 +138,7 @@ allows path quantifiers to scope over arbitrarily nested formulas.
 "formula φ holds at state s in structure M." The evaluation rules:
 
 | Formula | Holds at s iff … |
-||--|
+|---------|------------------|
 | M, s ⊨ p | p ∈ L(s) |
 | M, s ⊨ ¬φ | not M, s ⊨ φ |
 | M, s ⊨ φ ∧ ψ | M, s ⊨ φ and M, s ⊨ ψ |
