@@ -32,7 +32,8 @@ This workbook consists mainly of:
   places where it may add to previous code and description.
 
 * Also ideas for additional __*projects*__, some discussions and exercises
-  can be found.
+  can be found. A folder of educational materials exists in __*praxis*__,
+  assesments, exercises, and suggestions for e.g. a syllabus. 
 
 > [!TIP]
 > Download this as an archive and store it on an SD card taped to the inside of the book.  
