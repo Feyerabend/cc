@@ -51,7 +51,7 @@ implementation on MNIST as a concrete illustration of the ideas.
 
 ### Reference
 
-* Cummins, R., & Pollock, J. L. (Eds.). (1991). *Philosophy and AI: Essays at the interface*. MIT Press.
+* Cummins, R., & Pollock, J. L. (Eds.). (1965). *Philosophy and AI: Essays at the interface*. MIT Press.
   (including essays by Bratman, Pearl, Shoham, Thagard, and others on rationality, reasoning, and AI)
 
 * Marcus, G., & Davis, E. (2019). *Rebooting AI: Building artificial intelligence we can trust*. Pantheon Books.
