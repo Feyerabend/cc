@@ -56,8 +56,11 @@ implementation on MNIST as a concrete illustration of the ideas.
 
 * Marcus, G., & Davis, E. (2019). *Rebooting AI: Building artificial intelligence we can trust*. Pantheon Books.
 
+* Mitchell, M. (2019). *Artificial intelligence: A guide for thinking humans*. Farrar, Straus and Giroux.
 
-
+* Russell, S. (2019). *Human compatible: Artificial intelligence and the problem of control*. Viking.
 
 
 ![Reboot](./../../assets/image/reboot.jpeg)
+![Thinking Humans](./../../assets/image/aimitchell.jpeg)
+![Compatible](./../../assets/image/compatible.jpeg)
