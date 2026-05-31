@@ -1,5 +1,5 @@
 
-# Type Systems - A Survey
+## Type Systems - A Survey
 
 A *type system* is a formal mechanism that assigns types to terms in a language
 and uses them to rule out certain classes of program errors at compile time.
@@ -20,11 +20,11 @@ understanding that correspondence is often the fastest way to understand what a
 new type system is really doing.
 
 
-## 1. Basic Type Systems
+### 1. Basic Type Systems
 
 These define the basic typed computation model.
 
-### 1.1 Simply Typed Lambda Calculus (STLC)
+#### 1.1 Simply Typed Lambda Calculus (STLC)
 
 Foundation of most typed languages.
 
@@ -56,11 +56,11 @@ intuitionistic propositional logic
 
 
 
-### 1.2 Polymorphic Type Systems
+#### 1.2 Polymorphic Type Systems
 
 Generalize functions across types.
 
-#### System F (Parametric Polymorphism)
+##### System F (Parametric Polymorphism)
 
 Types:
 
@@ -88,7 +88,7 @@ second-order lambda calculus
 
 
 
-### 1.3 Rank-N Polymorphism
+#### 1.3 Rank-N Polymorphism
 
 Extends polymorphism to deeper positions.
 
@@ -106,7 +106,7 @@ Haskell
 
 
 
-## 2. Subtyping Systems
+### 2. Subtyping Systems
 
 Introduce *type hierarchies*.
 
@@ -146,11 +146,11 @@ System F<
 
 
 
-## 3. Structural Type Extensions
+### 3. Structural Type Extensions
 
 These describe *data structure composition*.
 
-### 3.1 Product Types
+#### 3.1 Product Types
 
 ```
 T × U
@@ -164,7 +164,7 @@ Example:
 
 
 
-### 3.2 Sum Types
+#### 3.2 Sum Types
 
 ```
 T + U
@@ -178,7 +178,7 @@ Either Int String
 
 
 
-### 3.3 Recursive Types
+#### 3.3 Recursive Types
 
 Define self-referential structures.
 
@@ -190,7 +190,7 @@ List = μX. 1 + (Int × X)
 
 
 
-### 3.4 Algebraic Data Types (ADT)
+#### 3.4 Algebraic Data Types (ADT)
 
 Combines products and sums.
 
@@ -204,9 +204,9 @@ data Tree =
 
 
 
-## 4. Advanced Structural Systems
+### 4. Advanced Structural Systems
 
-### 4.1 Generalized Algebraic Data Types (GADTs)
+#### 4.1 Generalized Algebraic Data Types (GADTs)
 
 Allow constructors to refine types.
 
@@ -222,7 +222,7 @@ They allow *type-safe interpreters*.
 
 
 
-### 4.2 Existential Types
+#### 4.2 Existential Types
 
 Hide type information.
 
@@ -241,7 +241,7 @@ modules
 
 
 
-### 4.3 Higher-Kinded Types
+#### 4.3 Higher-Kinded Types
 
 Types parameterized over *type constructors*.
 
@@ -266,9 +266,9 @@ Scala
 
 
 
-## 5. Intersection and Union Types
+### 5. Intersection and Union Types
 
-### 5.1 Intersection Types
+#### 5.1 Intersection Types
 
 ```
 T ∧ U
@@ -289,7 +289,7 @@ refinement
 
 
 
-### 5.2 Union Types
+#### 5.2 Union Types
 
 ```
 T ∨ U
@@ -310,7 +310,7 @@ TypeScript discriminated unions
 
 
 
-## 6. Dependent Type Systems
+### 6. Dependent Type Systems
 
 Types may depend on *values*.
 
@@ -348,7 +348,7 @@ Lean
 
 
 
-## 7. Refinement Type Systems
+### 7. Refinement Type Systems
 
 Attach predicates to types.
 
@@ -380,11 +380,11 @@ Dafny
 
 
 
-## 8. Linear and Resource Type Systems
+### 8. Linear and Resource Type Systems
 
 Control *value usage*.
 
-### 8.1 Linear Types
+#### 8.1 Linear Types
 
 ```
 use exactly once
@@ -400,7 +400,7 @@ must be consumed once.
 
 
 
-### 8.2 Affine Types
+#### 8.2 Affine Types
 
 ```
 use at most once
@@ -414,7 +414,7 @@ Rust ownership
 
 
 
-### 8.3 Relevant Types
+#### 8.3 Relevant Types
 
 ```
 use at least once
@@ -422,7 +422,7 @@ use at least once
 
 
 
-### 8.4 Graded / Quantitative Types
+#### 8.4 Graded / Quantitative Types
 
 Track *how many times* something is used.
 
@@ -446,7 +446,7 @@ quantitative type theory
 
 
 
-## 9. Linear Logic
+### 9. Linear Logic
 
 Logical foundation for *resource-sensitive* type systems (Girard, 1987).
 
@@ -507,7 +507,7 @@ Curry–Howard for LL   ←→   proof nets / sequent calculus
 
 
 
-## 10. Effect Type Systems
+### 10. Effect Type Systems
 
 Track *side effects* in types.
 
@@ -545,7 +545,7 @@ Haskell
 
 
 
-## 11. Capability Type Systems
+### 11. Capability Type Systems
 
 Types encode *permissions*.
 
@@ -573,7 +573,7 @@ Capsicum
 
 
 
-## 12. Session Types
+### 12. Session Types
 
 Describe *communication protocols*.
 
@@ -607,7 +607,7 @@ linear logic
 
 
 
-## 13. Typestate Systems
+### 13. Typestate Systems
 
 Types represent *program state transitions*.
 
@@ -629,7 +629,7 @@ Ensures correct usage of resources.
 
 
 
-## 14. Temporal and Modal Types
+### 14. Temporal and Modal Types
 
 Track *time or modality*.
 
@@ -665,7 +665,7 @@ staged types ←→  S4 (code as □T)
 
 
 
-## 15. Gradual Type Systems
+### 15. Gradual Type Systems
 
 Combine static and dynamic typing.
 
@@ -699,7 +699,7 @@ Python typing
 
 
 
-## 16. Row Polymorphism
+### 16. Row Polymorphism
 
 Used for *extensible records and variants*.
 
@@ -725,7 +725,7 @@ Elm
 
 
 
-## 17. Path-Dependent Types
+### 17. Path-Dependent Types
 
 Types depend on *object paths*.
 
@@ -744,11 +744,11 @@ DOT calculus
 
 
 
-## 18. Higher Type Theories
+### 18. Higher Type Theories
 
 These extend dependent types with richer notions of equality.
 
-### 18.1 Homotopy Type Theory (HoTT)
+#### 18.1 Homotopy Type Theory (HoTT)
 
 Interprets types as *topological spaces* and equality as *paths*.
 
@@ -813,7 +813,7 @@ Coq (HoTT library)
 
 
 
-### 18.2 Cubical Type Theory
+#### 18.2 Cubical Type Theory
 
 Provides a *computational* interpretation of the univalence axiom, avoiding it as a mere axiom.
 
@@ -852,7 +852,7 @@ Cubical TTT (Cartesian cubical type theory)
 
 
 
-## 19. Behavioral and Protocol Types
+### 19. Behavioral and Protocol Types
 
 These describe *system interactions*.
 
@@ -883,7 +883,7 @@ Used in distributed systems.
 
 
 
-## 20. Staged Type Systems
+### 20. Staged Type Systems
 
 Support *multi-stage programming*.
 
@@ -928,7 +928,7 @@ MetaOCaml
 
 
 
-## 21. Probabilistic Type Systems
+### 21. Probabilistic Type Systems
 
 Used in probabilistic programming.
 
@@ -961,11 +961,11 @@ Church
 
 
 
-## 22. Dimensions of Type System Design
+### 22. Dimensions of Type System Design
 
 Type systems usually vary along *these axes*.
 
-### Expressiveness
+#### Expressiveness
 
 ```
 simple → dependent
@@ -973,7 +973,7 @@ simple → dependent
 
 
 
-### Resource Tracking
+#### Resource Tracking
 
 ```
 unrestricted → affine → linear → quantitative
@@ -981,7 +981,7 @@ unrestricted → affine → linear → quantitative
 
 
 
-### Effect Awareness
+#### Effect Awareness
 
 ```
 pure → effect typed
@@ -989,7 +989,7 @@ pure → effect typed
 
 
 
-### Behavioral Specification
+#### Behavioral Specification
 
 ```
 data → protocols → temporal behavior
@@ -997,7 +997,7 @@ data → protocols → temporal behavior
 
 
 
-### Logical Strength
+#### Logical Strength
 
 ```
 propositional
@@ -1008,7 +1008,7 @@ homotopy
 
 
 
-## 23. Modern Research Combinations
+### 23. Modern Research Combinations
 
 Many research systems combine multiple ideas.
 
@@ -1033,7 +1033,7 @@ Koka
 
 
 
-## 24. A Rough "Expressiveness Ladder"
+### 24. A Rough "Expressiveness Ladder"
 
 This is not strict but roughly shows increasing expressive power.
 
@@ -1061,28 +1061,28 @@ homotopy type theory
 
 
 
-## 25. The Deep Theoretical Correspondence
+### 25. The Deep Theoretical Correspondence
 
 Many type systems correspond to *logical systems*.
 
 ```
-STLC              <--> intuitionistic logic          (Curry-Howard)
-System F          <--> second-order logic
-Linear types      <--> multiplicative linear logic   (Girard)
-Session types     <--> linear logic + π-calculus
-Dependent types   <--> higher-order logic            (Martin-Löf)
-HoTT              <--> homotopy theory               (Voevodsky)
-Cubical TT        <--> cubical sets                  (Cohen et al.)
-Modal types       <--> S4/S5 modal logic
-Staged types      <--> S4 (necessity as code)
+             STLC <--> intuitionistic logic          (Curry-Howard)
+         System F <--> second-order logic
+     Linear types <--> multiplicative linear logic   (Girard)
+    Session types <--> linear logic + π-calculus
+  Dependent types <--> higher-order logic            (Martin-Löf)
+             HoTT <--> homotopy theory               (Voevodsky)
+       Cubical TT <--> cubical sets                  (Cohen et al.)
+      Modal types <--> S4/S5 modal logic
+     Staged types <--> S4 (necessity as code)
 ```
 
 This is part of the *Curry-Howard-Lambek correspondence*:
 
 ```
-types       <-->  propositions
-programs    <-->  proofs
-evaluation  <-->  proof normalization
-categories  <-->  type theories         (Lambek)
-spaces      <-->  types                 (HoTT)
+      types <-->  propositions
+   programs <-->  proofs
+ evaluation <-->  proof normalization
+ categories <-->  type theories         (Lambek)
+     spaces <-->  types                 (HoTT)
 ```

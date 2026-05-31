@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chart Upload Example</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2em;
+    }
+    #chart-container {
+      width: 80%;
+      margin: auto;
+    }
+    canvas {
+      background: #fafafa;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Upload Chart Config (JSON)</h1>
+  
+  <input type="file" id="fileInput" accept=".json" />
+  
+  <div id="chart-container">
+    <canvas id="myChart"></canvas>
+  </div>
+
+  <script>
+    let chart; // reference to current chart
+
+    document.getElementById("fileInput").addEventListener("change", handleFile);
+
+    function handleFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const config = JSON.parse(e.target.result);
+          renderChart(config);
+        } catch (err) {
+          alert("Invalid JSON file.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function renderChart(config) {
+      const ctx = document.getElementById("myChart").getContext("2d");
+      if (chart) {
+        chart.destroy(); // clear old chart
+      }
+      chart = new Chart(ctx, config);
+    }
+  </script>
+</body>
+</html>

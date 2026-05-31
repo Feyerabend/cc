@@ -1,0 +1,7 @@
+-- prelude.lam  —  full standard library entry point
+-- Load with:  :load "lib/prelude.lam"
+
+import "nat.lam"
+import "vec.lam"
+import "fin.lam"
+import "proofs.lam"

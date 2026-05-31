@@ -32,10 +32,10 @@ these weights are iteratively adjusted to minimise a loss function, allowing the
 
 | *Algorithm*                                      | *Type*       | *Typical Use Cases*               | *Key Properties*                                              |
 |--------------------------------------------------|--------------|-----------------------------------|---------------------------------------------------------------|
-| [Neural Networks](./mlp/) (MLP)                  | Supervised   | General-purpose                   | Flexible, powerful, requires large data                       |
-| [CNN](./cnn/) (Convolutional NN)                 | Supervised   | Image data                        | Exploits spatial structure, translation invariance            |
-| [RNN](./rnn/) / [LSTM](./rnn/) / [GRU](./rnn/)   | Supervised   | Sequence data (text, time-series) | Captures temporal dependencies, vanishing gradient challenges |
-| [GANs](./gan/) (Generative Adversarial Networks) | Unsupervised | Data generation                   | Adversarial training, high-quality synthetic data             |
+| [Neural Networks](./../sec8.7/ml/mlp/) (MLP)                  | Supervised   | General-purpose                   | Flexible, powerful, requires large data                       |
+| [CNN](./../sec8.7/ml/cnn/) (Convolutional NN)                 | Supervised   | Image data                        | Exploits spatial structure, translation invariance            |
+| [RNN](./../sec8.7/ml/rnn/) / [LSTM](./../sec8.7/ml/rnn/) / [GRU](./../sec8.7/ml/rnn/)   | Supervised   | Sequence data (text, time-series) | Captures temporal dependencies, vanishing gradient challenges |
+| [GANs](./../sec8.7/ml/gan/) (Generative Adversarial Networks) | Unsupervised | Data generation                   | Adversarial training, high-quality synthetic data             |
 
 The simplest type of neural network is the *feedforward neural network (FNN)*, also known as a multilayer
 perceptron (MLP). In FNNs, information flows in one direction only--from the input layer, through one or more

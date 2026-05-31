@@ -93,3 +93,11 @@ A few ideas recur in almost every folder and are worth holding in mind throughou
   what patterns are learnable.
 * *Evaluation:* Accuracy is rarely enough. Precision, recall, AUC, perplexity, WCSS, and calibration
   each measure a different aspect of model quality.
+
+
+### Reference
+
+* Burkov, A. (2019). *The hundred-page machine learning book*. Andriy Burkov.
+
+![The Hundred-Page Machine Learning Book](./../../assets/image/100.png)
+

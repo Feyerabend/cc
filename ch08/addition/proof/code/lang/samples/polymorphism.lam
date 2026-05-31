@@ -1,0 +1,33 @@
+-- polymorphism.lam
+-- Demonstrates universe polymorphism via Level / Type_l.
+--
+-- A definition with  Π(l : Level). Π(A : Type_l). ...  works at
+-- any universe level.  lzero = level 0,  lsuc lzero = level 1, etc.
+-- Type_(lsuc lzero) evaluates to the same thing as Type_1.
+--
+-- Load with:  :load "samples/polymorphism.lam"
+
+-- The identity function, polymorphic in both level and type.
+let id : Pi(l : Level). Pi(A : Type_l). A -> A = \
+  \l. \A. \x. x
+
+-- Composition, uniform level for all three types.
+let comp : Pi(l : Level). Pi(A : Type_l). Pi(B : Type_l). Pi(C : Type_l). \
+           (A -> B) -> (B -> C) -> A -> C = \
+  \l. \A. \B. \C. \f. \g. \x. g (f x)
+
+-- Constant combinator.
+let konst : Pi(l : Level). Pi(A : Type_l). Pi(B : Type_l). A -> B -> A = \
+  \l. \A. \B. \x. \y. x
+
+-- id at level 0 (values): id applied to a Nat
+id lzero Nat zero
+
+-- id at level 1 (types): id applied to a Type, returning a type
+id (lsuc lzero) Type Nat
+
+-- comp at level 0: compose two successor-like functions
+comp lzero Nat Nat Nat (\n. succ n) (\n. succ n) zero
+
+-- konst: ignore second argument
+konst lzero Nat Nat (succ zero) zero

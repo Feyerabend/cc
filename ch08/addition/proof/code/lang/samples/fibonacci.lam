@@ -1,0 +1,28 @@
+-- fibonacci.lam
+-- Demonstrates two-predecessor recursion via let rec / fix.
+--
+-- fib n = if n <= 1 then n else fib(n-1) + fib(n-2)
+-- Two self-calls in a single body: not expressible as a single natrec.
+--
+-- Load with:  :load "samples/fibonacci.lam"
+
+import "../lib/nat.lam"
+
+-- n <= 1 iff iszero n or iszero (pred n)
+let iszero_or_one : Nat -> Bool = \
+  \n. boolrec (\b. Bool) true (iszero (pred n)) (iszero n)
+
+let rec fib : Nat -> Nat = \
+  \n. boolrec (\b. Nat) n (plus (fib (pred n)) (fib (pred (pred n)))) (iszero_or_one n)
+
+-- fib 0 = 0
+fib zero
+
+-- fib 1 = 1
+fib (succ zero)
+
+-- fib 5 = 5   (0,1,1,2,3,5)
+fib (succ (succ (succ (succ (succ zero)))))
+
+-- fib 7 = 13  (0,1,1,2,3,5,8,13)
+fib (succ (succ (succ (succ (succ (succ (succ zero)))))))

@@ -117,3 +117,16 @@ pressed the structural reading from the outside; the AI winters pressed it from 
 That question has not been definitively answered, and the current moment--large language
 models, hybrid neuro-symbolic systems, renewed interest in reasoning and explainability--
 can be read as yet another chapter in the same debate.
+
+
+### Reference
+
+* Charniak, E., & McDermott, D. (1985). *Introduction to artificial intelligence*. Addison-Wesley.
+
+
+
+
+
+
+
+![Charniak](./../../assets/image/aicharniak.jpeg)

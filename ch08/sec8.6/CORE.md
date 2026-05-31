@@ -15,20 +15,20 @@ ML algorithms can be broadly categorised into:
 
 | *Algorithm*                                                                                | *Type*        | *Typical Use Cases*                 | *Key Properties*                                                |
 |--------------------------------------------------------------------------------------------|---------------|-------------------------------------|-----------------------------------------------------------------|
-| [Linear Regression](./linear/)                                                             | Supervised    | Predicting continuous values        | Simple, interpretable, assumes linearity                        |
-| [Logistic Regression](./logistic/)                                                         | Supervised    | Binary classification               | Probabilistic outputs, interpretable, linear decision boundary  |
-| [Decision Trees](./dtree/)                                                                 | Supervised    | Classification and regression       | Interpretable, handles non-linear data, prone to overfitting    |
-| [Random Forest](./forest/)                                                                 | Supervised    | General-purpose                     | Ensemble of trees, reduces overfitting, less interpretable      |
-| [Support Vector Machine](./svm/)                                                           | Supervised    | High-dimensional classification     | Margin maximisation, kernel trick for non-linearity             |
-| [K-Nearest Neighbours](./knn/) (KNN)                                                       | Supervised    | Classification, regression          | Instance-based, simple, no training phase                       |
-| [Naive Bayes](./bayes/)                                                                    | Supervised    | Text classification, spam filtering | Probabilistic, strong independence assumptions                  |
-| [Gradient Boosting](./boost/) ([XGBoost](./boost/xgboost/), [LightGBM](./boost/lightgbm/)) | Supervised    | Structured data                     | High accuracy, can overfit, less interpretable                  |
-| [K-Means](./kmeans/)                                                                       | Unsupervised  | Clustering, segmentation            | Simple, assumes spherical clusters, sensitive to initialisation |
-| [DBSCAN](./dbscan/)                                                                        | Unsupervised  | Clustering with noise               | Handles arbitrary shapes, density-based                         |
-| [PCA](./pca/) (Principal Component Analysis)                                               | Unsupervised  | Dimensionality reduction            | Linear transformation, unsupervised, captures variance          |
-| [t-SNE](./tsne/) / [UMAP](./umap/)                                                         | Unsupervised  | Visualisation, clustering           | Non-linear, preserves local structure, non-parametric           |
-| [Apriori](./apriori/) / [FP-Growth](./apriori/)                                            | Unsupervised  | Market basket analysis              | Association rule mining                                         |
-| [Reinforcement Learning](./rl/)                                                            | Reinforcement | Game AI, robotics, control          | Trial-and-error learning, reward signal                         |
+| [Linear Regression](./../sec8.7/ml/linear/)                                                             | Supervised    | Predicting continuous values        | Simple, interpretable, assumes linearity                        |
+| [Logistic Regression](./../sec8.7/ml/logistic/)                                                         | Supervised    | Binary classification               | Probabilistic outputs, interpretable, linear decision boundary  |
+| [Decision Trees](./../sec8.7/ml/dtree/)                                                                 | Supervised    | Classification and regression       | Interpretable, handles non-linear data, prone to overfitting    |
+| [Random Forest](./../sec8.7/ml/forest/)                                                                 | Supervised    | General-purpose                     | Ensemble of trees, reduces overfitting, less interpretable      |
+| [Support Vector Machine](./../sec8.7/ml/svm/)                                                           | Supervised    | High-dimensional classification     | Margin maximisation, kernel trick for non-linearity             |
+| [K-Nearest Neighbours](./../sec8.7/ml/knn/) (KNN)                                                       | Supervised    | Classification, regression          | Instance-based, simple, no training phase                       |
+| [Naive Bayes](./../sec8.7/ml/bayes/)                                                                    | Supervised    | Text classification, spam filtering | Probabilistic, strong independence assumptions                  |
+| [Gradient Boosting](./../sec8.7/ml/boost/) ([XGBoost](./../sec8.7/ml/boost/xgboost/), [LightGBM](./../sec8.7/ml/boost/lightgbm/)) | Supervised    | Structured data                     | High accuracy, can overfit, less interpretable                  |
+| [K-Means](./../sec8.7/ml/kmeans/)                                                                       | Unsupervised  | Clustering, segmentation            | Simple, assumes spherical clusters, sensitive to initialisation |
+| [DBSCAN](./../sec8.7/ml/dbscan/)                                                                        | Unsupervised  | Clustering with noise               | Handles arbitrary shapes, density-based                         |
+| [PCA](./../sec8.7/ml/pca/) (Principal Component Analysis)                                               | Unsupervised  | Dimensionality reduction            | Linear transformation, unsupervised, captures variance          |
+| [t-SNE](./../sec8.7/ml/tsne/) / [UMAP](./../sec8.7/ml/umap/)                                                         | Unsupervised  | Visualisation, clustering           | Non-linear, preserves local structure, non-parametric           |
+| [Apriori](./../sec8.7/ml/apriori/) / [FP-Growth](./../sec8.7/ml/apriori/)                                            | Unsupervised  | Market basket analysis              | Association rule mining                                         |
+| [Reinforcement Learning](./../sec8.7/ml/rl/)                                                            | Reinforcement | Game AI, robotics, control          | Trial-and-error learning, reward signal                         |
 
 
 

@@ -1,0 +1,20 @@
+-- nat.lam  —  arithmetic on Nat
+-- Load with:  :load "lib/nat.lam"
+
+-- natrec motive base step scrut  (4 arguments, no leading type)
+
+-- plus m n = m + n   (recurse on m)
+let plus : Nat -> Nat -> Nat = \
+  \m. \n. natrec (\k. Nat) n (\k. \ih. succ ih) m
+
+-- mult m n = m * n   (recurse on m)
+let mult : Nat -> Nat -> Nat = \
+  \m. \n. natrec (\k. Nat) zero (\k. \ih. plus n ih) m
+
+-- pred (succ n) = n,  pred zero = zero
+let pred : Nat -> Nat = \
+  \n. natrec (\k. Nat) zero (\k. \ih. k) n
+
+-- iszero n : Bool
+let iszero : Nat -> Bool = \
+  \n. natrec (\k. Bool) true (\k. \ih. false) n
