@@ -59,42 +59,43 @@ This difference cascades into everything else:
 | Trusted core                | compiler + runtime (~millions of lines) | kernel: ~5000 lines of C          |
 | Programs are also...        | only programs                           | also proofs in constructive logic |
 
-*Type erasure vs type persistence.*  
+*Type erasure vs type persistence.*
 In OCaml, types exist only at compile time. After `ocamlopt` runs, `List.map` in the
 binary knows nothing about `'a` — it has been erased. You cannot inspect the type of
-a value at runtime.  
+a value at runtime.
+
 In llang, types are terms and terms are types (Curry-Howard). The type `Vec Nat 3` is
 itself a value of type `Type`. A function `Pi(A : Type). A → A` takes a type as its
 *first argument* at runtime (in the sense of normalisation). Types are never erased
 and can be computed, passed, returned, and stored like any other term.
 
-*Turing-completeness vs totality.*  
+*Turing-completeness vs totality.*
 OCaml is Turing-complete: any computable function can be expressed, including ones
-that diverge. The compiler does not attempt to verify termination.  
+that diverge. The compiler does not attempt to verify termination.
+
 llang enforces totality: every accepted `let rec` definition must pass the structural
 termination checker. The system is deliberately *not* Turing-complete. This is a
 feature, not a limitation — it is what makes the logic consistent. A Turing-complete
 proof language could prove anything (including `False`) by writing a non-terminating
 proof term.
 
-*What "correct" means.*  
+*What "correct" means.*
 In OCaml, correctness is an external property — you write tests, or perhaps use a
 separate tool like a model checker or Coq proof. The type system catches type errors
 but says nothing about whether `fib` actually computes Fibonacci numbers.  
 In llang, correctness is stated as a *type*. If you write:
-
 ```lam
 let fib_spec : Pi(n : Nat). Id Nat (fib n) (fib_reference n) = ...
 ```
-
 then the kernel verifying that this term type-checks *is* the proof. There is no
 separation between "running the program" and "checking the proof" — they are the same
 kernel invocation.
 
-*Trusted computing base.*  
+*Trusted computing base.*
 When you trust an OCaml program's result, you are trusting: the programmer, the type
 system, the compiler (`ocamlopt` is ~200k lines of OCaml), the C runtime, the OS, and
 the CPU.  
+
 When you trust a llang proof, you are trusting: the kernel — `core/eval.c`,
 `core/check.c`, `core/parse.c`, `core/defs.c`, `core/elab.c` — roughly 5000 lines of
 straightforward C with no external dependencies. This small, auditable core is the
@@ -151,21 +152,19 @@ check.  The actual type checking for `let rec` bodies is deferred to the callers
 *`let rec` — termination is *enforced*, not just expected.*  
 OCaml happily accepts `let rec bad n = bad n` and diverges at runtime.  
 llang rejects it at definition time:
-
 ```
 termination: 'bad' is not structurally recursive on any argument
 error  : could not define 'bad'
 ```
-
 Every `let rec` must pass the structural checker in `core/termcheck.c`.
 
-*Constructor names are lowercase.*  
+*Constructor names are lowercase.*
 OCaml requires `Zero` and `Succ` (capitalised type constructors).  
 llang uses `zero` and `succ` as lowercase keywords. User-defined constructors declared
 with `data` are also lowercase. There is no lexical distinction between constructors
 and variables — the parser resolves names against the definition table.
 
-*Natural numbers are symbolic, not machine integers.*  
+*Natural numbers are symbolic, not machine integers.*
 OCaml's `int` is a 63-bit machine word.  
 llang's `Nat` is the inductive type `zero | succ Nat`. The number 7 is
 `succ (succ (succ (succ (succ (succ (succ zero))))))`. Arithmetic is real β-reduction
@@ -173,7 +172,7 @@ over this structure. There is no built-in fixed-precision arithmetic.
 This means `fib 7` genuinely computes by unrolling the recursive definition seven
 times over symbolic constructors — what you see in the normal form is the full answer.
 
-*Parametric polymorphism requires an explicit `Type` argument.*  
+*Parametric polymorphism requires an explicit `Type` argument.*
 In OCaml, `'a list` is automatically polymorphic.  
 In llang, the type parameter must be passed explicitly:
 
@@ -188,7 +187,7 @@ length Bool my_bool_list
 The `_` hole syntax lets the elaborator infer the type argument when it can:
 `length _ my_nat_list`.
 
-*Dependent types — the key addition.*  
+*Dependent types — the key addition.*
 OCaml's type system is parametric but not dependent: types cannot depend on values.  
 llang's type system is *fully dependent*: types can contain arbitrary terms.
 
@@ -203,7 +202,7 @@ let Vec_head : Pi(n : Nat). Vec Nat (succ n) -> Nat = ...
 This is why llang needs `Π(x:A). B` — `B` can mention `x`, making the type of the
 result depend on the actual argument passed.
 
-*Side effects — none.*  
+*Side effects — none.*
 OCaml functions can perform I/O, raise exceptions, and mutate references.  
 llang functions are total, pure, and deterministic. There is no `unit -> 'a` escape
 hatch, no exceptions, no mutation. A well-typed llang term always reduces to a value.
@@ -254,12 +253,10 @@ Key differences visible here:
 ### What the system is *actually* checking
 
 When you load this file, the kernel does not understand Fibonacci. It verifies:
-
 ```
 fib is a well-defined, total function
 with the declared type Nat → Nat
 ```
-
 Concretely, it runs two independent jobs in sequence.
 
 
@@ -319,7 +316,6 @@ declared type `Nat → Nat`.
 ### Desugaring: what the kernel actually sees
 
 The surface form `let rec fib : Nat → Nat = body` desugars in `lang/main.c` to:
-
 ```
 fix (λfib. body)
 ```
@@ -333,7 +329,6 @@ type checker and evaluator. `natrec` is a separate, lower-level primitive that i
 still available but not what `match` compiles to.
 
 So the kernel's actual internal representation of `fib`, after desugaring and parsing:
-
 ```
 TM_FIX("fib",
   TM_LAM("n",
@@ -397,7 +392,6 @@ goes through the graph reducer:
   applied, then the resulting body is normalised.
 
 This is what produces the REPL output:
-
 ```
 >> fib (succ (succ (succ (succ (succ (succ (succ zero)))))))
   normal : succ (succ (succ (succ (succ (succ (succ (succ (succ (succ (succ (succ (succ zero))))))))))))
@@ -419,7 +413,6 @@ NbE works in two phases:
 
 `nbe_eval` interprets a `Term` into a `Val`. The key idea is that functions become
 host-language closures:
-
 ```c
 // Simplified view of nbe_eval in core/eval.c:
 case TM_LAM:
@@ -496,7 +489,6 @@ fib 0
 ```
 
 Substituting back:
-
 ```
 fib 2 = plus 1 0 = 1
 fib 3 = plus 1 1 = 2  ✓
