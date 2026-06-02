@@ -64,7 +64,7 @@ compiles to a complete system. The lang layer links the same core files and adds
 | Quotient types | `Quot A R`, `qin`, `qeq` (stuck), `quotrec` |
 | Implicit arguments | `_` holes solved by first-order pattern unification |
 | `let rec` / `fix` | Structural termination checker enforces well-foundedness |
-| Pattern matching | `match scrut of | ctor args => body` with IH sugar |
+| Pattern matching | `match scrut of \| ctor args => body`; supports IH sugar in succ arm |  
 
 #### Cubical HoTT
 
