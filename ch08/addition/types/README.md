@@ -1080,9 +1080,9 @@ Many type systems correspond to *logical systems*.
 This is part of the *Curry-Howard-Lambek correspondence*:
 
 ```
-      types <-->  propositions
-   programs <-->  proofs
- evaluation <-->  proof normalization
- categories <-->  type theories         (Lambek)
-     spaces <-->  types                 (HoTT)
+            types <-->  propositions
+         programs <-->  proofs
+       evaluation <-->  proof normalization
+       categories <-->  type theories                (Lambek)
+           spaces <-->  types                        (HoTT)
 ```
