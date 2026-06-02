@@ -1,0 +1,30 @@
+-- fibonacci.lam
+-- Demonstrates structural recursion with two self-calls via nested match.
+--
+-- fib 0 = 0, fib 1 = 1, fib n = fib(n-1) + fib(n-2)
+--
+-- Two recursive calls require nested match; both k and j are structural
+-- subterms of n, accepted by the termination checker (M5).
+--
+-- Load with:  :load "samples/fibonacci.lam"
+
+import "../lib/nat.lam"
+
+let rec fib : Nat → Nat = \
+  λn. match n of \
+    | zero   → zero \
+    | succ k → match k of \
+        | zero   → succ zero \
+        | succ j → plus (fib k) (fib j)
+
+-- fib 0 = 0
+fib zero
+
+-- fib 1 = 1
+fib (succ zero)
+
+-- fib 5 = 5   (0,1,1,2,3,5)
+fib (succ (succ (succ (succ (succ zero)))))
+
+-- fib 7 = 13  (0,1,1,2,3,5,8,13)
+fib (succ (succ (succ (succ (succ (succ (succ zero)))))))
