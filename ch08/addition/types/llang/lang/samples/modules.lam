@@ -1,0 +1,83 @@
+-- modules.lam — demonstration of the module system
+--
+--   module NAME where ... end   creates NAME.foo for each let/data
+--   open NAME                   brings NAME.foo into scope as foo
+--   module A where module B where ... end end  nests as A.B.foo
+--
+-- Load with:  :load "samples/modules.lam"
+
+-- ─────────────────────────────────────────────────────────
+-- 1. Bool utilities
+-- ─────────────────────────────────────────────────────────
+
+module BoolUtils where
+
+let negb : Bool → Bool = λb. boolrec (λ_. Bool) false true b
+
+let andb : Bool → Bool → Bool = λa b. boolrec (λ_. Bool) b false a
+
+let orb  : Bool → Bool → Bool = λa b. boolrec (λ_. Bool) true b a
+
+end
+
+-- ─────────────────────────────────────────────────────────
+-- 2. Nat utilities — IH sugar (LANG-2)
+-- ─────────────────────────────────────────────────────────
+
+module Nat where
+
+-- λn lives inside each arm: ih = add m', user applies n themselves.
+let rec add : Nat → Nat → Nat = \
+  λm. match m of \
+    | zero      → λn. n \
+    | succ m' ih → λn. succ (ih n)
+
+let rec mul : Nat → Nat → Nat = \
+  λm. match m of \
+    | zero      → λn. zero \
+    | succ m' ih → λn. Nat.add (ih n) n
+
+let rec pow : Nat → Nat → Nat = \
+  λbase exp. match exp of \
+    | zero       → succ zero \
+    | succ e' ih → Nat.mul base ih
+
+let isZero : Nat → Bool = \
+  λn. match n of \
+    | zero   → true \
+    | succ _ → false
+
+let rec even : Nat → Bool = \
+  λn. match n of \
+    | zero      → true \
+    | succ n' ih → BoolUtils.negb ih
+
+end
+
+-- ─────────────────────────────────────────────────────────
+-- 3. Nested module: Nat.Pair
+-- ─────────────────────────────────────────────────────────
+
+module Nat where
+  module Pair where
+
+  let swap : Σ(x : Nat). Nat → Σ(x : Nat). Nat = λp. (snd p, fst p)
+
+  let fstPlus : Σ(x : Nat). Nat → Nat = λp. Nat.add (fst p) (snd p)
+
+  end
+end
+
+-- ─────────────────────────────────────────────────────────
+-- 4. Demo
+-- ─────────────────────────────────────────────────────────
+
+open Nat
+
+Nat.add (succ zero) (succ (succ zero))              -- 1 + 2 = 3
+
+mul (succ (succ zero)) (succ (succ (succ zero)))    -- 2 * 3 = 6
+
+pow (succ (succ zero)) (succ (succ (succ zero)))    -- 2 ^ 3 = 8
+
+Nat.Pair.fstPlus (succ zero, succ (succ zero))      -- 1 + 2 = 3

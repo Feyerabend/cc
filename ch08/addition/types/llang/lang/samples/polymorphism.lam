@@ -1,0 +1,28 @@
+-- polymorphism.lam
+-- Demonstrates Phase M1: universe polymorphism via Level / Type_l.
+--
+-- Load with:  :load "samples/polymorphism.lam"
+
+-- The identity function, polymorphic in both level and type.
+let id : Π(l : Level). Π(A : Type_l). A → A = λl A x. x
+
+-- Composition, uniform level for all three types.
+let comp : Π(l : Level). Π(A : Type_l). Π(B : Type_l). Π(C : Type_l). \
+           (A → B) → (B → C) → A → C = \
+  λl A B C f g x. g (f x)
+
+-- Constant combinator.
+let konst : Π(l : Level). Π(A : Type_l). Π(B : Type_l). A → B → A = \
+  λl A B x y. x
+
+-- id at level 0 (values): id applied to a Nat
+id lzero Nat zero
+
+-- id at level 1 (types): id applied to a Type, returning a type
+id (lsuc lzero) Type Nat
+
+-- comp at level 0: compose two successor-like functions
+comp lzero Nat Nat Nat (λn. succ n) (λn. succ n) zero
+
+-- konst: ignore second argument
+konst lzero Nat Nat (succ zero) zero

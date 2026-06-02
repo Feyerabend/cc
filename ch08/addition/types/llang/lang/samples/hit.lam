@@ -1,0 +1,44 @@
+-- HIT-1: General Higher Inductive Types
+-- Tests for parse_data path constructors + nbe_vindrec path case + endpoint equations.
+
+-- HG1: Circle (0-param, 0-arity path ctor)
+data Circ where bse : Circ; lp : Path Circ bse bse
+
+-- HG2: endpoint equations
+:conv lp @ i0 ; bse
+:conv lp @ i1 ; bse
+
+-- HG3: indrec on Circ base case
+let test_bse = indrec Circ (λc. Nat : Circ → Type) zero (⟨i⟩ zero) bse
+:conv test_bse ; zero
+
+-- HG4: indrec on Circ at lp @ i0 (fires path case, then endpoint)
+let test_lp0 = indrec Circ (λc. Nat : Circ → Type) zero (⟨i⟩ zero) (lp @ i0)
+:conv test_lp0 ; zero
+
+-- HG5: Suspension as general HIT (1 param, 1-arity path ctor)
+data Susp2 (A : Type) where \
+  N2 : Susp2 A; \
+  S2 : Susp2 A; \
+  md : A → Path (Susp2 A) (N2 A) (S2 A)
+
+-- HG6: suspension endpoint equations
+:conv md Nat zero @ i0 ; N2 Nat
+:conv md Nat zero @ i1 ; S2 Nat
+
+-- HG7: indrec on Susp2 N2 and S2 cases (equal-endpoint motive)
+let isn2 = indrec Susp2 (λs. Nat : Susp2 Nat → Type) zero zero (λa. ⟨i⟩ zero) (N2 Nat)
+let iss2 = indrec Susp2 (λs. Nat : Susp2 Nat → Type) zero zero (λa. ⟨i⟩ zero) (S2 Nat)
+:conv isn2 ; zero
+:conv iss2 ; zero
+
+-- HG8: Two-point space
+data TwoPoint where pt1 : TwoPoint; pt2 : TwoPoint; edge : Path TwoPoint pt1 pt2
+:conv edge @ i0 ; pt1
+:conv edge @ i1 ; pt2
+
+-- HG9: indrec on TwoPoint
+let tp1 = indrec TwoPoint (λp. Nat : TwoPoint → Type) zero zero (⟨i⟩ zero) pt1
+let tp2 = indrec TwoPoint (λp. Nat : TwoPoint → Type) zero zero (⟨i⟩ zero) pt2
+:conv tp1 ; zero
+:conv tp2 ; zero

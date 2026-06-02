@@ -1,0 +1,30 @@
+-- nat.lam  —  arithmetic on Nat
+-- Load with:  :load "lib/nat.lam"
+--
+-- Note on IH style: with | succ m' ih →, ih = plus m' (a function), so
+-- the caller applies it to the remaining argument.  The λn. lives inside
+-- each arm so the match returns Nat → Nat, not a bare Nat.
+
+-- plus m n = m + n
+let rec plus : Nat → Nat → Nat = \
+  λm. match m of \
+    | zero      → λn. n \
+    | succ m' ih → λn. succ (ih n)
+
+-- mult m n = m * n
+let rec mult : Nat → Nat → Nat = \
+  λm. match m of \
+    | zero      → λn. zero \
+    | succ m' ih → λn. plus (ih n) n
+
+-- pred (succ n) = n,  pred zero = zero
+let pred : Nat → Nat = \
+  λn. match n of \
+    | zero   → zero \
+    | succ k → k
+
+-- iszero n : Bool
+let iszero : Nat → Bool = \
+  λn. match n of \
+    | zero   → true \
+    | succ _ → false

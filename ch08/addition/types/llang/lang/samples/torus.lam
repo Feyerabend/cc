@@ -1,0 +1,59 @@
+-- torus.lam — Torus as a 2-cell Higher Inductive Type
+--
+-- The torus T² has:
+--   one 0-cell: base
+--   two 1-cells: loop1, loop2  (the two generating loops)
+--   one 2-cell: surf            (surf : Path (Path Torus base base) loop1 loop2)
+--
+-- Computation rules (definitional equalities):
+--   surf @ i0        = loop1
+--   surf @ i1        = loop2
+--   (surf @ i) @ j0  = base      (for any i)
+--   (surf @ i) @ j1  = base      (for any i)
+--
+-- Load with:  :load "lang/samples/torus.lam"
+
+data Torus where \
+  base  : Torus ; \
+  loop1 : Path Torus base base ; \
+  loop2 : Path Torus base base ; \
+  surf  : Path (Path Torus base base) loop1 loop2
+
+-- 1-cell endpoint equations
+:conv loop1 @ i0 ; base
+:conv loop1 @ i1 ; base
+:conv loop2 @ i0 ; base
+:conv loop2 @ i1 ; base
+
+-- 2-cell outer endpoints (first dimension reduces)
+:conv surf @ i0 ; loop1
+:conv surf @ i1 ; loop2
+
+-- 2-cell carrier endpoints at concrete second dimension
+-- (surf @ i0) @ i0 = loop1 @ i0 = base
+:conv (surf @ i0) @ i0 ; base
+:conv (surf @ i0) @ i1 ; base
+:conv (surf @ i1) @ i0 ; base
+:conv (surf @ i1) @ i1 ; base
+
+-- Constant-motive eliminator  P = λ_. Nat
+-- base → zero,  loop1 → ⟨i⟩ zero,  loop2 → ⟨i⟩ zero
+-- surf  → ⟨i⟩ ⟨j⟩ zero   (constant 2-path at zero)
+let elim_base = \
+  indrec Torus (λ_. Nat : Torus → Type) \
+    zero \
+    (⟨i⟩ zero) \
+    (⟨i⟩ zero) \
+    (⟨i⟩ ⟨j⟩ zero) \
+    base
+:conv elim_base ; zero
+
+-- The eliminator at (surf @ i0) @ i0 = base also gives zero
+let elim_corner = \
+  indrec Torus (λ_. Nat : Torus → Type) \
+    zero \
+    (⟨i⟩ zero) \
+    (⟨i⟩ zero) \
+    (⟨i⟩ ⟨j⟩ zero) \
+    ((surf @ i0) @ i0)
+:conv elim_corner ; zero

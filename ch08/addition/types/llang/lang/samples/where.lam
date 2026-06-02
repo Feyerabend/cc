@@ -1,0 +1,36 @@
+-- LANG-3: where clauses
+-- Syntax: let f = body where helper1 = rhs1 ; helper2 = rhs2
+-- Helpers are scoped to the binding; their names don't leak into outer scope.
+-- Helpers with args: g x y = rhs  desugars to  g = λx. λy. rhs
+
+-- Basic: single helper, no args
+let double = twice where twice = λn. succ (succ n)
+double (succ (succ zero))  -- expects: succ (succ (succ (succ zero)))
+
+-- Helper with argument syntax
+let add3 = incr where incr n = succ (succ (succ n))
+add3 zero  -- expects: succ (succ (succ zero))
+
+-- Multiple helpers, one referencing the other
+let stepTwo = step1 where \
+  step1 = λn. step2 (succ n) ; \
+  step2 = λn. succ n
+stepTwo zero  -- expects: succ (succ zero)
+
+-- Helper used multiple times in body
+let quadruple = λn. inc2 (inc2 n) where inc2 n = succ (succ n)
+quadruple (succ zero)  -- expects: succ (succ (succ (succ (succ zero))))
+
+-- Where clause with type annotation
+let succ3 : Nat → Nat = go where go = λn. succ (succ (succ n))
+succ3 zero  -- expects: succ (succ (succ zero))
+
+-- Same helper name in two separate bindings: no clash
+let f1 = λn. helper n where helper m = succ m
+let f2 = λn. helper n where helper m = succ (succ m)
+f1 zero  -- expects: succ zero
+f2 zero  -- expects: succ (succ zero)
+
+-- Multi-arg helper
+let pow4 = twice where twice f x = f (f x)
+pow4 (λn. succ (succ n)) zero  -- expects: succ (succ (succ (succ zero)))

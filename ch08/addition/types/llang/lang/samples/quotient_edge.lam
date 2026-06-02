@@ -1,0 +1,60 @@
+-- quotient_edge.lam — edge-case and hardening tests for quotient types
+-- Load with:  :load "samples/quotient_edge.lam"
+
+import "../lib/nat.lam"
+
+let TrivRel : Bool → Bool → Type = λx y. Unit
+let BoolQ   : Type = Quot Bool TrivRel
+let TrivQ2  : Type = Quot BoolQ (λx y. Unit)
+
+:type TrivQ2
+
+let t_qq : TrivQ2 = qin BoolQ (λx y. Unit) (qin Bool TrivRel true)
+:type t_qq
+
+let R  : Nat → Nat → Type = λm n. Unit
+let NQ : Type = Quot Nat R
+let qz   : NQ = qin Nat R zero
+let qtwo : NQ = qin Nat R (succ (succ zero))
+
+quotrec Nat R Nat (λn. succ n) (λa b r. refl (succ zero)) qz
+quotrec Nat R Nat (λn. succ n) (λa b r. refl (succ zero)) qtwo
+
+quotrec Nat R Bool (λn. boolrec (λb. Bool) true false (iszero n)) \
+        (λa b r. refl true) qz
+quotrec Nat R Bool (λn. boolrec (λb. Bool) true false (iszero n)) \
+        (λa b r. refl false) qtwo
+
+let to_fn : NQ → Nat → Nat = \
+  λq. quotrec Nat R (Nat → Nat) (λn k. plus n k) (λa b r. refl (λk. plus zero k)) q
+
+to_fn qz   (succ (succ zero))
+to_fn qtwo (succ zero)
+
+let qpath : Id NQ qz qz = qeq Nat R zero zero star
+:type qpath
+
+:conv qeq Nat R zero zero star ; (refl qz : Id NQ qz qz)
+
+let IdRel  : Nat → Nat → Type = λm n. Id Nat m n
+let NatIdQ : Type = Quot Nat IdRel
+
+let roundtrip : NatIdQ → Nat = \
+  λq. quotrec Nat IdRel Nat (λn. n) (λa b p. p) q
+
+roundtrip (qin Nat IdRel zero)
+roundtrip (qin Nat IdRel (succ (succ (succ zero))))
+
+let collapse_reinject : NatIdQ → NQ = \
+  λq. quotrec Nat IdRel NQ (λn. qz) (λa b p. qeq Nat R zero zero star) q
+
+:type collapse_reinject
+collapse_reinject (qin Nat IdRel (succ (succ zero)))
+
+let apply_quotrec : NQ → Nat = \
+  λq. quotrec Nat R Nat (λn. n) (λa b r. refl a) q
+
+:type apply_quotrec
+
+:conv NQ ; Nat
+:conv NQ ; (Quot Nat (λm n. Id Nat m n))

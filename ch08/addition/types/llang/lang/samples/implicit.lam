@@ -1,0 +1,24 @@
+-- Phase M2: implicit arguments via elaboration
+--
+-- Underscores '_' in expression position are holes that the elaborator
+-- fills in by first-order pattern unification.
+
+-- Polymorphic identity — the type argument is inferred from the value arg.
+let id : Π(A : Type). A → A = λA x. x
+
+:type id _ zero    -- A inferred as Nat
+:type id _ true    -- A inferred as Bool
+
+-- Polymorphic const — both A and B inferred.
+let konst : Π(A : Type). Π(B : Type). A → B → A = λA B x y. x
+
+:type konst _ _ zero true   -- A=Nat, B=Bool → Nat
+:type konst _ _ true zero   -- A=Bool, B=Nat → Bool
+
+-- Apply combinator — function argument drives the inference.
+let apply : Π(A : Type). Π(B : Type). (A → B) → A → B = λA B f x. f x
+
+:type apply _ _ (λx. zero) true   -- B=Nat from body, A=Bool from true
+
+-- Filling holes and reducing to normal form:
+apply _ _ (λx. zero) true   -- reduces to zero

@@ -1,0 +1,41 @@
+-- proofs.lam  —  arithmetic identities proved inside the type theory
+-- Load with:  :load "lib/proofs.lam"
+-- Requires:   lib/nat.lam  (plus)
+
+import "nat.lam"
+
+-- plus_zero_l : plus zero n = n
+-- Holds definitionally — no induction needed.
+let plus_zero_l : Π(n : Nat). Id Nat (plus zero n) n = \
+  λn. refl n
+
+-- plus_zero_r : plus n zero = n
+-- Requires induction on n because plus recurses on its first argument.
+let plus_zero_r : Π(n : Nat). Id Nat (plus n zero) n = \
+  λn. natrec \
+    (λn. Id Nat (plus n zero) n) \
+    (refl zero) \
+    (λk ih. ap Nat Nat (λx. succ x) (plus k zero) k ih) \
+    n
+
+-- plus_succ_r : plus m (succ n) = succ (plus m n)
+let plus_succ_r : Π(m : Nat). Π(n : Nat). Id Nat (plus m (succ n)) (succ (plus m n)) = \
+  λm n. natrec \
+    (λm. Id Nat (plus m (succ n)) (succ (plus m n))) \
+    (refl (succ n)) \
+    (λk ih. ap Nat Nat (λx. succ x) (plus k (succ n)) (succ (plus k n)) ih) \
+    m
+
+-- plus_comm : plus m n = plus n m
+let plus_comm : Π(m : Nat). Π(n : Nat). Id Nat (plus m n) (plus n m) = \
+  λm n. natrec \
+    (λm. Id Nat (plus m n) (plus n m)) \
+    (sym Nat n (plus n zero) (plus_zero_r n)) \
+    (λk ih. trans Nat \
+              (plus (succ k) n) \
+              (succ (plus k n)) \
+              (plus n (succ k)) \
+              (ap Nat Nat (λx. succ x) (plus k n) (plus n k) ih) \
+              (sym Nat (plus n (succ k)) (succ (plus n k)) \
+                (plus_succ_r n k))) \
+    m

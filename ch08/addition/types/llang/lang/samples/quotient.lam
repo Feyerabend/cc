@@ -1,0 +1,57 @@
+-- quotient.lam — Quotient type demos
+--
+-- Quot A R  identifies elements of A related by R.
+-- qin A R a       injects a into the quotient
+-- qeq A R a b r   gives a path qin a = qin b  when r : R a b  (stays stuck)
+-- quotrec A R B f coh x  eliminates; fires when x = qin a, returns f a
+--
+-- Load with:  :load "samples/quotient.lam"
+
+let TrivRel : Bool → Bool → Type = λx y. Unit
+let BoolQ   : Type = Quot Bool TrivRel
+let t_q : BoolQ = qin Bool TrivRel true
+let f_q : BoolQ = qin Bool TrivRel false
+
+let t_eq_f : Id BoolQ t_q f_q = qeq Bool TrivRel true false star
+:type t_eq_f
+
+let collapse : BoolQ → Nat = \
+  λq. quotrec Bool TrivRel Nat (λb. zero) (λa b r. refl zero) q
+
+collapse t_q
+collapse f_q
+
+-- Total quotient of Nat
+let NatTrivRel : Nat → Nat → Type = λm n. Unit
+let NatQ : Type = Quot Nat NatTrivRel
+
+let to_zero : NatQ → Nat = \
+  λq. quotrec Nat NatTrivRel Nat (λn. zero) (λa b r. refl zero) q
+
+to_zero (qin Nat NatTrivRel zero)
+to_zero (qin Nat NatTrivRel (succ (succ (succ zero))))
+
+-- Identity quotient: Nat / (m ~ n iff m = n)
+let IdRel  : Nat → Nat → Type = λm n. Id Nat m n
+let NatIdQ : Type = Quot Nat IdRel
+
+let unquot : NatIdQ → Nat = \
+  λq. quotrec Nat IdRel Nat (λn. n) (λa b p. p) q
+
+unquot (qin Nat IdRel (succ (succ zero)))
+unquot (qin Nat IdRel zero)
+
+:type (qeq Nat IdRel zero zero (refl zero))
+
+-- succ via quotrec; coherence via ap
+let succ_q : NatIdQ → Nat = \
+  λq. quotrec Nat IdRel Nat \
+    (λn. succ n) \
+    (λa b p. ap Nat Nat (λx. succ x) a b p) \
+    q
+
+succ_q (qin Nat IdRel zero)
+succ_q (qin Nat IdRel (succ (succ zero)))
+
+:type (Quot Bool TrivRel)
+:type (Quot Nat  IdRel)

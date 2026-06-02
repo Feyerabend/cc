@@ -1,0 +1,139 @@
+-- stlc.lam — Certified STLC interpreter  (Level 4 demo)
+--
+-- An STExpr G tau is simultaneously:
+--   - a well-typed term of the object language with type tau
+--   - well-scoped in context G (de Bruijn indices, no free variables)
+--
+-- eval_st is the proof of type soundness by construction.
+--
+-- Load with:  :load "samples/stlc.lam"
+
+-- ─────────────────────────────────────────────────────────
+-- 1. Object-language types
+-- ─────────────────────────────────────────────────────────
+
+data Ty : Type where \
+  nat_ty  : Ty ; \
+  bool_ty : Ty ; \
+  arr_ty  : Ty → Ty → Ty
+
+-- Interpret each Ty as a meta-level type.
+-- arr_ty has two recursive positions → case receives σ, ihσ, τ, ihτ.
+let Sem : Ty → Type = \
+  λtau. indrec Ty (λtau. Type) \
+    Nat \
+    Bool \
+    (λsigma ihS tau ihT. ihS → ihT) \
+    tau
+
+-- ─────────────────────────────────────────────────────────
+-- 2. Typing contexts  (snoc lists of Ty)
+-- ─────────────────────────────────────────────────────────
+
+data Ctx : Type where \
+  empty : Ctx ; \
+  ext   : Ctx → Ty → Ctx
+
+-- ─────────────────────────────────────────────────────────
+-- 3. Environments as dependent products
+--
+--   Env empty       = Unit
+--   Env (ext G tau) = Σ(x : Env G). Sem tau
+-- ─────────────────────────────────────────────────────────
+
+let Env : Ctx → Type = \
+  λG. indrec Ctx (λG. Type) \
+    Unit \
+    (λprev_G prev_env cur_tau. Σ(x : prev_env). Sem cur_tau) \
+    G
+
+-- ─────────────────────────────────────────────────────────
+-- 4. Typed de Bruijn indices
+-- ─────────────────────────────────────────────────────────
+
+data Var : Ctx → Ty → Type where \
+  vz : Π(G : Ctx). Π(tau : Ty). Var (ext G tau) tau ; \
+  vs : Π(G : Ctx). Π(tau : Ty). Π(sigma : Ty). Var G tau → Var (ext G sigma) tau
+
+let lookup : Π(G : Ctx). Π(tau : Ty). Var G tau → Env G → Sem tau = \
+  λG tau v. \
+    indrec Var (λG tau v. Env G → Sem tau) \
+      (λG tau.             λe. snd e) \
+      (λG tau sigma v' ih. λe. ih (fst e)) \
+      v
+
+-- ─────────────────────────────────────────────────────────
+-- 5. Intrinsically typed expressions
+-- ─────────────────────────────────────────────────────────
+
+data STExpr : Ctx → Ty → Type where \
+  var_e   : Π(G : Ctx). Π(tau : Ty). Var G tau → STExpr G tau ; \
+  lam_e   : Π(G : Ctx). Π(sigma : Ty). Π(tau : Ty). \
+              STExpr (ext G sigma) tau → STExpr G (arr_ty sigma tau) ; \
+  app_e   : Π(G : Ctx). Π(sigma : Ty). Π(tau : Ty). \
+              STExpr G (arr_ty sigma tau) → STExpr G sigma → STExpr G tau ; \
+  lit_e   : Π(G : Ctx). Nat → STExpr G nat_ty ; \
+  true_e  : Π(G : Ctx). STExpr G bool_ty ; \
+  false_e : Π(G : Ctx). STExpr G bool_ty ; \
+  ifte_e  : Π(G : Ctx). Π(tau : Ty). \
+              STExpr G bool_ty → STExpr G tau → STExpr G tau → STExpr G tau
+
+-- ─────────────────────────────────────────────────────────
+-- 6. The evaluator — the proof of type soundness
+-- ─────────────────────────────────────────────────────────
+
+let eval_st : Π(G : Ctx). Π(tau : Ty). STExpr G tau → Env G → Sem tau = \
+  λG tau expr. \
+    indrec STExpr (λG tau e. Env G → Sem tau) \
+      (λG tau v.                                lookup G tau v) \
+      (λG sigma tau body ih.                    λe x. ih (e, x)) \
+      (λG sigma tau f ihf arg iharg.            λe. ihf e (iharg e)) \
+      (λG n.                                    λe. n) \
+      (λG.                                      λe. true) \
+      (λG.                                      λe. false) \
+      (λG tau cond ihc t iht els ihels.         λe. boolrec (λb. Sem tau) (iht e) (ihels e) (ihc e)) \
+      expr
+
+-- ─────────────────────────────────────────────────────────
+-- 7. Demos
+-- ─────────────────────────────────────────────────────────
+
+let env0 : Env empty = star
+
+-- id_nat : Nat → Nat  (object-language identity)
+let id_nat : STExpr empty (arr_ty nat_ty nat_ty) = \
+  lam_e empty nat_ty nat_ty \
+    (var_e (ext empty nat_ty) nat_ty (vz empty nat_ty))
+
+-- eval_st (id_nat 2) env0  ~>  succ (succ zero)
+eval_st empty nat_ty \
+  (app_e empty nat_ty nat_ty id_nat (lit_e empty (succ (succ zero)))) \
+  env0
+
+-- const_true : Bool → Bool
+let const_true : STExpr empty (arr_ty bool_ty bool_ty) = \
+  lam_e empty bool_ty bool_ty (true_e (ext empty bool_ty))
+
+-- eval_st (const_true false)  ~>  true
+eval_st empty bool_ty \
+  (app_e empty bool_ty bool_ty const_true (false_e empty)) \
+  env0
+
+-- not_expr : Bool → Bool
+let not_expr : STExpr empty (arr_ty bool_ty bool_ty) = \
+  lam_e empty bool_ty bool_ty \
+    (ifte_e (ext empty bool_ty) bool_ty \
+      (var_e   (ext empty bool_ty) bool_ty (vz empty bool_ty)) \
+      (false_e (ext empty bool_ty)) \
+      (true_e  (ext empty bool_ty)))
+
+eval_st empty bool_ty (app_e empty bool_ty bool_ty not_expr (false_e empty)) env0  -- ~> true
+eval_st empty bool_ty (app_e empty bool_ty bool_ty not_expr (true_e  empty)) env0  -- ~> false
+
+-- Open term: x : Nat ⊢ x : Nat
+let x_var : STExpr (ext empty nat_ty) nat_ty = \
+  var_e (ext empty nat_ty) nat_ty (vz empty nat_ty)
+
+-- eval_st x_var (star, 3)  ~>  succ (succ (succ zero))
+eval_st (ext empty nat_ty) nat_ty x_var \
+  (star, succ (succ (succ zero)))

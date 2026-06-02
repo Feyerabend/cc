@@ -1,0 +1,23 @@
+-- fin.lam  —  bounded natural numbers (finite sets)
+-- Load with:  :load "lib/fin.lam"
+
+-- Fin n  =  the set {0, 1, ..., n-1}  (has exactly n inhabitants)
+data Fin : Nat → Type where \
+  fzero : Π(n : Nat). Fin (succ n) ; \
+  fsucc : Π(n : Nat). Fin n → Fin (succ n)
+
+-- Embed a Fin into Nat.
+let toNat : Π(n : Nat). Fin n → Nat = \
+  λn i. \
+    indrec Fin (λn i. Nat) \
+      (λn. zero) \
+      (λn i ih. succ ih) \
+      i
+
+-- Raise the bound without changing the value.
+let finWeaken : Π(n : Nat). Fin n → Fin (succ n) = \
+  λn i. \
+    indrec Fin (λn i. Fin (succ n)) \
+      (λn. fzero (succ n)) \
+      (λn i ih. fsucc (succ n) ih) \
+      i

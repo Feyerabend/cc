@@ -1,0 +1,21 @@
+-- factorial.lam
+-- Demonstrates IH in match (LANG-2).
+-- fact (succ k) = (k+1) * fact k  — ih binds fact k directly.
+--
+-- Load with:  :load "samples/factorial.lam"
+
+import "../lib/nat.lam"
+
+let rec fact : Nat → Nat = \
+  λn. match n of \
+    | zero      → succ zero \
+    | succ k ih → mult (succ k) ih
+
+-- fact 0 = 1
+fact zero
+
+-- fact 4 = 24
+fact (succ (succ (succ (succ zero))))
+
+-- fact 5 = 120
+fact (succ (succ (succ (succ (succ zero)))))
