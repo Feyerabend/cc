@@ -1,13 +1,66 @@
 
-## HoTT/MLTT Kernel — Beta Release
+## llang: A HoTT/MLTT Research Kernel — Beta Release
 
-A complete cubical homotopy type theory kernel written in C. Implements Martin-Löf Type Theory
-extended with cubical primitives (interval, path types, transport, composition, Glue types,
-univalence), higher inductive types including 2-cells, universe polymorphism, implicit arguments,
-pattern matching with structural termination checking, and a surface language with module system.
+Samples have for a natural departure point been of a toy character throughout:
+simple programs to illustrate how the system works. But learning also connects
+to research, discovery, curiosity. Here is an attempt to go much further than
+simple examples, into research territory.
+  
+The subject, Homotopy Type Theory and Martin-Löf Type Theory, can be hard to
+grasp because it is a genuinely different way of thinking about computation,
+in relation to classical computer science. It is worth pausing on why it is
+different, rather than diving directly into syntax.
+
+*The classical picture*. In most of what we call computer science, a program
+and a proof of correctness are two separate things. You write fib in Python or
+OCaml; you test it; if you want a proof, you go to a separate tool--a model
+checker, a theorem prover, a verification framework. Types help catch errors early,
+but they are erased when the program runs. The compiler does not know, and does
+not need to know, what the function is supposed to compute. The gap between
+running correctly on a few inputs and provably correct on all inputs is papered
+over by testing. This is not a criticism--it is an extremely pragmatic and
+productive approach that has built the modern software world. But the gap remains.
+
+A shorter [example](./lang/samples/FIBONACCI.md) of this.
+
+*The MLTT shift*. Martin-Löf Type Theory collapses this gap. A type is a specification,
+and a term of that type is the proof that the specification is met. There is no
+separate proof step. If you write a function `f : Vec Nat n → Nat` that extracts
+the first element of a non-empty vector, the type `Vec Nat (succ n)` in the argument
+is the proof that the vector is non-empty--there is no runtime bounds check because
+there cannot be an empty vector at that type. The type checker and the proof checker
+are the same thing, running on the same term, at the same moment. The example
+explores this concretely: what is the kernel actually checking when it accepts a
+definition, what is it not checking, and what guarantees does it issue?
+
+*The HoTT leap*. Homotopy Type Theory goes one step further and asks a question that
+classical logic does not even pose: when are two proofs of the same thing the same?
+In ordinary mathematics, if I prove a theorem by two different routes, those two
+proofs are both proofs of the same statement--and that is the end of the discussion.
+HoTT says: the two proofs are themselves mathematical objects, and they may or may
+not be equal. Two proofs of A = B can be different paths from A to B. Two proofs
+that those two paths are the same can themselves be different — a surface connecting
+two routes on a torus. This is not wordplay. It is borrowed directly from algebraic
+topology, where a space's identity is shaped by how its paths relate to each other.
+Equality, in this framework, is not a binary yes/no verdict but a structured object
+with geometry.
+
+*Why it matters for computer science*. This has practical consequences. It leads to
+a model of computation in which the distinction between data and proof dissolves,
+in which the question "are these two programs equivalent?" becomes a first-class
+mathematical object you can reason about, and in which types can encode not just
+what a function accepts and returns but the full correctness statement of the
+computation it performs.
+
+The kernel in this repository implements a complete cubical homotopy type theory kernel
+written in C. Implements Martin-Löf Type Theory extended with cubical primitives
+(interval, path types, transport, composition, Glue types, univalence), higher inductive 
+types including 2-cells, universe polymorphism, implicit arguments, pattern matching
+with structural termination checking, and a surface language with module system.
 
 *1261 tests, 0 failures.*
 
+That model are, in a precise sense, proofs rather than tests.
 
 
 ### Building
