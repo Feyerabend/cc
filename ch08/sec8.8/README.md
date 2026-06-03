@@ -17,6 +17,7 @@ Each subfolder corresponds to a section of the chapter and is self-contained.
 | [transformers/](./transformers/)     | Self-attention from scratch, positional encoding       |
 | [optimisation/](./optimisation/)     | SGD, momentum, Adam -- a comparative walkthrough       |
 | [regularisation/](./regularisation/) | Dropout, weight decay, batch normalisation             |
+| [diffusion](./diffusion)             | Noise schedules, forward process, epsilon prediction   |
 
 
 ### Requirements
