@@ -72,6 +72,7 @@ make test       ## runs the full test suite
 
 Requires a C11 compiler (`cc`). No other dependencies.
 
+It builds on code from [proof](./../proof/).
 
 
 ### Architecture
