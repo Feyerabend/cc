@@ -283,3 +283,80 @@ Run `echo ":t" | core/lcore` to execute all 1261 tests. Test categories:
 | Quotients | 12 | Quot, qin, quotrec |
 | Modules QN-*, LW-*, MC-* | 20 | Qualified names, where, match resolution |
 | Error rejection | 40+ | Type errors correctly diagnosed |
+
+
+
+
+### Where does llang sit?
+
+*Not a programming language.*
+
+It produces no binary, has no IO, no effects, no compilation target. You cannot write a web server or a sorting
+library you'd ship. Idris, F*, and ATS are all dependently-typed languages that still aim at programming as their
+primary output. This kernel does not. The surface language in lang/ is a proof-and-normalisation environment, not a
+compiler frontend.
+ 
+*Not a production theorem prover.*
+
+Coq, Lean 4, Agda, and Isabelle are the production systems. They have: a tactic language (hundreds of thousands of
+lines), a curated standard library (millions of lines), universe cumulativity, unification heuristics, and years of
+ergonomics work. This kernel has none of that. You cannot use it to certify a compiler or verify a cryptographic
+protocol in any practical sense today--the ergonomics are too thin.
+ 
+*What it actually is.*
+
+The most precise positioning is: a research-complete, small-trusted-core implementation of CCHM Cubical Type Theory 
+with 2-cell HITs, written in C.
+
+Cubical Agda is the closest in terms of theory implemented. But Agda is written in itself (bootstrapped Haskell), has
+a 200,000+ line trusted core by some counts, and its cubical extension is layered onto an older system not designed
+for it from the ground up. This kernel implements the same CCHM theory from scratch, in a simpler, auditable way. The
+core/ is roughly 5,000 lines of C with no external dependencies--loser to what the de Bruijn criterion actually
+demands. 
+
+cooltt and redtt (research systems from the CMU groups) are philosophically similar--small, correct-by-design,
+focused on cubical computing. They implement Cartesian cubical type theory rather than CCHM, and neither has 2-cell
+HITs. This kernel is closer to CCHM (the Agda/Voevodsky/Cohen/Coquand/Huber/Mörtberg family) and extends it further in
+the HIT direction.
+ 
+miniTT (Coquand, Kinoshita, Nordström, Takeyama, 2009) established the tradition of small reference implementations.
+This kernel is what miniTT would look like after extending through cubical structure, Glue/univalence, HITs, 2-cells,
+a surface language, and 1,261 tests.
+
+
+__The specific claim it makes__
+
+The unusual thing about this kernel is not what it covers, but the combination:
+1. CCHM cubical (not just MLTT, not just HoTT-via-axiom--actual computing transport and composition)
+2. 2-cell HITs (the torus, S², where the 2-cell eliminator type-checks and computes)
+3. Written in C, ~5K lines trusted core (not bootstrapped, not Haskell, auditable)
+4. Surface language and module system (not just a type-checking API)
+5. 1,261 tests (not a prototype--a tested, stable system)
+
+Very few systems have all five. Cubical Agda comes closest but fails on (3). cooltt has (3) but not (2) or (4). Most
+research kernels stop at (1) and (3).
+
+
+__The honest gap__
+
+What it lacks, compared to production proof assistants, is:
+- A tactic language. You write full proof terms by hand. At ~20 lines a proof is already painful. Coq's rewrite, simp,
+  auto close this gap. Without tactics, only small-scale proofs are ergonomic.
+- Universe cumulativity. Agda and Coq allow terms of Type_k to appear where Type_{k+1} is expected. This kernel
+  requires explicit universe lifting.
+- Large-library integration. There is no equivalent of Mathlib. The standard library in lang/lib/ covers Nat, Vec,
+  Fin, and a handful of proofs.
+
+These are not theoretical limits--they are engineering work. The kernel is the foundation on which any of the three
+expansion directions (verification platform, type system lab, embedded language showcase) would be built. The theory
+is done. The ergonomics are the remaining distance.
+
+
+__The two liner answer__
+
+It occupies the position of a reference-quality CCHM cubical kernel--more complete theoretically than any other
+system of comparable size, less ergonomic than any production proof assistant, and more concrete than a pure research
+paper. The right comparison is not Coq or Agda in their current form, but what Coq's kernel looked like in 1989, or
+Agda's before the ecosystem grew around it: the essential computational core, proven correct, waiting for a language
+to be built on top. God speed!
+
