@@ -39,7 +39,7 @@ In ordinary mathematics, if I prove a theorem by two different routes, those two
 proofs are both proofs of the same statement--and that is the end of the discussion.
 HoTT says: the two proofs are themselves mathematical objects, and they may or may
 not be equal. Two proofs of A = B can be different paths from A to B. Two proofs
-that those two paths are the same can themselves be different — a surface connecting
+that those two paths are the same can themselves be different--a surface connecting
 two routes on a torus. This is not wordplay. It is borrowed directly from algebraic
 topology, where a space's identity is shaped by how its paths relate to each other.
 Equality, in this framework, is not a binary yes/no verdict but a structured object
