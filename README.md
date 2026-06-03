@@ -38,7 +38,6 @@ This workbook consists mainly of:
 > [!TIP]
 > Download this as an archive and store it on an SD card taped to the inside of the book.  
 That way you have a preserved snapshot of the material, even if the online archive changes in the future while the printed book does not.
-NB: THE ARCHIVE IS NOT YET COMPLETED.
 
 ---
 Discussions relating to the primary focus of this book can be found at e.g.
