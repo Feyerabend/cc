@@ -146,13 +146,13 @@ python balanced_ternary.py
 
 ### Further reading
 
-- Knuth, D. E. *The Art of Computer Programming*, Vol. 2 (*§4.1: covers
-  non-standard positional systems including negative bases.*)
+- Knuth, D. E. *The Art of Computer Programming*, Vol. 2
+  (*§4.1: covers non-standard positional systems including negative bases.*)
 - Avizienis, A. (1961). "Signed-Digit Number Representations for Fast Parallel
   Arithmetic" (*the paper that formalised redundant digit sets for carry-free
   addition.*)
 - Brusentsov, N. P., & Ramil Alvarez, J. (2011). Ternary Computers: The Setun and the Setun 70.
-  In E. Proydakov & J. Impagliazzo (Eds.), Perspectives on Soviet and Russian Computing
+  In E. Proydakov & J. Impagliazzo (Eds.), *Perspectives on Soviet and Russian Computing*
   (Vol. 357, pp. 74–80). Springer Berlin / Heidelberg. https://doi.org/10.1007/978-3-642-22816-2_10
-- IEEE 754-2008 standard. the definitive reference for modern floating-point. LOOKUP
-
+- IEEE 754-2008 standard. (*The definitive reference for modern floating-point.*)
+  See e.g., https://en.wikipedia.org/wiki/IEEE_754-2008_revision.
