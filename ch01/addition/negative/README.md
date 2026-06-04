@@ -151,7 +151,8 @@ python balanced_ternary.py
 - Avizienis, A. (1961). "Signed-Digit Number Representations for Fast Parallel
   Arithmetic" (*the paper that formalised redundant digit sets for carry-free
   addition.*)
-- Brusentsov, N. P. (1963). title? (*original papers on the Setun and balanced ternary
-  computing, translated excerpts available online.*)
+- Brusentsov, N. P., & Ramil Alvarez, J. (2011). Ternary Computers: The Setun and the Setun 70.
+  In E. Proydakov & J. Impagliazzo (Eds.), Perspectives on Soviet and Russian Computing
+  (Vol. 357, pp. 74–80). Springer Berlin / Heidelberg. https://doi.org/10.1007/978-3-642-22816-2_10
 - IEEE 754-2008 standard. the definitive reference for modern floating-point. LOOKUP
 
