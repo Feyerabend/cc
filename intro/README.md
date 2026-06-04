@@ -1,5 +1,5 @@
 
-# This book/repository is organized around two interconnected questions.
+### This book/repository is organised around two interconnected questions.
 
 > First, how do large language models (LLMs) change the nature of programming and software development? As AI systems increasingly participate in coding, debugging, and design tasks, the role of the programmer is evolving. However, this shift does not eliminate the need for fundamental competencies such as computational thinking, abstraction, problem decomposition, debugging, and system-level reasoning. Rather, it raises questions about how these skills are applied and how their importance may change in AI-assisted development environments.
 
