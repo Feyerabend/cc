@@ -33,6 +33,12 @@ class ClassReference:
     def __str__(self) -> str:
         return f"class name: {self.name}"
 
+class BootstrapMethod:
+    def __init__(self, method_ref_index: int, arguments: List[int]):
+        self.method_ref_index = method_ref_index  # 1-based CP index of CONSTANT_MethodHandle
+        self.arguments = arguments                 # list of 1-based CP indices
+
+
 class AttributeInfo:
     def __init__(self, name: str, data: bytes):
         self.name = name
@@ -40,6 +46,15 @@ class AttributeInfo:
 
     def __str__(self) -> str:
         return f"Attribute: {self.name} ({len(self.data)} bytes)"
+
+class BootstrapMethodsAttribute(AttributeInfo):
+    def __init__(self, name: str, methods: List['BootstrapMethod']):
+        super().__init__(name, None)
+        self.methods = methods
+
+    def __str__(self) -> str:
+        return f"BootstrapMethods: {len(self.methods)} entries"
+
 
 class CodeAttribute(AttributeInfo):
     def __init__(self, name: str, max_stack: int, max_locals: int, code: bytes, exceptions: List[Tuple], attributes: List['AttributeInfo']):

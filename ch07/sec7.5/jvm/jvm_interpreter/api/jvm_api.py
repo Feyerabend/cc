@@ -17,20 +17,23 @@ class JavaClassInterpreter:
         return self.class_loader.get_method_code(class_name, method_name)
 
     def run_method(self, class_name: str, method_name: str,
-                   verbose: bool = False) -> Optional[Any]:
-        class_file = self.load_and_parse_class(class_name)
-        code = self.get_method_code(class_file.this_class.name, method_name)
+                   verbose: bool = False, trace: bool = False) -> Optional[Any]:
+        self.load_and_parse_class(class_name)
+        code = self.get_method_code(class_name, method_name)
         if not code:
             raise ValueError(f"No '{method_name}' method found in {class_name}")
         if verbose:
             print(f"Interpreting '{method_name}' method...")
+        # code[4] = defining class (may differ from class_name for inherited methods)
+        defining_class = code[4] if len(code) > 4 else class_name
+        defining_cf = self.class_loader.load_class(defining_class)
         exc_table = code[3] if len(code) > 3 else []
+        bsm = self.class_loader.get_bootstrap_methods(defining_class)
         interpreter = Interpreter(
             code[2], code[0], code[1],
-            class_file.constant_pool, self.class_loader,
-            exc_table
+            defining_cf.constant_pool, self.class_loader,
+            exc_table, bsm, trace=trace
         )
-        # For main(String[] args), set locals[0] to an empty String array
         if method_name == "main":
             interpreter.locals[0] = JavaArray("java.lang.String", 0)
         result = interpreter.run()

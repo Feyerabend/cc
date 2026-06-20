@@ -4,7 +4,8 @@ import io
 from typing import List
 from jvm_interpreter.models.class_file_models import (
     Header, ConstantPoolEntry, AccessFlags, ClassReference,
-    AttributeInfo, CodeAttribute, Member, ClassFile
+    AttributeInfo, CodeAttribute, BootstrapMethod, BootstrapMethodsAttribute,
+    Member, ClassFile
 )
 
 def parse_header(f: io.BufferedReader) -> Header:
@@ -71,6 +72,15 @@ def parse_attribute(f: io.BufferedReader, cp: List[ConstantPoolEntry]) -> Attrib
         exceptions = [struct.unpack("!HHHH", f.read(8)) for _ in range(struct.unpack("!H", f.read(2))[0])]
         attributes = [parse_attribute(f, cp) for _ in range(struct.unpack("!H", f.read(2))[0])]
         return CodeAttribute(name, max_stack, max_locals, code, exceptions, attributes)
+    if name == 'BootstrapMethods':
+        num = struct.unpack('!H', f.read(2))[0]
+        methods = []
+        for _ in range(num):
+            ref = struct.unpack('!H', f.read(2))[0]
+            nargs = struct.unpack('!H', f.read(2))[0]
+            args = list(struct.unpack(f'!{nargs}H', f.read(2 * nargs))) if nargs else []
+            methods.append(BootstrapMethod(ref, args))
+        return BootstrapMethodsAttribute('BootstrapMethods', methods)
     return AttributeInfo(name, f.read(length))
 
 def parse_members(f: io.BufferedReader, cp: List[ConstantPoolEntry], member_type: str) -> List[Member]:

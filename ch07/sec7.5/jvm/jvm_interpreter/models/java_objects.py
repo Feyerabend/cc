@@ -39,6 +39,19 @@ class JavaObject:
         """Set an instance field value"""
         self.fields[field_name] = value
     
+    # Called by Object.toString / Object.equals / Object.hashCode via native dispatch
+    def toString(self) -> str:
+        return f"{self.class_name}@{hex(id(self))[2:]}"
+
+    def equals(self, other) -> bool:
+        return self is other
+
+    def hashCode(self) -> int:
+        return id(self)
+
+    def getClass(self) -> str:
+        return self.class_name
+
     def __repr__(self) -> str:
         return f"JavaObject({self.class_name}@{hex(id(self))})"
 
@@ -72,7 +85,7 @@ class JavaArray:
         elif component_type == 'boolean':
             return False
         elif component_type == 'char':
-            return '\0'
+            return 0  # chars are unsigned 16-bit ints on the JVM stack
         else:
             # Reference type
             return None
@@ -89,8 +102,60 @@ class JavaArray:
             raise IndexError(f"Array index out of bounds: {index}")
         self.elements[index] = value
     
+    # Array pseudo-methods — used when native dispatch falls through to java.lang.Object
+    def toString(self) -> str:
+        _tc = {'int': 'I', 'long': 'J', 'float': 'F', 'double': 'D',
+               'boolean': 'Z', 'char': 'C', 'byte': 'B', 'short': 'S'}
+        tc = _tc.get(self.component_type,
+                     'L' + self.component_type.replace('.', '/') + ';')
+        return f'[{tc}@{hex(id(self))[2:]}'
+
+    def equals(self, other) -> bool:
+        return self is other
+
+    def hashCode(self) -> int:
+        return id(self)
+
+    def getClass(self) -> str:
+        return f'[{self.component_type}'
+
+    @property
+    def class_name(self) -> str:
+        """Array type descriptor used by aastore type check and native dispatch."""
+        _tc = {'int': 'I', 'long': 'J', 'float': 'F', 'double': 'D',
+               'boolean': 'Z', 'char': 'C', 'byte': 'B', 'short': 'S'}
+        ct = self.component_type.replace('/', '.')
+        if ct in _tc:
+            return '[' + _tc[ct]
+        return '[L' + ct.replace('.', '/') + ';'
+
     def __repr__(self) -> str:
         return f"JavaArray({self.component_type}[{self.length}])"
+
+
+class JavaLambdaProxy:
+    """
+    Functional interface instance produced by invokedynamic / LambdaMetafactory.
+
+    Stores the abstract method name (e.g. "apply", "accept", "test") and a
+    Python callable `_invoke_fn(args: list) -> result` that dispatches to the
+    underlying implementation with any captured variables already pre-applied.
+    """
+
+    def __init__(self, interface_name: str, abstract_method: str, invoke_fn):
+        self.class_name      = interface_name
+        self.abstract_method = abstract_method
+        self._invoke_fn      = invoke_fn
+        self.fields: Dict[str, Any] = {}   # for getfield/putfield compatibility
+
+    def invoke(self, args: list):
+        return self._invoke_fn(args)
+
+    def get_field(self, name: str): return self.fields.get(name)
+    def set_field(self, name: str, v: Any): self.fields[name] = v
+
+    def __repr__(self) -> str:
+        return f"Lambda({self.class_name}::{self.abstract_method})"
 
 
 class ObjectFactory:

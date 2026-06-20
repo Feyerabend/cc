@@ -82,7 +82,11 @@ class JavaIoPrintStream(NativeObject):
         print(text, end='', file=self.stream)
 
     def printf(self, fmt: Any, *args) -> 'JavaIoPrintStream':
-        text = str(fmt) % args if args else str(fmt)
+        fmt_fixed = str(fmt).replace('%n', '\n')
+        try:
+            text = fmt_fixed % args if args else fmt_fixed
+        except (TypeError, ValueError):
+            text = fmt_fixed
         print(text, end='', file=self.stream)
         return self
 
@@ -91,9 +95,16 @@ class JavaIoPrintStream(NativeObject):
 
 # ===== java.lang.System =====
 
+class JavaLangInputStream(NativeObject):
+    """Sentinel for java.io.InputStream / System.in."""
+    def __init__(self):
+        super().__init__("java.io.InputStream")
+
+
 class JavaLangSystem(NativeObject):
     out = JavaIoPrintStream()
     err = JavaIoPrintStream(sys.stderr)
+    stdin = JavaLangInputStream()
 
     @staticmethod
     def currentTimeMillis() -> int:
@@ -351,6 +362,42 @@ class JavaLangString:
     @staticmethod
     def join(delimiter: str, *parts) -> str: return delimiter.join(str(p) for p in parts)
 
+    @staticmethod
+    def split(s: str, regex: str, limit: int = 0):
+        import re
+        from jvm_interpreter.models.java_objects import JavaArray
+        if limit > 0:
+            parts = re.split(regex, s, maxsplit=limit - 1)
+        else:
+            parts = re.split(regex, s)
+            if limit == 0:
+                while parts and parts[-1] == '':
+                    parts.pop()
+        arr = JavaArray('java.lang.String', len(parts))
+        for i, p in enumerate(parts):
+            arr.elements[i] = p
+        return arr
+
+    @staticmethod
+    def matches(s: str, regex: str) -> bool:
+        import re
+        return bool(re.fullmatch(regex, s))
+
+    @staticmethod
+    def replaceAll(s: str, regex: str, repl: str) -> str:
+        import re
+        return re.sub(regex, repl, s)
+
+    @staticmethod
+    def replaceFirst(s: str, regex: str, repl: str) -> str:
+        import re
+        return re.sub(regex, repl, s, count=1)
+
+    @staticmethod
+    def chars(s: str):
+        from jvm_interpreter.native.java_util import JavaIntStream
+        return JavaIntStream(ord(c) for c in s)
+
 
 # ===== java.lang.Math =====
 
@@ -450,6 +497,8 @@ class NativeRegistry:
         self.register_method("java.lang.Object", "equals",   lambda self, o: self.equals(o))
         self.register_method("java.lang.Object", "hashCode", lambda self: self.hashCode())
         self.register_method("java.lang.Object", "toString", lambda self: self.toString())
+        # getClass() is intercepted in Interpreter._dispatch before the registry;
+        # this stub exists so has_native_method("java.lang.Object","getClass") is True.
         self.register_method("java.lang.Object", "getClass", lambda self: self.getClass())
 
         # --- java.lang.StringBuilder ---
@@ -470,6 +519,9 @@ class NativeRegistry:
         self.register_method("java.lang.StringBuilder", "insert",
                              lambda self, offset, s: self.insert(offset, s))
 
+        # --- java.io.InputStream ---
+        self.register_constructor("java.io.InputStream", lambda: JavaLangInputStream())
+
         # --- java.io.PrintStream ---
         self.register_constructor("java.io.PrintStream", lambda: JavaIoPrintStream())
         self.register_method("java.io.PrintStream", "println",
@@ -481,8 +533,9 @@ class NativeRegistry:
         self.register_method("java.io.PrintStream", "flush", lambda self: self.flush())
 
         # --- java.lang.System ---
-        self.register_static_field("java.lang.System", "out", JavaLangSystem.out)
-        self.register_static_field("java.lang.System", "err", JavaLangSystem.err)
+        self.register_static_field("java.lang.System", "out",  JavaLangSystem.out)
+        self.register_static_field("java.lang.System", "err",  JavaLangSystem.err)
+        self.register_static_field("java.lang.System", "in",   JavaLangSystem.stdin)
         self.register_static_method("java.lang.System", "currentTimeMillis",
                                     lambda: JavaLangSystem.currentTimeMillis())
         self.register_static_method("java.lang.System", "nanoTime",
@@ -631,6 +684,22 @@ class NativeRegistry:
                                     lambda v: JavaLangString.valueOf(v))
         self.register_static_method("java.lang.String", "format",
                                     lambda fmt, *args: JavaLangString.format(fmt, *args))
+        self.register_method("java.lang.String", "split",
+                             lambda self, regex, *limit: JavaLangString.split(self, regex, *limit))
+        self.register_method("java.lang.String", "matches",
+                             lambda self, regex: JavaLangString.matches(self, regex))
+        self.register_method("java.lang.String", "replaceAll",
+                             lambda self, regex, repl: JavaLangString.replaceAll(self, regex, repl))
+        self.register_method("java.lang.String", "replaceFirst",
+                             lambda self, regex, repl: JavaLangString.replaceFirst(self, regex, repl))
+        self.register_method("java.lang.String", "chars",
+                             lambda self: JavaLangString.chars(self))
+        self.register_method("java.lang.String", "repeat",
+                             lambda self, n: self * n)
+        self.register_method("java.lang.String", "stripLeading",
+                             lambda self: self.lstrip())
+        self.register_method("java.lang.String", "stripTrailing",
+                             lambda self: self.rstrip())
 
         # --- java.lang.Math (all static) ---
         _math = JavaLangMath
@@ -662,6 +731,14 @@ class NativeRegistry:
             self.register_static_method("java.lang.Math", name, fn)
         self.register_static_field("java.lang.Math", "PI", math.pi)
         self.register_static_field("java.lang.Math", "E",  math.e)
+
+        # java.util — loaded from separate module
+        from jvm_interpreter.native.java_util import register_java_util
+        register_java_util(self)
+        from jvm_interpreter.native.java_io import register_java_io
+        register_java_io(self)
+        from jvm_interpreter.native.java_reflect import register_java_reflect
+        register_java_reflect(self)
 
     # ===== Registry API =====
 
