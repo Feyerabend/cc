@@ -100,33 +100,47 @@ def test_ambiguity():
     db = DCGDatabase()
     db.add_clause(Compound("=", [Variable("X"), Variable("X")]), [])
     
-    # Create an ambiguous grammar
+    # A genuinely ambiguous grammar: prepositional-phrase attachment. Each PP can
+    # attach to the preceding noun (nom --> noun, pp) or to the verb phrase
+    # (vp --> verb, np, pp), so a sentence with k trailing PPs has multiple
+    # parses. The rules are right-recursive (pp --> prep, np), so the top-down
+    # solver does not loop. (The earlier grammar here was unambiguous — every
+    # sentence had exactly one parse — so its 2-/3-parse expectations could never
+    # be met; this version actually exercises ambiguity handling.)
     grammar = """
-    sentence --> noun_phrase, verb_phrase.
-    noun_phrase --> determiner, noun_phrase.
-    noun_phrase --> adjective, noun_phrase.
-    noun_phrase --> noun.
-    verb_phrase --> verb.
-    verb_phrase --> verb, noun_phrase.
-    
-    determiner --> [the].
-    adjective --> [big].
-    adjective --> [red].
+    sentence --> np, vp.
+    np --> det, nom.
+    np --> nom.
+    nom --> noun.
+    nom --> noun, pp.
+    vp --> verb, np.
+    vp --> verb, np, pp.
+    vp --> verb.
+    pp --> prep, np.
+
+    det --> [the].
     noun --> [cat].
-    noun --> [ball].
-    verb --> [chased].
+    noun --> [dog].
+    noun --> [telescope].
+    noun --> [park].
+    verb --> [saw].
+    prep --> [with].
+    prep --> [in].
     """.strip()
-    
+
     for line in grammar.split('\n'):
         line = line.strip()
         if line and not line.startswith('%'):
             db.add_dcg_rule(line)
-    
-    # Test sentences with multiple parses
+
+    # Test sentences with increasing PP-attachment ambiguity.
     test_cases = [
-        (["the", "cat", "chased"], 1),        # Only one parse
-        (["the", "big", "cat", "chased"], 2), # Two parses (different NP structures)
-        (["big", "red", "cat", "chased"], 3), # Three parses
+        (["the", "cat", "saw", "the", "dog"], 1),  # no PP: one parse
+        # one PP — attaches to "dog" or to the VP: two parses
+        (["the", "cat", "saw", "the", "dog", "with", "the", "telescope"], 2),
+        # two PPs — three attachment combinations the solver enumerates
+        (["the", "cat", "saw", "the", "dog",
+          "in", "the", "park", "with", "the", "telescope"], 3),
     ]
     
     passed = 0

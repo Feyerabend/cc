@@ -169,9 +169,23 @@ class Variable(Term):
    
     def __eq__(self, other):
         return isinstance(other, Variable) and self.name == other.name
-   
+
     def __hash__(self):
         return hash(('Variable', self.name))
+
+class Cut(Term):
+    """The cut goal '!', tagged with the choice-point stack height it commits to.
+
+    A Cut is produced during solving: solve() tags each clause body's '!' with
+    the stack height at which that clause was selected. It appears only in goal
+    lists, never in stored clauses or in unification, so renaming and unification
+    never see it.
+    """
+    def __init__(self, barrier: int):
+        self.barrier = barrier
+
+    def __repr__(self):
+        return "!"
 
 class Compound(Term):
     """Compound term with functor and arguments"""
@@ -283,9 +297,15 @@ def parse_compound():
         return Compound(functor_res.name, args_res), rest2
     return parser
 
+def parse_cut():
+    """Parse the cut operator '!' (kept as Atom('!'); tagged with a barrier at
+    solve time)."""
+    return fmap(lambda _: Atom('!'), token(literal('!')))
+
 def parse_primary():
     """Parse primary terms without infix operators"""
     return token(choice(
+        parse_cut(),
         parse_list(),
         parse_number(),
         parse_compound(),
@@ -671,56 +691,79 @@ def handle_builtin(goal: Compound, env: Environment, db: Database) -> List[Envir
 
 
 # Solver (Iterative with Stack-Based Backtracking)
+def _is_cut(goal: Term) -> bool:
+    """True for an untagged cut goal, the Atom '!' produced by the parser."""
+    return isinstance(goal, Atom) and goal.name == '!'
+
+
 def solve(goals: List[Term], env: Environment, db: Database, max_solutions=None) -> List[Environment]:
     """
     Solve goals using iterative depth-first search with backtracking.
     Returns list of solution environments.
     """
     solutions = []
+    # A cut at the top level of the query commits against the query itself
+    # (barrier 0 — discard every choice point of the whole search).
+    goals = [Cut(0) if _is_cut(g) else g for g in goals]
     stack = [(list(goals), env, 0)] # (goals, environment, next_clause_index)
-   
+
     while stack and (max_solutions is None or len(solutions) < max_solutions):
         current_goals, current_env, clause_idx = stack.pop()
-       
+
         # Success: no more goals
         if not current_goals:
             solutions.append(current_env)
             continue
-       
+
         goal = current_goals[0]
         rest_goals = current_goals[1:]
-       
+
+        # Cut: discard every choice point created since its clause was entered
+        # (truncate the choice-point stack back to the cut's barrier), then carry
+        # on with the goals to its right.
+        if isinstance(goal, Cut):
+            del stack[goal.barrier:]
+            stack.append((rest_goals, current_env, 0))
+            continue
+
         # Handle built-in predicates (both Atom and Compound forms)
         if isinstance(goal, Atom) and goal.name in {"true", "fail"}:
             if goal.name == "true":
                 stack.append((rest_goals, current_env, 0))
             # fail just doesn't add anything to stack
             continue
-        
+
         if isinstance(goal, Compound) and goal.functor in {"true", "fail", "=", "write", "nl"}:
             result_envs = handle_builtin(goal, current_env, db)
             for new_env in result_envs:
                 stack.append((rest_goals, new_env, 0))
             continue
-       
+
         # Try to unify with database clauses
         for i in range(clause_idx, len(db.clauses)):
             head, body = db.clauses[i]
-           
+
             # Rename variables to avoid conflicts
             suffix = f"_{db.clause_counter}"
             db.clause_counter += 1
             renamed_head = rename_variables(head, suffix)
             renamed_body = [rename_variables(g, suffix) for g in body]
-           
+
             # Try to unify
             new_env = unify(goal, renamed_head, current_env)
             if new_env:
+                # This clause was selected with the choice-point stack at this
+                # height; a '!' in its body commits back to here, discarding the
+                # next-clause choice point below and any choice points its earlier
+                # body goals create.
+                barrier = len(stack)
+                tagged_body = [Cut(barrier) if _is_cut(g) else g
+                               for g in renamed_body]
                 # Add choice point for next clause
                 if i + 1 < len(db.clauses):
                     stack.append((current_goals, current_env, i + 1))
                 # Continue with this clause's body
-                stack.append((renamed_body + rest_goals, new_env, 0))
+                stack.append((tagged_body + rest_goals, new_env, 0))
                 break
    
     return solutions
