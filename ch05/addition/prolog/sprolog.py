@@ -18,20 +18,31 @@ from dataclasses import dataclass
 
 
 class Variable:
-    """Represents a logical variable with unique identity."""
-    
-    def __init__(self, name: str, var_id: int):
+    """A logical variable, identified by OBJECT IDENTITY.
+
+    Each Variable() is a brand-new, globally unique variable: the `id` is drawn
+    from one ever-increasing class counter (never reused) and is used only for
+    display and as a stable dict/set key. Two distinct Variable objects are never
+    equal — even if they share a name — so a freshly parsed query variable can
+    never collide with a freshly renamed clause variable. This makes
+    "standardizing apart" a structural guarantee rather than something to get
+    right with matching counters.
+    """
+    _counter = 0
+
+    def __init__(self, name: str):
         self.name = name
-        self.id = var_id
-    
+        Variable._counter += 1
+        self.id = Variable._counter
+
     def __repr__(self):
         return f"{self.name}_{self.id}"
-    
+
     def __eq__(self, other):
-        return isinstance(other, Variable) and self.id == other.id
-    
+        return self is other          # object identity
+
     def __hash__(self):
-        return hash(self.id)
+        return id(self)
 
 
 class Term:
@@ -72,8 +83,28 @@ class Clause:
 
 
 class CutException(Exception):
-    """Exception raised to implement the cut (!) operator."""
-    pass
+    """Raised to implement the cut (!) operator.
+
+    Carries the *barrier* — the id of the clause activation the cut commits to —
+    so it is caught only at that clause's selection loop and propagates through
+    the choice points of any called rules in between. (Without a barrier a cut
+    was caught at the innermost clause loop, so it could not prune choice points
+    created inside a called rule.)
+    """
+    def __init__(self, barrier=None):
+        self.barrier = barrier
+        super().__init__()
+
+
+class Cut:
+    """A cut goal tagged with the barrier of the clause body it occurs in."""
+    __slots__ = ("barrier",)
+
+    def __init__(self, barrier: int):
+        self.barrier = barrier
+
+    def __repr__(self):
+        return "!"
 
 
 class PrologParser:
@@ -81,8 +112,7 @@ class PrologParser:
     
     def __init__(self):
         self.variables: Dict[str, Variable] = {}
-        self.var_counter = 0
-    
+
     def parse_program(self, text: str) -> List[Clause]:
         """Parse multiple clauses from text."""
         clauses = []
@@ -353,10 +383,9 @@ class PrologParser:
         return result
     
     def _get_or_create_variable(self, name: str) -> Variable:
-        """Get or create a variable."""
+        """Get or create a variable (one per name within a single clause/query)."""
         if name not in self.variables:
-            self.variables[name] = Variable(name, self.var_counter)
-            self.var_counter += 1
+            self.variables[name] = Variable(name)
         return self.variables[name]
 
 
@@ -365,7 +394,12 @@ class PrologInterpreter:
     
     def __init__(self):
         self.clauses: List[Clause] = []
-        self.var_counter = 0
+        self._barrier = 0
+
+    def _new_barrier(self) -> int:
+        """A fresh, unique id for one clause activation (a cut barrier)."""
+        self._barrier += 1
+        return self._barrier
     
     def add_rules(self, text: str):
         """Add rules from text."""
@@ -378,10 +412,22 @@ class PrologInterpreter:
         parser = PrologParser()
         goals = parser.parse_goals(query_str)
         query_vars = parser.variables
-        
-        for solution in self._solve(goals, {}):
-            filtered = {var: self._walk(var, solution) 
-                       for var in query_vars.values()}
+
+        # A cut at the top level of a query commits against the query itself.
+        qbarrier = self._new_barrier()
+        goals = [Cut(qbarrier) if (isinstance(g, Term) and g.functor == '!')
+                 else g for g in goals]
+
+        def solutions():
+            try:
+                yield from self._solve(goals, {})
+            except CutException as cut:
+                if cut.barrier != qbarrier:
+                    raise
+
+        for solution in solutions():
+            filtered = {var: self._walk(var, solution)
+                        for var in query_vars.values()}
             yield filtered
     
     def _solve(self, goals: List[Term], subst: Dict) -> Iterator[Dict]:
@@ -393,33 +439,38 @@ class PrologInterpreter:
         goal = goals[0]
         remaining = goals[1:]
         
-        # Handle cut
-        if isinstance(goal, Term) and goal.functor == '!':
+        # Handle cut: first produce all solutions of the goals to its right,
+        # then prune by raising up to its own clause barrier.
+        if isinstance(goal, Cut):
             for solution in self._solve(remaining, subst):
                 yield solution
-            raise CutException()
-        
+            raise CutException(goal.barrier)
+
         # Try built-ins
         builtin_result = self._try_builtin(goal, subst, remaining)
         if builtin_result is not None:
-            try:
-                yield from builtin_result
-            except CutException:
-                raise
+            yield from builtin_result    # cuts in `remaining` propagate naturally
             return
-        
+
         # Try clauses
         for clause in self.clauses:
             fresh_clause = self._rename_clause(clause)
             new_subst = self._unify(goal, fresh_clause.head, subst.copy())
-            
+
             if new_subst is not None:
-                new_goals = fresh_clause.body + remaining
-                
+                # One activation of this clause = one cut barrier. Tag the cuts
+                # in its body with that barrier so a `!` commits to THIS clause.
+                barrier = self._new_barrier()
+                body = [Cut(barrier) if (isinstance(g, Term) and g.functor == '!')
+                        else g for g in fresh_clause.body]
+                new_goals = body + remaining
+
                 try:
                     yield from self._solve(new_goals, new_subst)
-                except CutException:
-                    return
+                except CutException as cut:
+                    if cut.barrier == barrier:
+                        return            # the cut commits to this clause: stop
+                    raise                 # belongs to an outer clause: propagate
     
     def _try_builtin(self, goal: Term, subst: Dict, remaining: List[Term]) -> Optional[Iterator[Dict]]:
         """Handle built-in predicates."""
@@ -506,10 +557,9 @@ class PrologInterpreter:
         
         def rename(term):
             if isinstance(term, Variable):
-                if term.id not in mapping:
-                    mapping[term.id] = Variable(term.name, self.var_counter)
-                    self.var_counter += 1
-                return mapping[term.id]
+                if term not in mapping:
+                    mapping[term] = Variable(term.name)   # a fresh, unique variable
+                return mapping[term]
             elif isinstance(term, Term):
                 new_args = []
                 for arg in term.args:
@@ -676,12 +726,12 @@ if __name__ == "__main__":
     print("Family Tree Example")
     print("=" * 60)
     
-    prolog.add_rules('''
+    prolog.add_rules(r'''
         parent(john, bob).
         parent(mary, bob).
         parent(bob, alice).
         parent(bob, charlie).
-        
+
         grandparent(X, Y) :- parent(X, Z), parent(Z, Y).
         sibling(X, Y) :- parent(P, X), parent(P, Y), X \= Y.
     ''')
@@ -693,7 +743,11 @@ if __name__ == "__main__":
     print("\nQuery: parent(bob, X)")
     for solution in prolog.query("parent(bob, X)"):
         print(f"  {prolog.format_solution(solution)}")
-    
+
+    print("\nQuery: sibling(alice, X)   (uses \\=)")
+    for solution in prolog.query("sibling(alice, X)"):
+        print(f"  {prolog.format_solution(solution)}")
+
     # List example
     print("\n" + "=" * 60)
     print("List Processing Example")
