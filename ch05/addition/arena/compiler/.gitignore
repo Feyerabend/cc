@@ -1,0 +1,4 @@
+calc
+calc_asan
+*.o
+*.dSYM/
