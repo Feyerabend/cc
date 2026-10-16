@@ -1,0 +1,4 @@
+lisp_host
+lisp_host_stress
+*.ppm
+tests/*.out

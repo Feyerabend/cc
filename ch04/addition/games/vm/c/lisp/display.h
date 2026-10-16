@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-// 320Ã—240 landscape
+// 320x240 landscape
 #define DISPLAY_WIDTH  320
 #define DISPLAY_HEIGHT 240
 
@@ -86,13 +86,20 @@ disp_error_t disp_draw_text(uint16_t x, uint16_t y, const char *text, uint16_t f
 disp_error_t disp_set_backlight(bool enabled);
 disp_error_t disp_wait_complete(uint32_t timeout_ms);
 
-// Framebuffer mode (for smooth, flicker-free updates)
+// Framebuffer mode (for smooth, flicker-free updates).
+// Draw with the functions below, then send the whole frame with
+// disp_framebuffer_flush. The buffer returned by disp_get_framebuffer
+// holds colours with their two bytes swapped, in the order the display
+// wants them.
 disp_error_t disp_framebuffer_alloc(void);
 void disp_framebuffer_free(void);
 uint16_t* disp_get_framebuffer(void);
 disp_error_t disp_framebuffer_flush(void);
 disp_error_t disp_framebuffer_clear(uint16_t color);
 void disp_framebuffer_set_pixel(uint16_t x, uint16_t y, uint16_t color);
+void disp_framebuffer_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
+void disp_framebuffer_draw_char(uint16_t x, uint16_t y, char c, uint16_t fg, uint16_t bg);
+void disp_framebuffer_draw_text(uint16_t x, uint16_t y, const char *text, uint16_t fg, uint16_t bg);
 
 // Buttons
 disp_error_t buttons_init(void);
@@ -103,6 +110,7 @@ bool button_just_released(button_t button);
 disp_error_t button_set_callback(button_t button, button_callback_t callback);
 
 // Error handling
+void disp_set_error_context(disp_error_t code, const char *function, int line, const char *message);
 const char* disp_error_string(disp_error_t error);
 disp_error_context_t disp_get_last_error(void);
 void disp_clear_error(void);
