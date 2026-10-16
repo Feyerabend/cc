@@ -48,11 +48,11 @@ def is_dst_europe(year, month, day):
         return True
     # March: last Sunday >= 25
     if month == 3:
-        last_sunday = 31 - ((time.mktime((year, 3, 31, 0, 0, 0, 0, 0, 0) + 6) % 7)
+        last_sunday = 31 - ((time.localtime(time.mktime((year, 3, 31, 0, 0, 0, 0, 0)))[6] + 1) % 7)
         return day >= last_sunday
     # October: last Sunday >= 25
     if month == 10:
-        last_sunday = 31 - ((time.mktime((year, 10, 31, 0, 0, 0, 0, 0, 0) + 6) % 7)
+        last_sunday = 31 - ((time.localtime(time.mktime((year, 10, 31, 0, 0, 0, 0, 0)))[6] + 1) % 7)
         return day < last_sunday
     return False
 

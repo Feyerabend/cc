@@ -139,4 +139,4 @@ provides a more fundamental approach to creating intelligent agents that can lea
 for developing truly dynamic and engaging game experiences.
 
 Previously on
-[Reinforcement Learning](./../../../ch03/tictactoe/README.md).
+[Reinforcement Learning](./../../../../ch03/sec3.8/tictactoe/README.md).

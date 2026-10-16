@@ -89,4 +89,4 @@ most iconic accomplishments in programming language history.
 
 * Hart, T. P., & Levin, M. I. (1962). The Lisp compiler. Massachusetts Institute of Technology, Artificial Intelligence Memo. (Some bibliographies specify it as AI Memo 39.)
 
-![Allen](anatomy.png)
+![Allen](./../../assets/image/anatomy.png)

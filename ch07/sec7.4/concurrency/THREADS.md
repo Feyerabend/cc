@@ -106,7 +106,7 @@ graph TD
 Concurrency extends beyond threads, with several constructs complementing green and kernel threads:
 
 - *Coroutines*: Stackless and cooperative, coroutines (e.g., Python's `async`/`await`) enable efficient task
-  switching without the overhead of threads. (Also see the folder on [coroutines](./coroutine/).) Example:
+  switching without the overhead of threads. (Also see the folder on [coroutines](./../coroutine/).) Example:
 
 ```python
 async def fetch_data():

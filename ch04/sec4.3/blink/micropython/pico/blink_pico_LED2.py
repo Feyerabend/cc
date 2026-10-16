@@ -1,16 +1,19 @@
+import machine
+import rp2
+
 # Run two different blink patterns simultaneously
 @rp2.asm_pio(sideset_init=rp2.PIO.OUT_LOW)
 def blink_fast():
     wrap_target()
-    sideset(1) nop() [3]
-    sideset(0) nop() [3]
+    nop().side(1) [3]
+    nop().side(0) [3]
     wrap()
 
 @rp2.asm_pio(sideset_init=rp2.PIO.OUT_LOW)
 def blink_slow():
     wrap_target()
-    sideset(1) nop() [31]
-    sideset(0) nop() [31]
+    nop().side(1) [31]
+    nop().side(0) [31]
     wrap()
 
 # Start both state machines

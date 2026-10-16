@@ -2,6 +2,7 @@
 #define SAP_VM_H
 
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdbool.h>
 
 #define OPCODE_SHIFT 12

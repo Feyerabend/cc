@@ -412,7 +412,6 @@ class TestSVGParserProperties(unittest.TestCase):
 # ============================================================================
 
 # Commented out - state machine testing not compatible with current impl
-"""
 # class RasterizerStateMachine(RuleBasedStateMachine):
 #     """State machine for testing Rasterizer operations"""
     
@@ -460,9 +459,8 @@ class TestSVGParserProperties(unittest.TestCase):
 #         assert all(len(row) == 100 for row in self.rasterizer.pixels)
 
 
-"""
 # Run state machine test
-TestRasterizer = RasterizerStateMachine.TestCase
+# TestRasterizer = RasterizerStateMachine.TestCase
 
 
 # ============================================================================

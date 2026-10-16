@@ -40,3 +40,17 @@ int def_define(const char *name, const char *src) {
     Val *val = nbe_eval(&perm, NULL, t);
     return def_add(name_perm, type, val);
 }
+
+int def_define_nocheck(const char *name, const char *type_src, const char *expr_src) {
+    char *name_perm = arena_strdup(&perm, name);
+    Term *t = parse(&perm, expr_src);
+    if (!t) return -1;
+    Val *type = NULL;
+    if (type_src) {
+        Term *ty = parse(&perm, type_src);
+        if (!ty) return -1;
+        type = nbe_eval(&perm, NULL, ty);
+    }
+    Val *val = nbe_eval(&perm, NULL, t);
+    return def_add(name_perm, type, val);
+}

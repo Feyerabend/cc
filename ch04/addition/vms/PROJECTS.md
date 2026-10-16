@@ -27,7 +27,7 @@ modes to build upon a more "traditional" computer architecture.
   arithmetic and loops) and write a compiler that translates it directly into SAP VM
   instructions. You could even use a simple parser generator like Lex/Yacc or
   Flex/Bison for this. (You can also return to this when reading up on compilers in
-  [ch05](./../../ch05/)).
+  [ch05](./../../../ch05/)).
 
 
 ### State Machine VM

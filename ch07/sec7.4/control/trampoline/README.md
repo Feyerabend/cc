@@ -412,4 +412,4 @@ Also search for:
 - Virtual machine design and bytecode interpreters
 
 
-![SICP](./../../assets/image/sicp.png)
+![SICP](./../../../assets/image/sicp.png)

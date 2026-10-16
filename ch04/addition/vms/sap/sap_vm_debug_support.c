@@ -139,7 +139,7 @@ void vm_dump_state(sap_vm_t *vm, const char *filename) {
     }
     fprintf(file, "SAP VM State Dump\n================\n\n");
     fprintf(file, "VM State: %s\n", vm_state_to_string(vm->state));
-    fprintf(file, "Cycles: %llu\n", vm->cycle_count);
+    fprintf(file, "Cycles: %" PRIu64 "\n", vm->cycle_count);
     fprintf(file, "Debug enabled: %s\n", vm->debug_enabled ? "Yes" : "No");
     fprintf(file, "Trace enabled: %s\n", vm->trace_enabled ? "Yes" : "No");
     fprintf(file, "\nCPU State:\n");

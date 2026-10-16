@@ -229,4 +229,4 @@ Import errors:
 - Verify Python 3.7+ is installed: `python --version`
 
 
-![Inside](./../../assets/inside.png)
+![Inside](./../../../../../ch07/assets/image/inside.png)
