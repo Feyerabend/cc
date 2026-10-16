@@ -1,550 +1,862 @@
 #include "lisp_vm.h"
-#include <string.h>
-#include <stdio.h>
 #include <ctype.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-// ===== Helper Macros =====
-#define IS_NIL(v) ((v)->type == LISP_NIL)
-#define IS_NUMBER(v) ((v)->type == LISP_NUMBER)
-#define IS_SYMBOL(v) ((v)->type == LISP_SYMBOL)
-#define IS_CONS(v) ((v)->type == LISP_CONS)
-#define IS_LAMBDA(v) ((v)->type == LISP_LAMBDA)
-#define IS_SPRITE(v) ((v)->type == LISP_SPRITE)
+// Type tag for cells that sit on the free list
+#define LISP_FREE 0xFF
 
-// ===== Static Globals =====
-static lisp_vm_t *g_vm = NULL;  // Current VM for callbacks
-
-// ===== Memory Management =====
-
-void lisp_init(lisp_vm_t *vm) {
-    memset(vm, 0, sizeof(lisp_vm_t));
-    g_vm = vm;
-    
-    // Create global environment
-    vm->global_env = lisp_nil(vm);
-    
-    // Register built-ins
-    #define REGISTER(name, fn) \
-        lisp_env_define(vm, vm->global_env, \
-            lisp_symbol(vm, name), \
-            lisp_builtin(vm, (lisp_builtin_fn)fn))
-    
-    // Graphics
-    REGISTER("clear", lisp_builtin_clear);
-    REGISTER("fill-rect", lisp_builtin_fill_rect);
-    REGISTER("draw-text", lisp_builtin_draw_text);
-    REGISTER("draw-sprite", lisp_builtin_draw_sprite);
-    
-    // Sprites
-    REGISTER("make-sprite", lisp_builtin_make_sprite);
-    REGISTER("sprite-set-pixel", lisp_builtin_sprite_set_pixel);
-    
-    // Collision
-    REGISTER("collide?", lisp_builtin_collide);
-    
-    // Math
-    REGISTER("+", lisp_builtin_add);
-    REGISTER("-", lisp_builtin_sub);
-    REGISTER("*", lisp_builtin_mul);
-    REGISTER("/", lisp_builtin_div);
-    REGISTER("<", lisp_builtin_lt);
-    REGISTER(">", lisp_builtin_gt);
-    REGISTER("=", lisp_builtin_eq);
-    
-    // Control
-    REGISTER("start", lisp_builtin_start);
-    REGISTER("stop", lisp_builtin_stop);
-    
-    #undef REGISTER
+static lisp_value_t *nil(lisp_vm_t *vm) {
+    return &vm->nil;
 }
 
-void lisp_deinit(lisp_vm_t *vm) {
-    // Nothing to free - all memory is stack-allocated
-    g_vm = NULL;
+lisp_value_t *lisp_nil(lisp_vm_t *vm) {
+    return &vm->nil;
 }
 
-lisp_value_t* lisp_alloc(lisp_vm_t *vm, lisp_type_t type) {
-    if (vm->heap_used >= LISP_HEAP_SIZE) {
-        lisp_gc(vm);
-        if (vm->heap_used >= LISP_HEAP_SIZE) {
-            vm->error_msg = "Out of memory";
-            return NULL;
+// Errors
+
+void lisp_fail(lisp_vm_t *vm, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(vm->error, sizeof(vm->error), fmt, ap);
+    va_end(ap);
+
+    if (vm->error_jmp == NULL) {
+        // No top-level call is active, so there is nobody to report to
+        fprintf(stderr, "lisp: %s\n", vm->error);
+        abort();
+    }
+    longjmp(*vm->error_jmp, 1);
+}
+
+const char *lisp_error(lisp_vm_t *vm) {
+    return vm->error;
+}
+
+// Garbage collection
+
+static void mark(lisp_value_t *v) {
+    // Loops instead of recursing on the last child, so long lists
+    // and environment chains do not use up the C stack.
+    while (v != NULL && !v->marked) {
+        v->marked = 1;
+        switch (v->type) {
+            case LISP_CONS:
+                mark(v->as.cons.car);
+                v = v->as.cons.cdr;
+                break;
+            case LISP_SYMBOL:
+                v = v->as.symbol.value;
+                break;
+            case LISP_LAMBDA:
+                mark(v->as.lambda.params);
+                mark(v->as.lambda.body);
+                v = v->as.lambda.env;
+                break;
+            default:
+                return;
         }
     }
-    
-    lisp_value_t *val = &vm->heap[vm->heap_used++];
-    memset(val, 0, sizeof(lisp_value_t));
-    val->type = type;
-    return val;
+}
+
+// Values that C code holds in local variables during evaluation are not
+// reachable from the VM's own roots. They are found by scanning the C stack
+// conservatively: every word that points into the heap keeps that cell
+// alive. Callee-saved registers are first forced onto the stack.
+#if defined(__GNUC__)
+__attribute__((noinline, no_sanitize_address))
+#endif
+static void mark_stack(lisp_vm_t *vm) {
+    if (vm->stack_base == NULL) return;
+
+    jmp_buf regs;
+#if defined(__GNUC__)
+    __builtin_unwind_init();
+#endif
+    setjmp(regs);
+
+    volatile uintptr_t here = 0;
+    uintptr_t lo = (uintptr_t) &here;
+    uintptr_t hi = (uintptr_t) vm->stack_base;
+    if (lo > hi) {
+        uintptr_t t = lo;
+        lo = hi;
+        hi = t;
+    }
+    lo &= ~(uintptr_t) (sizeof(void *) - 1);
+
+    uintptr_t heap_lo = (uintptr_t) &vm->heap[0];
+    uintptr_t heap_hi = (uintptr_t) &vm->heap[LISP_HEAP_SIZE];
+
+    for (uintptr_t p = lo; p < hi; p += sizeof(void *)) {
+        uintptr_t word = *(volatile uintptr_t *) p;
+        if (word >= heap_lo && word < heap_hi) {
+            lisp_value_t *cell = &vm->heap[(word - heap_lo) / sizeof(lisp_value_t)];
+            if (cell->type != LISP_FREE) {
+                mark(cell);
+            }
+        }
+    }
 }
 
 void lisp_gc(lisp_vm_t *vm) {
-    // Simple mark-sweep GC
-    
-    // Mark phase - mark all reachable values
-    for (size_t i = 0; i < vm->heap_used; i++) {
+    for (size_t i = 0; i < LISP_HEAP_SIZE; i++) {
         vm->heap[i].marked = 0;
     }
-    
-    // Mark from roots
-    void mark(lisp_value_t *v) {
-        if (!v || v->marked) return;
-        v->marked = 1;
-        
-        if (v->type == LISP_CONS) {
-            mark(v->as.cons.car);
-            mark(v->as.cons.cdr);
-        } else if (v->type == LISP_LAMBDA) {
-            mark(v->as.lambda.params);
-            mark(v->as.lambda.body);
-            mark(v->as.lambda.env);
-        }
+
+    // Roots: all symbols (and through them every global), the callbacks,
+    // and whatever is referenced from the C stack.
+    for (size_t i = 0; i < vm->symbol_count; i++) {
+        mark(vm->symbols[i]);
     }
-    
-    mark(vm->global_env);
     mark(vm->on_update);
     for (int i = 0; i < 4; i++) {
-        mark(vm->on_button_callbacks[i]);
+        mark(vm->on_button[i]);
     }
-    for (size_t i = 0; i < vm->stack_ptr; i++) {
-        mark(vm->stack[i]);
+    mark_stack(vm);
+
+    // Sweep: unmarked cells go back on the free list. Cells never move,
+    // so pointers held anywhere stay valid.
+    vm->free_list = NULL;
+    vm->cells_used = 0;
+    for (size_t i = LISP_HEAP_SIZE; i-- > 0; ) {
+        lisp_value_t *v = &vm->heap[i];
+        if (v->marked) {
+            vm->cells_used++;
+            continue;
+        }
+        if (v->type == LISP_STRING && v->as.string.slot >= 0) {
+            vm->string_slot_used[v->as.string.slot] = false;
+        } else if (v->type == LISP_SPRITE && v->as.sprite != NULL) {
+            v->as.sprite->in_use = false;
+        }
+#ifdef LISP_GC_STRESS
+        // Make use of a freed cell easy to detect in tests
+        memset(v, 0xA5, sizeof(*v));
+        v->marked = 0;
+#endif
+        v->type = LISP_FREE;
+        v->as.next_free = vm->free_list;
+        vm->free_list = v;
     }
-    
-    // Sweep phase - compact heap
-    size_t write = 0;
-    for (size_t read = 0; read < vm->heap_used; read++) {
-        if (vm->heap[read].marked) {
-            if (write != read) {
-                vm->heap[write] = vm->heap[read];
-            }
-            write++;
+    vm->gc_count++;
+}
+
+static lisp_value_t *alloc(lisp_vm_t *vm, lisp_type_t type) {
+#ifdef LISP_GC_STRESS
+    // Testing aid: collect before every allocation
+    if (vm->stack_base != NULL) lisp_gc(vm);
+#endif
+    if (vm->free_list == NULL) {
+        lisp_gc(vm);
+        if (vm->free_list == NULL) {
+            lisp_fail(vm, "Out of memory (%d cells)", LISP_HEAP_SIZE);
         }
     }
-    
-    printf("GC: %zu -> %zu cells\n", vm->heap_used, write);
-    vm->heap_used = write;
-}
-
-// ===== Constructors =====
-
-lisp_value_t* lisp_nil(lisp_vm_t *vm) {
-    lisp_value_t *v = lisp_alloc(vm, LISP_NIL);
+    lisp_value_t *v = vm->free_list;
+    vm->free_list = v->as.next_free;
+    vm->cells_used++;
+    memset(v, 0, sizeof(*v));
+    v->type = type;
     return v;
 }
 
-lisp_value_t* lisp_number(lisp_vm_t *vm, int32_t n) {
-    lisp_value_t *v = lisp_alloc(vm, LISP_NUMBER);
-    if (v) v->as.number = n;
+// Construction
+
+lisp_value_t *lisp_number(lisp_vm_t *vm, int32_t n) {
+    lisp_value_t *v = alloc(vm, LISP_NUMBER);
+    v->as.number = n;
     return v;
 }
 
-lisp_value_t* lisp_symbol(lisp_vm_t *vm, const char *name) {
-    // Intern symbol
+lisp_value_t *lisp_bool(lisp_vm_t *vm, bool b) {
+    return lisp_number(vm, b ? 1 : 0);
+}
+
+lisp_value_t *lisp_cons(lisp_vm_t *vm, lisp_value_t *car, lisp_value_t *cdr) {
+    lisp_value_t *v = alloc(vm, LISP_CONS);
+    v->as.cons.car = car;
+    v->as.cons.cdr = cdr;
+    return v;
+}
+
+lisp_value_t *lisp_symbol(lisp_vm_t *vm, const char *name, size_t len) {
     for (size_t i = 0; i < vm->symbol_count; i++) {
-        if (strcmp(vm->symbols[i], name) == 0) {
-            lisp_value_t *v = lisp_alloc(vm, LISP_SYMBOL);
-            if (v) v->as.symbol_id = i;
-            return v;
+        const char *s = vm->symbols[i]->as.symbol.name;
+        if (strlen(s) == len && memcmp(s, name, len) == 0) {
+            return vm->symbols[i];
         }
     }
-    
-    if (vm->symbol_count >= LISP_SYMBOL_TABLE_SIZE) {
-        vm->error_msg = "Symbol table full";
-        return NULL;
+
+    if (vm->symbol_count >= LISP_MAX_SYMBOLS) {
+        lisp_fail(vm, "Too many symbols");
     }
-    
-    vm->symbols[vm->symbol_count] = name;
-    lisp_value_t *v = lisp_alloc(vm, LISP_SYMBOL);
-    if (v) v->as.symbol_id = vm->symbol_count++;
-    return v;
-}
-
-lisp_value_t* lisp_cons(lisp_vm_t *vm, lisp_value_t *car, lisp_value_t *cdr) {
-    lisp_value_t *v = lisp_alloc(vm, LISP_CONS);
-    if (v) {
-        v->as.cons.car = car;
-        v->as.cons.cdr = cdr;
+    if (vm->name_pool_used + len + 1 > LISP_NAME_POOL_SIZE) {
+        lisp_fail(vm, "Out of space for symbol names");
     }
+
+    lisp_value_t *v = alloc(vm, LISP_SYMBOL);
+    char *copy = &vm->name_pool[vm->name_pool_used];
+    memcpy(copy, name, len);
+    copy[len] = '\0';
+    vm->name_pool_used += len + 1;
+
+    v->as.symbol.name = copy;
+    v->as.symbol.value = NULL;
+    vm->symbols[vm->symbol_count++] = v;
     return v;
 }
 
-lisp_value_t* lisp_string(lisp_vm_t *vm, const char *str) {
-    lisp_value_t *v = lisp_alloc(vm, LISP_STRING);
-    if (v) v->as.string = str;
+static lisp_value_t *intern(lisp_vm_t *vm, const char *name) {
+    return lisp_symbol(vm, name, strlen(name));
+}
+
+static int free_string_slot(lisp_vm_t *vm) {
+    for (int i = 0; i < LISP_STRING_SLOTS; i++) {
+        if (!vm->string_slot_used[i]) return i;
+    }
+    return -1;
+}
+
+// A string made at run time. It gets a slot that is freed by the collector.
+lisp_value_t *lisp_string(lisp_vm_t *vm, const char *text) {
+    if (free_string_slot(vm) < 0) {
+        lisp_gc(vm);
+    }
+    int slot = free_string_slot(vm);
+    if (slot < 0) {
+        lisp_fail(vm, "Out of string slots (max %d)", LISP_STRING_SLOTS);
+    }
+
+    lisp_value_t *v = alloc(vm, LISP_STRING);
+    vm->string_slot_used[slot] = true;
+    snprintf(vm->string_slots[slot], LISP_STRING_SLOT_SIZE, "%s", text);
+    v->as.string.text = vm->string_slots[slot];
+    v->as.string.slot = (int16_t) slot;
     return v;
 }
 
-lisp_value_t* lisp_builtin(lisp_vm_t *vm, lisp_builtin_fn fn) {
-    lisp_value_t *v = lisp_alloc(vm, LISP_BUILTIN);
-    if (v) v->as.builtin = fn;
+static lisp_sprite_t *free_sprite(lisp_vm_t *vm) {
+    for (int i = 0; i < LISP_MAX_SPRITES; i++) {
+        if (!vm->sprites[i].in_use) return &vm->sprites[i];
+    }
+    return NULL;
+}
+
+static lisp_sprite_t *sprite_alloc(lisp_vm_t *vm, int32_t w, int32_t h) {
+    if (w < 1 || h < 1 || w > LISP_SPRITE_MAX_SIZE || h > LISP_SPRITE_MAX_SIZE) {
+        lisp_fail(vm, "Sprite size must be 1..%d", LISP_SPRITE_MAX_SIZE);
+    }
+    if (free_sprite(vm) == NULL) {
+        lisp_gc(vm);
+    }
+    lisp_sprite_t *s = free_sprite(vm);
+    if (s == NULL) {
+        lisp_fail(vm, "Too many sprites (max %d)", LISP_MAX_SPRITES);
+    }
+
+    s->in_use = true;
+    s->width = (uint8_t) w;
+    s->height = (uint8_t) h;
+    for (int p = 0; p < w * h; p++) {
+        s->data[p] = LISP_TRANSPARENT;
+    }
+    return s;
+}
+
+// A new sprite with all pixels transparent
+lisp_value_t *lisp_make_sprite(lisp_vm_t *vm, int32_t w, int32_t h) {
+    // The cell comes first, so a failed allocation cannot leave a slot
+    // marked in use with no cell to free it.
+    lisp_value_t *v = alloc(vm, LISP_SPRITE);
+    v->as.sprite = sprite_alloc(vm, w, h);
     return v;
 }
 
-// ===== List Operations =====
-
-lisp_value_t* lisp_car(lisp_value_t *cons) {
-    return IS_CONS(cons) ? cons->as.cons.car : NULL;
+void lisp_define_builtin(lisp_vm_t *vm, const char *name, lisp_builtin_fn fn) {
+    lisp_value_t *sym = intern(vm, name);
+    lisp_value_t *v = alloc(vm, LISP_BUILTIN);
+    v->as.builtin.name = sym->as.symbol.name;
+    v->as.builtin.fn = fn;
+    sym->as.symbol.value = v;
 }
 
-lisp_value_t* lisp_cdr(lisp_value_t *cons) {
-    return IS_CONS(cons) ? cons->as.cons.cdr : NULL;
+void lisp_define(lisp_vm_t *vm, const char *name, lisp_value_t *value) {
+    intern(vm, name)->as.symbol.value = value;
+}
+
+// Access
+
+lisp_value_t *lisp_car(lisp_vm_t *vm, lisp_value_t *v) {
+    if (IS_NIL(v)) return v;
+    if (!IS_CONS(v)) lisp_fail(vm, "car: not a list");
+    return v->as.cons.car;
+}
+
+lisp_value_t *lisp_cdr(lisp_vm_t *vm, lisp_value_t *v) {
+    if (IS_NIL(v)) return v;
+    if (!IS_CONS(v)) lisp_fail(vm, "cdr: not a list");
+    return v->as.cons.cdr;
+}
+
+lisp_value_t *lisp_nth(lisp_vm_t *vm, lisp_value_t *list, size_t n) {
+    while (n-- > 0) {
+        list = lisp_cdr(vm, list);
+    }
+    return lisp_car(vm, list);
 }
 
 size_t lisp_length(lisp_value_t *list) {
     size_t len = 0;
     while (IS_CONS(list)) {
         len++;
-        list = lisp_cdr(list);
+        list = list->as.cons.cdr;
     }
     return len;
 }
 
-lisp_value_t* lisp_nth(lisp_value_t *list, size_t n) {
-    while (n-- > 0 && IS_CONS(list)) {
-        list = lisp_cdr(list);
-    }
-    return IS_CONS(list) ? lisp_car(list) : NULL;
+int32_t lisp_to_int(lisp_vm_t *vm, lisp_value_t *v) {
+    if (!IS_NUMBER(v)) lisp_fail(vm, "Expected a number");
+    return v->as.number;
 }
 
-// ===== Parsing =====
+// nil and 0 are false, everything else is true
+bool lisp_truthy(lisp_value_t *v) {
+    return !(IS_NIL(v) || (IS_NUMBER(v) && v->as.number == 0));
+}
 
-static void skip_whitespace(const char **code) {
-    while (**code && isspace(**code)) (*code)++;
-    
-    // Skip comments
-    if (**code == ';') {
-        while (**code && **code != '\n') (*code)++;
-        skip_whitespace(code);
+// Parsing
+
+static void skip_space(const char **src) {
+    for (;;) {
+        while (isspace((unsigned char) **src)) (*src)++;
+        if (**src != ';') return;
+        while (**src && **src != '\n') (*src)++;
     }
 }
 
-lisp_value_t* lisp_parse(lisp_vm_t *vm, const char **code) {
-    skip_whitespace(code);
-    
-    if (**code == '\0') return NULL;
-    
-    // List
-    if (**code == '(') {
-        (*code)++;
-        skip_whitespace(code);
-        
-        if (**code == ')') {
-            (*code)++;
-            return lisp_nil(vm);
+static bool is_delimiter(char c) {
+    return c == '\0' || isspace((unsigned char) c) || c == '(' || c == ')' ||
+           c == '\'' || c == '"' || c == ';';
+}
+
+static bool parse_number(const char *tok, size_t len, int32_t *out) {
+    char buf[24];
+    if (len == 0 || len >= sizeof(buf)) return false;
+    memcpy(buf, tok, len);
+    buf[len] = '\0';
+
+    const char *p = buf;
+    if (*p == '-' || *p == '+') p++;
+    if (!isdigit((unsigned char) *p)) return false;
+
+    int base = (p[0] == '0' && (p[1] == 'x' || p[1] == 'X')) ? 16 : 10;
+    char *end;
+    long n = strtol(buf, &end, base);
+    if (*end != '\0') return false;
+    *out = (int32_t) n;
+    return true;
+}
+
+static lisp_value_t *parse_string(lisp_vm_t *vm, const char **src) {
+    (*src)++;  // Opening quote
+    char *start = &vm->text_pool[vm->text_pool_used];
+    size_t n = 0;
+
+    while (**src != '"') {
+        char c = **src;
+        if (c == '\0') lisp_fail(vm, "Missing closing \"");
+        if (c == '\\') {
+            (*src)++;
+            c = **src;
+            if (c == 'n') c = '\n';
+            else if (c == 't') c = '\t';
+            else if (c == '\0') lisp_fail(vm, "Missing closing \"");
         }
-        
-        lisp_value_t *list = NULL;
-        lisp_value_t **tail = &list;
-        
-        while (**code && **code != ')') {
-            lisp_value_t *elem = lisp_parse(vm, code);
-            if (!elem) break;
-            
-            *tail = lisp_cons(vm, elem, lisp_nil(vm));
-            tail = &(*tail)->as.cons.cdr;
-            skip_whitespace(code);
+        if (vm->text_pool_used + n + 1 >= LISP_TEXT_POOL_SIZE) {
+            lisp_fail(vm, "Out of space for string literals");
         }
-        
-        if (**code == ')') (*code)++;
-        return list;
+        start[n++] = c;
+        (*src)++;
     }
-    
-    // Number (including hex)
-    if (isdigit(**code) || (**code == '-' && isdigit((*code)[1])) ||
-        (**code == '0' && (*code)[1] == 'x')) {
-        
-        char *end;
-        int32_t num;
-        
-        if (**code == '0' && (*code)[1] == 'x') {
-            num = strtol(*code, &end, 16);
+    (*src)++;  // Closing quote
+
+    lisp_value_t *v = alloc(vm, LISP_STRING);
+    start[n] = '\0';
+    vm->text_pool_used += n + 1;
+    v->as.string.text = start;
+    v->as.string.slot = -1;
+    return v;
+}
+
+// Parses one expression. Returns NULL at end of input.
+static lisp_value_t *parse(lisp_vm_t *vm, const char **src) {
+    skip_space(src);
+    char c = **src;
+
+    if (c == '\0') return NULL;
+
+    if (c == ')') lisp_fail(vm, "Unexpected )");
+
+    if (c == '(') {
+        (*src)++;
+        lisp_value_t *head = nil(vm);
+        lisp_value_t *tail = NULL;
+        for (;;) {
+            skip_space(src);
+            if (**src == ')') {
+                (*src)++;
+                return head;
+            }
+            if (**src == '\0') lisp_fail(vm, "Missing )");
+
+            lisp_value_t *cell = lisp_cons(vm, parse(vm, src), nil(vm));
+            if (tail == NULL) {
+                head = cell;
+            } else {
+                tail->as.cons.cdr = cell;
+            }
+            tail = cell;
+        }
+    }
+
+    if (c == '\'') {
+        (*src)++;
+        lisp_value_t *quoted = parse(vm, src);
+        if (quoted == NULL) lisp_fail(vm, "Nothing after '");
+        return lisp_cons(vm, vm->s_quote, lisp_cons(vm, quoted, nil(vm)));
+    }
+
+    if (c == '"') return parse_string(vm, src);
+
+    const char *start = *src;
+    while (!is_delimiter(**src)) (*src)++;
+    size_t len = (size_t) (*src - start);
+
+    int32_t n;
+    if (parse_number(start, len, &n)) {
+        return lisp_number(vm, n);
+    }
+    if (len == 3 && memcmp(start, "nil", 3) == 0) {
+        return nil(vm);
+    }
+    return lisp_symbol(vm, start, len);
+}
+
+// Evaluation
+
+static lisp_value_t *lookup(lisp_vm_t *vm, lisp_value_t *sym, lisp_value_t *env) {
+    for (lisp_value_t *e = env; IS_CONS(e); e = e->as.cons.cdr) {
+        lisp_value_t *binding = e->as.cons.car;
+        if (binding->as.cons.car == sym) {
+            return binding->as.cons.cdr;
+        }
+    }
+    if (sym->as.symbol.value == NULL) {
+        lisp_fail(vm, "Undefined: %s", sym->as.symbol.name);
+    }
+    return sym->as.symbol.value;
+}
+
+static void assign(lisp_vm_t *vm, lisp_value_t *sym, lisp_value_t *value, lisp_value_t *env) {
+    for (lisp_value_t *e = env; IS_CONS(e); e = e->as.cons.cdr) {
+        lisp_value_t *binding = e->as.cons.car;
+        if (binding->as.cons.car == sym) {
+            binding->as.cons.cdr = value;
+            return;
+        }
+    }
+    if (sym->as.symbol.value == NULL) {
+        lisp_fail(vm, "set!: undefined: %s", sym->as.symbol.name);
+    }
+    sym->as.symbol.value = value;
+}
+
+static lisp_value_t *expect_symbol(lisp_vm_t *vm, lisp_value_t *v, const char *form) {
+    if (!IS_SYMBOL(v)) lisp_fail(vm, "%s: expected a name", form);
+    return v;
+}
+
+static lisp_value_t *make_lambda(lisp_vm_t *vm, lisp_value_t *params, lisp_value_t *body, lisp_value_t *env) {
+    for (lisp_value_t *p = params; !IS_NIL(p); p = lisp_cdr(vm, p)) {
+        expect_symbol(vm, lisp_car(vm, p), "lambda");
+    }
+    lisp_value_t *v = alloc(vm, LISP_LAMBDA);
+    v->as.lambda.params = params;
+    v->as.lambda.body = body;
+    v->as.lambda.env = env;
+    return v;
+}
+
+// Evaluates all expressions in body except the last, which is returned
+// so the caller can evaluate it in tail position. Returns NULL for an
+// empty body.
+static lisp_value_t *eval_body(lisp_vm_t *vm, lisp_value_t *body, lisp_value_t *env) {
+    if (IS_NIL(body)) return NULL;
+    while (!IS_NIL(lisp_cdr(vm, body))) {
+        lisp_eval(vm, lisp_car(vm, body), env);
+        body = lisp_cdr(vm, body);
+    }
+    return lisp_car(vm, body);
+}
+
+static lisp_value_t *eval_list(lisp_vm_t *vm, lisp_value_t *list, lisp_value_t *env) {
+    lisp_value_t *head = nil(vm);
+    lisp_value_t *tail = NULL;
+    for (; !IS_NIL(list); list = lisp_cdr(vm, list)) {
+        lisp_value_t *cell = lisp_cons(vm, lisp_eval(vm, lisp_car(vm, list), env), nil(vm));
+        if (tail == NULL) {
+            head = cell;
         } else {
-            num = strtol(*code, &end, 10);
+            tail->as.cons.cdr = cell;
         }
-        
-        *code = end;
-        return lisp_number(vm, num);
+        tail = cell;
     }
-    
-    // Symbol
-    const char *start = *code;
-    while (**code && !isspace(**code) && **code != '(' && **code != ')') {
-        (*code)++;
-    }
-    
-    size_t len = *code - start;
-    char *sym = (char*)malloc(len + 1);
-    strncpy(sym, start, len);
-    sym[len] = '\0';
-    
-    return lisp_symbol(vm, sym);
+    return head;
 }
 
-// ===== Environment =====
+static lisp_value_t *bind_params(lisp_vm_t *vm, lisp_value_t *fn, lisp_value_t *args) {
+    lisp_value_t *env = fn->as.lambda.env;
+    lisp_value_t *params = fn->as.lambda.params;
+    size_t expected = lisp_length(params);
+    size_t given = lisp_length(args);
 
-lisp_value_t* lisp_env_lookup(lisp_vm_t *vm, lisp_value_t *env, lisp_value_t *symbol) {
-    if (!IS_SYMBOL(symbol)) return NULL;
-    
-    while (IS_CONS(env)) {
-        lisp_value_t *binding = lisp_car(env);
-        if (IS_CONS(binding)) {
-            lisp_value_t *key = lisp_car(binding);
-            if (IS_SYMBOL(key) && key->as.symbol_id == symbol->as.symbol_id) {
-                return lisp_cdr(binding);
-            }
-        }
-        env = lisp_cdr(env);
+    if (expected != given) {
+        lisp_fail(vm, "Wrong number of arguments: expected %u, got %u",
+                  (unsigned) expected, (unsigned) given);
     }
-    
-    return NULL;
+    while (!IS_NIL(params)) {
+        env = lisp_cons(vm, lisp_cons(vm, params->as.cons.car, args->as.cons.car), env);
+        params = params->as.cons.cdr;
+        args = args->as.cons.cdr;
+    }
+    return env;
 }
 
-lisp_value_t* lisp_env_define(lisp_vm_t *vm, lisp_value_t *env, lisp_value_t *symbol, lisp_value_t *value) {
-    lisp_value_t *binding = lisp_cons(vm, symbol, value);
-    vm->global_env = lisp_cons(vm, binding, vm->global_env);
-    return value;
-}
+// Expressions in tail position (the branches of if, the last expression
+// of a body, and so on) are evaluated by looping instead of recursing.
+// A game can therefore loop by recursion without using up the C stack.
+lisp_value_t *lisp_eval(lisp_vm_t *vm, lisp_value_t *expr, lisp_value_t *env) {
+    if (++vm->depth > LISP_MAX_DEPTH) {
+        lisp_fail(vm, "Nested too deeply (max %d)", LISP_MAX_DEPTH);
+    }
 
-lisp_value_t* lisp_env_set(lisp_vm_t *vm, lisp_value_t *env, lisp_value_t *symbol, lisp_value_t *value) {
-    if (!IS_SYMBOL(symbol)) return NULL;
-    
-    lisp_value_t *orig = env;
-    while (IS_CONS(env)) {
-        lisp_value_t *binding = lisp_car(env);
-        if (IS_CONS(binding)) {
-            lisp_value_t *key = lisp_car(binding);
-            if (IS_SYMBOL(key) && key->as.symbol_id == symbol->as.symbol_id) {
-                binding->as.cons.cdr = value;
-                return value;
-            }
+    lisp_value_t *result;
+    for (;;) {
+        if (IS_SYMBOL(expr)) {
+            result = lookup(vm, expr, env);
+            break;
         }
-        env = lisp_cdr(env);
-    }
-    
-    vm->error_msg = "Undefined variable";
-    return NULL;
-}
-
-// ===== Evaluation =====
-
-lisp_value_t* lisp_eval(lisp_vm_t *vm, lisp_value_t *expr, lisp_value_t *env) {
-    if (!expr) return lisp_nil(vm);
-    
-    // Self-evaluating
-    if (IS_NUMBER(expr) || IS_STRING(expr) || IS_SPRITE(expr)) {
-        return expr;
-    }
-    
-    // Variable lookup
-    if (IS_SYMBOL(expr)) {
-        lisp_value_t *val = lisp_env_lookup(vm, env, expr);
-        if (!val) {
-            printf("Undefined: %s\n", vm->symbols[expr->as.symbol_id]);
-            return lisp_nil(vm);
+        if (!IS_CONS(expr)) {
+            result = expr;  // Numbers, strings, nil and so on evaluate to themselves
+            break;
         }
-        return val;
-    }
-    
-    // List evaluation
-    if (IS_CONS(expr)) {
-        lisp_value_t *op = lisp_car(expr);
-        lisp_value_t *args = lisp_cdr(expr);
-        
-        // Special forms
-        if (IS_SYMBOL(op)) {
-            const char *name = vm->symbols[op->as.symbol_id];
-            
-            if (strcmp(name, "define") == 0) {
-                lisp_value_t *sym = lisp_nth(args, 0);
-                lisp_value_t *val = lisp_eval(vm, lisp_nth(args, 1), env);
-                return lisp_env_define(vm, env, sym, val);
-            }
-            
-            if (strcmp(name, "set!") == 0) {
-                lisp_value_t *sym = lisp_nth(args, 0);
-                lisp_value_t *val = lisp_eval(vm, lisp_nth(args, 1), env);
-                return lisp_env_set(vm, env, sym, val);
-            }
-            
-            if (strcmp(name, "if") == 0) {
-                lisp_value_t *test = lisp_eval(vm, lisp_nth(args, 0), env);
-                bool cond = !(IS_NIL(test) || (IS_NUMBER(test) && test->as.number == 0));
-                return lisp_eval(vm, lisp_nth(args, cond ? 1 : 2), env);
-            }
-            
-            if (strcmp(name, "lambda") == 0) {
-                lisp_value_t *lam = lisp_alloc(vm, LISP_LAMBDA);
-                lam->as.lambda.params = lisp_nth(args, 0);
-                lam->as.lambda.body = lisp_nth(args, 1);
-                lam->as.lambda.env = env;
-                return lam;
-            }
-            
-            if (strcmp(name, "on-update") == 0) {
-                vm->on_update = lisp_eval(vm, lisp_nth(args, 0), env);
-                return vm->on_update;
-            }
-            
-            if (strcmp(name, "on-button-a") == 0) {
-                vm->on_button_callbacks[0] = lisp_eval(vm, lisp_nth(args, 0), env);
-                return vm->on_button_callbacks[0];
-            }
-            
-            if (strcmp(name, "on-button-b") == 0) {
-                vm->on_button_callbacks[1] = lisp_eval(vm, lisp_nth(args, 0), env);
-                return vm->on_button_callbacks[1];
-            }
-            
-            if (strcmp(name, "on-button-x") == 0) {
-                vm->on_button_callbacks[2] = lisp_eval(vm, lisp_nth(args, 0), env);
-                return vm->on_button_callbacks[2];
-            }
-            
-            if (strcmp(name, "on-button-y") == 0) {
-                vm->on_button_callbacks[3] = lisp_eval(vm, lisp_nth(args, 0), env);
-                return vm->on_button_callbacks[3];
-            }
+
+        lisp_value_t *op = expr->as.cons.car;
+        lisp_value_t *args = expr->as.cons.cdr;
+
+        if (op == vm->s_quote) {
+            result = lisp_car(vm, args);
+            break;
         }
-        
-        // Function call - evaluate all arguments
-        lisp_value_t *fn = lisp_eval(vm, op, env);
-        
-        // Build evaluated args list
-        lisp_value_t *eval_args = NULL;
-        lisp_value_t **tail = &eval_args;
-        while (IS_CONS(args)) {
-            lisp_value_t *arg = lisp_eval(vm, lisp_car(args), env);
-            *tail = lisp_cons(vm, arg, lisp_nil(vm));
-            tail = &(*tail)->as.cons.cdr;
-            args = lisp_cdr(args);
+
+        if (op == vm->s_if) {
+            if (lisp_truthy(lisp_eval(vm, lisp_nth(vm, args, 0), env))) {
+                expr = lisp_nth(vm, args, 1);
+            } else {
+                expr = lisp_nth(vm, args, 2);  // nil when there is no else branch
+            }
+            continue;
         }
-        
-        return lisp_apply(vm, fn, eval_args, env);
-    }
-    
-    return lisp_nil(vm);
-}
 
-lisp_value_t* lisp_apply(lisp_vm_t *vm, lisp_value_t *fn, lisp_value_t *args, lisp_value_t *env) {
-    if (!fn) return lisp_nil(vm);
-    
-    // Built-in function
-    if (fn->type == LISP_BUILTIN) {
-        return fn->as.builtin(vm, args);
-    }
-    
-    // Lambda
-    if (IS_LAMBDA(fn)) {
-        // Create new environment with lambda's closure
-        lisp_value_t *new_env = fn->as.lambda.env;
-        
-        // Bind parameters
-        lisp_value_t *params = fn->as.lambda.params;
-        while (IS_CONS(params) && IS_CONS(args)) {
-            lisp_value_t *param = lisp_car(params);
-            lisp_value_t *arg = lisp_car(args);
-            lisp_value_t *binding = lisp_cons(vm, param, arg);
-            new_env = lisp_cons(vm, binding, new_env);
-            params = lisp_cdr(params);
-            args = lisp_cdr(args);
-        }
-        
-        return lisp_eval(vm, fn->as.lambda.body, new_env);
-    }
-    
-    return lisp_nil(vm);
-}
-
-// ===== Sprites =====
-
-lisp_sprite_t* lisp_create_sprite(lisp_vm_t *vm, uint8_t w, uint8_t h, const uint16_t *data) {
-    if (vm->sprite_count >= LISP_MAX_SPRITES) return NULL;
-    if (w > LISP_SPRITE_MAX_SIZE || h > LISP_SPRITE_MAX_SIZE) return NULL;
-    
-    lisp_sprite_t *sprite = &vm->sprites[vm->sprite_count++];
-    sprite->width = w;
-    sprite->height = h;
-    
-    if (data) {
-        memcpy(sprite->data, data, w * h * sizeof(uint16_t));
-    } else {
-        memset(sprite->data, 0, w * h * sizeof(uint16_t));
-    }
-    
-    return sprite;
-}
-
-void lisp_draw_sprite(lisp_sprite_t *sprite, int16_t x, int16_t y) {
-    if (!sprite) return;
-    
-    // Use framebuffer for smooth rendering
-    uint16_t *fb = disp_get_framebuffer();
-    if (!fb) {
-        // Fallback to direct drawing
-        disp_blit(x, y, sprite->width, sprite->height, sprite->data);
-        return;
-    }
-    
-    for (uint8_t sy = 0; sy < sprite->height; sy++) {
-        for (uint8_t sx = 0; sx < sprite->width; sx++) {
-            int16_t px = x + sx;
-            int16_t py = y + sy;
-            
-            if (px >= 0 && px < DISPLAY_WIDTH && py >= 0 && py < DISPLAY_HEIGHT) {
-                uint16_t color = sprite->data[sy * sprite->width + sx];
-                // Skip transparent pixels (color 0xF81F = magenta = transparent)
-                if (color != 0xF81F) {
-                    fb[py * DISPLAY_WIDTH + px] = color;
+        if (op == vm->s_cond) {
+            // (cond (test expr ...) ... (else expr ...))
+            lisp_value_t *next = NULL;
+            result = nil(vm);
+            for (lisp_value_t *c = args; !IS_NIL(c); c = lisp_cdr(vm, c)) {
+                lisp_value_t *clause = lisp_car(vm, c);
+                lisp_value_t *test = lisp_car(vm, clause);
+                lisp_value_t *value = (test == vm->s_else) ? test : lisp_eval(vm, test, env);
+                if (lisp_truthy(value)) {
+                    next = eval_body(vm, lisp_cdr(vm, clause), env);
+                    if (next == NULL) result = value;
+                    break;
                 }
             }
+            if (next == NULL) break;
+            expr = next;
+            continue;
+        }
+
+        if (op == vm->s_when) {
+            // (when test expr ...)
+            result = nil(vm);
+            if (!lisp_truthy(lisp_eval(vm, lisp_car(vm, args), env))) break;
+            expr = eval_body(vm, lisp_cdr(vm, args), env);
+            if (expr == NULL) break;
+            continue;
+        }
+
+        if (op == vm->s_and || op == vm->s_or) {
+            // Returns the value that decided the result
+            bool is_and = (op == vm->s_and);
+            bool decided = false;
+            result = lisp_bool(vm, is_and);
+            if (IS_NIL(args)) break;
+            while (!IS_NIL(lisp_cdr(vm, args))) {
+                lisp_value_t *value = lisp_eval(vm, lisp_car(vm, args), env);
+                if (lisp_truthy(value) != is_and) {
+                    result = value;
+                    decided = true;
+                    break;
+                }
+                args = lisp_cdr(vm, args);
+            }
+            if (decided) break;
+            expr = lisp_car(vm, args);
+            continue;
+        }
+
+        if (op == vm->s_begin) {
+            expr = eval_body(vm, args, env);
+            if (expr == NULL) {
+                result = nil(vm);
+                break;
+            }
+            continue;
+        }
+
+        if (op == vm->s_let) {
+            // (let ((name value) ...) expr ...)
+            lisp_value_t *local = env;
+            for (lisp_value_t *b = lisp_car(vm, args); !IS_NIL(b); b = lisp_cdr(vm, b)) {
+                lisp_value_t *binding = lisp_car(vm, b);
+                lisp_value_t *name = expect_symbol(vm, lisp_car(vm, binding), "let");
+                lisp_value_t *value = lisp_eval(vm, lisp_nth(vm, binding, 1), env);
+                local = lisp_cons(vm, lisp_cons(vm, name, value), local);
+            }
+            env = local;
+            expr = eval_body(vm, lisp_cdr(vm, args), env);
+            if (expr == NULL) {
+                result = nil(vm);
+                break;
+            }
+            continue;
+        }
+
+        if (op == vm->s_define) {
+            // (define name value) or (define (name param ...) expr ...)
+            // Definitions are always global.
+            lisp_value_t *target = lisp_car(vm, args);
+            lisp_value_t *name;
+            lisp_value_t *value;
+            if (IS_CONS(target)) {
+                name = expect_symbol(vm, lisp_car(vm, target), "define");
+                value = make_lambda(vm, lisp_cdr(vm, target), lisp_cdr(vm, args), env);
+            } else {
+                name = expect_symbol(vm, target, "define");
+                value = lisp_eval(vm, lisp_nth(vm, args, 1), env);
+            }
+            name->as.symbol.value = value;
+            result = name;
+            break;
+        }
+
+        if (op == vm->s_set) {
+            lisp_value_t *name = expect_symbol(vm, lisp_car(vm, args), "set!");
+            result = lisp_eval(vm, lisp_nth(vm, args, 1), env);
+            assign(vm, name, result, env);
+            break;
+        }
+
+        if (op == vm->s_lambda) {
+            result = make_lambda(vm, lisp_car(vm, args), lisp_cdr(vm, args), env);
+            break;
+        }
+
+        if (op == vm->s_while) {
+            // (while test expr ...)
+            lisp_value_t *test = lisp_car(vm, args);
+            while (lisp_truthy(lisp_eval(vm, test, env))) {
+                for (lisp_value_t *b = lisp_cdr(vm, args); !IS_NIL(b); b = lisp_cdr(vm, b)) {
+                    lisp_eval(vm, lisp_car(vm, b), env);
+                }
+            }
+            result = nil(vm);
+            break;
+        }
+
+        // Function call
+        lisp_value_t *fn = lisp_eval(vm, op, env);
+        lisp_value_t *values = eval_list(vm, args, env);
+
+        if (IS_BUILTIN(fn)) {
+            result = fn->as.builtin.fn(vm, values);
+            break;
+        }
+        if (!IS_LAMBDA(fn)) {
+            if (IS_SYMBOL(op)) {
+                lisp_fail(vm, "Not a function: %s", op->as.symbol.name);
+            }
+            lisp_fail(vm, "Not a function");
+        }
+
+        env = bind_params(vm, fn, values);
+        expr = eval_body(vm, fn->as.lambda.body, env);
+        if (expr == NULL) {
+            result = nil(vm);
+            break;
         }
     }
+
+    vm->depth--;
+    return result;
 }
 
-// ===== Collision Detection =====
-
-bool lisp_rect_collide(lisp_rect_t *a, lisp_rect_t *b) {
-    return !(a->x + a->w < b->x || b->x + b->w < a->x ||
-             a->y + a->h < b->y || b->y + b->h < a->y);
-}
-
-bool lisp_point_in_rect(int16_t px, int16_t py, lisp_rect_t *rect) {
-    return px >= rect->x && px < rect->x + rect->w &&
-           py >= rect->y && py < rect->y + rect->h;
-}
-
-// ===== Game Loop =====
-
-void lisp_run_game(lisp_vm_t *vm) {
-    vm->running = true;
-}
-
-void lisp_stop_game(lisp_vm_t *vm) {
-    vm->running = false;
-}
-
-void lisp_update(lisp_vm_t *vm) {
-    if (!vm->running) return;
-    
-    // Update buttons
-    buttons_update();
-    
-    // Check button callbacks
-    for (int i = 0; i < 4; i++) {
-        if (button_just_pressed((button_t)i) && vm->on_button_callbacks[i]) {
-            lisp_apply(vm, vm->on_button_callbacks[i], lisp_nil(vm), vm->global_env);
-        }
+lisp_value_t *lisp_apply(lisp_vm_t *vm, lisp_value_t *fn, lisp_value_t *args) {
+    if (IS_BUILTIN(fn)) {
+        return fn->as.builtin.fn(vm, args);
     }
-    
-    // Call update callback
-    if (vm->on_update) {
-        lisp_apply(vm, vm->on_update, lisp_nil(vm), vm->global_env);
+    if (!IS_LAMBDA(fn)) {
+        lisp_fail(vm, "Not a function");
     }
-    
-    // Flush framebuffer if used
-    if (disp_get_framebuffer()) {
-        disp_framebuffer_flush();
+
+    lisp_value_t *env = bind_params(vm, fn, args);
+    lisp_value_t *result = nil(vm);
+    for (lisp_value_t *b = fn->as.lambda.body; !IS_NIL(b); b = lisp_cdr(vm, b)) {
+        result = lisp_eval(vm, lisp_car(vm, b), env);
+    }
+    return result;
+}
+
+// Top level
+
+lisp_value_t *lisp_run(lisp_vm_t *vm, const char *source) {
+    jmp_buf here;
+    jmp_buf *outer = vm->error_jmp;
+    void *outer_base = vm->stack_base;
+    // Changed after setjmp, so they must be volatile to survive a longjmp
+    lisp_value_t *volatile result = nil(vm);
+    const char *volatile pos = source;
+
+    vm->error_jmp = &here;
+    if (outer_base == NULL) vm->stack_base = &here;
+    if (setjmp(here) != 0) {
+        vm->error_jmp = outer;
+        vm->stack_base = outer_base;
+        return NULL;
+    }
+
+    for (;;) {
+        vm->depth = 0;
+        const char *p = pos;
+        lisp_value_t *expr = parse(vm, &p);
+        pos = p;
+        if (expr == NULL) break;
+        result = lisp_eval(vm, expr, nil(vm));
+    }
+
+    vm->error_jmp = outer;
+    vm->stack_base = outer_base;
+    vm->error[0] = '\0';
+    return result;
+}
+
+lisp_value_t *lisp_call(lisp_vm_t *vm, lisp_value_t *fn) {
+    jmp_buf here;
+    jmp_buf *outer = vm->error_jmp;
+    void *outer_base = vm->stack_base;
+
+    vm->error_jmp = &here;
+    if (outer_base == NULL) vm->stack_base = &here;
+    if (setjmp(here) != 0) {
+        vm->error_jmp = outer;
+        vm->stack_base = outer_base;
+        return NULL;
+    }
+
+    vm->depth = 0;
+    lisp_value_t *result = lisp_apply(vm, fn, nil(vm));
+
+    vm->error_jmp = outer;
+    vm->stack_base = outer_base;
+    vm->error[0] = '\0';
+    return result;
+}
+
+// Printing
+
+void lisp_print(lisp_value_t *v) {
+    switch (v->type) {
+        case LISP_NIL:
+            printf("()");
+            break;
+        case LISP_NUMBER:
+            printf("%ld", (long) v->as.number);
+            break;
+        case LISP_SYMBOL:
+            printf("%s", v->as.symbol.name);
+            break;
+        case LISP_STRING:
+            printf("%s", v->as.string.text);
+            break;
+        case LISP_CONS:
+            printf("(");
+            for (;;) {
+                lisp_print(v->as.cons.car);
+                v = v->as.cons.cdr;
+                if (!IS_CONS(v)) break;
+                printf(" ");
+            }
+            if (!IS_NIL(v)) {
+                printf(" . ");
+                lisp_print(v);
+            }
+            printf(")");
+            break;
+        case LISP_BUILTIN:
+            printf("<builtin %s>", v->as.builtin.name);
+            break;
+        case LISP_LAMBDA:
+            printf("<lambda>");
+            break;
+        case LISP_SPRITE:
+            printf("<sprite %dx%d>", v->as.sprite->width, v->as.sprite->height);
+            break;
+        default:
+            printf("<?>");
+            break;
     }
 }
 
-// Continues in next message...
+// Setup
+
+void lisp_init(lisp_vm_t *vm) {
+    memset(vm, 0, sizeof(*vm));
+    vm->nil.type = LISP_NIL;
+
+    for (size_t i = LISP_HEAP_SIZE; i-- > 0; ) {
+        vm->heap[i].type = LISP_FREE;
+        vm->heap[i].as.next_free = vm->free_list;
+        vm->free_list = &vm->heap[i];
+    }
+
+    vm->s_quote  = intern(vm, "quote");
+    vm->s_if     = intern(vm, "if");
+    vm->s_cond   = intern(vm, "cond");
+    vm->s_else   = intern(vm, "else");
+    vm->s_when   = intern(vm, "when");
+    vm->s_and    = intern(vm, "and");
+    vm->s_or     = intern(vm, "or");
+    vm->s_begin  = intern(vm, "begin");
+    vm->s_let    = intern(vm, "let");
+    vm->s_define = intern(vm, "define");
+    vm->s_set    = intern(vm, "set!");
+    vm->s_lambda = intern(vm, "lambda");
+    vm->s_while  = intern(vm, "while");
+
+    lisp_register_builtins(vm);
+}

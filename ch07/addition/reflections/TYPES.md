@@ -77,7 +77,7 @@ And this framing opens up a vast landscape of possibility.
 
 #### Types, types, types ..
 
-[Dependent types](./../../../ch08/sec8.13.2) push this logic furthest.
+[Dependent types](./../../../ch08/sec8.13/) push this logic furthest.
 In a dependently typed language, types are permitted to *depend on values*.
 A vector can carry its length in its type: `Vector(n)`. A function that
 concatenates two vectors can declare in its type that the result has

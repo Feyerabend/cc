@@ -220,7 +220,7 @@ SICStus Prolog[^sics]. Its design has also impacted constraint logic programming
 underscoring its lasting significance.
 
 [^sics]: In the effort to keep pace with developments in computing during the mid-1980s—particularly the
-"Fifth Generation" initiative (cf. [SEASONS](./../../../ch08/ai/SEASONS.md))--the Swedish state established
+"Fifth Generation" initiative (cf. [SEASONS](./../../../../ch08/sec8.6/gofai/seasons/README.md))--the Swedish state established
 the Swedish Institute of Computer Science (SICS): https://en.wikipedia.org/wiki/Swedish_Institute_of_Computer_Science.
 Among the many projects produced there was, naturally, a Prolog engine: https://sicstus.sics.se/.
 Professor Sten Åke Tärnlund at Uppsala was a leading figure in advancing the logic programming approach to AI,

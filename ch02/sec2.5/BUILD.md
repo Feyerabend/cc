@@ -3,7 +3,7 @@
 When building your own very simple virtual machine (VM), there are several key
 considerations to keep in mind. A simple VM is also close to the machine, and
 in principle to an imperative language. To build for an object-oriented language,
-or functional language approach of the VM, see [VMBUILD2](./VMBUILD2.md).
+or functional language approach of the VM, see [VMBUILD2](./../../praxis/d02/advanced/VMBUILD2.md).
 
 
 ### Building a simple VM with an imperative programming model

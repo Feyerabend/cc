@@ -131,7 +131,7 @@ systems), the role of time will only grow in importance.
 - *Blockchain and Distributed Ledgers:* These technologies fundamentally rely on a shared, immutable ledger of transactions,
   where the "time" of a transaction's inclusion (or its logical ordering) is critical for its validity and consensus.
   Proof-of-Work and Proof-of-Stake mechanisms are essentially ways to achieve a shared sense of temporal progression and
-  agreement without a central authority. (Cf. [blockchain](./../..//../ch07/data/block/).)
+  agreement without a central authority. (Cf. [blockchain](./../../../../ch07/addition/algo/blockchain/).)
 - *Quantum Computing:* The very nature of quantum mechanics introduces time as a probabilistic and superpositional concept.
   While current quantum computers are still nascent, their future development will undoubtedly present entirely new challenges
   and opportunities related to timing and coherence.

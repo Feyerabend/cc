@@ -14,7 +14,7 @@ programming language [PL/0](./syntax/PL0.md). PL/0 is a well-known minimalist la
 teaching compiler construction (at least until some years ago). It introduces additional concepts like
 variable declarations, procedures, control flow (such as loops and conditionals), and a more comprehensive
 symbol table for managing scopes and identifiers. You might also have a look at a small
-[PL/0 interpreter and compiler](./../../code/pl0/) to get a feeling how they work.
+[PL/0 interpreter and compiler](./../../../../ch07/sec7.6/builder/plzero/) to get a feeling how they work.
 
 By transitioning from the mini compiler to PL/0, we expand our understanding of compiler design, delving
 deeper into topics such as abstract syntax trees (ASTs), type checking (as we have only one it is minimal),

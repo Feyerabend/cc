@@ -23,7 +23,7 @@ is almost a direct continuation of the analytic tradition, but operationalised. 
 philosophers discussed abstractly, Chomsky and later computer scientists implemented.
 A grammar is no longer just a philosophical object; it is an executable specification.
 
-Read more on the [linguistic](LINGUISTCS.md) aspects.
+Read more on the [linguistic](./LINGUISTICS.md) aspects.
 
 The idea of a parser is especially revealing. In philosophy, parsing is conceptual:
 how do we understand a sentence, what structure do we assign to it, what is its logical form?
