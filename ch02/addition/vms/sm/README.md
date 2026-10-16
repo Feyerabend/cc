@@ -3,7 +3,7 @@
 
 Looking at "machines" in the context of virtual machines, the *state machine* plays an important
 role. While we will explore different varieties of state machines in more detail later (see e.g.,
-in [ch04](./../../../../ch04/) [state](./../../ch04/state/)), it is useful to begin with a simple
+in [ch04](./../../../../ch04/) [state](./../../../../ch04/addition/vms/state/)), it is useful to begin with a simple
 illustration. One such example is the implementation of a stack. By modelling stack
 operations--such as initialise, push, pop, and reset--as events that drive state transitions,
 we can view the stack not simply as a data structure, but as a system whose behaviour is entirely

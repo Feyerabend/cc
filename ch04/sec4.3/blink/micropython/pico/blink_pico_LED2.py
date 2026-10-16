@@ -1,24 +1,32 @@
 import machine
 import rp2
 
-# Run two different blink patterns simultaneously
-@rp2.asm_pio(sideset_init=rp2.PIO.OUT_LOW)
-def blink_fast():
+# Run two blink patterns at the same time, one on each state machine.
+# Both run the same program; only the clock frequency differs.
+#
+# Each half period takes 1 + 7 + 32 * (30 + 1) = 1000 cycles, so the
+# LED blinks at freq / 2000 Hz. Even the slowest PIO clock is far too
+# fast to see a blink, which is why the program counts in a loop.
+# (The lowest PIO frequency is about 1.9 kHz on a Pico and 2.3 kHz on
+# a Pico 2.)
+@rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
+def blink():
     wrap_target()
-    nop().side(1) [3]
-    nop().side(0) [3]
-    wrap()
-
-@rp2.asm_pio(sideset_init=rp2.PIO.OUT_LOW)
-def blink_slow():
-    wrap_target()
-    nop().side(1) [31]
-    nop().side(0) [31]
+    set(pins, 1)
+    set(x, 31)              [6]
+    label("high")
+    nop()                   [29]
+    jmp(x_dec, "high")
+    set(pins, 0)
+    set(x, 31)              [6]
+    label("low")
+    nop()                   [29]
+    jmp(x_dec, "low")
     wrap()
 
 # Start both state machines
-sm0 = rp2.StateMachine(0, blink_fast, freq=31000000, sideset_base=machine.Pin(25))  # Onboard LED
-sm1 = rp2.StateMachine(1, blink_slow, freq=31000000, sideset_base=machine.Pin(16))  # External LED
+sm0 = rp2.StateMachine(0, blink, freq=10000, set_base=machine.Pin(25))  # Onboard LED, 5 Hz
+sm1 = rp2.StateMachine(1, blink, freq=2500, set_base=machine.Pin(16))   # External LED, 1.25 Hz
 
 sm0.active(1)
 sm1.active(1)

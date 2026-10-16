@@ -98,7 +98,7 @@ These parsers start with the input tokens and attempt to reconstruct the start s
  - Limitations: Cannot handle left-recursive or ambiguous grammars. Requires careful grammar design to fit LL(1) constraints.
  - Uses a parsing table for predictive parsing, where each cell indicates which production to apply based on the current input token and non-terminal.
 
-5. [Recursive Descent](./simple) Parsing:
+5. [Recursive Descent](./recursive) Parsing:
  - Implements each grammar rule as a function, where non-terminals are recursive calls.
  - Parsing decisions are guided by lookahead (one token ahead in LL(1)).
  - Direct and clear for grammar constructs, making it excellent for prototyping parsers.

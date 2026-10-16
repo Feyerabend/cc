@@ -33,7 +33,7 @@ A useful mental model is therefore:
 Learning to recognise the difference is itself an important step in
 becoming a competent programmer.
 
-In [Grid Game](grid_game.py) we pass from testing our ideas to a more finished program:
+In [Grid Game](./main.py) we pass from testing our ideas to a more finished program:
 1. *Procedural Map Generation* - Creates rooms and corridors instead of random walls
 2. *Better AI* - Line-of-sight detection, memory of last seen position
 3. *Game Systems* - Score, health, collectibles, HUD

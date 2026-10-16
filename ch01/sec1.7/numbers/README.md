@@ -204,7 +204,7 @@ as 2 bits are used for the integer part, and 3 bits for the fractional part.
 It is in practice not very useful in general, but it easy to follow the calculations
 and transformations of fixed point numbers in principal.
 
-* Code [fixed23.c](./fixed32.c).
+* Code [fixed23.c](./fixed23.c).
 * Description [FIXED23.md](./FIXED23.md).
 
 Next, we transfer to fixed point numbers that are useful such as Q16.16.

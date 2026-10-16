@@ -29,7 +29,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f ch03/sec3.5.1/ci/requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f ch03/sec3.5.1/ci/requirements.txt ]; then pip install -r ch03/sec3.5.1/ci/requirements.txt; fi
 
     # PYTHONPATH (include script's parent directory, if needed)
     - name: Set PYTHONPATH
