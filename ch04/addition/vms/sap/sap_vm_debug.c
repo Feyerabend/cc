@@ -177,7 +177,7 @@ static void cmd_run(sap_vm_t *vm, const char *args) {
     }
     printf("Running VM");
     if (cycles != UINT64_MAX) {
-        printf(" for %llu cycles", cycles);
+        printf(" for %" PRIu64 " cycles", cycles);
     }
     printf("...\n");
     result_t result = vm_run(vm, cycles);

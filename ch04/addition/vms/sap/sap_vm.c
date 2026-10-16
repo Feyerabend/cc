@@ -325,7 +325,7 @@ result_t vm_step(sap_vm_t *vm) {
                 // Halt with exit code
                 vm->state = VM_HALTED;
                 if (vm->debug_enabled) {
-                    printf("Program halted with exit code %d after %llu cycles\n", 
+                    printf("Program halted with exit code %d after %" PRIu64 " cycles\n", 
                            operand, vm->cycle_count);
                     printf("Final accumulator value: %d\n", vm->cpu.accumulator);
                 }
@@ -358,7 +358,7 @@ result_t vm_run(sap_vm_t *vm, uint64_t max_cycles) {
     
     if (vm->state == VM_RUNNING && result == RESULT_OK) {
         vm->state = VM_STOPPED;
-        printf("Execution stopped after %llu cycles (limit reached)\n", max_cycles);
+        printf("Execution stopped after %" PRIu64 " cycles (limit reached)\n", max_cycles);
     }
     
     return result;
@@ -418,7 +418,7 @@ static void print_formatted_value(FILE *out, const char *label, int value, bool 
 }
 
 void vm_print_state(sap_vm_t *vm) {
-    printf("VM State: %s | Cycles: %llu\n", vm_state_to_string(vm->state), vm->cycle_count);
+    printf("VM State: %s | Cycles: %" PRIu64 "\n", vm_state_to_string(vm->state), vm->cycle_count);
     print_formatted_address(stdout, "PC", vm->cpu.pc);
     print_formatted_value(stdout, "ACC", vm->cpu.accumulator, true);
     print_formatted_value(stdout, "X", vm->cpu.x_reg, true);

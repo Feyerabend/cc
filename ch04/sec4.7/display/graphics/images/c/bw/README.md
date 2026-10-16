@@ -328,7 +328,7 @@ pico_add_extra_outputs(horse)
 ### Conclusion
 
 The `xxd` conversion embeds the BMP as a C array, suitable for the Pico. The
-original `main.c` (see [drivers](./../../../drivers/)) parsed and converted
+original `main.c` (see [drivers](./../../../../drivers/)) parsed and converted
 the BMP to RGB565, but used significant memory. The new `display_draw_bmp`
 function in `display.c` optimizes memory usage and simplifies `main.c`,
 while robustly handling 24-bit BMPs, including black-and-white images.

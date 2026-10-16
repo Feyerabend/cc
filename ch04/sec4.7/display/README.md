@@ -5,7 +5,7 @@ Raspberry Pi Pico, which is used here for practical reasons rather than as a rec
 over other microcontrollers.*
 
 > [!NOTE]
-> For greater performance and the highly resource demanding properties of both displays and images, we will use the Raspberry Pi Pico 2 (RP2350: dual-core Cortex-M33 or dual Hazard3 RISC-V cores, 150 MHz, 520 KB SRAM, 4 MB flash) in the following folders. Also as file handling differs a bit between Pico variations, we will assume that a SD card setup as it is used in [file storage](./../storage/file/).
+> For greater performance and the highly resource demanding properties of both displays and images, we will use the Raspberry Pi Pico 2 (RP2350: dual-core Cortex-M33 or dual Hazard3 RISC-V cores, 150 MHz, 520 KB SRAM, 4 MB flash) in the following folders. Also as file handling differs a bit between Pico variations, we will assume that a SD card setup as it is used in [file storage](./../../sec4.4/storage/file/).
 > For display work, we use the Pimoroni Display Pack 2.0, though the older Display Pack can often work with small modifications. Note that displays commonly demand significant power, substantial memory, and high update speed--especially for applications that make use of images.
 
 

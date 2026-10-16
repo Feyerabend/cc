@@ -18,7 +18,7 @@ into your own conclusions, the process of exploration itself is invaluable.
 In contrast to this experimental path, another approach to ensuring that programs are
 truly correct comes from a slightly other direction--through mathematics and formal logic.
 This includes, for example, treating *programs as proofs*. One such avenue is the use of
-[dependent types](./../../ch08/deptypes/), which is explored in [ch08](./../../ch08/).
+[dependent types](./../../ch08/deptypes/), which is explored in [ch08](./../../../ch08/).
 
 To summarise some approaches to methods aimed at *correct-by-construction program development*,
 there are:

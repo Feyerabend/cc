@@ -35,3 +35,11 @@ int  def_count (void);
  * src must be a type-inferrable term (annotate bare lambdas/pairs).
  */
 int  def_define(const char *name, const char *src);
+
+/*
+ * Parse expr_src and type_src (may be NULL), evaluate both, and register
+ * as name — without type-checking.  Use when the expression contains bare
+ * lambdas that the bidirectional checker cannot infer.  All allocation uses
+ * the permanent arena.  Returns the def index on success, -1 on failure.
+ */
+int  def_define_nocheck(const char *name, const char *type_src, const char *expr_src);

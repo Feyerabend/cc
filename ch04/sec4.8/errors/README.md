@@ -130,4 +130,4 @@ is a combination of detection, containment, recovery, and reporting, implemented
 system design patterns, and operational safeguards. Effective error management transforms inevitable failures
 from catastrophic events into manageable incidents.
 
-Read more on [errors](./../../ch08/systemic/errors/).
+Read more on [errors](./../../../ch08/sec8.1/systemic/errors/).

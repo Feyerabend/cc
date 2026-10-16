@@ -2,7 +2,7 @@
 ## Deep Learning
 
 Deep learning is a highly impactful subset of machine learning, which itself is a branch of artificial
-intelligence (AI). While traditional AI systems ([GOFAI](./../gofai/)) often rely on rule-based logic
+intelligence (AI). While traditional AI systems ([GOFAI](./gofai/)) often rely on rule-based logic
 or symbolic reasoning, deep learning distinguishes itself by focusing on learning intricate patterns
 directly from vast amounts of data using specialised structures called *artificial neural networks* (ANN).
 This approach has been a primary driver of significant advancements in various AI domains, including
