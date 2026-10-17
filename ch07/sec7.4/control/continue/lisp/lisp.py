@@ -137,8 +137,10 @@ class Procedure:
     Now properly captures the defining environment (lexical scoping).
     """
     def __init__(self, params: List[str], body: Any, env: Environment, 
-                 interpreter: 'Lisp', name: Optional[str] = None):
+                 interpreter: 'Lisp', name: Optional[str] = None,
+                 rest: Optional[str] = None):
         self.params = params
+        self.rest = rest  # (lambda args ...) collects all arguments in a list
         self.body = body
         self.env = env  # Captured at definition time (lexical scoping)
         self.interpreter = interpreter
@@ -152,17 +154,25 @@ class Procedure:
                     f"Parameter names must be strings, got {type(param)}"
                 )
     
-    def __call__(self, *args) -> Any:
-        """Execute the procedure with tail call optimization via trampoline"""
+    def bind(self, args) -> Environment:
+        """Make the environment for a call, with the parameters bound to args"""
+        if self.rest is not None:
+            env = Environment(self.env)
+            env.define(self.rest, list(args))
+            return env
         if len(args) != len(self.params):
             raise ErrorHandler.runtime_error(
                 f"Function {self.name} expects {len(self.params)} arguments, got {len(args)}"
             )
-        
-        # Initial call setup
-        current_env = Environment(self.env)
+        env = Environment(self.env)
         for param, arg in zip(self.params, args):
-            current_env.define(param, arg)
+            env.define(param, arg)
+        return env
+
+    def __call__(self, *args) -> Any:
+        """Execute the procedure with tail call optimization via trampoline"""
+        # Initial call setup
+        current_env = self.bind(args)
         current_body = self.body
         
         # Trampoline loop - keep evaluating until we get a non-TailCall result
@@ -184,16 +194,8 @@ class Procedure:
                     # Call it normally and return
                     return next_func(*next_args)
                 
-                # Check argument count
-                if len(next_args) != len(next_func.params):
-                    raise ErrorHandler.runtime_error(
-                        f"Function {next_func.name} expects {len(next_func.params)} arguments, got {len(next_args)}"
-                    )
-                
                 # Set up for next iteration of the trampoline
-                current_env = Environment(next_func.env)
-                for param, arg in zip(next_func.params, next_args):
-                    current_env.define(param, arg)
+                current_env = next_func.bind(next_args)
                 current_body = next_func.body
             except Continuation as cont:
                 # A continuation was invoked - propagate it up
@@ -570,8 +572,13 @@ class LambdaEvaluator(Evaluator):
             raise ErrorHandler.runtime_error("lambda requires at least 2 arguments")
         
         params_expr = expr[1]
+        body = expr[2] if len(expr) == 3 else ['begin'] + expr[2:]
+
+        # (lambda args body) takes any number of arguments as a list
+        if isinstance(params_expr, Symbol):
+            return Procedure([], body, env, interpreter, rest=params_expr.name)
         if not isinstance(params_expr, list):
-            raise ErrorHandler.runtime_error("lambda: parameters must be a list")
+            raise ErrorHandler.runtime_error("lambda: parameters must be a list or a symbol")
         
         params = []
         for p in params_expr:
@@ -582,7 +589,6 @@ class LambdaEvaluator(Evaluator):
             else:
                 raise ErrorHandler.runtime_error(f"lambda: parameter must be a symbol, got {type(p)}")
         
-        body = expr[2] if len(expr) == 3 else ['begin'] + expr[2:]
         return Procedure(params, body, env, interpreter)
 
 class LetEvaluator(Evaluator):

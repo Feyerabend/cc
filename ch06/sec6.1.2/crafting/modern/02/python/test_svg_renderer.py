@@ -310,7 +310,7 @@ class TestRasterizer(unittest.TestCase):
         color = Color(255, 0, 0)
         rast.draw_circle(Point(50, 50), 10, color)
         # Check center pixel
-        self.assertEqual(rast.canvas[50][50], color)
+        self.assertEqual(rast.canvas[50][50], color.to_tuple())
     
     def test_draw_rectangle(self):
         """Test rectangle drawing"""
@@ -318,7 +318,7 @@ class TestRasterizer(unittest.TestCase):
         color = Color(255, 0, 0)
         rast.draw_rectangle(10, 10, 20, 20, color)
         # Check a pixel inside the rectangle
-        self.assertEqual(rast.canvas[15][15], color)
+        self.assertEqual(rast.canvas[15][15], color.to_tuple())
     
     def test_fill_polygon(self):
         """Test polygon filling"""
@@ -327,7 +327,7 @@ class TestRasterizer(unittest.TestCase):
         triangle = [Point(10, 10), Point(50, 10), Point(30, 50)]
         rast.fill_polygon(triangle, color)
         # Check that some interior pixel is filled
-        self.assertEqual(rast.canvas[15][30], color)
+        self.assertEqual(rast.canvas[15][30], color.to_tuple())
     
     def test_save_ppm(self):
         """Test saving to PPM format"""

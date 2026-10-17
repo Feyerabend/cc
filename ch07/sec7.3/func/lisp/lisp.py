@@ -1,4 +1,5 @@
 import re
+import sys
 from typing import Any, List, Union, Optional, Dict, Callable, Tuple
 from functools import reduce as functools_reduce
 from abc import ABC, abstractmethod
@@ -887,16 +888,28 @@ class ApplyCommand(BuiltInCommand):
         return func(*lst)
 
 # I/O operations
+def display_text(value: Any) -> str:
+    """Text for print and display: Lisp notation, with strings written as they are"""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, Symbol):
+        return value.name
+    if isinstance(value, list):
+        return "(" + " ".join(display_text(item) for item in value) + ")"
+    if value is None:
+        return "nil"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    return str(value)
+
 class PrintCommand(BuiltInCommand):
     def execute(self, *args: Any) -> Any:
-        formatted_args = [arg.name if isinstance(arg, Symbol) else arg for arg in args]
-        print(*formatted_args)
+        print(*[display_text(arg) for arg in args])
         return None
 
 class DisplayCommand(BuiltInCommand):
     def execute(self, *args: Any) -> Any:
-        formatted_args = [arg.name if isinstance(arg, Symbol) else arg for arg in args]
-        print(*formatted_args, end='')
+        print(*[display_text(arg) for arg in args], end='')
         return None
 
 
@@ -937,7 +950,14 @@ class Lisp:
     - Foundation for macro system (quasiquote, defmacro)
     - Standard library
     """
+    # Each Lisp call nests several Python calls. Python's default limit of
+    # 1000 is too low for programs that recurse, such as the Lisp
+    # interpreter in mini-lisp.l running on top of this one.
+    MIN_RECURSION_LIMIT = 5000
+
     def __init__(self):
+        if sys.getrecursionlimit() < self.MIN_RECURSION_LIMIT:
+            sys.setrecursionlimit(self.MIN_RECURSION_LIMIT)
         self.global_env = Environment()
         self.special_forms: Dict[str, Evaluator] = {}
         self.formatter = ResultFormatter()

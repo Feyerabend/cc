@@ -14,7 +14,9 @@
 
 ; Recursion depth tracking to prevent stack overflow
 
-(define max-recursion-depth 100)
+; Each mini-eval level uses about 55 levels of the host interpreter,
+; so the limit is kept well below what the host can handle.
+(define max-recursion-depth 40)
 (define current-depth 0)
 
 (define (check-recursion-depth)
@@ -53,17 +55,30 @@
               (make-bindings (cdr vars) (cdr vals)))))
   (cons (make-bindings vars vals) env))
 
-(define (lookup var env)
+; Finds the binding of var in env, or false
+(define (lookup-binding var env)
   (if (null? env)
-      (begin
-        (display "Unbound variable: ")
-        (print var)
-        'error)
-      (let ((frame (car env)))
-        (let ((binding (find-binding var frame)))
-          (if binding
-              (binding-value binding)
-              (lookup var (cdr env)))))))
+      false
+      (let ((binding (find-binding var (car env))))
+        (if binding
+            binding
+            (lookup-binding var (cdr env))))))
+
+; A closure keeps the environment from when it was made, which does not
+; yet hold definitions made later, such as the function's own name in
+; (define fib (lambda ...)). Names not found there are therefore looked
+; up in the current global environment as well.
+(define (lookup var env)
+  (let ((binding (lookup-binding var env)))
+    (if binding
+        (binding-value binding)
+        (let ((global (lookup-binding var global-mini-env)))
+          (if global
+              (binding-value global)
+              (begin
+                (display "Unbound variable: ")
+                (print var)
+                'error))))))
 
 (define (find-binding key alist)
   (if (null? alist)
