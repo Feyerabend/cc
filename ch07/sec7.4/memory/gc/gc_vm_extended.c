@@ -514,12 +514,14 @@ static void demo_rc_cycle_leak(VM *vm) {
      * actually leaking memory:
      */
     printf("  [demo cleanup] manually breaking cycle to avoid actual leak:\n");
-    rc_release(vm, A->head);  /* release ia */
-    rc_release(vm, B->head);  /* release ib */
-    /* Break the cycle before releasing - null out one pointer */
+    /*
+     * Break the cycle by clearing one pointer and releasing the reference
+     * it held. A then drops to 0 and is freed, which releases ia and B;
+     * B drops to 0 in turn and releases ib. Releasing the heads by hand
+     * as well would free them twice.
+     */
     Object *tmp_B_tail = B->tail;
     B->tail = NULL;
-    rc_release(vm, A->tail);  /* release B: B.refcount -> 0 -> freed */
     rc_release(vm, tmp_B_tail); /* release A: A.refcount -> 0 -> freed */
     /* Note: in practice this is why you need weak pointers or a cycle collector */
 }

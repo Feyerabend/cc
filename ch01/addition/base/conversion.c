@@ -37,6 +37,13 @@ void int_to_base_str(int value, int base, char *output, size_t output_size) {
     output[len] = '\0';
 }
 
+// Throws away the rest of an input line. Checking for EOF as well keeps
+// it from looping forever when the input ends.
+static void skip_line(void) {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
 int main() {
     int in_base, out_base;
     char number_str[64];
@@ -47,21 +54,25 @@ int main() {
 
     while (1) {
         printf("\nEnter input base (2–36): ");
-        if (scanf("%d", &in_base) != 1 || in_base < 2 || in_base > 36) {
+        int n = scanf("%d", &in_base);
+        if (n == EOF) break;  // End of input (Ctrl-D)
+        if (n != 1 || in_base < 2 || in_base > 36) {
             printf("Invalid input base.\n");
-            while (getchar() != '\n'); // clear buffer
+            skip_line();
             continue;
         }
 
         printf("Enter output base (2–36): ");
-        if (scanf("%d", &out_base) != 1 || out_base < 2 || out_base > 36) {
+        n = scanf("%d", &out_base);
+        if (n == EOF) break;
+        if (n != 1 || out_base < 2 || out_base > 36) {
             printf("Invalid output base.\n");
-            while (getchar() != '\n');
+            skip_line();
             continue;
         }
 
         printf("Enter number to convert: ");
-        scanf("%s", number_str);
+        if (scanf("%63s", number_str) != 1) break;
 
         // Convert input string to integer
         int value = (int)strtol(number_str, NULL, in_base);

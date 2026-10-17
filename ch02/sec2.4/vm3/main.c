@@ -23,6 +23,10 @@ long fsize(FILE* file) {
 char* read(char *path) {
     FILE* file;
     file = fopen(path, "rb");
+    if (file == NULL) {
+        fprintf(stderr, "cannot open %s\n", path);
+        exit(1);
+    }
     long size = fsize(file);
     char* buf = (char*) calloc(1, size + 1);
     fread(buf, size, 1, file);
@@ -39,6 +43,10 @@ void exec(int* code, int start) {
 }
 
 int main(int argc, char *argv[]) {
+	if (argc < 2) {
+		fprintf(stderr, "usage: %s <machine code file>\n", argv[0]);
+		return 1;
+	}
 	printf("loading ..\n");
 
 	// get the machine code file

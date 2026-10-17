@@ -561,7 +561,8 @@ InterpretResult run() {
                 }
                 
                 if (vm.frame_count == 0) {
-                    pop();
+                    // Returning from the top level: the result is already
+                    // popped, so the stack is empty
                     return INTERPRET_OK;
                 }
                 

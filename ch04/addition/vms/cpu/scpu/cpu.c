@@ -397,6 +397,12 @@ void run_vm(VM *vm) {
         }
 
         uint8_t opcode_index = (vm->current_instruction == 0xFF) ? 0x0F : vm->current_instruction;
+        if (opcode_index >= NUM_OPCODES) {
+            printf("    Invalid opcode 0x%02X at PC=%d, halting\n",
+                   vm->current_instruction, vm->pc - 1);
+            vm->running = false;
+            break;
+        }
         const MicroInstruction *micro = &microcode_rom[opcode_index][vm->micro_step];
 
         execute_microinstruction(vm, micro);

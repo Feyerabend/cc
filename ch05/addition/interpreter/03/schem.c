@@ -302,6 +302,8 @@ LispObject *builtin_map(LispList *args) {
         } else {
             Environment *new_env = malloc(sizeof(Environment));
             new_env->parent = fn_obj->fn->env;
+            new_env->symbol = NULL;
+            new_env->value = NULL;
             new_env->next = NULL;
             LispList *params = fn_obj->fn->params;
             if (params) {
@@ -341,6 +343,8 @@ LispObject *builtin_reduce(LispList *args) {
         } else {
             Environment *new_env = malloc(sizeof(Environment));
             new_env->parent = fn_obj->fn->env;
+            new_env->symbol = NULL;
+            new_env->value = NULL;
             new_env->next = NULL;
             LispList *params = fn_obj->fn->params;
             if (params && params->cdr) {

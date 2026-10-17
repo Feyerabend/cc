@@ -102,9 +102,12 @@ uint8_t read_byte(Coroutine *co) {
     return co->code[co->pc++];
 }
 
-// Read next int (4 bytes) from code
+// Read next int (4 bytes) from code. The bytecode has no alignment, so
+// memcpy is used: a direct int access at an odd address is undefined and
+// faults on some processors.
 int read_int(Coroutine *co) {
-    int value = *(int *)&co->code[co->pc];
+    int value;
+    memcpy(&value, &co->code[co->pc], sizeof(value));
     co->pc += 4;
     return value;
 }
@@ -239,7 +242,7 @@ void write_byte(uint8_t **ptr, uint8_t byte) {
 }
 
 void write_int(uint8_t **ptr, int value) {
-    *(int *)*ptr = value;
+    memcpy(*ptr, &value, sizeof(value));
     *ptr += 4;
 }
 
@@ -283,7 +286,7 @@ int main() {
     write_byte(&p1, OP_JMP);   write_int(&p1, loop_start); // loop
     
     int end_addr1 = p1 - code1;
-    *(int *)&code1[end_check1 + 1] = end_addr1;  // patch jump address
+    memcpy(&code1[end_check1 + 1], &end_addr1, sizeof(end_addr1));  // patch jump address
     
     write_byte(&p1, OP_RETURN);
     
@@ -316,7 +319,7 @@ int main() {
     write_byte(&p2, OP_JMP);   write_int(&p2, loop_start2);
     
     int end_addr = p2 - code2;
-    *(int *)&code2[end_check + 1] = end_addr;  // patch jump address
+    memcpy(&code2[end_check + 1], &end_addr, sizeof(end_addr));  // patch jump address
     
     write_byte(&p2, OP_RETURN);
     

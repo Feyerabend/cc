@@ -229,6 +229,9 @@ int getkey()
         lineBuffer[charsInLineBuffer++] = c;
         if (c == '\n') break;
     }
+    /* Nothing more to read: pass the end of input on */
+    if (charsInLineBuffer == 0)
+        return EOF;
 
     positionInLineBuffer = 1;
     return lineBuffer[0];
@@ -366,6 +369,8 @@ byte readWord()
         c = getkey();
     }
     line[0] = len;
+    /* End of input: stop like BYE does, instead of reading empty words forever */
+    if (c == EOF && len == 0) exitReq = 1;
     return len;
 }
 
@@ -603,6 +608,7 @@ BUILTIN(38, "QUIT", quit, 0)
         errorFlag = 0;
 
         word();
+        if (exitReq) break;
         find();
 
         address = pop();

@@ -60,6 +60,10 @@ int main(void) {
     while (true) {
         printf("sap-vm> ");
         if (!get_user_input(input, sizeof(input))) {
+            if (feof(stdin)) {
+                printf("\n");
+                break;  // End of input (Ctrl-D)
+            }
             continue;
         }
         if (!parse_command(input, command, args)) {

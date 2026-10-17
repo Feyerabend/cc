@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -8,12 +9,23 @@
 #define MEMORY_POOL_SIZE 1000
 #define MAX_BLOCKS 20  // max number of blocks table can track
 
-uint8_t memory_pool[MEMORY_POOL_SIZE];
+// Blocks must be aligned for any type, like the memory malloc returns.
+// The pool starts aligned, and all sizes are rounded up to ALIGNMENT.
+#define ALIGNMENT _Alignof(max_align_t)
+#define ALIGN_UP(n) (((n) + ALIGNMENT - 1) & ~(size_t) (ALIGNMENT - 1))
+
+_Alignas(max_align_t) uint8_t memory_pool[MEMORY_POOL_SIZE];
+
+// End of the part of the pool that holds whole aligned blocks
+#define POOL_END (memory_pool + (MEMORY_POOL_SIZE & ~(size_t) (ALIGNMENT - 1)))
 
 typedef struct BlockHeader {
     size_t size;
     int is_free;
 } BlockHeader;
+
+// Header size rounded up, so the data after it is aligned too
+#define HEADER_SIZE ALIGN_UP(sizeof(BlockHeader))
 
 typedef struct BlockTableEntry {
     BlockHeader* block;
@@ -27,7 +39,7 @@ void memory_init() {
     memset(block_table, 0, sizeof(block_table));
 
     BlockHeader* initial_block = (BlockHeader*)memory_pool;
-    initial_block->size = MEMORY_POOL_SIZE - sizeof(BlockHeader);
+    initial_block->size = (size_t) (POOL_END - memory_pool) - HEADER_SIZE;
     initial_block->is_free = 1;
 
     block_table[0].block = initial_block;
@@ -48,17 +60,18 @@ BlockHeader* find_free_block(size_t size) {
 
 // allocator (malloc equivalent)
 void* mem_malloc(size_t size) {
-    size += sizeof(BlockHeader);  // total size with header
-    BlockHeader* block = find_free_block(size);
+    size = ALIGN_UP(size) + HEADER_SIZE;  // total size with header
+    BlockHeader* block = find_free_block(size - HEADER_SIZE);
 
     if (block) {
-        size_t remaining_size = block->size - size;
-        block->size = size - sizeof(BlockHeader);
+        size_t remaining_size = block->size + HEADER_SIZE - size;
 
-        // add remaining free space as a new block in the table
-        if (remaining_size > sizeof(BlockHeader)) {
+        // add remaining free space as a new block in the table; if it is
+        // too small for a block, it stays part of this one
+        if (remaining_size > HEADER_SIZE) {
+            block->size = size - HEADER_SIZE;
             BlockHeader* new_block = (BlockHeader*)((uint8_t*)block + size);
-            new_block->size = remaining_size - sizeof(BlockHeader);
+            new_block->size = remaining_size - HEADER_SIZE;
             new_block->is_free = 1;
 
             for (int i = 0; i < MAX_BLOCKS; i++) {
@@ -69,7 +82,7 @@ void* mem_malloc(size_t size) {
                 }
             }
         }
-        return (uint8_t*)block + sizeof(BlockHeader);
+        return (uint8_t*)block + HEADER_SIZE;
     }
     return NULL;
 }
@@ -77,16 +90,16 @@ void* mem_malloc(size_t size) {
 // free
 void mem_free(void* ptr) {
     if (!ptr) return;
-    BlockHeader* block = (BlockHeader*)((uint8_t*)ptr - sizeof(BlockHeader));
+    BlockHeader* block = (BlockHeader*)((uint8_t*)ptr - HEADER_SIZE);
     block->is_free = 1;
 }
 
 // free at last!
 void free_all() {
     BlockHeader* current = (BlockHeader*)memory_pool;
-    while ((uint8_t*)current < memory_pool + MEMORY_POOL_SIZE) {
+    while ((uint8_t*)current < POOL_END) {
         current->is_free = 1;
-        current = (BlockHeader*)((uint8_t*)current + sizeof(BlockHeader) + current->size);
+        current = (BlockHeader*)((uint8_t*)current + HEADER_SIZE + current->size);
     }
     printf("All blocks freed.\n");
 }
@@ -99,7 +112,7 @@ void defragment() {
     for (int i = 0; i < MAX_BLOCKS; i++) {
         BlockHeader* block = block_table[i].block;
         if (block && !block->is_free) {
-            size_t total_size = sizeof(BlockHeader) + block->size;
+            size_t total_size = HEADER_SIZE + block->size;
             if ((uint8_t*)block != compact_ptr) {
                 memmove(compact_ptr, block, total_size);
                 block_table[table_index].block = (BlockHeader*)compact_ptr;
@@ -110,9 +123,9 @@ void defragment() {
     }
 
     // single free block at the end
-    if (compact_ptr < memory_pool + MEMORY_POOL_SIZE) {
+    if (compact_ptr + HEADER_SIZE < POOL_END) {
         BlockHeader* new_free_block = (BlockHeader*)compact_ptr;
-        new_free_block->size = (memory_pool + MEMORY_POOL_SIZE) - compact_ptr - sizeof(BlockHeader);
+        new_free_block->size = (size_t) (POOL_END - compact_ptr) - HEADER_SIZE;
         new_free_block->is_free = 1;
 
         block_table[table_index].block = new_free_block;

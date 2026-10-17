@@ -128,7 +128,10 @@ void mark_kont(Kont *k) {
         k->gc.marked = 1;
         if (k->tag == K_ARG) mark_env(k->arg.env);
         if (k->tag == K_FUN) mark_value(k->fun.fun);
-        k = (k->tag == K_ARG) ? k->arg.next : k->fun.next;
+        // K_HALT ends the chain and has no next field
+        if (k->tag == K_ARG) k = k->arg.next;
+        else if (k->tag == K_FUN) k = k->fun.next;
+        else k = NULL;
     }
 }
 
