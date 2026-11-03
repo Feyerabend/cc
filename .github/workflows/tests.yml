@@ -1,0 +1,114 @@
+name: Tests
+
+on:
+  # Every branch, so work can be checked before it is merged
+  push:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # Projects with a test target in their Makefile, plus a few that only
+  # need to build. All run even if one fails; a summary lists the failures.
+  make-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install Python packages
+      run: python -m pip install pytest hypothesis coverage pillow ecdsa flask requests
+
+    - name: Run make test in each project
+      run: |
+        tests="
+          ch03/addition/sap
+          ch03/sec3.5/tests/acceptance
+          ch03/sec3.5/tests/functional
+          ch03/sec3.5/tests/fuzz
+          ch03/sec3.5/tests/integrate
+          ch03/sec3.5/tests/performance
+          ch03/sec3.5/tests/property
+          ch03/sec3.5/tests/regression
+          ch03/sec3.5/tests/security
+          ch03/sec3.5/tests/smoke
+          ch03/sec3.5/tests/unit
+          ch04/addition/games/vm/c/lisp
+          ch04/addition/vms/sap
+          ch05/addition/prolog/nlp
+          ch05/sec5.11/error
+          ch05/sec5.12/elementary
+          ch05/sec5.7.1/ssa/compiler
+          ch06/sec6.1.1/original
+          ch06/sec6.1.2/crafting/modern/02/python
+          ch07/addition/3d/c/03
+          ch07/addition/algo/blockchain/code/blockchain
+          ch07/addition/effect/aspects
+          ch07/sec7.1.5/knapsack
+          ch07/sec7.3.7/ferrite/01/lang
+          ch07/sec7.3/imp/mcc
+          ch07/sec7.5/jvm
+          ch08/addition/category/lang/cool/06/next
+          ch08/addition/llang
+          ch08/sec8.12/c
+        "
+        builds="
+          ch08/addition/hott/code/lang
+          ch08/addition/proof/code/lang
+        "
+        failed=""
+        for d in $tests; do
+          echo "::group::make test in $d"
+          make -C "$d" test < /dev/null || failed="$failed $d"
+          echo "::endgroup::"
+        done
+        for d in $builds; do
+          echo "::group::make in $d"
+          make -C "$d" < /dev/null || failed="$failed $d"
+          echo "::endgroup::"
+        done
+        if [ -n "$failed" ]; then
+          echo "Failed:"
+          for d in $failed; do echo "  $d"; done
+          exit 1
+        fi
+        echo "All passed"
+
+  # C programs built with AddressSanitizer and UBSan
+  sanitizers:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # The runner kernel randomises addresses more than AddressSanitizer in
+    # this GCC expects, which makes it crash at random
+    - name: Reduce address randomisation for AddressSanitizer
+      run: sudo sysctl vm.mmap_rnd_bits=28
+
+    - name: Build and run with sanitizers
+      run: bash .github/scripts/sanitize.sh
+
+  # Examples without a test suite of their own, checked by their output
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install Python packages
+      run: python -m pip install numpy matplotlib
+
+    - name: Run examples
+      run: bash .github/scripts/examples.sh

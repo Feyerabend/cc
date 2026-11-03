@@ -124,14 +124,16 @@ class TestMathematicalProperties(unittest.TestCase):
         self.assertAlmostEqual(result.y, 0, places=5)
     
     @given(
-        valid_points(),
-        st.floats(-100, 100, allow_nan=False, allow_infinity=False),
-        st.floats(-100, 100, allow_nan=False, allow_infinity=False)
+        # Generated within the limits directly: filtering most inputs
+        # away with assume() makes Hypothesis give up now and then
+        st.builds(Point,
+                  st.floats(-999, 999, allow_nan=False, allow_infinity=False),
+                  st.floats(-999, 999, allow_nan=False, allow_infinity=False)),
+        st.floats(-49, 49, allow_nan=False, allow_infinity=False),
+        st.floats(-49, 49, allow_nan=False, allow_infinity=False)
     )
     def test_point_scalar_distributive(self, p, a, b):
         """Test p * (a + b) == p * a + p * b"""
-        assume(abs(a) < 50 and abs(b) < 50)  # Avoid overflow
-        assume(abs(p.x) < 1000 and abs(p.y) < 1000)
         
         left = p * (a + b)
         right = (p * a) + (p * b)
