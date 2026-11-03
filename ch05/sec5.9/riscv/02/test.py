@@ -47,7 +47,7 @@ def test_program(name, expected_output):
     
     # Check output
     output = stdout.strip()
-    if output == expected_output:
+    if output == expected_output.strip():
         print(f"{Colors.GREEN}PASS{Colors.RESET}")
         return True
     else:
@@ -70,7 +70,7 @@ def test_multifile(expected_output):
         return False
     
     output = stdout.strip()
-    if output == expected_output:
+    if output == expected_output.strip():
         print(f"{Colors.GREEN}PASS{Colors.RESET}")
         return True
     else:

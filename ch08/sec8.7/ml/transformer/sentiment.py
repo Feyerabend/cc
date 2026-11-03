@@ -145,7 +145,7 @@ class AdvancedTransformer:
                                      mask: Optional[np.ndarray] = None) -> np.ndarray:
         """Scaled dot-product attention mechanism."""
         d_k = Q.shape[-1]
-        scores = np.matmul(Q, K.transpose(-1, -2)) / np.sqrt(d_k)
+        scores = np.matmul(Q, np.swapaxes(K, -1, -2)) / np.sqrt(d_k)
         
         if mask is not None:
             scores = np.where(mask == 0, -1e9, scores)

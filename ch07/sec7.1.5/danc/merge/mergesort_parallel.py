@@ -14,15 +14,30 @@ def merge(left, right):
     result.extend(right[j:])
     return result
 
-def merge_sort(arr):
+# Processes in a Pool may not start processes of their own, so the
+# recursion uses plain Process objects: the left half is sorted in a new
+# process while this process sorts the right half. Below a certain
+# depth the work is too small to be worth a new process.
+PARALLEL_DEPTH = 2
+
+def _worker(conn, arr, depth):
+    conn.send(merge_sort(arr, depth))
+    conn.close()
+
+def merge_sort(arr, depth=PARALLEL_DEPTH):
     if len(arr) <= 1:
         return arr
     
     mid = len(arr) // 2
-    with mp.Pool(2) as pool:
-        left = pool.apply_async(merge_sort, (arr[:mid],))
-        right = pool.apply_async(merge_sort, (arr[mid:],))
-        left, right = left.get(), right.get()
+    if depth <= 0:
+        return merge(merge_sort(arr[:mid], 0), merge_sort(arr[mid:], 0))
+    
+    receiver, sender = mp.Pipe(duplex=False)
+    left_process = mp.Process(target=_worker, args=(sender, arr[:mid], depth - 1))
+    left_process.start()
+    right = merge_sort(arr[mid:], depth - 1)
+    left = receiver.recv()
+    left_process.join()
     
     return merge(left, right)
 

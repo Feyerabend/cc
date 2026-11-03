@@ -33,8 +33,18 @@ class LL1Parser:
                 '$': []
             },
             'F': {
-                'num': ['num'],
+                'num': ['num', 'F\''],
                 '(': ['(', 'E', ')']
+            },
+            'F\'': {
+                '^': ['^', 'F'],
+                '+': [],
+                '-': [],
+                '*': [],
+                '/': [],
+                '%': [],
+                ')': [],
+                '$': []
             }
         }
 
@@ -51,11 +61,13 @@ class LL1Parser:
         while self.stack:
             top = self.stack.pop()
             token = self.lookahead()
+            # numbers are looked up in the table as the terminal 'num'
+            kind = 'num' if token is not None and self.is_number(token) else token
 
             if top in self.table:  # non-terminal
-                if token in self.table[top]:
-                    production = self.table[top][token]
-                    print(f"Applying production {top} → {' '.join(production)}")
+                if kind in self.table[top]:
+                    production = self.table[top][kind]
+                    print(f"Applying production {top} → {' '.join(production) or 'ε'}")
                     self.stack.extend(reversed(production))  # push production onto stack
                 else:
                     raise Exception(f"Error: Unexpected token {token} for {top}")
@@ -71,7 +83,7 @@ class LL1Parser:
             else:
                 raise Exception(f"Error: Unexpected token {token}. Expected {top}")
 
-        if self.lookahead() == '$': # end parsing
+        if self.pos == len(self.tokens): # all input, including $, consumed
             print("Input parsed successfully!")
         else:
             raise Exception(f"Error: Unexpected input at end. Found {self.lookahead()}")

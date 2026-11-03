@@ -148,7 +148,9 @@ class ApplicativeValue(FunctorValue, ABC):
         """Lift binary function: (A -> B -> C) -> F<A> -> F<B> -> F<C>"""
         # liftA2 f fa fb = pure f <*> fa <*> fb
         # Or equivalently: fmap f fa <*> fb
-        return self.fmap(lambda a: lambda b: f(a, b)).apply(other)
+        # x.apply(wrapped_f) applies wrapped_f to x, so the curried
+        # function made from self is applied to other
+        return other.apply(self.fmap(lambda a: lambda b: f(a, b)))
 
 
 

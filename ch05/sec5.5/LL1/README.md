@@ -79,7 +79,8 @@ Here's is the final grammar with support for numbers, floating points, and opera
     E' → + T E' | - T E' | ε
     T  → F T'
     T' → * F T' | / F T' | % F T' | ε
-    F  → ( E ) | num | num ^ F
+    F  → num F' | ( E )
+    F' → ^ F | ε
 ```
 
 - num represents an integer or floating-point number.
@@ -91,13 +92,14 @@ Here's is the final grammar with support for numbers, floating points, and opera
 And here is parsing table that results from the reasoning above:
 
 
-|NT	|num	|(	|+	|-	|*	|/	|%	|)	|$	|^|
+|NT	|num	|(	|+	|-	|*	|/	|%	|^	|)	|$	|
 |-|-|-|-|-|-|-|-|-|-|-|
-|E	|T E'	|T E'	|	|	|	|	|	|	|	|   |
-|E'	|		|   |+ T E'	|- T E'	|ε	|ε	|ε	|ε	|ε	|   |
-|T	|F T'	|F T'	|	|	|	|	|	|	|	|   |
-|T'	|		|   |ε	|ε	|* F T'	|/ F T'	|% F T'	|ε	|ε	|   |
-|F	|num	|( E )	|	|	|	|	|	|	|	|num ^ F    |
+|E	|T E'	|T E'	|	|	|	|	|	|	|	|	|
+|E'	|	|	|+ T E'	|- T E'	|	|	|	|	|ε	|ε	|
+|T	|F T'	|F T'	|	|	|	|	|	|	|	|	|
+|T'	|	|	|ε	|ε	|* F T'	|/ F T'	|% F T'	|	|ε	|ε	|
+|F	|num F'	|( E )	|	|	|	|	|	|	|	|	|
+|F'	|	|	|ε	|ε	|ε	|ε	|ε	|^ F	|ε	|ε	|
 
 
 Legend:
@@ -157,8 +159,18 @@ class LL1Parser:
                 '$': []
             },
             'F': {
-                'num': ['num'],
+                'num': ['num', 'F\''],
                 '(': ['(', 'E', ')']
+            },
+            'F\'': {
+                '^': ['^', 'F'],
+                '+': [],
+                '-': [],
+                '*': [],
+                '/': [],
+                '%': [],
+                ')': [],
+                '$': []
             }
         }
 
@@ -175,11 +187,13 @@ class LL1Parser:
         while self.stack:
             top = self.stack.pop()
             token = self.lookahead()
+            # numbers are looked up in the table as the terminal 'num'
+            kind = 'num' if token is not None and self.is_number(token) else token
 
             if top in self.table:  # non-terminal
-                if token in self.table[top]:
-                    production = self.table[top][token]
-                    print(f"Applying production {top} → {' '.join(production)}")
+                if kind in self.table[top]:
+                    production = self.table[top][kind]
+                    print(f"Applying production {top} → {' '.join(production) or 'ε'}")
                     self.stack.extend(reversed(production))  # push production onto stack
                 else:
                     raise Exception(f"Error: Unexpected token {token} for {top}")
@@ -195,7 +209,7 @@ class LL1Parser:
             else:
                 raise Exception(f"Error: Unexpected token {token}. Expected {top}")
 
-        if self.lookahead() == '$': # end parsing
+        if self.pos == len(self.tokens): # all input, including $, consumed
             print("Input parsed successfully!")
         else:
             raise Exception(f"Error: Unexpected input at end. Found {self.lookahead()}")
@@ -254,20 +268,24 @@ For the input 3 + 2 * 4:
 Tokens: ['3', '+', '2', '*', '4']
 Applying production E → T E'
 Applying production T → F T'
-Applying production F → num
+Applying production F → num F'
 Consuming number: 3
+Applying production F' → ε
 Applying production T' → ε
 Applying production E' → + T E'
 Consuming: +
 Applying production T → F T'
-Applying production F → num
+Applying production F → num F'
 Consuming number: 2
+Applying production F' → ε
 Applying production T' → * F T'
 Consuming: *
-Applying production F → num
+Applying production F → num F'
 Consuming number: 4
+Applying production F' → ε
 Applying production T' → ε
 Applying production E' → ε
+Consuming: $
 Input parsed successfully!
 ```
 

@@ -476,7 +476,7 @@ class RISCVVM:
         
         if syscall_num == 1:  # Print integer
             val = self.signed(self.regs[10])  # a0
-            print(val)
+            print(val, end='')  # Programs print their own separators, as in RARS
             self.output.append(str(val))
         elif syscall_num == 4:  # Print string
             addr = self.regs[10]  # a0

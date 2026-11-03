@@ -104,10 +104,10 @@ def main():
 
     gauss = gaussian_kernel(size=5, sigma=1.0)
 
-    fm_grad_mag  = np.sqrt(fm_sobel_x ** 2 + fm_sobel_y ** 2)
     fm_identity  = cross_correlate_2d(img, identity,   padding=1)
     fm_sobel_x   = cross_correlate_2d(img, sobel_x,    padding=1)
     fm_sobel_y   = cross_correlate_2d(img, sobel_y,    padding=1)
+    fm_grad_mag  = np.sqrt(fm_sobel_x ** 2 + fm_sobel_y ** 2)
     fm_gauss     = cross_correlate_2d(img, gauss,      padding=2)
     fm_laplacian = cross_correlate_2d(img, laplacian,  padding=1)
     fm_emboss    = cross_correlate_2d(img, emboss,     padding=1)

@@ -195,6 +195,15 @@ class Interpreter(ABC):
     Maps functor operations to actual effects.
     """
     
+    # When this interpreter handles one DSL inside a combined interpreter,
+    # the rest of the program must go back to the combined one, which
+    # knows the other DSLs too.
+    parent: Optional['Interpreter'] = None
+
+    def continue_with(self) -> 'Interpreter':
+        """The interpreter that runs the rest of the program"""
+        return self.parent or self
+
     @abstractmethod
     def run(self, functor: FunctorF) -> Value:
         """Interpret a functor operation"""
@@ -271,18 +280,18 @@ class ConsoleInterpreter(Interpreter):
         if isinstance(functor, PrintLine):
             self.output_log.append(functor.message)
             print(f"  [Console] {functor.message}")
-            return functor.next_computation.interpret(self)
+            return functor.next_computation.interpret(self.continue_with())
         
         elif isinstance(functor, ReadLine):
             if self.input_queue:
                 input_val = self.input_queue.pop(0)
                 print(f"  [Console] < {input_val}")
                 next_free = functor.continuation(input_val)
-                return next_free.interpret(self)
+                return next_free.interpret(self.continue_with())
             else:
                 print(f"  [Console] < (no input)")
                 next_free = functor.continuation("")
-                return next_free.interpret(self)
+                return next_free.interpret(self.continue_with())
         
         raise RuntimeError(f"Unknown console operation: {functor}")
 
@@ -298,13 +307,13 @@ class ConsoleLoggerInterpreter(Interpreter):
         """Log operations without executing"""
         if isinstance(functor, PrintLine):
             self.log.append(f"PRINT: {functor.message}")
-            return functor.next_computation.interpret(self)
+            return functor.next_computation.interpret(self.continue_with())
         
         elif isinstance(functor, ReadLine):
             self.log.append("READ: <input>")
             # Provide dummy input
             next_free = functor.continuation("dummy")
-            return next_free.interpret(self)
+            return next_free.interpret(self.continue_with())
         
         raise RuntimeError(f"Unknown console operation: {functor}")
 
@@ -397,18 +406,18 @@ class KVStoreInterpreter(Interpreter):
             val = self.store.get(functor.key)
             print(f"  [KVStore] GET {functor.key} = {val}")
             next_free = functor.continuation(val)
-            return next_free.interpret(self)
+            return next_free.interpret(self.continue_with())
         
         elif isinstance(functor, Put):
             self.store[functor.key] = functor.value
             print(f"  [KVStore] PUT {functor.key} = {functor.value}")
-            return functor.next_computation.interpret(self)
+            return functor.next_computation.interpret(self.continue_with())
         
         elif isinstance(functor, Delete):
             if functor.key in self.store:
                 del self.store[functor.key]
             print(f"  [KVStore] DELETE {functor.key}")
-            return functor.next_computation.interpret(self)
+            return functor.next_computation.interpret(self.continue_with())
         
         raise RuntimeError(f"Unknown KV operation: {functor}")
 
@@ -482,12 +491,12 @@ class TelemetryInterpreter(Interpreter):
         if isinstance(functor, Log):
             self.logs.append(f"[{functor.level}] {functor.message}")
             print(f"  [Telemetry] {functor.level}: {functor.message}")
-            return functor.next_computation.interpret(self)
+            return functor.next_computation.interpret(self.continue_with())
         
         elif isinstance(functor, Metric):
             self.metrics[functor.name] = functor.value
             print(f"  [Telemetry] Metric {functor.name} = {functor.value}")
-            return functor.next_computation.interpret(self)
+            return functor.next_computation.interpret(self.continue_with())
         
         raise RuntimeError(f"Unknown telemetry operation: {functor}")
 
@@ -544,6 +553,8 @@ class CoproductInterpreter(Interpreter):
     def __init__(self, left_interp: Interpreter, right_interp: Interpreter):
         self.left_interp = left_interp
         self.right_interp = right_interp
+        left_interp.parent = self
+        right_interp.parent = self
     
     def run(self, functor: FunctorF) -> Value:
         if isinstance(functor, Coproduct):
@@ -673,6 +684,8 @@ def demo():
         def __init__(self, console, kvstore):
             self.console = console
             self.kvstore = kvstore
+            console.parent = self
+            kvstore.parent = self
         
         def run(self, functor):
             if isinstance(functor, (PrintLine, ReadLine)):
@@ -750,6 +763,8 @@ def demo():
             self.kv = KVStoreInterpreter()
             self.telem = TelemetryInterpreter()
             self.console = ConsoleInterpreter()
+            for part in (self.kv, self.telem, self.console):
+                part.parent = self
         
         def run(self, functor):
             if isinstance(functor, (Get, Put, Delete)):
@@ -1011,6 +1026,7 @@ def demo():
     class MockHttpInterpreter(Interpreter):
         def __init__(self):
             self.telem = TelemetryInterpreter()
+            self.telem.parent = self
             self.requests = []
         
         def run(self, functor):
