@@ -21,9 +21,11 @@ jobs:
 
     # set up
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.14.3'
+        # Only the minor version: an exact patch version may have no build
+        # for the runner's Ubuntu release (3.14.3 has none for 26.04)
+        python-version: '3.14'
 
     # dependencies, if any
     - name: Install dependencies
