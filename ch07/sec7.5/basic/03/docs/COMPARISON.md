@@ -314,7 +314,7 @@ interpreter.register_command("mycmd", MyCommand)
 
 The refactored code maintains compatibility:
 - Same BASIC language semantics
-- Same array indexing (1-based)
+- Array indexing as in classic BASIC: DIM A(N) gives indices 0 to N
 - Same command syntax
 - Can run existing BASIC programs
 

@@ -505,16 +505,30 @@ class CompilerContext:
 
 
 class CCompiler(Visitor):
+    # PL/0 names that would clash in C: keywords, main, and the library
+    # functions the generated code calls
+    C_RESERVED = {
+        "auto", "break", "case", "char", "const", "continue", "default", "do",
+        "double", "else", "enum", "extern", "float", "for", "goto", "if",
+        "inline", "int", "long", "register", "restrict", "return", "short",
+        "signed", "sizeof", "static", "struct", "switch", "typedef", "union",
+        "unsigned", "void", "volatile", "while", "main", "printf", "scanf",
+    }
+
     def __init__(self):
         self.context = CompilerContext()
         self.procedures = set()
+
+    def c_name(self, name: str) -> str:
+        """The C name for a PL/0 identifier, renamed if it would clash"""
+        return name + "_" if name in self.C_RESERVED else name
 
     def compile(self, ast: ASTNode) -> str:
         self.collect_procedures(ast)
         self.context.add_code("#include <stdio.h>\n")
         # Generate function prototypes
         for proc in sorted(self.procedures):
-            self.context.add_code(f"void {proc}();")
+            self.context.add_code(f"void {self.c_name(proc)}();")
         self.context.add_code("")
         # Process the AST to generate global variables and functions
         ast.accept(self)
@@ -543,12 +557,11 @@ class CCompiler(Visitor):
         if self.context.current_procedure is None:
             # Global (main) block
             for var in node.variables:
-                self.context.add_code(f"int {var};")
+                self.context.add_code(f"int {self.c_name(var)};")
             for proc_name, proc_body in node.procedures:
-                self.context.add_code(f"\nvoid {proc_name}() {{")
+                self.context.add_code(f"\nvoid {self.c_name(proc_name)}() {{")
                 self.context.enter_scope()
-                for var in proc_body.variables:
-                    self.context.add_code(f"int {var};")
+                # The procedure's own block declares its local variables
                 prev_proc = self.context.current_procedure
                 self.context.current_procedure = proc_name
                 proc_body.accept(self)
@@ -564,18 +577,18 @@ class CCompiler(Visitor):
         else:
             # Procedure's local block
             for var in node.variables:
-                self.context.add_code(f"int {var};")
+                self.context.add_code(f"int {self.c_name(var)};")
             node.statement.accept(self)
 
     def visit_assign(self, node: AssignNode) -> Any:
         expr = node.expression.accept(self)
-        self.context.add_code(f"{node.var_name} = {expr};")
+        self.context.add_code(f"{self.c_name(node.var_name)} = {expr};")
 
     def visit_call(self, node: CallNode) -> Any:
-        self.context.add_code(f"{node.proc_name}();")
+        self.context.add_code(f"{self.c_name(node.proc_name)}();")
 
     def visit_read(self, node: ReadNode) -> Any:
-        self.context.add_code(f'scanf("%d", &{node.var_name});')
+        self.context.add_code(f'scanf("%d", &{self.c_name(node.var_name)});')
 
     def visit_write(self, node: WriteNode) -> Any:
         expr = node.expression.accept(self)
@@ -611,7 +624,7 @@ class CCompiler(Visitor):
         return f"({left} {op_map[node.operator]} {right})"
 
     def visit_variable(self, node: VariableNode) -> str:
-        return node.name
+        return self.c_name(node.name)
 
     def visit_number(self, node: NumberNode) -> str:
         return str(node.value)

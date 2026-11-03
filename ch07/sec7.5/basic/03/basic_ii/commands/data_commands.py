@@ -77,9 +77,8 @@ class LetCommand(ParsedCommand):
             evaluator = ExpressionEvaluator(self.state, self.debug)
             indices = [int(evaluator.evaluate(idx)) for idx in expr.indices]
 
-            # Validate array exists
-            if expr.name not in self.state.arrays:
-                raise ArrayError(f"Array '{expr.name}' not declared")
+            # An array used without DIM gets indices 0 to 10
+            self.state.ensure_array(expr.name, len(indices))
 
             # Validate dimensions
             dims = self.state.array_dims.get(expr.name, ())
@@ -88,16 +87,14 @@ class LetCommand(ParsedCommand):
                     f"Array '{expr.name}' expects {len(dims)} indices, got {len(indices)}"
                 )
 
-            # Validate bounds (1-based indexing)
+            # Validate bounds: DIM A(N) gives indices 0 to N
             for i, idx in enumerate(indices):
-                if not (1 <= idx <= dims[i]):
+                if not (0 <= idx < dims[i]):
                     raise ArrayError(
-                        f"Index {idx} out of bounds for dimension {i} (1-{dims[i]})"
+                        f"Index {idx} out of bounds for dimension {i} (0-{dims[i] - 1})"
                     )
 
-            # Convert to 0-based and store
-            adjusted_indices = tuple(idx - 1 for idx in indices)
-            self.state.set_array_value(expr.name, adjusted_indices, value)
+            self.state.set_array_value(expr.name, tuple(indices), value)
             
             self._log(f"Set {expr.name}{indices} = {value}")
 
@@ -113,8 +110,8 @@ class DimCommand(ParsedCommand):
     or: DIM array(size1, size2)
     or: DIM array1(10), array2(5,5)
     
-    Arrays use 1-based indexing.
-    Dimensions specify the maximum index (e.g., DIM A(10) creates indices 1-10).
+    As in classic BASIC, a dimension gives the highest index, and indices
+    start at 0: DIM A(10) creates indices 0-10.
     """
 
     def process(self, args: str) -> None:
@@ -218,8 +215,7 @@ class DimCommand(ParsedCommand):
             except Exception as e:
                 raise ExecutionError(f"Invalid dimension '{dim_str}': {e}")
 
-        # Create array (add 1 to dimensions for 1-based indexing)
-        # E.g., DIM A(10) creates array with indices 1-10, stored as 0-9 internally
+        # Store the number of indices per dimension: DIM A(10) has 0-10, 11 in all
         adjusted_dims = tuple(d + 1 for d in dim_values)
         self.state.declare_array(name, adjusted_dims)
         

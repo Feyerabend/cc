@@ -49,7 +49,7 @@ class ExpressionEvaluator:
         op = expr.operator
 
         # Arithmetic operators
-        if op in ["+", "-", "*", "/"]:
+        if op in ["+", "-", "*", "/", "^"]:
             return self._evaluate_arithmetic(op, left, right)
 
         # Comparison operators
@@ -70,7 +70,8 @@ class ExpressionEvaluator:
             "+": lambda l, r: l + r,
             "-": lambda l, r: l - r,
             "*": lambda l, r: l * r,
-            "/": lambda l, r: l / r if r != 0 else 0
+            "/": lambda l, r: l / r if r != 0 else 0,
+            "^": lambda l, r: l ** r
         }
 
         return operations[op](left, right)
@@ -101,9 +102,8 @@ class ExpressionEvaluator:
         # Evaluate indices
         indices = [int(self.evaluate(idx)) for idx in expr.indices]
 
-        # Check if array exists
-        if expr.name not in self.state.arrays:
-            raise ArrayError(f"Array '{expr.name}' not declared")
+        # An array used without DIM gets indices 0 to 10
+        self.state.ensure_array(expr.name, len(indices))
 
         # Get array dimensions
         dims = self.state.array_dims.get(expr.name, ())
@@ -114,21 +114,19 @@ class ExpressionEvaluator:
                 f"Array '{expr.name}' expects {len(dims)} indices, got {len(indices)}"
             )
 
-        # Validate index bounds (1-based indexing in BASIC)
+        # Validate index bounds: DIM A(N) gives indices 0 to N
         for i, idx in enumerate(indices):
-            if not (1 <= idx <= dims[i]):
+            if not (0 <= idx < dims[i]):
                 raise ArrayError(
                     f"Index {idx} out of bounds for array '{expr.name}' dimension {i} "
-                    f"(valid range: 1 to {dims[i]})"
+                    f"(valid range: 0 to {dims[i] - 1})"
                 )
 
-        # Convert to 0-based indexing for internal storage
-        adjusted_indices = tuple(idx - 1 for idx in indices)
-
         if self.debug:
-            print(f"DEBUG: Array access {expr.name}{indices} -> {adjusted_indices}")
+            print(f"DEBUG: Array access {expr.name}{indices}")
 
-        return self.state.get_array_value(expr.name, adjusted_indices, 0)
+        default = "" if expr.name.endswith('$') else 0
+        return self.state.get_array_value(expr.name, tuple(indices), default)
 
     def _evaluate_function(self, expr: FunctionExpression) -> Any:
         """Evaluate built-in function calls."""

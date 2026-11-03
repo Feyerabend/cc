@@ -56,6 +56,12 @@ class InterpreterState:
         self.array_dims[name] = dimensions
         self.arrays[name] = {}
 
+    def ensure_array(self, name: str, index_count: int) -> None:
+        """Declare an array used without DIM, as classic BASIC does:
+        each dimension gets indices 0 to 10."""
+        if name not in self.arrays:
+            self.declare_array(name, (11,) * index_count)
+
     def get_array_value(self, name: str, indices: Tuple[int, ...], default: Any = 0) -> Any:
         """Get array value at indices with default."""
         if name not in self.arrays:

@@ -7,6 +7,7 @@ from ..commands.base import ParsedCommand
 from ..core.state import InterpreterState
 from ..core.exceptions import ExecutionError
 from ..utils.helpers import split_on_delimiter
+from .data_commands import LetCommand
 
 
 class PrintCommand(ParsedCommand):
@@ -152,40 +153,48 @@ class InputCommand(ParsedCommand):
                 
                 variables = remainder
 
-        # Parse variable names
-        var_names = [v.strip() for v in variables.split(',') if v.strip()]
+        # Parse variable names; A(I, J) counts as one
+        var_names = [v.strip() for v in split_on_delimiter(variables, ',', respect_parens=True) if v.strip()]
 
         if not var_names:
             raise ExecutionError("INPUT requires at least one variable")
 
-        # Get input from user
-        if prompt:
-            user_input = input(prompt + " ")
-        else:
-            user_input = input("? ")
-
-        # Parse input values
-        input_values = [v.strip() for v in user_input.split(',')]
-
-        # Assign to variables
-        for i, var_name in enumerate(var_names):
-            if i < len(input_values):
-                # Try to parse as number, otherwise treat as string
-                value_str = input_values[i]
-                try:
-                    # Try as number
-                    value = float(value_str)
-                    # Use int if it's a whole number
-                    if value == int(value):
-                        value = int(value)
-                except ValueError:
-                    # Keep as string (remove quotes if present)
-                    value = value_str.strip('"').strip("'")
-                
-                self.state.set_variable(var_name, value)
+        # As in classic BASIC: string variables ($) take the text as it is,
+        # numeric variables need a number or the whole input is asked again,
+        # and missing values are asked for with "??"
+        values = self._read_values(var_names, prompt + " " if prompt else "? ")
+        for var_name, value in zip(var_names, values):
+            if "(" in var_name and var_name.endswith(")"):
+                LetCommand(self.state, self.debug)._assign_to_array(var_name, value)
             else:
-                # Not enough values provided
-                self.state.set_variable(var_name, 0)
+                self.state.set_variable(var_name, value)
+
+    def _read_values(self, var_names: List[str], prompt: str) -> List:
+        while True:
+            fields = [f.strip() for f in input(prompt).split(',')]
+            while len(fields) < len(var_names):
+                fields += [f.strip() for f in input("?? ").split(',')]
+            values = []
+            for var_name, field in zip(var_names, fields):
+                if self._is_string_variable(var_name):
+                    if len(field) >= 2 and field[0] == field[-1] and field[0] in ('"', "'"):
+                        field = field[1:-1]
+                    values.append(field)
+                    continue
+                try:
+                    number = float(field)
+                except ValueError:
+                    break
+                values.append(int(number) if number == int(number) else number)
+            if len(values) == len(var_names):
+                if len(fields) > len(var_names):
+                    print("?EXTRA IGNORED")
+                return values
+            print("?REDO FROM START")
+
+    @staticmethod
+    def _is_string_variable(var_name: str) -> bool:
+        return var_name.split("(")[0].strip().endswith("$")
 
 
 class RemCommand(ParsedCommand):

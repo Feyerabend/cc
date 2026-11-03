@@ -53,7 +53,7 @@ class Tokenizer:
                 self._tokenize_identifier()
             elif char in '"\'':
                 self._tokenize_string()
-            elif char in '+-*/=<>':
+            elif char in '+-*/^=<>':
                 self._tokenize_operator()
             elif char == '(':
                 self._add_token("LPAREN", "(")

@@ -8,7 +8,7 @@ This file demonstrates how to extend the basic VM with more sophisticated featur
 4. More precise abstract domains
 """
 
-from improved_vm import *
+from vm import *
 from typing import Set, Tuple
 
 

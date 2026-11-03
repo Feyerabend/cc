@@ -42,7 +42,8 @@ class ExpressionParser:
         return NumberExpression(0.0)
 
     # Expression parsing with operator precedence
-    # Precedence (lowest to highest): comparison, addition/subtraction, multiplication/division, primary
+    # Precedence (lowest to highest): comparison, addition/subtraction,
+    # multiplication/division, unary minus, exponentiation, primary
 
     def _parse_expression(self) -> Expression:
         """Parse a complete expression (entry point)."""
@@ -72,13 +73,37 @@ class ExpressionParser:
 
     def _parse_multiplicative(self) -> Expression:
         """Parse multiplication and division: *, /"""
-        left = self._parse_primary()
+        left = self._parse_unary()
         
         while self._match_operator(["*", "/"]):
             op = self._previous().value
-            right = self._parse_primary()
+            right = self._parse_unary()
             left = BinaryExpression(left, op, right)
         
+        return left
+
+    def _parse_unary(self) -> Expression:
+        """Parse unary minus and plus. They bind more loosely than ^,
+        so -2^2 is -(2^2) = -4, as in Microsoft BASIC."""
+        if self._match_operator(["-"]):
+            return BinaryExpression(NumberExpression(0), "-", self._parse_unary())
+        if self._match_operator(["+"]):
+            return self._parse_unary()
+        return self._parse_power()
+
+    def _parse_power(self) -> Expression:
+        """Parse exponentiation: ^, evaluated left to right as in Microsoft
+        BASIC, so 2^3^2 is (2^3)^2. The exponent may have a sign: 2^-1."""
+        left = self._parse_primary()
+
+        while self._match_operator(["^"]):
+            if self._match_operator(["-"]):
+                right = BinaryExpression(NumberExpression(0), "-", self._parse_primary())
+            else:
+                self._match_operator(["+"])
+                right = self._parse_primary()
+            left = BinaryExpression(left, "^", right)
+
         return left
 
     def _parse_primary(self) -> Expression:
