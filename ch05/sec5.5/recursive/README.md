@@ -138,6 +138,11 @@ void eat(char expected) {
     }
 }
 
+// Skips spaces between tokens
+void skip() {
+    while (lookahead() == ' ') pos++;
+}
+
 void ID() {
     if (isalpha(lookahead())) {
         eat(lookahead());
@@ -150,7 +155,10 @@ void ID() {
 
 void E() {
     ID();
+    skip();
+    eat(':');
     eat('=');
+    skip();
     while (isdigit(lookahead())) eat(lookahead());
 }
 
@@ -160,7 +168,9 @@ void S() {
     eat('G');
     eat('I');
     eat('N');
+    skip();
     E();
+    skip();
     eat('E');
     eat('N');
     eat('D');
@@ -195,6 +205,11 @@ class PascalParser:
         else:
             raise Exception(f"Error: Expected '{expected}' but found '{self.lookahead()}'")
 
+    def skip(self):
+        """Skips spaces between tokens"""
+        while self.lookahead() == ' ':
+            self.pos += 1
+
     def ID(self):
         if self.lookahead().isalpha():
             self.eat(self.lookahead())
@@ -205,14 +220,19 @@ class PascalParser:
 
     def E(self):
         self.ID()
+        self.skip()
+        self.eat(':')
         self.eat('=')
-        while self.lookahead().isdigit():
+        self.skip()
+        while self.lookahead() and self.lookahead().isdigit():
             self.eat(self.lookahead())
 
     def S(self):
         for char in "BEGIN":
             self.eat(char)
+        self.skip()
         self.E()
+        self.skip()
         for char in "END":
             self.eat(char)
 

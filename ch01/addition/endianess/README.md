@@ -167,7 +167,7 @@ Many systems provide built-in functions for swapping endianness:
 
 ```c
 #include <stdio.h>
-#include <arpa/inet.h // For htonl and ntohl (network byte order conversion)
+#include <arpa/inet.h> // For htonl and ntohl (network byte order conversion)
 
 int main() {
     unsigned int num = 0x12345678;

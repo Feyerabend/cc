@@ -401,6 +401,10 @@ assert left.value == right.value
 
 *Monad Laws*:
 ```python
+# Here m must be a monad (a plain Maybe has fmap but not bind),
+# and f, g return monadic values
+m = MaybeMonad.return_(42)
+
 # Left unit: return a >>= f = f a
 assert (MaybeMonad.return_(a).bind(f).value == f(a).value)
 

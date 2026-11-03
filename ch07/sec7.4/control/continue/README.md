@@ -380,7 +380,10 @@ def factorial(n):
     """Trampolined wrapper"""
     return factorial_cps_trampoline(n, lambda x: Done(x))
 
-print(factorial(10000))  # No stack overflow!
+result = factorial(10000)  # No stack overflow!
+# 10000! has 35660 digits, more than Python 3.11 and later will turn
+# into a string by default, so print its size instead
+print(result.bit_length())  # 118459
 ```
 
 #### How They Work Together

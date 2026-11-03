@@ -251,7 +251,7 @@ class TestCase:
     timeout: float = 10.0        # Execution timeout in seconds
     setup: str = None           # Setup code (optional)
     teardown: str = None        # Cleanup code (optional)
-    tags: List[str] = []        # Tags for filtering
+    tags: List[str] = field(default_factory=list)  # Tags for filtering
 ```
 
 #### Creating Test Cases

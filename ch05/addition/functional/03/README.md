@@ -42,7 +42,7 @@ rect = Rectangle(10.0, 20.0)
 # Pattern match
 def area(shape):
     return shape.match(
-        Circle=lambda radius: 3.14159 * radius * 2,
+        Circle=lambda radius: 3.14159 * radius ** 2,
         Rectangle=lambda width, height: width * height,
     )
 

@@ -61,7 +61,7 @@ typedef struct {
 // fwd decl
 void init_vm(REGVM *vm);
 void load_program(REGVM *vm, char *program[], int size);
-void fetch(REGVM *vm, char *instruction);
+void fetch(REGVM *vm, char **instruction);
 int decode_and_execute(REGVM *vm, char *instruction);
 void update_flags(REGVM *vm, int value);
 void run(REGVM *vm);
@@ -80,7 +80,7 @@ void load_program(REGVM *vm, char *program[], int size) {
     }
 }
 
-void fetch(REGVM *vm, char *instruction) {
+void fetch(REGVM *vm, char **instruction) {
     if (vm->pc < MAX_PROGRAM_SIZE && vm->memory[vm->pc] != NULL) {
         *instruction = vm->memory[vm->pc];
         vm->pc++;
@@ -101,10 +101,12 @@ int decode_and_execute(REGVM *vm, char *instruction) {
     if (!instruction)
         return 0;
 
-    char opcode[4];
-    char arg1[2];
-    char arg2[10];
-    sscanf(instruction, "%s %s %s", opcode, arg1, arg2);
+    // Large enough for the longest opcode (PRINT) and its arguments; the
+    // field widths in the format keep sscanf within the buffers
+    char opcode[8] = "";
+    char arg1[8] = "";
+    char arg2[16] = "";
+    sscanf(instruction, "%7s %7s %15s", opcode, arg1, arg2);
 
     int val1, val2;
 

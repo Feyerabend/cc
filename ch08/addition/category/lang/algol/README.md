@@ -28,7 +28,7 @@ typedef enum {
     OBJ_PRODUCT,
     OBJ_ARROW,
     OBJ_FUNCTOR_APP
-} ObjectTag;
+} ObjectType;
 ```
 
 In categorical terms:

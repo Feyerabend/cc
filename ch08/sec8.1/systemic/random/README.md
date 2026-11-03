@@ -42,14 +42,18 @@ An extremly simple implementation in C:
 ```c
 #include <stdio.h>
 #include <time.h>
-x = time(0);
-// or a more fixed number  unsigned x = 42;
-// (but will not change the pseudo-random principle)
+
+unsigned x;  // the generator's state, seeded in main
+
 unsigned rnd() {
     x = x * 1664525 + 1013904223;
     return x;
 }
+
 int main() {
+    x = time(0);
+    // or a fixed number, x = 42, which gives the same sequence every run
+    // (but does not change the pseudo-random principle)
     for (int i = 0; i < 10; i++)
         printf("%u\n", rnd());
 }

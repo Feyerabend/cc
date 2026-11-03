@@ -311,8 +311,7 @@ def test_loop_with_counter():
         ("JMP", 2),               # go back to the loop start
         ("HALT",)                 # end program
     ]
-    vm.load_program(program)
-    vm.execute()
+    vm.execute(program)
     assert vm.get_register("R0") == 0   # counter ends at 0
     assert vm.get_register("R1") == 50  # accumulator = 5 * 10
 ```
@@ -351,8 +350,7 @@ def test_loop_skipped():
         ("JMP", 2),
         ("HALT",)
     ]
-    vm.load_program(program)
-    vm.execute()
+    vm.execute(program)
     assert vm.get_register("R0") == 0  # unchanged
     assert vm.get_register("R1") == 0  # unchanged
 ```
@@ -387,8 +385,7 @@ def test_nested_conditional_logic():
         ("ADD", "R2", 20),         # R2 += 20 (if both conditions met)
         ("HALT",)
     ]
-    vm.load_program(program)
-    vm.execute()
+    vm.execute(program)
     assert vm.get_register("R2") == 20  # R2 modified because conditions are true
 ```
 

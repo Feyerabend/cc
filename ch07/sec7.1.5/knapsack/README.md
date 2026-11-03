@@ -321,9 +321,8 @@ print(f"Selected items: {selected}")
 
 *Expected Output:*
 ```
-Recursive approach result: 220
-Dynamic programming approach result: 220
-Selected items (0-indexed): [2, 1]
+Maximum value: 220
+Selected items: [1, 2]
 ```
 
 #### C Implementation
