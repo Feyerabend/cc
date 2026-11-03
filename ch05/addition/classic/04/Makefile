@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -std=c99 -I./include
+# strdup is POSIX, not C99, so ask for POSIX declarations too
+CFLAGS = -Wall -std=c99 -D_POSIX_C_SOURCE=200809L -I./include
 PYTH = python3
 
 SRCDIR = src

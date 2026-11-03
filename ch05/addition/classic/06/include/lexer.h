@@ -13,7 +13,7 @@ typedef struct {
     int column;               // column number where the token was found
 } Token;
 
-Token tokens[MAX_TOKENS];
+extern Token tokens[MAX_TOKENS];  // defined in lexer.c
 
 extern void resetTokens();
 extern Token nextToken();
