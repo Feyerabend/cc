@@ -7,6 +7,8 @@ example [01](./01/), the question is put: how do you fix this? in [02](./02/).
 The third [03](./03/) is example of *one* solution to the uneven distribution
 of code from the first; as there are also other fixes which makes the code
 much better from the architectural standpoint.
+The fourth, [04](./04/), is a project: extend 03 into a BASIC III that runs
+the classic games from *BASIC Computer Games*, with a tool to measure progress.
 
 
 ### The Structure of BASIC
