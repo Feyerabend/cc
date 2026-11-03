@@ -54,16 +54,9 @@ table: $(SCRIPTS)/symbol.py
 		$(PYTH) $(SCRIPTS)/symbol.py -i $$file -o $$symbol_output; \
 	done
 
-interpret: $(TOOLSDIR)/ast_interpreter.py
-	@for file in $(ASTDIR)/*.json; do \
-		base=$$(basename $$file .json); \
-		echo "Interpreting $$file"; \
-		p$(PYTH) $(TOOLSDIR)/ast_interpreter.py $$file; \
-	done
 
 
 # make -- compiles
 # make clean -- clean up
 # make samples -- make outputs: here from samples to tokens
 # make table -- generate symbol tables from samples, assume ast
-# make interpret -- interpret program as AST, assume ast

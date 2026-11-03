@@ -2,7 +2,7 @@
 ## Coroutine Sample
 
 *Related script:* If you are interested in a *plain generator-based* version of
-checkpointing, see [sample of checkpointing](./../../checkpoint/).
+checkpointing, see sample of checkpointing.
 Both folders of scripts demonstrate the same core idea, but with different Python
 mechanisms.
 

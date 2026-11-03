@@ -21,7 +21,7 @@ physical uncertainty, not computational methods.[^points]
 
 The quest for randomness in computing emerged with the dawn of electronic computation in the
 mid-20th century. John von Neumann, a pioneer of computer science, confronted the problem of
-generating random numbers for [Monte Carlo](./data/monte/) simulations used in nuclear
+generating random numbers for Monte Carlo simulations used in nuclear
 research during the 1940s. He recognised the inherent paradox in this task, famously quipping:
 "Anyone who attempts to generate random numbers by deterministic means is, of course,
 living in a state of sin." Nevertheless, he proposed the *middle-square method* (1946),

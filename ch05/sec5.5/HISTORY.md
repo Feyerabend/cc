@@ -37,7 +37,7 @@ a data structure that provides a more intuitive and compact representation of a 
 useful for later stages of compilation or interpretation.
 
 In the 2000s and beyond, parsing evolved alongside the growth of web technologies and the increasing need to parse
-[data formats](./data) like JSON and XML. Modern parsing libraries such as ANTLR provided more flexible and powerful
+[data formats](./../addition/parsers/data/) like JSON and XML. Modern parsing libraries such as ANTLR provided more flexible and powerful
 tools for parsing not just programming languages but also structured data used in various applications. Error handling
 and recovery mechanisms also improved, leading to more robust parsers that can provide helpful feedback to developers,
 especially in integrated development environments (IDEs).

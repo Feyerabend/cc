@@ -23,7 +23,7 @@ logical variables.
 2. *Backtracking*: Prolog uses backtracking to explore alternative solutions when a
    computation fails. The WAM implements this via a stack-based structure with choice
    points for efficient state restoration. (More on backtracking in ch07
-   [WAM](./../../../ch07/mech/backtrack/).)
+   WAM.)
 3. *Efficient Term Representation*: Terms (variables, constants, lists, structures)
    are compactly stored in memory using tagged cells to differentiate types.
 
