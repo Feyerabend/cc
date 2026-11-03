@@ -247,7 +247,9 @@
     // -------------------------------------------------------------------------
     window.searchLibris = async function(reset = false) {
         const query = document.getElementById('query').value.trim();
-        if (!query) return;
+        // Enter in the query field works like the button, which stays
+        // disabled until the model has loaded
+        if (!query || !embedder) return;
 
         if (reset) start = 1;
 

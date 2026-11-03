@@ -273,7 +273,8 @@ int main() {
         cycles++;
     }
     printf("]\n");
-    printf("Simulation ended. Final ACC: %d\n", reg_read(&acc));
+    // To stderr, so that stdout is only the JSON and can be saved to a file
+    fprintf(stderr, "Simulation ended. Final ACC: %d\n", reg_read(&acc));
 
     return 0;
 }

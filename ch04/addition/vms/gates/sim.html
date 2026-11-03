@@ -15,7 +15,7 @@
     <br><br>
     <button onclick="prevCycle()" disabled id="prevBtn">Previous Cycle</button>
     <span id="cycleDisplay">Cycle: 0</span>
-    <button onclick="nextCycle()" id="nextBtn">Next Cycle</button>
+    <button onclick="nextCycle()" disabled id="nextBtn">Next Cycle</button>
     <h3>Current Instruction: <span id="instrDisplay">None</span></h3>
     <table id="stateTable">
         <tr><th>Register/Flag</th><th>Value</th><th>Binary</th></tr>
@@ -28,7 +28,18 @@
 
         function loadJSON() {
             const input = document.getElementById('jsonInput').value;
-            data = JSON.parse(input);
+            let parsed;
+            try {
+                parsed = JSON.parse(input);
+            } catch (e) {
+                alert('Could not read the JSON: ' + e.message);
+                return;
+            }
+            if (!Array.isArray(parsed) || parsed.length === 0) {
+                alert('Expected a list of cycles, as written by sim.c');
+                return;
+            }
+            data = parsed;
             currentCycle = 0;
             updateDisplay();
             document.getElementById('prevBtn').disabled = true;
